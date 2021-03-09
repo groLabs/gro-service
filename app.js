@@ -5,6 +5,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var { SettingError } = require('./common/customErrors')
+var customLogger = require('./common/logger')
 
 var botRouter = require('./routes/bot');
 var statsRouter = require('./routes/stats');
@@ -30,15 +31,16 @@ app.use(function(req, res, next) {
 });
 
 app.use(function handleSettingError(error, req, res, next) {
-  console.error(error);
+  customLogger.error(error)
   if (error instanceof SettingError) {
-    res.status(400).json({ message: error.name + ': ' + error.message });
+    res.status(400).json({ message: `${error.name}: ${error.message}` });
   } else {
     next(error);
   }
 });
 
 app.use(function handleDefaultError(error, req, res, next) {
+  customLogger.error(`${error.name}: ${error.message}`)
   res.status(500).json({ message: error.name + ': ' + error.message });
   next(error);
 });

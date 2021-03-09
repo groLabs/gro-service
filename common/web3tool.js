@@ -2,7 +2,9 @@
 
 const Web3 = require('web3');
 const { SettingError } = require('./customErrors');
-const CHAIN_URL = process.env.CHAIN_URL
+const config = require('config')
+
+const CHAIN_URL = config.get('blockchain.socket_url')
 let web3Instance = undefined;
 
 const getWeb3Instance = function () {

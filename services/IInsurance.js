@@ -2,11 +2,13 @@
 
 const { getWeb3Instance } = require('../common/web3tool')
 const { SettingError } = require('../common/customErrors')
+const config = require('config')
+
 const IInsuranceABI = require('../abis/IInsurance.json').abi
 const web3Instance = getWeb3Instance()
 
-const BOT_ACCOUNT = process.env.BOT_ACCOUNT
-const INSURANCE_ADDRESS = process.env.INSURANCE_ADDRESS
+const BOT_ACCOUNT = config.get('blockchain.bot_address')
+const INSURANCE_ADDRESS = config.get('abi.insurance')
 if(!BOT_ACCOUNT || !INSURANCE_ADDRESS){
 	throw new SettingError('BOT_ACCOUNT not setting or INSURANCE_ADDRESS not setting')
 }

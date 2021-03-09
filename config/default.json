@@ -1,0 +1,10 @@
+{
+	"blockchain": {
+		"socket_url": "wss://eth-kovan.ws.alchemyapi.io/v2/eZY-IyppaOBeY66-RAEN2bl5Ja6I9fqF",
+		"bot_address": "0xEb51aE7ce19eA4c05208edDB623F4FB486B04227",
+		"private_key": "0x26202c36bf26ae60c6ecf99788fd6561f562f2e2c02950f09564"
+	},
+	"abi": {
+		"insurance": "0x18B20AE207a0b92d6E89cc7e7b1a896B442523b4"
+	}
+}
