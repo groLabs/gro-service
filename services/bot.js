@@ -4,6 +4,7 @@ const { SettingError } = require('../common/customErrors');
 const { getWeb3Instance } = require('../common/web3tool')
 const { callRebalanceTrigger } = require('./IInsurance')
 const logger = require('../common/logger')
+const { sendMessageToOPSChannel } = require('./discordServie')
 
 let subscription
 
@@ -17,6 +18,7 @@ const subscribeNewBlock = function () {
 		// call RebalanceTrigger
 		const rebalanceTrigger = await callRebalanceTrigger()
 		logger.info('rebalanceTrigger: ' + JSON.stringify(rebalanceTrigger))
+		sendMessageToOPSChannel('trigger called')
 	})
 	return 1
 }

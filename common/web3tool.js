@@ -2,7 +2,14 @@
 
 const Web3 = require('web3');
 const { SettingError } = require('./customErrors');
+const logger = require('./logger')
 const config = require('config')
+
+if(!config.has('blockchain.socket_url')){
+	const err = new SettingError('Config:blockchain.socket_url not setted.')
+	logger.error(err)
+	throw err
+}
 
 const CHAIN_URL = config.get('blockchain.socket_url')
 let web3Instance = undefined;

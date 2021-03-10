@@ -45,4 +45,7 @@ app.use(function handleDefaultError(error, req, res, next) {
   next(error);
 });
 
+// start the schedule task
+require('./common/scheduleService');
+
 module.exports = app;

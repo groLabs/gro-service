@@ -6,5 +6,9 @@
 	},
 	"abi": {
 		"insurance": "0x18B20AE207a0b92d6E89cc7e7b1a896B442523b4"
+	},
+	"discord": {
+		"token": "ODE5MDgyNzYwNDI0OTE0OTc0.YEhcQw.4nA2E4i3BNSEZGRGrONOvfcqRoo",
+		"opt_channel": "819114874520993812"
 	}
 }
