@@ -1,24 +1,19 @@
-const express = require('express');
-const { wrapAsync } = require('../common/wrap');
-const router = express.Router();
-const { subscribeNewBlock, unsubscribe } = require('../services/bot')
+const express = require('express')
+const { wrapAsync } = require('../common/wrap')
+const router = express.Router()
+const { start, stop } = require('../services/blockListener')
 
-router.post(
-  '/subscribe-new-block',
-  async (req, res) => {
-    const result = await subscribeNewBlock()
-    res.json({
-      result
-    })
-  }
-)
+router.post('/subscribe-new-block', async (req, res) => {
+  start()
+  res.json({ status: 'starting' })
+})
 
 router.post(
   '/unsubscribe',
   wrapAsync(async (req, res) => {
-    const result = await unsubscribe()
-    res.json({result})
-  })
+    stop()
+    res.json({ status: 'stopping' })
+  }),
 )
 
-module.exports = router;
+module.exports = router

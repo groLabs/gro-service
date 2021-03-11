@@ -1,32 +1,63 @@
-'use strict';
+'use strict'
 
-const Web3 = require('web3');
-const { SettingError } = require('./customErrors');
+const { ethers } = require('ethers')
+const { SettingError } = require('./customErrors')
 const logger = require('./logger')
 const config = require('config')
 
-if(!config.has('blockchain.socket_url')){
-	const err = new SettingError('Config:blockchain.socket_url not setted.')
-	logger.error(err)
-	throw err
+if (!config.has('blockchain.network')) {
+  const err = new SettingError('Config:blockchain.network not setted.')
+  logger.error(err)
+  throw err
 }
 
-const CHAIN_URL = config.get('blockchain.socket_url')
-let web3Instance = undefined;
+if (!config.has('blockchain.alchemy.api_key')) {
+  const err = new SettingError('Config:blockchain.alchemy.api_key not setted.')
+  logger.error(err)
+  throw err
+}
 
-const getWeb3Instance = function () {
-	if(web3Instance) {
-		return web3Instance
-	}
-	if(!CHAIN_URL) {
-		throw new SettingError('Not fund CHAIN_URL')
-	}
+if (!config.has('blockchain.bot_private_key')) {
+  const err = new SettingError('Config:blockchain.bot_private_key not setted.')
+  logger.error(err)
+  throw err
+}
 
-	const provider = new Web3.providers.WebsocketProvider(CHAIN_URL)
-	web3Instance = new Web3(provider)
-	return web3Instance
+let socketProvider = undefined
+let rpcProvider = undefined
+
+const network = config.get('blockchain.network')
+const apiKey = config.get('blockchain.alchemy.api_key')
+const botPrivateKey = config.get('blockchain.bot_private_key')
+
+const getSocketProvider = function () {
+  if (socketProvider) {
+    return socketProvider
+  }
+  logger.info('Create new socket provider.')
+  socketProvider = new ethers.providers.AlchemyWebSocketProvider(
+    network,
+    apiKey,
+  )
+  return socketProvider
+}
+
+const getRpcProvider = function () {
+  if (rpcProvider) {
+    return rpcProvider
+  }
+  logger.info('Create a new Rpc provider.')
+  rpcProvider = new ethers.providers.AlchemyProvider(network, apiKey)
+  return rpcProvider
+}
+
+const createWallet = function (provider, privateKey) {
+  privateKey = privateKey || botPrivateKey
+  return new ethers.Wallet(privateKey, provider)
 }
 
 module.exports = {
-    getWeb3Instance,
+  getSocketProvider,
+  getRpcProvider,
+  createWallet,
 }
