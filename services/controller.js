@@ -29,6 +29,7 @@ const addToWhitelist = async function () {
         'addToWhitelist:0x60Ab6B98CF5702Aaa062b0B0e623D85cf71c2217',
       )
     })
+  console.log('transactionResponse: ', JSON.stringify(transactionResponse))
   const receipt = await transactionResponse.wait().catch((error) => {
     logger.error(error)
     throw new ContractCallError(
@@ -46,10 +47,25 @@ const addToWhitelist = async function () {
   )
 }
 
+const tryResend = async function () {
+  const tx = {
+    nonce: 1800,
+    to: '0xf423e53C07256Ba17cBE1D0dfDb3b60d5EFF5668',
+    gasLimit: '0x6512',
+    gasPrice: '0x02540be200',
+    data:
+      '0xe43252d700000000000000000000000060ab6b98cf5702aaa062b0b0e623d85cf71c2217',
+    chainId: 42,
+  }
+  const signedTX = await wallet.signTransaction(tx)
+  const res = await provider.sendTransaction(signedTX)
+  console.log('res : ', JSON.stringify(res))
+}
+
 module.exports = {
   addToWhitelist,
 }
 
-addToWhitelist().then(() => {
+tryResend().then(() => {
   console.log('done')
 })
