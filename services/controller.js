@@ -13,59 +13,29 @@ if (!config.has('abi.controller')) {
   throw err
 }
 
-const controllerABI = require('../abis/controller.json').abi
+const controllerABI = require('../abis/IController.json').abi
 const provider = getRpcProvider()
 const wallet = createWallet(provider)
 const controllerAddress = config.get('abi.controller')
-
 const controller = new ethers.Contract(controllerAddress, controllerABI, wallet)
 
-const addToWhitelist = async function () {
-  const transactionResponse = await controller
-    .addToWhitelist('0x60Ab6B98CF5702Aaa062b0B0e623D85cf71c2217')
-    .catch((error) => {
-      logger.error(error)
-      throw new ContractCallError(
-        'addToWhitelist:0x60Ab6B98CF5702Aaa062b0B0e623D85cf71c2217',
-      )
-    })
-  console.log('transactionResponse: ', JSON.stringify(transactionResponse))
-  const receipt = await transactionResponse.wait().catch((error) => {
+const getInsurance = async function () {
+  const insurance = await controller.insurance().catch((error) => {
     logger.error(error)
-    throw new ContractCallError(
-      'addToWhitelist:wait:0x60Ab6B98CF5702Aaa062b0B0e623D85cf71c2217',
-    )
+    return null
   })
-  if (receipt.status != 1) {
-    logger.error(
-      `transactionHash: ${receipt.transactionHash} - addToWhitelist:0x60Ab6B98CF5702Aaa062b0B0e623D85cf71c2217:revert`,
-    )
-    return
-  }
-  sendMessageToOPSChannel(
-    'addToWhitelist:0x60Ab6B98CF5702Aaa062b0B0e623D85cf71c2217 done.',
-  )
+  return insurance
 }
 
-const tryResend = async function () {
-  const tx = {
-    nonce: 1800,
-    to: '0xf423e53C07256Ba17cBE1D0dfDb3b60d5EFF5668',
-    gasLimit: '0x6512',
-    gasPrice: '0x02540be200',
-    data:
-      '0xe43252d700000000000000000000000060ab6b98cf5702aaa062b0b0e623d85cf71c2217',
-    chainId: 42,
-  }
-  const signedTX = await wallet.signTransaction(tx)
-  const res = await provider.sendTransaction(signedTX)
-  console.log('res : ', JSON.stringify(res))
+const getVaults = async function () {
+  const vaults = await controller.vaults().catch((error) => {
+    logger.error(error)
+    return []
+  })
+  return vaults
 }
 
 module.exports = {
-  addToWhitelist,
+  getInsurance,
+  getVaults,
 }
-
-tryResend().then(() => {
-  console.log('done')
-})

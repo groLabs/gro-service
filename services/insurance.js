@@ -2,24 +2,15 @@
 
 const { ethers } = require('ethers')
 const { getRpcProvider, createWallet } = require('../common/web3tool')
-const { SettingError, ContractCallError } = require('../common/customErrors')
 const logger = require('../common/logger')
 const { sendMessageToOPSChannel } = require('./discordServie')
-const config = require('config')
-
-if (!config.has('abi.insurance')) {
-  const err = new SettingError('Config:abi.insurance not setted.')
-  logger.error(err)
-  throw err
-}
 
 const insuranceABI = require('../abis/IInsurance.json').abi
 const provider = getRpcProvider()
 const wallet = createWallet(provider)
-const insuranceAddress = config.get('abi.insurance')
-const insurance = new ethers.Contract(insuranceAddress, insuranceABI, wallet)
 
-const investTrigger = async function () {
+const investTrigger = async function (insuranceAddress) {
+  const insurance = new ethers.Contract(insuranceAddress, insuranceABI, wallet)
   const result = await insurance.investTrigger().catch((err) => {
     logger.error(err)
     return []
@@ -27,7 +18,8 @@ const investTrigger = async function () {
   return result
 }
 
-const invest = async function (investParams) {
+const invest = async function (insuranceAddress, investParams) {
+  const insurance = new ethers.Contract(insuranceAddress, insuranceABI, wallet)
   const investResult = await insurance.invest(investParams).catch((err) => {
     logger.error(err)
     sendMessageToOPSChannel(
@@ -38,18 +30,34 @@ const invest = async function (investParams) {
   return investResult
 }
 
-const callRebalanceTrigger = async function () {
-  const result = await insurance.rebalanceTrigger()
-  return {
-    swapInAmounts: result.swapInAmounts,
-    swapOutPercent: result.swapOutPercent,
-    utilisationRatio: result.utilisationRatio,
-    lgNeedRebalance: result.lgNeedRebalance,
-  }
+const rebalanceTrigger = async function (insuranceAddress) {
+  const insurance = new ethers.Contract(insuranceAddress, insuranceABI, wallet)
+  const triggerResult = await insurance.rebalanceTrigger().catch((error) => {
+    logger.error(error)
+    return {}
+  })
+  return triggerResult
+}
+
+const rebalance = async function (insuranceAddress, rebalanceParams) {
+  const insurance = new ethers.Contract(insuranceAddress, insuranceABI, wallet)
+  const rebalanceResponse = await insurance
+    .rebalance(...rebalanceParams)
+    .catch((error) => {
+      logger.error(error)
+      sendMessageToOPSChannel(
+        `Call rebalance with params: ${JSON.stringify(
+          rebalanceParams,
+        )} failed.`,
+      )
+      return {}
+    })
+  return rebalanceResponse
 }
 
 module.exports = {
   investTrigger,
   invest,
-  callRebalanceTrigger,
+  rebalanceTrigger,
+  rebalance,
 }

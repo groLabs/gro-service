@@ -1,0 +1,226 @@
+{
+	"abi": [
+		{
+		  "inputs": [],
+		  "name": "calcEstimatedPnL",
+		  "outputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "gain",
+			  "type": "uint256"
+			},
+			{
+			  "internalType": "uint256",
+			  "name": "loss",
+			  "type": "uint256"
+			}
+		  ],
+		  "stateMutability": "view",
+		  "type": "function"
+		},
+		{
+		  "inputs": [],
+		  "name": "calcPnL",
+		  "outputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "gain",
+			  "type": "uint256"
+			},
+			{
+			  "internalType": "uint256",
+			  "name": "loss",
+			  "type": "uint256"
+			}
+		  ],
+		  "stateMutability": "view",
+		  "type": "function"
+		},
+		{
+		  "inputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "_amount",
+			  "type": "uint256"
+			}
+		  ],
+		  "name": "deposit",
+		  "outputs": [],
+		  "stateMutability": "nonpayable",
+		  "type": "function"
+		},
+		{
+		  "inputs": [],
+		  "name": "execPnL",
+		  "outputs": [],
+		  "stateMutability": "nonpayable",
+		  "type": "function"
+		},
+		{
+		  "inputs": [],
+		  "name": "getStrategiesLength",
+		  "outputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "",
+			  "type": "uint256"
+			}
+		  ],
+		  "stateMutability": "view",
+		  "type": "function"
+		},
+		{
+		  "inputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "index",
+			  "type": "uint256"
+			}
+		  ],
+		  "name": "getStrategyAssets",
+		  "outputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "",
+			  "type": "uint256"
+			}
+		  ],
+		  "stateMutability": "view",
+		  "type": "function"
+		},
+		{
+		  "inputs": [
+			{
+			  "internalType": "uint256[]",
+			  "name": "debtratios",
+			  "type": "uint256[]"
+			},
+			{
+			  "internalType": "uint256",
+			  "name": "inAmount",
+			  "type": "uint256"
+			}
+		  ],
+		  "name": "rebalance",
+		  "outputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "outstanding",
+			  "type": "uint256"
+			}
+		  ],
+		  "stateMutability": "nonpayable",
+		  "type": "function"
+		},
+		{
+		  "inputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "index",
+			  "type": "uint256"
+			},
+			{
+			  "internalType": "uint256",
+			  "name": "callCost",
+			  "type": "uint256"
+			}
+		  ],
+		  "name": "strategyHarvest",
+		  "outputs": [
+			{
+			  "internalType": "bool",
+			  "name": "",
+			  "type": "bool"
+			}
+		  ],
+		  "stateMutability": "nonpayable",
+		  "type": "function"
+		},
+		{
+		  "inputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "index",
+			  "type": "uint256"
+			},
+			{
+			  "internalType": "uint256",
+			  "name": "callCost",
+			  "type": "uint256"
+			}
+		  ],
+		  "name": "strategyHarvestTrigger",
+		  "outputs": [
+			{
+			  "internalType": "bool",
+			  "name": "",
+			  "type": "bool"
+			}
+		  ],
+		  "stateMutability": "view",
+		  "type": "function"
+		},
+		{
+		  "inputs": [],
+		  "name": "token",
+		  "outputs": [
+			{
+			  "internalType": "address",
+			  "name": "",
+			  "type": "address"
+			}
+		  ],
+		  "stateMutability": "view",
+		  "type": "function"
+		},
+		{
+		  "inputs": [],
+		  "name": "totalAssets",
+		  "outputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "",
+			  "type": "uint256"
+			}
+		  ],
+		  "stateMutability": "view",
+		  "type": "function"
+		},
+		{
+		  "inputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "_amount",
+			  "type": "uint256"
+			}
+		  ],
+		  "name": "withdraw",
+		  "outputs": [],
+		  "stateMutability": "nonpayable",
+		  "type": "function"
+		},
+		{
+		  "inputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "_amount",
+			  "type": "uint256"
+			},
+			{
+			  "internalType": "address",
+			  "name": "_recipient",
+			  "type": "address"
+			},
+			{
+			  "internalType": "bool",
+			  "name": "pwrd",
+			  "type": "bool"
+			}
+		  ],
+		  "name": "withdrawByStrategy",
+		  "outputs": [],
+		  "stateMutability": "nonpayable",
+		  "type": "function"
+		}
+	  ]
+}
