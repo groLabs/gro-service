@@ -2,17 +2,17 @@
 
 const schedule = require('node-schedule')
 const config = require('config')
-const { getRpcProvider, createWallet } = require('./web3tool')
-const { pendingTransactions } = require('../services/blockListener')
-const { sendMessageToOPSChannel } = require('../services/discordServie')
-const logger = require('./logger')
+const { getRpcProvider, getNonceManager } = require('../common/web3tool')
+const { pendingTransactions } = require('../common/storage')
+const { sendMessageToOPSChannel } = require('./discordServie')
+const logger = require('../common/logger')
 const rpcProvider = getRpcProvider()
-const wallet = createWallet(rpcProvider)
+const nonceManager = getNonceManager()
 
 const triggerBotAccountBalance = function () {
   schedule.scheduleJob('30 * * * * *', async function () {
     const botAccount = config.get('blockchain.bot_address')
-    const balance = await rpcProvider.getBalance(botAccount)
+    const balance = await nonceManager.getBalance()
     logger.info(`bot: ${botAccount} balance ${balance.toString()}`)
   })
 }
@@ -38,10 +38,10 @@ const handleLongPendingTransactions = async function () {
       const timestamps = Date.now() - oldTransaction.createdTime
       if (!transactionReceipt || timestamps > 6000) {
         // transactionReceipt == null, pending > 6s, resend
-        const signedTX = await wallet.signTransaction(
+        const signedTX = await nonceManager.signTransaction(
           oldTransaction.transactionRequest,
         )
-        const transactionResponse = await provider.sendTransaction(signedTX)
+        const transactionResponse = await nonceManager.sendTransaction(signedTX)
         pendingTransactions.set(type, {
           blockNumber: oldTransaction.blockNumber,
           reSendTimes: oldTransaction.reSendTimes + 1,

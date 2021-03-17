@@ -1,6 +1,7 @@
 'use strict'
 
 const { ethers } = require('ethers')
+const { NonceManager } = require('@ethersproject/experimental')
 const { SettingError } = require('./customErrors')
 const logger = require('./logger')
 const config = require('config')
@@ -25,6 +26,8 @@ if (!config.has('blockchain.bot_private_key')) {
 
 let socketProvider = undefined
 let rpcProvider = undefined
+let nonceManager = undefined
+let botWallet = undefined
 
 const network = config.get('blockchain.network')
 const apiKey = config.get('blockchain.alchemy.api_key')
@@ -51,13 +54,25 @@ const getRpcProvider = function () {
   return rpcProvider
 }
 
-const createWallet = function (provider, privateKey) {
-  privateKey = privateKey || botPrivateKey
-  return new ethers.Wallet(privateKey, provider)
+const getBotWallet = function () {
+  if (botWallet) return botWallet
+  const provider = getRpcProvider()
+  botWallet = new ethers.Wallet(botPrivateKey, provider)
+  return botWallet
+}
+
+const getNonceManager = function () {
+  if (nonceManager) {
+    return nonceManager
+  }
+  const wallet = getBotWallet()
+  nonceManager = new NonceManager(wallet)
+  return nonceManager
 }
 
 module.exports = {
   getSocketProvider,
   getRpcProvider,
-  createWallet,
+  getBotWallet,
+  getNonceManager,
 }

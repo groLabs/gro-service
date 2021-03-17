@@ -1,10 +1,9 @@
 'use strict'
 
 const { ethers } = require('ethers')
-const { getRpcProvider, createWallet } = require('../common/web3tool')
-const { SettingError, ContractCallError } = require('../common/customErrors')
-const logger = require('../common/logger')
-const { sendMessageToOPSChannel } = require('./discordServie')
+const { getNonceManager } = require('../../common/web3tool')
+const { SettingError } = require('../../common/customErrors')
+const logger = require('../../common/logger')
 const config = require('config')
 
 if (!config.has('abi.controller')) {
@@ -13,11 +12,14 @@ if (!config.has('abi.controller')) {
   throw err
 }
 
-const controllerABI = require('../abis/IController.json').abi
-const provider = getRpcProvider()
-const wallet = createWallet(provider)
+const controllerABI = require('../../abis/IController.json').abi
+const nonceManager = getNonceManager()
 const controllerAddress = config.get('abi.controller')
-const controller = new ethers.Contract(controllerAddress, controllerABI, wallet)
+const controller = new ethers.Contract(
+  controllerAddress,
+  controllerABI,
+  nonceManager,
+)
 
 const getInsurance = async function () {
   const insurance = await controller.insurance().catch((error) => {

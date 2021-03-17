@@ -1,10 +1,9 @@
 'use strict'
 
 const { ethers } = require('ethers')
-const { getRpcProvider, createWallet } = require('../common/web3tool')
-const { SettingError, ContractCallError } = require('../common/customErrors')
-const logger = require('../common/logger')
-const { sendMessageToOPSChannel } = require('./discordServie')
+const { getNonceManager } = require('../../common/web3tool')
+const { SettingError } = require('../../common/customErrors')
+const logger = require('../../common/logger')
 const config = require('config')
 
 if (!config.has('harvest.callcost')) {
@@ -14,12 +13,11 @@ if (!config.has('harvest.callcost')) {
 }
 
 const harvestCallCost = config.get('harvest.callcost')
-const vaultABI = require('../abis/IVault.json').abi
-const provider = getRpcProvider()
-const wallet = createWallet(provider)
+const vaultABI = require('../../abis/IVault.json').abi
+const nonceManager = getNonceManager()
 
 const strategiesLength = async function (vaultAddress) {
-  const vault = new ethers.Contract(vaultAddress, vaultABI, wallet)
+  const vault = new ethers.Contract(vaultAddress, vaultABI, nonceManager)
   const length = await vault.getStrategiesLength().catch((error) => {
     logger.error(error)
     return 0
@@ -28,7 +26,7 @@ const strategiesLength = async function (vaultAddress) {
 }
 
 const strategyHarvestTrigger = async function (vaultAddress, strategyIndex) {
-  const vault = new ethers.Contract(vaultAddress, vaultABI, wallet)
+  const vault = new ethers.Contract(vaultAddress, vaultABI, nonceManager)
   const harvestTriggerResult = await vault
     .strategyHarvestTrigger(strategyIndex, harvestCallCost)
     .catch((error) => {
@@ -38,10 +36,10 @@ const strategyHarvestTrigger = async function (vaultAddress, strategyIndex) {
   return harvestTriggerResult
 }
 
-const strategyHarvest = async function (vaultAddress, strategyIndex, nonce) {
-  const vault = new ethers.Contract(vaultAddress, vaultABI, wallet)
+const strategyHarvest = async function (vaultAddress, strategyIndex) {
+  const vault = new ethers.Contract(vaultAddress, vaultABI, nonceManager)
   const harvestResult = await vault
-    .strategyHarvest(strategyIndex, harvestCallCost, { nonce: nonce })
+    .strategyHarvest(strategyIndex, harvestCallCost)
     .catch((error) => {
       logger.error(error)
       return false

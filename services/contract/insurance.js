@@ -1,16 +1,19 @@
 'use strict'
 
 const { ethers } = require('ethers')
-const { getRpcProvider, createWallet } = require('../common/web3tool')
-const logger = require('../common/logger')
-const { sendMessageToOPSChannel } = require('./discordServie')
+const { getNonceManager } = require('../../common/web3tool')
+const logger = require('../../common/logger')
+const { sendMessageToOPSChannel } = require('../discordServie')
 
-const insuranceABI = require('../abis/IInsurance.json').abi
-const provider = getRpcProvider()
-const wallet = createWallet(provider)
+const insuranceABI = require('../../abis/IInsurance.json').abi
+const nonceManager = getNonceManager()
 
 const investTrigger = async function (insuranceAddress) {
-  const insurance = new ethers.Contract(insuranceAddress, insuranceABI, wallet)
+  const insurance = new ethers.Contract(
+    insuranceAddress,
+    insuranceABI,
+    nonceManager,
+  )
   const result = await insurance.investTrigger().catch((err) => {
     logger.error(err)
     return []
@@ -19,7 +22,11 @@ const investTrigger = async function (insuranceAddress) {
 }
 
 const invest = async function (insuranceAddress, investParams) {
-  const insurance = new ethers.Contract(insuranceAddress, insuranceABI, wallet)
+  const insurance = new ethers.Contract(
+    insuranceAddress,
+    insuranceABI,
+    nonceManager,
+  )
   const investResult = await insurance.invest(investParams).catch((err) => {
     logger.error(err)
     sendMessageToOPSChannel(
@@ -31,7 +38,11 @@ const invest = async function (insuranceAddress, investParams) {
 }
 
 const rebalanceTrigger = async function (insuranceAddress) {
-  const insurance = new ethers.Contract(insuranceAddress, insuranceABI, wallet)
+  const insurance = new ethers.Contract(
+    insuranceAddress,
+    insuranceABI,
+    nonceManager,
+  )
   const triggerResult = await insurance.rebalanceTrigger().catch((error) => {
     logger.error(error)
     return {}
@@ -40,7 +51,11 @@ const rebalanceTrigger = async function (insuranceAddress) {
 }
 
 const rebalance = async function (insuranceAddress, rebalanceParams) {
-  const insurance = new ethers.Contract(insuranceAddress, insuranceABI, wallet)
+  const insurance = new ethers.Contract(
+    insuranceAddress,
+    insuranceABI,
+    nonceManager,
+  )
   const rebalanceResponse = await insurance
     .rebalance(...rebalanceParams)
     .catch((error) => {

@@ -7,6 +7,7 @@
     "dev": "nodemon ./bin/www"
   },
   "dependencies": {
+    "@ethersproject/experimental": "^5.0.10",
     "config": "^3.3.6",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
