@@ -1,0 +1,14 @@
+{
+	"blockchain": {
+		"network": "http://localhost:8545",
+		"bot_address": "0x8626f6940e2eb28930efb4cef49b2d1f2c9c1199",
+		"bot_private_key": "0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e"
+	},
+	"abi": {
+		"controller": "0x70e0bA845a1A0F2DA3359C97E0285013525FFC49"
+	},
+	"discord": {
+		"token": "ODE5MDgyNzYwNDI0OTE0OTc0.YEhcQw.4nA2E4i3BNSEZGRGrONOvfcqRoo",
+		"opt_channel": "819114874520993812"
+	}
+}

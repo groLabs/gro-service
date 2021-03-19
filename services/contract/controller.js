@@ -37,7 +37,16 @@ const getVaults = async function () {
   return vaults
 }
 
+const getPnl = async function () {
+  const pnl = await controller.pnl().catch((error) => {
+    logger.error(error)
+    return null
+  })
+  return pnl
+}
+
 module.exports = {
   getInsurance,
   getVaults,
+  getPnl,
 }

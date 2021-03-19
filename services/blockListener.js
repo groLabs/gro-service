@@ -1,13 +1,17 @@
 'use strict'
 
-const { getSocketProvider, getNonceManager } = require('../common/web3tool')
+const { getDefaultProvider, getNonceManager } = require('../common/web3tool')
 const { sendMessageToOPSChannel } = require('./discordServie')
 const { pendingTransactions } = require('../common/storage')
-const { handleInvest } = require('./trigger/investTrigger')
-const { handleHarvest } = require('./trigger/harvestTrigger')
+const { invest, harvest, execPnl } = require('./transactionService')
+const {
+  investTrigger,
+  harvestTrigger,
+  pnlTrigger,
+} = require('./triggerService')
 const logger = require('../common/logger')
 const HandleBlockService = require('./handleBlockService')
-const socketProvider = getSocketProvider()
+const provider = getDefaultProvider()
 const nonceManager = getNonceManager()
 
 const checkPendingTransactions = async function () {
@@ -17,7 +21,7 @@ const checkPendingTransactions = async function () {
   Array.from(transactionTypes).forEach(async (type) => {
     const transactionInfo = pendingTransactions.get(type)
     const hash = transactionInfo.hash
-    const transactionReceipt = await socketProvider
+    const transactionReceipt = await provider
       .getTransactionReceipt(hash)
       .catch((err) => {
         logger.error(err)
@@ -37,6 +41,35 @@ const checkPendingTransactions = async function () {
       logger.info(`${type} ${hash} reverted.`)
     }
   })
+}
+
+const callTriggers = async function () {
+  let triggerPromises = []
+  triggerPromises.push(investTrigger())
+  triggerPromises.push(harvestTrigger())
+  // triggerPromises.push(pnlTrigger())
+  const triggerResult = await Promise.all(triggerPromises).catch((error) => {
+    logger.error(error)
+    return []
+  })
+  return triggerResult
+}
+
+const sendTransaction = async function (blockNumber, triggerResult) {
+  // Handle invest
+  if (triggerResult[0].needCall) {
+    await invest(blockNumber, triggerResult[0].params)
+  }
+
+  // Handle harvest
+  if (triggerResult[1].needCall) {
+    await harvest(blockNumber, triggerResult[1].params)
+  }
+
+  // Handle Pnl
+  // if (triggerResult[2].needCall) {
+  //   await execPnl(blockNumber)
+  // }
 }
 
 const blockListener = async function (blockNumber) {
@@ -73,10 +106,12 @@ const blockListener = async function (blockNumber) {
     logger.info(`Adjust local nonce to ${transactionCountInChain}.`)
   }
 
-  // Invest check
-  await handleInvest(blockNumber)
-  // Harvest check
-  await handleHarvest(blockNumber)
+  // Call trigger
+  const triggerResult = await callTriggers()
+
+  if (!triggerResult.length) return
+  // Call transaction
+  await sendTransaction(blockNumber, triggerResult)
 }
 
 const handleBlockService = new HandleBlockService(blockListener)
@@ -86,14 +121,14 @@ const handleBlock = function (blockNumber) {
 }
 
 const start = function () {
-  socketProvider.on('block', handleBlock).on('error', function (err) {
+  provider.on('block', handleBlock).on('error', function (err) {
     logger.error(err)
   })
   logger.info('Start linsten new blocks.')
 }
 
 const stop = function () {
-  socketProvider.off('block')
+  provider.off('block')
   logger.info('Stop linsten new blocks.')
 }
 

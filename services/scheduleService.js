@@ -2,11 +2,11 @@
 
 const schedule = require('node-schedule')
 const config = require('config')
-const { getRpcProvider, getNonceManager } = require('../common/web3tool')
+const { getDefaultProvider, getNonceManager } = require('../common/web3tool')
 const { pendingTransactions } = require('../common/storage')
 const { sendMessageToOPSChannel } = require('./discordServie')
 const logger = require('../common/logger')
-const rpcProvider = getRpcProvider()
+const provider = getDefaultProvider()
 const nonceManager = getNonceManager()
 
 const triggerBotAccountBalance = function () {
@@ -26,7 +26,7 @@ const handleLongPendingTransactions = async function () {
     Array.from(transactionTypes).forEach(async (type) => {
       const oldTransaction = pendingTransactions.get(type)
       const hash = oldTransaction.hash
-      const transactionReceipt = await rpcProvider
+      const transactionReceipt = await provider
         .getTransactionReceipt(hash)
         .catch((err) => {
           logger.error(err)

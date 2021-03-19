@@ -22,9 +22,12 @@ class HandleBlockService {
     if (!blockNumber) return
 
     // handle triggers
+    const startTime = Date.now()
     this.currenctHandlePromise = this.handleFun(blockNumber)
 
     this.currenctHandlePromise.then(() => {
+      const endTime = Date.now()
+      logger.info('Process time: ' + (endTime - startTime))
       this.currenctHandlePromise = undefined
       if (this.#blockQueues.length) {
         this.#startHandleBlock()

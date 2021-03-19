@@ -1,8 +1,5 @@
 {
 	"blockchain": {
-		"alchemy":{
-			"api_key": "eZY-IyppaOBeY66-RAEN2bl5Ja6I9fqF"
-		},
 		"bot_address": "0xEb51aE7ce19eA4c05208edDB623F4FB486B04227",
 		"bot_private_key": "0x8be4972ecc4ee6554d9363a876567c23abadcf07cdee3935528582d70"
 	},
@@ -12,5 +9,22 @@
 	"discord": {
 		"token": "ODE5MDgyNzYwNDI0OTE0OTc0.YEhcQw.4nA2E4i3BNSEZGRGrONOvfcqRoo",
 		"opt_channel": "819114874520993812"
+	},
+	"harvest_callcost": {
+		"vault_0": {
+			"strategy_0": 0,
+			"strategy_1": 0,
+			"strategy_2": 0
+		},
+		"vault_1": {
+			"strategy_0": 0,
+			"strategy_1": 0,
+			"strategy_2": 0
+		},
+		"vault_2": {
+			"strategy_0": 0,
+			"strategy_1": 0,
+			"strategy_2": 0
+		}
 	}
 }
