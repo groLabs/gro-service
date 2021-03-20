@@ -1,23 +1,23 @@
 {
-	"blockchain": {
-		"api_keys": {
-			"alchemy": "eZY-IyppaOBeY66-RAEN2bl5Ja6I9fqF",
-			"infura": "a0c4911f680a4dd0bf3f7dfac2a4ba08",
-			"etherscan": "VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H",
-			"pocket": "8dbbeecc2126c14cbc48bf6b66f4a33850fa3537"
-		},
-		"alchemy": {
-			"api_key": "eZY-IyppaOBeY66-RAEN2bl5Ja6I9fqF"
-		},
-		"network": "kovan",
-		"bot_address": "0xEb51aE7ce19eA4c05208edDB623F4FB486B04227",
-		"bot_private_key": "0x8be4972ecc4ee6554d9363a8712789cb6567c23abadcf07cdee3935528582d70"
-	},
-	"abi": {
-		"controller": "0xf423e53C07256Ba17cBE1D0dfDb3b60d5EFF5668"
-	},
-	"discord": {
-		"token": "ODE5MDgyNzYwNDI0OTE0OTc0.YEhcQw.4nA2E4i3BNSEZGRGrONOvfcqRoo",
-		"opt_channel": "819114874520993812"
-	}
+    "blockchain": {
+        "api_keys": {
+            "alchemy": "eZY-IyppaOBeY66-RAEN2bl5Ja6I9fqF",
+            "infura": "a0c4911f680a4dd0bf3f7dfac2a4ba08",
+            "etherscan": "VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H",
+            "pocket": "8dbbeecc2126c14cbc48bf6b66f4a33850fa3537"
+        },
+        "alchemy": {
+            "api_key": "eZY-IyppaOBeY66-RAEN2bl5Ja6I9fqF"
+        },
+        "network": "kovan",
+        "bot_address": "0xEb51aE7ce19eA4c05208edDB623F4FB486B04227",
+        "bot_private_key": "0x8be4972ecc4ee6554d9363a8712789cb6567c23abadcf07cdee3935528582d70"
+    },
+    "abi": {
+        "controller": "0xf423e53C07256Ba17cBE1D0dfDb3b60d5EFF5668"
+    },
+    "discord": {
+        "token": "ODE5MDgyNzYwNDI0OTE0OTc0.YEhcQw.4nA2E4i3BNSEZGRGrONOvfcqRoo",
+        "opt_channel": "819114874520993812"
+    }
 }
