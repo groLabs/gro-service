@@ -10,10 +10,6 @@ const {
 } = require('../common/chainUtil');
 const { pendingTransactions } = require('../common/storage');
 const { ETH_DECIMAL, div } = require('../common/digitalUtil');
-const {
-    sendMessageToOPSChannel,
-    sendMessageWithFormat,
-} = require('../common/discord');
 const { sendMessage, DISCORD_CHANNELS } = require('../discord/discordService');
 const { SettingError } = require('../common/customErrors');
 const {
@@ -21,13 +17,13 @@ const {
     pnlTrigger,
     rebalanceTrigger,
     harvestOneTrigger,
-} = require('../jobs/triggerHandler');
+} = require('../handler/triggerHandler');
 const {
     invest,
     execPnl,
     rebalance,
     harvest,
-} = require('../jobs/actionHandler');
+} = require('../handler/actionHandler');
 const logger = require('../common/logger');
 const config = require('config');
 const provider = getDefaultProvider();
@@ -135,9 +131,12 @@ const checkLongPendingTransactions = async function () {
                 .getTransactionReceipt(hash)
                 .catch((err) => {
                     logger.error(err);
-                    sendMessageToOPSChannel(
-                        `${type} ${hash} getTransactionReceipt error.`
-                    );
+                    sendMessage(DISCORD_CHANNELS.botLogs, {
+                        type: 'Bot Pending Transactions',
+                        timestamp: new Date(),
+                        params: botAccount,
+                        result: `${type} ${hash} getTransactionReceipt error.`,
+                    });
                     return null;
                 });
             const timestamps = Date.now() - oldTransaction.createdTime;
@@ -173,10 +172,20 @@ const checkLongPendingTransactions = async function () {
             pendingTransactions.delete(type);
 
             if (transactionReceipt.status == 1) {
-                sendMessageToOPSChannel(`${type} ${hash} successfully.`);
+                sendMessage(DISCORD_CHANNELS.botLogs, {
+                    type: 'Bot Pending Transactions',
+                    timestamp: new Date(),
+                    params: botAccount,
+                    result: `${type} ${hash} successfully.`,
+                });
                 logger.info(`${type} ${hash} mined.`);
             } else {
-                sendMessageToOPSChannel(`${type} ${hash} reverted.`);
+                sendMessage(DISCORD_CHANNELS.botLogs, {
+                    type: 'Bot Pending Transactions',
+                    timestamp: new Date(),
+                    params: botAccount,
+                    result: `${type} ${hash} reverted.`,
+                });
                 logger.info(`${type} ${hash} reverted.`);
             }
         });
@@ -195,7 +204,7 @@ const investTriggerScheduler = async function () {
         if (!currectBlockNumber) return;
 
         await syncNounce();
-        await invest(currectBlockNumber, triggerResult.params);
+        //await invest(currectBlockNumber, triggerResult.params);
     });
 };
 
@@ -227,7 +236,7 @@ const rebalanceTriggerScheduler = async function () {
         if (!currectBlockNumber) return;
 
         await syncNounce();
-        await rebalance(currectBlockNumber, triggerResult.params);
+        //await rebalance(currectBlockNumber, triggerResult.params);
     });
 };
 
@@ -243,19 +252,19 @@ const harvestTriggerScheduler = async function () {
         if (!currectBlockNumber) return;
 
         await syncNounce();
-        await harvest(currectBlockNumber, triggerResult.params);
+        //await harvest(currectBlockNumber, triggerResult.params);
     });
 };
 
-const startAllJobs = function () {
+const startRegularJobs = function () {
     checkBotAccountBalance();
     investTriggerScheduler();
     harvestTriggerScheduler();
     pnlTriggerScheduler();
     rebalanceTriggerScheduler();
-    //checkLongPendingTransactions();
+    checkLongPendingTransactions();
 };
 
 module.exports = {
-    startAllJobs,
+    startRegularJobs,
 };

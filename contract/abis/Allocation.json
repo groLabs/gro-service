@@ -1,0 +1,658 @@
+{
+    "contractName": "Allocation",
+    "abi": [
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "oldGovernance",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "newGovernance",
+                    "type": "address"
+                }
+            ],
+            "name": "AcceptGovernance",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "oldController",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "newController",
+                    "type": "address"
+                }
+            ],
+            "name": "ChangeController",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "user",
+                    "type": "address"
+                }
+            ],
+            "name": "NewWhitelist",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "user",
+                    "type": "address"
+                }
+            ],
+            "name": "RemoveWhitelist",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "pendingGovernance",
+                    "type": "address"
+                }
+            ],
+            "name": "SetPendingGovernance",
+            "type": "event"
+        },
+        {
+            "inputs": [],
+            "name": "DEFAULT_DECIMALS",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "DEFAULT_DECIMALS_FACTOR",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "PERCENTAGE_DECIMALS",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "PERCENTAGE_DECIMAL_FACTOR",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "PRICE_DECIMALS",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "PRICE_DECIMAL_FACTOR",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "acceptGovernance",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "user",
+                    "type": "address"
+                }
+            ],
+            "name": "addToWhitelist",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "utilisationRatio",
+                    "type": "uint256"
+                }
+            ],
+            "name": "calcStrategyPercent",
+            "outputs": [
+                {
+                    "internalType": "uint256[]",
+                    "name": "targetPercent",
+                    "type": "uint256[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256",
+                            "name": "totalCurrentAssetsUsd",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "lifeguardCurrentAssetsUsd",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "vaultCurrentAssets",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "vaultCurrentAssetsUsd",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "rebalanceThreshold",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "utilisationRatio",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "targetBuffer",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "stablePercents",
+                            "type": "uint256[]"
+                        }
+                    ],
+                    "internalType": "struct SystemState",
+                    "name": "sysState",
+                    "type": "tuple"
+                },
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256[]",
+                            "name": "stablecoinExposure",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "protocolExposure",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "bool",
+                            "name": "stablecoinExposed",
+                            "type": "bool"
+                        },
+                        {
+                            "internalType": "bool",
+                            "name": "protocolExposed",
+                            "type": "bool"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "curveIndex",
+                            "type": "uint256"
+                        }
+                    ],
+                    "internalType": "struct ExposureState",
+                    "name": "expState",
+                    "type": "tuple"
+                }
+            ],
+            "name": "calcSystemTargetDelta",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256[]",
+                            "name": "strategyTargetRatio",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "bool",
+                            "name": "needProtocolWithdrawal",
+                            "type": "bool"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "protocolExposedIndex",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "protocolWithdrawalUsd",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "int256[]",
+                            "name": "stablecoinExposedDeltaUsd",
+                            "type": "int256[]"
+                        },
+                        {
+                            "components": [
+                                {
+                                    "internalType": "uint256",
+                                    "name": "swapInTotalAmountUsd",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "internalType": "uint256[]",
+                                    "name": "swapInAmounts",
+                                    "type": "uint256[]"
+                                },
+                                {
+                                    "internalType": "uint256[]",
+                                    "name": "swapInAmountsUsd",
+                                    "type": "uint256[]"
+                                },
+                                {
+                                    "internalType": "uint256[]",
+                                    "name": "swapOutPercents",
+                                    "type": "uint256[]"
+                                },
+                                {
+                                    "internalType": "uint256",
+                                    "name": "lifeguardTargetUsd",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "internalType": "uint256[]",
+                                    "name": "vaultsTargetUsd",
+                                    "type": "uint256[]"
+                                },
+                                {
+                                    "internalType": "int256[]",
+                                    "name": "vaultsTargetDeltaUsd",
+                                    "type": "int256[]"
+                                }
+                            ],
+                            "internalType": "struct StablecoinAllocationState",
+                            "name": "stableState",
+                            "type": "tuple"
+                        }
+                    ],
+                    "internalType": "struct AllocationState",
+                    "name": "allState",
+                    "type": "tuple"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256",
+                            "name": "totalCurrentAssetsUsd",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "lifeguardCurrentAssetsUsd",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "vaultCurrentAssets",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "vaultCurrentAssetsUsd",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "rebalanceThreshold",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "utilisationRatio",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "targetBuffer",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "stablePercents",
+                            "type": "uint256[]"
+                        }
+                    ],
+                    "internalType": "struct SystemState",
+                    "name": "sysState",
+                    "type": "tuple"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "onlySwapOut",
+                    "type": "bool"
+                }
+            ],
+            "name": "calcVaultTargetDelta",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256",
+                            "name": "swapInTotalAmountUsd",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "swapInAmounts",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "swapInAmountsUsd",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "swapOutPercents",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "lifeguardTargetUsd",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "vaultsTargetUsd",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "int256[]",
+                            "name": "vaultsTargetDeltaUsd",
+                            "type": "int256[]"
+                        }
+                    ],
+                    "internalType": "struct StablecoinAllocationState",
+                    "name": "",
+                    "type": "tuple"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "govern",
+                    "type": "address"
+                }
+            ],
+            "name": "changeGovernance",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "controller",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "exposureBufferTarget",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "governance",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "user",
+                    "type": "address"
+                }
+            ],
+            "name": "inWhitelist",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "pendingGovernance",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "user",
+                    "type": "address"
+                }
+            ],
+            "name": "removeFromWhitelist",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "newController",
+                    "type": "address"
+                }
+            ],
+            "name": "setController",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_exposureBufferTarget",
+                    "type": "uint256"
+                }
+            ],
+            "name": "setExposureBufferTarget",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_swapThreshold",
+                    "type": "uint256"
+                }
+            ],
+            "name": "setSwapThreshold",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_tertiaryStrategyThreshold",
+                    "type": "uint256"
+                }
+            ],
+            "name": "setTertiaryStrategyThreshold",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "swapThreshold",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "tertiaryStrategyThreshold",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "whitelist",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ]
+}

@@ -3,8 +3,8 @@ const { ethers } = require('ethers');
 const {
     getDepositHandler,
     getWithdrawHandler,
-    getGroVault,
-    getPowerD,
+    getGvt: getGroVault,
+    getPwrd: getPowerD,
 } = require('../contract/allContracts');
 const { getDefaultProvider } = require('../common/chainUtil');
 const { ContractCallError } = require('../common/customErrors');
@@ -219,12 +219,16 @@ const getPowerDTransferHistories = async function (account) {
 };
 
 const getTransactionHistories = async function (account) {
-    const groVault = await getGroVaultTransferHistories(account);
-    const powerD = await getPowerDTransferHistories(account);
-
-    const depositLogs = await getDepositHistories(account);
-    const withdrawLogs = await getWithdrawHistories(account);
-
+    let promises = [];
+    promises.push(getGroVaultTransferHistories(account));
+    promises.push(getPowerDTransferHistories(account));
+    promises.push(getDepositHistories(account));
+    promises.push(getWithdrawHistories(account));
+    let result = await Promise.all(promises);
+    const powerD = result[1];
+    const depositLogs = result[2];
+    const groVault = result[0];
+    const withdrawLogs = result[3];
     groVault.deposit.push(...depositLogs.groVault);
     powerD.deposit.push(...depositLogs.powerD);
 
@@ -234,10 +238,20 @@ const getTransactionHistories = async function (account) {
 };
 
 const generateReport = async function (account) {
-    const datas = await getTransactionHistories(account);
-    logger.info(`${account} historical: ${JSON.stringify(datas)}`);
+    let promises = [];
+    promises.push(getTransactionHistories(account));
+    promises.push(getDefaultProvider().getBlock());
+    promises.push(getPowerD().getAssets(account));
+    promises.push(getGroVault().getAssets(account));
+    const results = await Promise.all(promises);
+    const data = results[0];
+    const latestBlock = results[1];
+    const pwrdBalance = new BN(results[2].toString());
+    const gvtBalance = new BN(results[3].toString());
+
+    logger.info(`${account} historical: ${JSON.stringify(data)}`);
     const result = {
-        current_timestamp: Date.now() + '',
+        current_timestamp: latestBlock.timestamp.toString(),
         launch_timestamp: launchTime,
         network: process.env.NODE_ENV,
         amount_added: {},
@@ -252,20 +266,20 @@ const generateReport = async function (account) {
     // calculate groVault deposit & withdraw
     let groVaultDepositAmount = new BN(0);
     let groVaultWithdrawAmount = new BN(0);
-    datas.groVault.deposit.forEach((log) => {
+    data.groVault.deposit.forEach((log) => {
         groVaultDepositAmount = groVaultDepositAmount.plus(log.amount);
     });
-    datas.groVault.withdraw.forEach((log) => {
+    data.groVault.withdraw.forEach((log) => {
         groVaultWithdrawAmount = groVaultWithdrawAmount.plus(log.amount);
     });
 
     // calcuate powerd deposti & withdraw
     let powerDDepositAmount = new BN(0);
     let powerDWithdrawAmount = new BN(0);
-    datas.powerD.deposit.forEach((log) => {
+    data.powerD.deposit.forEach((log) => {
         powerDDepositAmount = powerDDepositAmount.plus(log.amount);
     });
-    datas.powerD.withdraw.forEach((log) => {
+    data.powerD.withdraw.forEach((log) => {
         powerDWithdrawAmount = powerDWithdrawAmount.plus(log.amount);
     });
     // amount_added
@@ -325,12 +339,6 @@ const generateReport = async function (account) {
     );
 
     // current_balance
-    const pwrdBalance = new BN(
-        (await getPowerD().getAssets(account)).toString()
-    );
-    const gvtBalance = new BN(
-        (await getGroVault().getAssets(account)).toString()
-    );
     const totalBalance = pwrdBalance.plus(gvtBalance);
     result.current_balance.pwrd = div(
         pwrdBalance,

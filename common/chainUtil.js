@@ -4,7 +4,6 @@ const { ethers } = require('ethers');
 const { NonceManager } = require('@ethersproject/experimental');
 const { SettingError } = require('./customErrors');
 const { pendingTransactions } = require('./storage');
-const { sendMessageToOPSChannel } = require('./discord');
 const {
     sendMessage,
     DISCORD_CHANNELS,
@@ -57,22 +56,22 @@ const botPrivateKey = process.env.BOT_PRIVATE_KEY;
 //   return socketProvider
 // }
 
-// const getRpcProvider = function () {
-//   if (rpcProvider) {
-//     return rpcProvider
-//   }
-//   if (!config.has('blockchain.alchemy.api_key')) {
-//     const err = new SettingError(
-//       'Config:blockchain.alchemy.api_key not setted.',
-//     )
-//     logger.error(err)
-//     return
-//   }
-//   logger.info('Create a new Rpc provider.')
-//   const apiKey = config.get('blockchain.alchemy.api_key')
-//   rpcProvider = new ethers.providers.AlchemyProvider(network, apiKey)
-//   return rpcProvider
-// }
+const getRpcProvider = function () {
+    if (rpcProvider) {
+        return rpcProvider;
+    }
+    if (!config.has('blockchain.api_keys.alchemy')) {
+        const err = new SettingError(
+            'Config:blockchain.api_keys.alchemy not setted.'
+        );
+        logger.error(err);
+        return;
+    }
+    logger.info('Create a new Rpc provider.');
+    const apiKey = config.get('blockchain.api_keys.alchemy');
+    rpcProvider = new ethers.providers.AlchemyProvider(network, apiKey);
+    return rpcProvider;
+};
 
 const getDefaultProvider = function () {
     if (defaultProvider) {
@@ -90,7 +89,7 @@ const getDefaultProvider = function () {
 
 const getBotWallet = function () {
     if (botWallet) return botWallet;
-    const provider = getDefaultProvider();
+    const provider = getRpcProvider();
     botWallet = new ethers.Wallet(botPrivateKey, provider);
     return botWallet;
 };
@@ -187,6 +186,7 @@ const checkPendingTransactions = async function () {
 module.exports = {
     getDefaultProvider,
     getNonceManager,
+    getRpcProvider,
     syncNounce,
     checkPendingTransactions,
 };

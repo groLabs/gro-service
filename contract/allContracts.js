@@ -9,11 +9,14 @@ const nonceManager = getNonceManager();
 
 let controller;
 let insurance;
+let exposure;
 let pnl;
-let groVault;
-let powerD;
+let gvt;
+let pwrd;
 let depositHandler;
 let withdrawHandler;
+let lifeguard;
+let buoy;
 let vaults = [];
 let strategyLength = [];
 
@@ -23,8 +26,9 @@ const initAllContracts = async function () {
     promises.push(initInsurance());
     promises.push(initPnl());
     promises.push(initVaults());
-    promises.push(initGroVaultToken());
-    promises.push(initPowerDToken());
+    promises.push(initGvt());
+    promises.push(initPwrd());
+    promises.push(initLifeguard());
     promises.push(initDepositHandler());
     promises.push(initWithdrawHandler());
     await Promise.all(promises);
@@ -33,11 +37,11 @@ const initAllContracts = async function () {
 
 const initController = function () {
     if (!config.has('contracts.controller')) {
-        const err = new SettingError('Config:contracts.controller not setted.');
+        const err = new SettingError('Config:abi.controller not setted.');
         logger.error(err);
         throw err;
     }
-    const controllerABI = require('./abis/IController.json').abi;
+    const controllerABI = require('./abis/Controller.json').abi;
     const controllerAddress = config.get('contracts.controller');
     controller = new ethers.Contract(
         controllerAddress,
@@ -48,7 +52,7 @@ const initController = function () {
 };
 
 const initInsurance = async function () {
-    const insuranceABI = require('./abis/IInsurance.json').abi;
+    const insuranceABI = require('./abis/Insurance.json').abi;
 
     const insuranceAddress = await controller.insurance();
     logger.info(`insurance ${insuranceAddress}`);
@@ -57,17 +61,20 @@ const initInsurance = async function () {
         insuranceABI,
         nonceManager
     );
+    const exposureABI = require('./abis/Exposure.json').abi;
+    const exposureAddress = await insurance.exposure();
+    exposure = new ethers.Contract(exposureAddress, exposureABI, nonceManager);
 };
 
 const initPnl = async function () {
-    const pnlABI = require('./abis/IPnL.json').abi;
+    const pnlABI = require('./abis/PnL.json').abi;
     const pnlAddress = await controller.pnl();
     logger.info(`pnl ${pnlAddress}`);
     pnl = new ethers.Contract(pnlAddress, pnlABI, nonceManager);
 };
 
 const initVaults = async function () {
-    const vaultsABI = require('./abis/IVault.json').abi;
+    const vaultsABI = require('./abis/VaultAdaptorYearnV2_032.json').abi;
     const vaultAddresses = await controller.vaults();
     let strategies = [];
     vaultAddresses.forEach((address) => {
@@ -79,18 +86,18 @@ const initVaults = async function () {
     strategyLength = await Promise.all(strategies);
 };
 
-const initGroVaultToken = async function () {
-    const groVaultABI = require('./abis/NonRebasingGToken.json').abi;
-    const groVaultAddress = await controller.gvt();
-    logger.info(`groVault ${groVaultAddress}`);
-    groVault = new ethers.Contract(groVaultAddress, groVaultABI, nonceManager);
+const initGvt = async function () {
+    const gvtABI = require('./abis/NonRebasingGToken.json').abi;
+    const gvtAddresses = await controller.gvt();
+    logger.info(`gvt ${gvtAddresses}`);
+    gvt = new ethers.Contract(gvtAddresses, gvtABI, nonceManager);
 };
 
-const initPowerDToken = async function () {
-    const powerDABI = require('./abis/RebasingGToken.json').abi;
-    const powerDAddress = await controller.pwrd();
-    logger.info(`powerD ${powerDAddress}`);
-    powerD = new ethers.Contract(powerDAddress, powerDABI, nonceManager);
+const initPwrd = async function () {
+    const pwrdABI = require('./abis/RebasingGToken.json').abi;
+    const pwrdAddresses = await controller.pwrd();
+    logger.info(`pwrd ${pwrdAddresses}`);
+    pwrd = new ethers.Contract(pwrdAddresses, pwrdABI, nonceManager);
 };
 
 const initDepositHandler = async function () {
@@ -115,12 +122,31 @@ const initWithdrawHandler = async function () {
     );
 };
 
+const initLifeguard = async function () {
+    const lifeguardABI = require('./abis/LifeGuard3Pool.json').abi;
+    const lifeguardAddresses = await controller.lifeGuard();
+    logger.info(`lifeguard ${lifeguardAddresses}`);
+    lifeguard = new ethers.Contract(
+        lifeguardAddresses,
+        lifeguardABI,
+        nonceManager
+    );
+    const buoyABI = require('./abis/Buoy3Pool.json').abi;
+    const buoyAddresses = await lifeguard.buoy();
+    logger.info(`bouy ${buoyAddresses}`);
+    buoy = new ethers.Contract(buoyAddresses, buoyABI, nonceManager);
+};
+
 const getController = function () {
     return controller;
 };
 
 const getInsurance = function () {
     return insurance;
+};
+
+const getExposure = function () {
+    return exposure;
 };
 
 const getVaults = function () {
@@ -131,16 +157,20 @@ const getPnl = function () {
     return pnl;
 };
 
+const getGvt = function () {
+    return gvt;
+};
+
+const getPwrd = function () {
+    return pwrd;
+};
+
+const getLifeguard = function () {
+    return lifeguard;
+};
+
 const getStrategyLength = function () {
     return strategyLength;
-};
-
-const getGroVault = function () {
-    return groVault;
-};
-
-const getPowerD = function () {
-    return powerD;
 };
 
 const getDepositHandler = function () {
@@ -151,15 +181,22 @@ const getWithdrawHandler = function () {
     return withdrawHandler;
 };
 
+const getBuoy = function () {
+    return buoy;
+};
+
 module.exports = {
     initAllContracts,
     getController,
     getInsurance,
+    getExposure,
     getVaults,
     getPnl,
-    getStrategyLength,
-    getGroVault,
-    getPowerD,
+    getGvt,
+    getPwrd,
     getDepositHandler,
     getWithdrawHandler,
+    getLifeguard,
+    getStrategyLength,
+    getBuoy,
 };
