@@ -1,13 +1,13 @@
-'use strict'
+'use strict';
 
-const { getInsurance, getPnl } = require('../contract/allContracts')
-const { pendingTransactions } = require('../common/storage')
-const logger = require('../common/logger')
+const { getInsurance, getPnl } = require('../contract/allContracts');
+const { pendingTransactions } = require('../common/storage');
+const logger = require('../common/logger');
 
 const invest = async function (blockNumber, investParams) {
-    const investResponse = await getInsurance().invest(investParams)
+    const investResponse = await getInsurance().invest(investParams);
 
-    if (!investResponse.hash) return
+    if (!investResponse.hash) return;
 
     pendingTransactions.set('invest', {
         blockNumber,
@@ -24,17 +24,17 @@ const invest = async function (blockNumber, investParams) {
             chainId: investResponse.chainId,
             from: investResponse.from,
         },
-    })
-}
+    });
+};
 
 const harvest = async function (blockNumber, harvestStrategies) {
     for (let i = 0; i < harvestStrategies.length; i++) {
-        const strategyInfo = harvestStrategies[i]
-        const key = `harvest-${strategyInfo.vault.address}-${strategyInfo.strategyIndex}`
+        const strategyInfo = harvestStrategies[i];
+        const key = `harvest-${strategyInfo.vault.address}-${strategyInfo.strategyIndex}`;
         const harvestResult = await strategyInfo.vault.strategyHarvest(
             strategyInfo.strategyIndex,
             strategyInfo.callCost
-        )
+        );
         pendingTransactions.set(key, {
             blockNumber,
             reSendTimes: 0,
@@ -50,14 +50,14 @@ const harvest = async function (blockNumber, harvestStrategies) {
                 chainId: harvestResult.chainId,
                 from: harvestResult.from,
             },
-        })
+        });
     }
-}
+};
 
 const execPnl = async function (blockNumber) {
-    const pnl = getPnl()
-    logger.info(`pnl address ${pnl.address}`)
-    const pnlResponse = await pnl.execPnL(0)
+    const pnl = getPnl();
+    logger.info(`pnl address ${pnl.address}`);
+    const pnlResponse = await pnl.execPnL(0);
     pendingTransactions.set('pnl', {
         blockNumber,
         reSendTimes: 0,
@@ -73,21 +73,21 @@ const execPnl = async function (blockNumber) {
             chainId: pnlResponse.chainId,
             from: pnlResponse.from,
         },
-    })
-}
+    });
+};
 
 const rebalance = async function (blockNumber, rebalanceParams) {
-    let rebalanceReponse
-    let transactionKey
+    let rebalanceReponse;
+    let transactionKey;
     if (rebalanceParams[0]) {
-        rebalanceReponse = await getInsurance().rebalance()
-        transactionKey = 'rebalance'
+        rebalanceReponse = await getInsurance().rebalance();
+        transactionKey = 'rebalance';
     } else {
-        rebalanceReponse = await getInsurance().topup()
-        transactionKey = 'topup'
+        rebalanceReponse = await getInsurance().topup();
+        transactionKey = 'topup';
     }
 
-    if (!rebalanceReponse.hash) return
+    if (!rebalanceReponse.hash) return;
 
     pendingTransactions.set(transactionKey, {
         blockNumber,
@@ -104,33 +104,33 @@ const rebalance = async function (blockNumber, rebalanceParams) {
             chainId: rebalanceReponse.chainId,
             from: rebalanceReponse.from,
         },
-    })
-}
+    });
+};
 
 const execActions = async function (blockNumber, triggerResult) {
     // Handle invest
     if (triggerResult[0].needCall) {
-        logger.info('invest')
-        await invest(blockNumber, triggerResult[0].params)
+        logger.info('invest');
+        await invest(blockNumber, triggerResult[0].params);
     }
 
     // Handle harvest
     if (triggerResult[1].needCall) {
-        logger.info('harvest')
-        await harvest(blockNumber, triggerResult[1].params)
+        logger.info('harvest');
+        await harvest(blockNumber, triggerResult[1].params);
     }
 
     // Handle Pnl
     if (triggerResult[2].needCall) {
-        logger.info('pnl')
-        await execPnl(blockNumber)
+        logger.info('pnl');
+        await execPnl(blockNumber);
     }
 
     if (triggerResult[3].needCall) {
-        logger.info('rebalance')
-        await rebalance(blockNumber, triggerResult[3].params)
+        logger.info('rebalance');
+        await rebalance(blockNumber, triggerResult[3].params);
     }
-}
+};
 
 module.exports = {
     invest,
@@ -138,4 +138,4 @@ module.exports = {
     execPnl,
     rebalance,
     execActions,
-}
+};

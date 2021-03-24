@@ -4,7 +4,7 @@
         "launch_timestamp": "1616462037408"
     },
     "trigger_scheduler": {
-        "pending_transaction_check": "* 30 * * * *",
+        "pending_transaction_check": "5 30 * * * *",
         "bot_balance_check": "10 * * * * *",
         "invest": "0 * * * * *",
         "harvest": "15 * * * * *",

@@ -1,22 +1,22 @@
-const express = require('express')
-const router = express.Router()
-const { wrapAsync } = require('../common/wrap')
-const { param } = require('express-validator')
-const { ParameterError } = require('../common/customErrors')
-const { pendingTransactions } = require('../services/jobService')
-const { generateReport } = require('../services/accountService')
-const { validate } = require('../common/validate')
-const AUTH = 'Bear NzU3ODQ0MDczNTg2NjIyNDc2.jnQOs1-ul7W94nBtV9wIJwBx5AA'
+const express = require('express');
+const router = express.Router();
+const { wrapAsync } = require('../common/wrap');
+const { param } = require('express-validator');
+const { ParameterError } = require('../common/customErrors');
+const { pendingTransactions } = require('../services/jobService');
+const { generateReport } = require('../services/accountService');
+const { validate } = require('../common/validate');
+const AUTH = 'Bear NzU3ODQ0MDczNTg2NjIyNDc2.jnQOs1-ul7W94nBtV9wIJwBx5AA';
 
 /* GET users listing. */
 router.get('/pending_transactions', function (req, res, next) {
-    const passedAuth = req.headers['authorization']
+    const passedAuth = req.headers['authorization'];
     if (passedAuth != AUTH) {
-        res.status(401).send('401 Unauthorized')
-        return
+        res.status(401).send('401 Unauthorized');
+        return;
     }
-    res.json(pendingTransactions)
-})
+    res.json(pendingTransactions);
+});
 
 /**
  * @api {get} /stats/user/:accountAddress?network=xxx Get /stats/user/:accountAddress?network=xxx
@@ -79,18 +79,18 @@ router.get(
             ),
     ]),
     wrapAsync(async function (req, res, next) {
-        const passedAuth = req.headers['authorization']
+        const passedAuth = req.headers['authorization'];
         if (passedAuth != AUTH) {
-            res.status(401).send('401 Unauthorized')
-            return
+            res.status(401).send('401 Unauthorized');
+            return;
         }
-        const network = req.query.network || ''
+        const network = req.query.network || '';
         if (network.toLowerCase() != process.env.NODE_ENV.toLowerCase()) {
-            throw new ParameterError('Parameter network failed.')
+            throw new ParameterError('Parameter network failed.');
         }
-        const result = await generateReport(req.params.accountAddress)
-        res.json({ gro_personal_position: result })
+        const result = await generateReport(req.params.accountAddress);
+        res.json({ gro_personal_position: result });
     })
-)
+);
 
-module.exports = router
+module.exports = router;

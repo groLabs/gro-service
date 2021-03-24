@@ -1,8 +1,12 @@
 'use strict'
 const { ethers } = require('ethers')
 const {
+<<<<<<< HEAD
     getDepositHandler,
     getWithdrawHandler,
+=======
+    getController,
+>>>>>>> 8278840... [feat] LH- 25.03.21 - PROT-598: add personal stats endpoint
     getGroVault,
     getPowerD,
 } = require('../contract/allContracts')
@@ -71,17 +75,28 @@ const getEventInfo = function (log) {
 }
 
 const getFilter = function (account, type) {
+<<<<<<< HEAD
     const depositHandler = getDepositHandler()
     const withdrawHandler = getWithdrawHandler()
+=======
+    const controller = getController()
+>>>>>>> 8278840... [feat] LH- 25.03.21 - PROT-598: add personal stats endpoint
     const groVault = getGroVault()
     const powerD = getPowerD()
     let filter
     switch (type) {
         case EVENT_TYPE.deposit:
+<<<<<<< HEAD
             filter = depositHandler.filters.LogNewDeposit(account)
             break
         case EVENT_TYPE.withdraw:
             filter = withdrawHandler.filters.LogNewWithdrawal(account)
+=======
+            filter = controller.filters.LogNewDeposit(account)
+            break
+        case EVENT_TYPE.withdraw:
+            filter = controller.filters.LogNewWithdrawal(account)
+>>>>>>> 8278840... [feat] LH- 25.03.21 - PROT-598: add personal stats endpoint
             break
         case EVENT_TYPE.inGvtTransfer:
             filter = groVault.filters.LogTransfer(null, account)
