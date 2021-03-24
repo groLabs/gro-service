@@ -1,92 +1,129 @@
-"use strict";
+'use strict'
 
-const { ethers } = require("ethers");
-const { getNonceManager } = require("../common/chainUtil");
-const { SettingError } = require("../common/customErrors");
-const logger = require("../common/logger");
-const config = require("config");
-const nonceManager = getNonceManager();
+const { ethers } = require('ethers')
+const { getNonceManager } = require('../common/chainUtil')
+const { SettingError } = require('../common/customErrors')
+const logger = require('../common/logger')
+const config = require('config')
+const nonceManager = getNonceManager()
 
-let controller;
-let insurance;
-let pnl;
-let vaults = [];
-let strategyLength = [];
+let controller
+let insurance
+let pnl
+let groVault
+let powerD
+let vaults = []
+let strategyLength = []
 
 const initAllContracts = async function () {
-  initController();
-  const promises = [];
-  promises.push(initInsurance());
-  promises.push(initPnl());
-  promises.push(initVaults());
-  await Promise.all(promises);
-  logger.info(`Init contracts done!.`);
-};
+    initController()
+    const promises = []
+    promises.push(initInsurance())
+    promises.push(initPnl())
+    promises.push(initVaults())
+    promises.push(initGroVaultToken())
+    promises.push(initPowerDToken())
+    await Promise.all(promises)
+    logger.info(`Init contracts done!.`)
+}
 
 const initController = function () {
-  if (!config.has("abi.controller")) {
-    const err = new SettingError("Config:abi.controller not setted.");
-    logger.error(err);
-    throw err;
-  }
-  const controllerABI = require("./abis/IController.json").abi;
-  const controllerAddress = config.get("abi.controller");
-  controller = new ethers.Contract(controllerAddress, controllerABI, nonceManager);
-};
+    if (!config.has('contracts.controller')) {
+        const err = new SettingError('Config:contracts.controller not setted.')
+        logger.error(err)
+        throw err
+    }
+    const controllerABI = require('./abis/IController.json').abi
+    const controllerAddress = config.get('contracts.controller')
+    controller = new ethers.Contract(
+        controllerAddress,
+        controllerABI,
+        nonceManager
+    )
+    logger.info('controller done!')
+}
 
 const initInsurance = async function () {
-  const insuranceABI = require("./abis/IInsurance.json").abi;
+    const insuranceABI = require('./abis/IInsurance.json').abi
 
-  const insuranceAddress = await controller.insurance();
-  logger.info(`insurance ${insuranceAddress}`);
-  insurance = new ethers.Contract(insuranceAddress, insuranceABI, nonceManager);
-};
+    const insuranceAddress = await controller.insurance()
+    logger.info(`insurance ${insuranceAddress}`)
+    insurance = new ethers.Contract(
+        insuranceAddress,
+        insuranceABI,
+        nonceManager
+    )
+}
 
 const initPnl = async function () {
-  const pnlABI = require("./abis/IPnL.json").abi;
-  const pnlAddress = await controller.pnl();
-  logger.info(`pnl ${pnlAddress}`);
-  pnl = new ethers.Contract(pnlAddress, pnlABI, nonceManager);
-};
+    const pnlABI = require('./abis/IPnL.json').abi
+    const pnlAddress = await controller.pnl()
+    logger.info(`pnl ${pnlAddress}`)
+    pnl = new ethers.Contract(pnlAddress, pnlABI, nonceManager)
+}
 
 const initVaults = async function () {
-  const vaultsABI = require("./abis/IVault.json").abi;
-  const vaultAddresses = await controller.vaults();
-  let strategies = [];
-  vaultAddresses.forEach((address) => {
-    let vault = new ethers.Contract(address, vaultsABI, nonceManager);
-    logger.info(`vault ${address}`);
-    vaults.push(vault);
-    strategies.push(vault.getStrategiesLength());
-  });
-  strategyLength = await Promise.all(strategies);
-};
+    const vaultsABI = require('./abis/IVault.json').abi
+    const vaultAddresses = await controller.vaults()
+    let strategies = []
+    vaultAddresses.forEach((address) => {
+        let vault = new ethers.Contract(address, vaultsABI, nonceManager)
+        logger.info(`vault ${address}`)
+        vaults.push(vault)
+        strategies.push(vault.getStrategiesLength())
+    })
+    strategyLength = await Promise.all(strategies)
+}
+
+const initGroVaultToken = async function () {
+    const groVaultABI = require('./abis/NonRebasingGToken.json').abi
+    const groVaultAddress = await controller.gvt()
+    logger.info(`groVault ${groVaultAddress}`)
+    groVault = new ethers.Contract(groVaultAddress, groVaultABI, nonceManager)
+}
+
+const initPowerDToken = async function () {
+    const powerDABI = require('./abis/RebasingGToken.json').abi
+    const powerDAddress = await controller.pwrd()
+    logger.info(`powerD ${powerDAddress}`)
+    powerD = new ethers.Contract(powerDAddress, powerDABI, nonceManager)
+}
 
 const getController = function () {
-  return controller;
-};
+    return controller
+}
 
 const getInsurance = function () {
-  return insurance;
-};
+    return insurance
+}
 
 const getVaults = function () {
-  return vaults;
-};
+    return vaults
+}
 
 const getPnl = function () {
-  return pnl;
-};
+    return pnl
+}
 
 const getStrategyLength = function () {
-  return strategyLength;
-};
+    return strategyLength
+}
+
+const getGroVault = function () {
+    return groVault
+}
+
+const getPowerD = function () {
+    return powerD
+}
 
 module.exports = {
-  initAllContracts,
-  getController,
-  getInsurance,
-  getVaults,
-  getPnl,
-  getStrategyLength,
-};
+    initAllContracts,
+    getController,
+    getInsurance,
+    getVaults,
+    getPnl,
+    getStrategyLength,
+    getGroVault,
+    getPowerD,
+}

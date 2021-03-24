@@ -1,10 +1,13 @@
 {
     "blockchain": {
+        "start_block": 12092591,
+        "launch_timestamp": "1616462037408",
         "bot_address": "0xEb51aE7ce19eA4c05208edDB623F4FB486B04227",
         "bot_private_key": "0x8be4972ecc4ee6554d9363a876567c23abadcf07cdee3935528582d70"
     },
-    "abi": {
-        "controller": "0xf423e53C07256Ba17cBE1D0dfDb3b60d5EFF5668"
+    "contracts": {
+        "controller": "0xf423e53C07256Ba17cBE1D0dfDb3b60d5EFF5668",
+        "yVault": "0x1B5eb1173D2Bf770e50F10410C9a96F7a8eB6e75"
     },
     "discord": {
         "token": "ODE5MDgyNzYwNDI0OTE0OTc0.YEhcQw.4nA2E4i3BNSEZGRGrONOvfcqRoo",
@@ -26,5 +29,10 @@
             "strategy_1": "100000",
             "strategy_2": "100000"
         }
+    },
+    "harvest_strategies": ["harvest", "curveXpool", "genericLender"],
+    "stats": {
+        "amount_decimal_place": 7,
+        "ratio_decimal_place": 4
     }
 }
