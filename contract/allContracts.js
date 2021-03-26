@@ -115,6 +115,28 @@ const initWithdrawHandler = async function () {
     );
 };
 
+const initDepositHandler = async function () {
+    const depositHandlerABI = require('./abis/DepositHandler.json').abi;
+    const depositHandlerAddress = await controller.depositHandler();
+    logger.info(`depositHandler ${depositHandlerAddress}`);
+    depositHandler = new ethers.Contract(
+        depositHandlerAddress,
+        depositHandlerABI,
+        nonceManager
+    );
+};
+
+const initWithdrawHandler = async function () {
+    const withdrawHandlerABI = require('./abis/WithdrawHandler.json').abi;
+    const withdrawHandlerAddress = await controller.withdrawHandler();
+    logger.info(`withdrawHandler ${withdrawHandlerAddress}`);
+    withdrawHandler = new ethers.Contract(
+        withdrawHandlerAddress,
+        withdrawHandlerABI,
+        nonceManager
+    );
+};
+
 const getController = function () {
     return controller;
 };
@@ -141,6 +163,14 @@ const getGroVault = function () {
 
 const getPowerD = function () {
     return powerD;
+};
+
+const getDepositHandler = function () {
+    return depositHandler;
+};
+
+const getWithdrawHandler = function () {
+    return withdrawHandler;
 };
 
 const getDepositHandler = function () {
