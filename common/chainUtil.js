@@ -3,19 +3,23 @@
 const { ethers } = require('ethers')
 const { NonceManager } = require('@ethersproject/experimental')
 const { SettingError } = require('./customErrors')
+const { pendingTransactions } = require('./storage')
+const { sendMessageToOPSChannel } = require('./discord')
 const logger = require('./logger')
 const config = require('config')
 
 if (!config.has('blockchain.network')) {
-  const err = new SettingError('Config:blockchain.network not set.')
-  logger.error(err)
-  throw err
+    const err = new SettingError('Config:blockchain.network not set.')
+    logger.error(err)
+    throw err
 }
 
-if (!config.has('blockchain.bot_private_key')) {
-  const err = new SettingError('Config:blockchain.bot_private_key not set.')
-  logger.error(err)
-  throw err
+if (!process.env.BOT_PRIVATE_KEY) {
+    const err = new SettingError(
+        'Environment variable BOT_PRIVATE_KEY are not set.'
+    )
+    logger.error(err)
+    throw err
 }
 
 let defaultProvider = undefined
@@ -26,7 +30,7 @@ let botWallet = undefined
 
 const network = config.get('blockchain.network')
 logger.info('network: ' + network)
-const botPrivateKey = config.get('blockchain.bot_private_key')
+const botPrivateKey = process.env.BOT_PRIVATE_KEY
 
 // const getSocketProvider = function () {
 //   if (socketProvider) {
@@ -66,36 +70,99 @@ const botPrivateKey = config.get('blockchain.bot_private_key')
 // }
 
 const getDefaultProvider = function () {
-  if (defaultProvider) {
+    if (defaultProvider) {
+        return defaultProvider
+    }
+    logger.info('Create new default provider.')
+    let options = {}
+    if (config.has('blockchain.api_keys')) {
+        options = config.get('blockchain.api_keys')
+    }
+    logger.info('Create a new default provider.')
+    defaultProvider = new ethers.providers.getDefaultProvider(network, options)
     return defaultProvider
-  }
-  logger.info('Create new default provider.')
-  let options = {}
-  if (config.has('blockchain.api_keys')) {
-    options = config.get('blockchain.api_keys')
-  }
-  logger.info('Create a new default provider.')
-  defaultProvider = new ethers.providers.getDefaultProvider(network, options)
-  return defaultProvider
 }
 
 const getBotWallet = function () {
-  if (botWallet) return botWallet
-  const provider = getDefaultProvider()
-  botWallet = new ethers.Wallet(botPrivateKey, provider)
-  return botWallet
+    if (botWallet) return botWallet
+    const provider = getDefaultProvider()
+    botWallet = new ethers.Wallet(botPrivateKey, provider)
+    return botWallet
 }
 
 const getNonceManager = function () {
-  if (nonceManager) {
+    if (nonceManager) {
+        return nonceManager
+    }
+    const wallet = getBotWallet()
+    nonceManager = new NonceManager(wallet)
     return nonceManager
-  }
-  const wallet = getBotWallet()
-  nonceManager = new NonceManager(wallet)
-  return nonceManager
+}
+
+const syncNounce = async function () {
+    // Get nonce from chain
+    const transactionCountInChain = await nonceManager
+        .getTransactionCount()
+        .catch((error) => {
+            logger.error(error)
+            return -1
+        })
+    if (transactionCountInChain == -1) {
+        logger.error('Get transactionCountInChain failed.')
+        return
+    }
+    // Get local nonce
+    const transactionCountInLocal = await nonceManager
+        .getTransactionCount('pending')
+        .catch((error) => {
+            logger.error(error)
+            return -1
+        })
+    if (transactionCountInLocal == -1) {
+        logger.error('Get transactionCountInLocal failed.')
+        return
+    }
+    // Adjust local nonce
+    if (transactionCountInChain > transactionCountInLocal) {
+        nonceManager.setTransactionCount(transactionCountInChain)
+        logger.info(`Adjust local nonce to ${transactionCountInChain}.`)
+    }
+}
+
+const checkPendingTransactions = async function () {
+    const transactionTypes = pendingTransactions.keys()
+    if (transactionTypes == 0) return
+
+    Array.from(transactionTypes).forEach(async (type) => {
+        const transactionInfo = pendingTransactions.get(type)
+        const hash = transactionInfo.hash
+        const transactionReceipt = await defaultProvider
+            .getTransactionReceipt(hash)
+            .catch((err) => {
+                logger.error(err)
+                sendMessageToOPSChannel(
+                    `${type} ${hash} getTransactionReceipt error.`
+                )
+                return null
+            })
+        if (!transactionReceipt) return
+
+        // remove type from pending transactions
+        pendingTransactions.delete(type)
+
+        if (transactionReceipt.status == 1) {
+            sendMessageToOPSChannel(`${type} ${hash} successfully.`)
+            logger.info(`${type} ${hash} mined.`)
+        } else {
+            sendMessageToOPSChannel(`${type} ${hash} reverted.`)
+            logger.info(`${type} ${hash} reverted.`)
+        }
+    })
 }
 
 module.exports = {
-  getDefaultProvider,
-  getNonceManager,
+    getDefaultProvider,
+    getNonceManager,
+    syncNounce,
+    checkPendingTransactions,
 }

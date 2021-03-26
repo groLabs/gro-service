@@ -1,11 +1,9 @@
 {
     "blockchain": {
-        "network": "http://localhost:8545",
-        "bot_address": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
-        "bot_private_key": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+        "network": "http://localhost:8545"
     },
-    "abi": {
-        "controller": "0x70e0bA845a1A0F2DA3359C97E0285013525FFC49"
+    "contracts": {
+        "controller": "0x6B76fDA6ceF1bc95F80A83cD7bc4D82AC3e021d1"
     },
     "discord": {
         "token": "ODE5MDgyNzYwNDI0OTE0OTc0.YEhcQw.4nA2E4i3BNSEZGRGrONOvfcqRoo",

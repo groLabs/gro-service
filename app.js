@@ -4,14 +4,14 @@ var express = require('express')
 var path = require('path')
 var cookieParser = require('cookie-parser')
 var logger = require('morgan')
-var { SettingError } = require('./common/customErrors')
+var { SettingError, ParameterError } = require('./common/customErrors')
 var customLogger = require('./common/logger')
 
 var botRouter = require('./routes/bot')
 var statsRouter = require('./routes/stats')
 var scheduler = require('./jobs/scheduler')
 var blockListener = require('./jobs/blockListener')
-var {initAllContracts} = require('./contract/allContracts')
+var { initAllContracts } = require('./contract/allContracts')
 
 var app = express()
 
@@ -30,28 +30,37 @@ app.use('/stats', statsRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  next(createError(404))
+    next(createError(404))
 })
 
 app.use(function handleSettingError(error, req, res, next) {
-  customLogger.error(error)
-  if (error instanceof SettingError) {
-    res.status(400).json({ message: `${error.name}: ${error.message}` })
-  } else {
-    next(error)
-  }
+    customLogger.error(error)
+    if (error instanceof SettingError) {
+        res.status(400).json({ message: `${error.name}: ${error.message}` })
+    } else {
+        next(error)
+    }
+})
+
+app.use(function handleParameterError(error, req, res, next) {
+    customLogger.error(error)
+    if (error instanceof ParameterError) {
+        res.status(400).json({ message: `${error.name}: ${error.message}` })
+    } else {
+        next(error)
+    }
 })
 
 app.use(function handleDefaultError(error, req, res, next) {
-  customLogger.error(`${error.name}: ${error.message}`)
-  res.status(500).json({ message: error.name + ': ' + error.message })
-  next(error)
+    customLogger.error(`${error.name}: ${error.message}`)
+    res.status(500).json({ message: error.name + ': ' + error.message })
+    next(error)
 })
 
 // start the schedule task
 initAllContracts().then((resolve, rejected) => {
-  blockListener.start();
-  // scheduler.startAllJobs();
+    //   blockListener.start();
+    scheduler.startAllJobs()
 })
 
 module.exports = app

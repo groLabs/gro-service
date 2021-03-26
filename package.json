@@ -8,6 +8,7 @@
     },
     "dependencies": {
         "@ethersproject/experimental": "^5.0.10",
+        "bignumber.js": "^9.0.1",
         "config": "^3.3.6",
         "cookie-parser": "~1.4.4",
         "debug": "~2.6.9",
