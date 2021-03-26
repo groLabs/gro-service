@@ -1,7 +1,8 @@
 'use strict'
 const { ethers } = require('ethers')
 const {
-    getController,
+    getDepositHandler,
+    getWithdrawHandler,
     getGroVault,
     getPowerD,
 } = require('../contract/allContracts')
@@ -70,16 +71,17 @@ const getEventInfo = function (log) {
 }
 
 const getFilter = function (account, type) {
-    const controller = getController()
+    const depositHandler = getDepositHandler()
+    const withdrawHandler = getWithdrawHandler()
     const groVault = getGroVault()
     const powerD = getPowerD()
     let filter
     switch (type) {
         case EVENT_TYPE.deposit:
-            filter = controller.filters.LogNewDeposit(account)
+            filter = depositHandler.filters.LogNewDeposit(account)
             break
         case EVENT_TYPE.withdraw:
-            filter = controller.filters.LogNewWithdrawal(account)
+            filter = withdrawHandler.filters.LogNewWithdrawal(account)
             break
         case EVENT_TYPE.inGvtTransfer:
             filter = groVault.filters.LogTransfer(null, account)

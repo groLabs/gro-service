@@ -1,18 +1,17 @@
 {
     "blockchain": {
         "start_block": 12092591,
-        "launch_timestamp": "1616462037408",
-        "bot_address": "0xEb51aE7ce19eA4c05208edDB623F4FB486B04227",
-        "bot_private_key": "0x8be4972ecc4ee6554d9363a876567c23abadcf07cdee3935528582d70"
+        "launch_timestamp": "1616462037408"
     },
-    "contracts": {
-        "controller": "0xf423e53C07256Ba17cBE1D0dfDb3b60d5EFF5668",
-        "yVault": "0x1B5eb1173D2Bf770e50F10410C9a96F7a8eB6e75"
+    "trigger_scheduler": {
+        "pending_transaction_check": "* 30 * * * *",
+        "bot_balance_check": "10 * * * * *",
+        "invest": "0 * * * * *",
+        "harvest": "15 * * * * *",
+        "pnl": "30 * * * * *",
+        "rebalance": "45 * * * * *"
     },
-    "discord": {
-        "token": "ODE5MDgyNzYwNDI0OTE0OTc0.YEhcQw.4nA2E4i3BNSEZGRGrONOvfcqRoo",
-        "opt_channel": "819114874520993812"
-    },
+    "bot_balance_warn": "10000000000",
     "harvest_callcost": {
         "vault_0": {
             "strategy_0": "10000000000",

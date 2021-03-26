@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { wrapAsync } = require('../common/wrap')
 const { param } = require('express-validator')
+const { ParameterError } = require('../common/customErrors')
 const { pendingTransactions } = require('../services/jobService')
 const { generateReport } = require('../services/accountService')
 const { validate } = require('../common/validate')
@@ -18,7 +19,7 @@ router.get('/pending_transactions', function (req, res, next) {
 })
 
 /**
- * @api {get} /stats/user/:accountAddress Get /stats/user/:accountAddress
+ * @api {get} /stats/user/:accountAddress?network=xxx Get /stats/user/:accountAddress?network=xxx
  * @apiName GetPersonalStats
  * @apiDescription Get user's own asset statistics
  * @apiGroup Stats
@@ -82,6 +83,10 @@ router.get(
         if (passedAuth != AUTH) {
             res.status(401).send('401 Unauthorized')
             return
+        }
+        const network = req.query.network || ''
+        if (network.toLowerCase() != process.env.NODE_ENV.toLowerCase()) {
+            throw new ParameterError('Parameter network failed.')
         }
         const result = await generateReport(req.params.accountAddress)
         res.json({ gro_personal_position: result })

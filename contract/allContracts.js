@@ -12,6 +12,8 @@ let insurance
 let pnl
 let groVault
 let powerD
+let depositHandler
+let withdrawHandler
 let vaults = []
 let strategyLength = []
 
@@ -23,6 +25,8 @@ const initAllContracts = async function () {
     promises.push(initVaults())
     promises.push(initGroVaultToken())
     promises.push(initPowerDToken())
+    promises.push(initDepositHandler())
+    promises.push(initWithdrawHandler())
     await Promise.all(promises)
     logger.info(`Init contracts done!.`)
 }
@@ -89,6 +93,28 @@ const initPowerDToken = async function () {
     powerD = new ethers.Contract(powerDAddress, powerDABI, nonceManager)
 }
 
+const initDepositHandler = async function () {
+    const depositHandlerABI = require('./abis/DepositHandler.json').abi
+    const depositHandlerAddress = await controller.depositHandler()
+    logger.info(`depositHandler ${depositHandlerAddress}`)
+    depositHandler = new ethers.Contract(
+        depositHandlerAddress,
+        depositHandlerABI,
+        nonceManager
+    )
+}
+
+const initWithdrawHandler = async function () {
+    const withdrawHandlerABI = require('./abis/WithdrawHandler.json').abi
+    const withdrawHandlerAddress = await controller.withdrawHandler()
+    logger.info(`withdrawHandler ${withdrawHandlerAddress}`)
+    withdrawHandler = new ethers.Contract(
+        withdrawHandlerAddress,
+        withdrawHandlerABI,
+        nonceManager
+    )
+}
+
 const getController = function () {
     return controller
 }
@@ -117,6 +143,14 @@ const getPowerD = function () {
     return powerD
 }
 
+const getDepositHandler = function () {
+    return depositHandler
+}
+
+const getWithdrawHandler = function () {
+    return withdrawHandler
+}
+
 module.exports = {
     initAllContracts,
     getController,
@@ -126,4 +160,6 @@ module.exports = {
     getStrategyLength,
     getGroVault,
     getPowerD,
+    getDepositHandler,
+    getWithdrawHandler,
 }

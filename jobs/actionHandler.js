@@ -133,5 +133,9 @@ const execActions = async function (blockNumber, triggerResult) {
 }
 
 module.exports = {
+    invest,
+    harvest,
+    execPnl,
+    rebalance,
     execActions,
 }
