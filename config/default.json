@@ -11,7 +11,7 @@
         "pnl": "30 * * * * *",
         "rebalance": "45 * * * * *"
     },
-    "bot_balance_warn": "10000000000",
+    "bot_balance_warn": "20000000000000000000",
     "harvest_callcost": {
         "vault_0": {
             "strategy_0": "10000000000",

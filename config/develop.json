@@ -7,6 +7,14 @@
     },
     "discord": {
         "token": "ODE5MDgyNzYwNDI0OTE0OTc0.YEhcQw.4nA2E4i3BNSEZGRGrONOvfcqRoo",
-        "opt_channel": "819114874520993812"
+        "retry": 3,
+        "channel": {
+            "trades": "825998630828638239",
+            "protocol_assets": "825998746696810536",
+            "protocol_events": "825998886249168896",
+            "crit_action_events": "825998966691987456",
+            "bot_alerts": "825999025487609927",
+            "bot_logs": "825999075971039283"
+        }
     }
 }

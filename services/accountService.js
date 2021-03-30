@@ -8,33 +8,14 @@ const {
 } = require('../contract/allContracts');
 const { getDefaultProvider } = require('../common/chainUtil');
 const { ContractCallError } = require('../common/customErrors');
+const { CONTRACT_ASSET_DECIAML, div } = require('../common/digitalUtil');
+const { getConfig } = require('../common/configUtil');
 const BN = require('bignumber.js');
 const logger = require('../common/logger');
-const config = require('config');
-const BN_BASE = new BN('1000000000000000000');
-let launchTime = 0;
-let amountDecimal = 7;
-let ratioDecimal = 4;
-
-if (!config.has('blockchain.start_block')) {
-    const err = new SettingError('Config:blockchain.start_block not setted.');
-    logger.error(err);
-    throw err;
-}
-
-if (config.has('blockchain.launch_timestamp')) {
-    launchTime = config.get('blockchain.launch_timestamp');
-}
-
-if (config.has('stats.amount_decimal_place')) {
-    amountDecimal = config.get('stats.amount_decimal_place');
-}
-
-if (config.has('stats.ratio_decimal_place')) {
-    ratioDecimal = config.get('stats.ratio_decimal_place');
-}
-
-const fromBlock = config.get('blockchain.start_block');
+const fromBlock = getConfig('blockchain.start_block');
+const launchTime = getConfig('blockchain.launch_timestamp', false) || 0;
+const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
+const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 
 const EVENT_TYPE = {
     deposit: 'deposit',
@@ -211,12 +192,12 @@ const getGroVaultTransferHistories = async function (account) {
     );
     logs.deposit.forEach((log) => {
         log.amount = new BN(log.args[2].toString())
-            .multipliedBy(BN_BASE)
+            .multipliedBy(CONTRACT_ASSET_DECIAML)
             .div(new BN(log.args[3].toString()));
     });
     logs.withdraw.forEach((log) => {
         log.amount = new BN(log.args[2].toString())
-            .multipliedBy(BN_BASE)
+            .multipliedBy(CONTRACT_ASSET_DECIAML)
             .div(new BN(log.args[3].toString()));
     });
     return logs;
@@ -289,41 +270,59 @@ const generateReport = async function (account) {
     });
     // amount_added
     const depositAmount = powerDDepositAmount.plus(groVaultDepositAmount);
-    result.amount_added.pwrd = powerDDepositAmount
-        .div(BN_BASE)
-        .toFixed(amountDecimal);
-    result.amount_added.gvt = groVaultDepositAmount
-        .div(BN_BASE)
-        .toFixed(amountDecimal);
-    result.amount_added.total = depositAmount
-        .div(BN_BASE)
-        .toFixed(amountDecimal);
+    result.amount_added.pwrd = div(
+        powerDDepositAmount,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
+    result.amount_added.gvt = div(
+        groVaultDepositAmount,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
+    result.amount_added.total = div(
+        depositAmount,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
 
     // amount_removed
     const withdrawAmount = powerDWithdrawAmount.plus(groVaultWithdrawAmount);
-    result.amount_removed.pwrd = powerDWithdrawAmount
-        .div(BN_BASE)
-        .toFixed(amountDecimal);
-    result.amount_removed.gvt = groVaultWithdrawAmount
-        .div(BN_BASE)
-        .toFixed(amountDecimal);
-    result.amount_removed.total = withdrawAmount
-        .div(BN_BASE)
-        .toFixed(amountDecimal);
+    result.amount_removed.pwrd = div(
+        powerDWithdrawAmount,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
+    result.amount_removed.gvt = div(
+        groVaultWithdrawAmount,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
+    result.amount_removed.total = div(
+        withdrawAmount,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
 
     // net_amount_added
     const netPwrdAmount = powerDDepositAmount.minus(powerDWithdrawAmount);
     const netGvtAmount = groVaultDepositAmount.minus(groVaultWithdrawAmount);
     const netTotal = depositAmount.minus(withdrawAmount);
-    result.net_amount_added.pwrd = netPwrdAmount
-        .div(BN_BASE)
-        .toFixed(amountDecimal);
-    result.net_amount_added.gvt = netGvtAmount
-        .div(BN_BASE)
-        .toFixed(amountDecimal);
-    result.net_amount_added.total = netTotal
-        .div(BN_BASE)
-        .toFixed(amountDecimal);
+    result.net_amount_added.pwrd = div(
+        netPwrdAmount,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
+    result.net_amount_added.gvt = div(
+        netGvtAmount,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
+    result.net_amount_added.total = div(
+        netTotal,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
 
     // current_balance
     const pwrdBalance = new BN(
@@ -333,21 +332,41 @@ const generateReport = async function (account) {
         (await getGroVault().getAssets(account)).toString()
     );
     const totalBalance = pwrdBalance.plus(gvtBalance);
-    result.current_balance.pwrd = pwrdBalance
-        .div(BN_BASE)
-        .toFixed(amountDecimal);
-    result.current_balance.gvt = gvtBalance.div(BN_BASE).toFixed(amountDecimal);
-    result.current_balance.total = totalBalance
-        .div(BN_BASE)
-        .toFixed(amountDecimal);
+    result.current_balance.pwrd = div(
+        pwrdBalance,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
+    result.current_balance.gvt = div(
+        gvtBalance,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
+    result.current_balance.total = div(
+        totalBalance,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
 
     // net_returns
     const pwrdReturn = pwrdBalance.minus(netPwrdAmount);
     const gvtReturn = gvtBalance.minus(netGvtAmount);
     const totalReturn = pwrdReturn.plus(gvtReturn);
-    result.net_returns.pwrd = pwrdReturn.div(BN_BASE).toFixed(amountDecimal);
-    result.net_returns.gvt = gvtReturn.div(BN_BASE).toFixed(amountDecimal);
-    result.net_returns.total = totalReturn.div(BN_BASE).toFixed(amountDecimal);
+    result.net_returns.pwrd = div(
+        pwrdReturn,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
+    result.net_returns.gvt = div(
+        gvtReturn,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
+    result.net_returns.total = div(
+        totalReturn,
+        CONTRACT_ASSET_DECIAML,
+        amountDecimal
+    );
 
     // net_returns_ratio
     const pwrdRatio = pwrdReturn.eq(new BN(0))

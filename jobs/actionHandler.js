@@ -2,10 +2,26 @@
 
 const { getInsurance, getPnl } = require('../contract/allContracts');
 const { pendingTransactions } = require('../common/storage');
+const {
+    sendMessage,
+    MESSAGE_TYPES,
+    DISCORD_CHANNELS,
+} = require('../discord/discordService');
 const logger = require('../common/logger');
 
 const invest = async function (blockNumber, investParams) {
-    const investResponse = await getInsurance().invest(investParams);
+    const investResponse = await getInsurance()
+        .invest(investParams)
+        .catch((error) => {
+            logger.error(error);
+            sendMessage(DISCORD_CHANNELS.botAlerts, {
+                type: MESSAGE_TYPES.invest,
+                timestamp: new Date(),
+                params: investParams,
+                result: 'Failed: call invest.',
+            });
+            return {};
+        });
 
     if (!investResponse.hash) return;
 
@@ -13,6 +29,7 @@ const invest = async function (blockNumber, investParams) {
         blockNumber,
         reSendTimes: 0,
         hash: investResponse.hash,
+        label: 'invest',
         createdTime: Date.now(),
         transactionRequest: {
             nonce: investResponse.nonce,
@@ -25,21 +42,44 @@ const invest = async function (blockNumber, investParams) {
             from: investResponse.from,
         },
     });
+
+    sendMessage(DISCORD_CHANNELS.protocolEvents, {
+        type: MESSAGE_TYPES.invest,
+        timestamp: new Date(),
+        params: investParams,
+        transactionHash: investResponse.hash,
+    });
 };
 
 const harvest = async function (blockNumber, harvestStrategies) {
     for (let i = 0; i < harvestStrategies.length; i++) {
         const strategyInfo = harvestStrategies[i];
         const key = `harvest-${strategyInfo.vault.address}-${strategyInfo.strategyIndex}`;
-        const harvestResult = await strategyInfo.vault.strategyHarvest(
-            strategyInfo.strategyIndex,
-            strategyInfo.callCost
-        );
+        const harvestResult = await strategyInfo.vault
+            .strategyHarvest(strategyInfo.strategyIndex, strategyInfo.callCost)
+            .catch((error) => {
+                logger.error(error);
+                sendMessage(DISCORD_CHANNELS.botAlerts, {
+                    type: MESSAGE_TYPES.harvest,
+                    timestamp: new Date(),
+                    params: {
+                        vault: strategyInfo.vault.address,
+                        strategyIndex: strategyInfo.strategyIndex,
+                        callCost: strategyInfo.callCost,
+                    },
+                    result: 'Failed: call strategyHarvest.',
+                });
+                return {};
+            });
+
+        if (!harvestResult.hash) return;
+
         pendingTransactions.set(key, {
             blockNumber,
             reSendTimes: 0,
             hash: harvestResult.hash,
             createdTime: Date.now(),
+            label: 'harvest',
             transactionRequest: {
                 nonce: harvestResult.nonce,
                 gasPrice: harvestResult.gasPrice.hex,
@@ -51,18 +91,41 @@ const harvest = async function (blockNumber, harvestStrategies) {
                 from: harvestResult.from,
             },
         });
+
+        sendMessage(DISCORD_CHANNELS.protocolEvents, {
+            type: MESSAGE_TYPES.harvest,
+            timestamp: new Date(),
+            params: {
+                vault: strategyInfo.vault.address,
+                strategyIndex: strategyInfo.strategyIndex,
+                callCost: strategyInfo.callCost,
+            },
+            transactionHash: harvestResult.hash,
+        });
     }
 };
 
 const execPnl = async function (blockNumber) {
     const pnl = getPnl();
     logger.info(`pnl address ${pnl.address}`);
-    const pnlResponse = await pnl.execPnL(0);
+    const pnlResponse = await pnl.execPnL(0).catch((error) => {
+        logger.error(error);
+        sendMessage(DISCORD_CHANNELS.botAlerts, {
+            type: MESSAGE_TYPES.pnl,
+            timestamp: new Date(),
+            result: 'Failed: call execPnL.',
+        });
+        return {};
+    });
+
+    if (!pnlResponse.hash) return;
+
     pendingTransactions.set('pnl', {
         blockNumber,
         reSendTimes: 0,
         hash: pnlResponse.hash,
         createdTime: Date.now(),
+        label: 'pnl',
         transactionRequest: {
             nonce: pnlResponse.nonce,
             gasPrice: pnlResponse.gasPrice.hex,
@@ -74,16 +137,41 @@ const execPnl = async function (blockNumber) {
             from: pnlResponse.from,
         },
     });
+    sendMessage(DISCORD_CHANNELS.protocolEvents, {
+        type: MESSAGE_TYPES.pnl,
+        timestamp: new Date(),
+        transactionHash: pnlResponse.hash,
+    });
 };
 
 const rebalance = async function (blockNumber, rebalanceParams) {
     let rebalanceReponse;
     let transactionKey;
     if (rebalanceParams[0]) {
-        rebalanceReponse = await getInsurance().rebalance();
+        rebalanceReponse = await getInsurance()
+            .rebalance()
+            .catch((error) => {
+                logger.error(error);
+                sendMessage(DISCORD_CHANNELS.botAlerts, {
+                    type: MESSAGE_TYPES.rebalance,
+                    timestamp: new Date(),
+                    result: 'Failed: call rebalance.',
+                });
+                return {};
+            });
         transactionKey = 'rebalance';
     } else {
-        rebalanceReponse = await getInsurance().topup();
+        rebalanceReponse = await getInsurance()
+            .topup()
+            .catch((error) => {
+                logger.error(error);
+                sendMessage(DISCORD_CHANNELS.botAlerts, {
+                    type: MESSAGE_TYPES.topup,
+                    timestamp: new Date(),
+                    result: 'Failed: call topup.',
+                });
+                return {};
+            });
         transactionKey = 'topup';
     }
 
@@ -93,7 +181,8 @@ const rebalance = async function (blockNumber, rebalanceParams) {
         blockNumber,
         reSendTimes: 0,
         hash: rebalanceReponse.hash,
-        createdTime: Date.now(),
+        createdTime: new Date(),
+        label: 'rebalance',
         transactionRequest: {
             nonce: rebalanceReponse.nonce,
             gasPrice: rebalanceReponse.gasPrice.hex,
@@ -104,6 +193,12 @@ const rebalance = async function (blockNumber, rebalanceParams) {
             chainId: rebalanceReponse.chainId,
             from: rebalanceReponse.from,
         },
+    });
+
+    sendMessage(DISCORD_CHANNELS.protocolEvents, {
+        type: MESSAGE_TYPES[transactionKey],
+        timestamp: new Date(),
+        transactionHash: rebalanceReponse.hash,
     });
 };
 

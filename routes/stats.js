@@ -1,11 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const { wrapAsync } = require('../common/wrap');
-const { param } = require('express-validator');
+const { query } = require('express-validator');
 const { ParameterError } = require('../common/customErrors');
 const { pendingTransactions } = require('../services/jobService');
 const { generateReport } = require('../services/accountService');
 const { validate } = require('../common/validate');
+const {
+    sendMessage,
+    DISCORD_CHANNELS,
+    MESSAGE_TYPES,
+} = require('../discord/discordService');
 const AUTH = 'Bear NzU3ODQ0MDczNTg2NjIyNDc2.jnQOs1-ul7W94nBtV9wIJwBx5AA';
 
 /* GET users listing. */
@@ -19,7 +24,7 @@ router.get('/pending_transactions', function (req, res, next) {
 });
 
 /**
- * @api {get} /stats/user/:accountAddress?network=xxx Get /stats/user/:accountAddress?network=xxx
+ * @api {get} /stats/user Get /stats/user
  * @apiName GetPersonalStats
  * @apiDescription Get user's own asset statistics
  * @apiGroup Stats
@@ -65,11 +70,9 @@ router.get('/pending_transactions', function (req, res, next) {
 }
  */
 router.get(
-    '/user/:accountAddress',
+    '/user',
     validate([
-        param('accountAddress')
-            .isString()
-            .withMessage('accountAddress must be string.')
+        query('accountAddress')
             .trim()
             .notEmpty()
             .withMessage('accountAddress can be empty.')
@@ -77,18 +80,25 @@ router.get(
             .withMessage(
                 'accountAddress should be a valid address start with "0x".'
             ),
+        query('network').trim().notEmpty().withMessage('network can be empty.'),
     ]),
-    wrapAsync(async function (req, res, next) {
+    wrapAsync(async function (req, res) {
         const passedAuth = req.headers['authorization'];
         if (passedAuth != AUTH) {
             res.status(401).send('401 Unauthorized');
             return;
         }
-        const network = req.query.network || '';
+        const network = req.query.network;
         if (network.toLowerCase() != process.env.NODE_ENV.toLowerCase()) {
             throw new ParameterError('Parameter network failed.');
         }
-        const result = await generateReport(req.params.accountAddress);
+        const result = await generateReport(req.query.accountAddress);
+        sendMessage(DISCORD_CHANNELS.trades, {
+            result,
+            type: MESSAGE_TYPES.miniStatsPersonal,
+            timestamp: new Date(),
+            params: { account: req.query.accountAddress, network: network },
+        });
         res.json({ gro_personal_position: result });
     })
 );
