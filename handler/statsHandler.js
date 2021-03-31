@@ -30,11 +30,13 @@ const provider = getDefaultProvider();
 const scanner = new BlocksSanner(getDefaultProvider());
 
 const USD_DECIMAL = new BN(10).pow(new BN(18));
+const PERCENT_DECIMAL = new BN(10).pow(new BN(4));
 const FIXED_PERCENT = 4;
 const FIXED_USD = 7;
 // config
 const vaultNames = config.get('vault_name');
 const strategyNames = config.get('strategy_name');
+const lifeguardNames = config.get('lifeguard_name');
 const launchTimestamp = config.get('blockchain.launch_timestamp');
 const launchDate = dayjs.unix(launchTimestamp);
 const statsDir = config.get('stats_folder');
@@ -93,12 +95,19 @@ const getVaultAndStrategies = async function (
         );
     }
     let strategies = await Promise.all(promisesStrategy);
+    let assetsInVault = assetUsd;
     let strategyStats = strategies.map((strategy) => {
+        assetsInVault = assetsInVault.minus(strategy.assetUsd);
         return {
             name: strategy.name,
             amount: printUsdValue(strategy.assetUsd),
             share: printPercentValue(strategy.assetUsd.dividedBy(total)),
         };
+    });
+    strategyStats.push({
+        name: vaultNames[index],
+        amount: printUsdValue(assetsInVault),
+        share: printPercentValue(assetsInVault.dividedBy(total)),
     });
     return {
         stablecoin: vaultNames[index],
@@ -262,15 +271,19 @@ const getGroStats = async function () {
     const riskResult = await exposure.calcRiskExposure(preCal, latestBlockTag);
     const exposureStableCoin = riskResult[0].map((percent, i) => {
         return {
-            name: vaultNames[i],
-            concentration: printPercentValue(convertToBN(percent)),
+            stablecoin: vaultNames[i],
+            concentration: printPercentValue(
+                convertToBN(percent).dividedBy(PERCENT_DECIMAL)
+            ),
         };
     });
 
     const exposureProtocol = riskResult[1].map((percent, i) => {
         return {
             name: strategyNames[i],
-            concentration: printPercentValue(convertToBN(percent)),
+            concentration: printPercentValue(
+                convertToBN(percent).dividedBy(PERCENT_DECIMAL)
+            ),
         };
     });
     // tvl
@@ -286,7 +299,6 @@ const getGroStats = async function () {
     );
 
     // lifeguard
-    console.log(lifeGuard.address);
     const lifeGuardAssets = convertToBN(
         await lifeGuard.totalAssetsUsd(latestBlockTag)
     );
@@ -321,6 +333,7 @@ const getGroStats = async function () {
     };
 
     const lifeGuardStats = {
+        name: lifeguardNames,
         amount: printUsdValue(lifeGuardAssets),
         share: printPercentValue(lifeGuardShare),
     };
@@ -338,13 +351,17 @@ const getGroStats = async function () {
         gvt: printUsdValue(gvtAssets),
         total: printUsdValue(totalAssetsUsd),
         util_ratio: printPercentValue(prwdAssets.dividedBy(gvtAssets)),
-        util_ratio_limit_PD: printPercentValue(utilRatioLimitPD),
-        util_ratio_limit_GW: printPercentValue(utilRatioLimitGW),
+        util_ratio_limit_PD: printPercentValue(
+            utilRatioLimitPD.dividedBy(PERCENT_DECIMAL)
+        ),
+        util_ratio_limit_GW: printPercentValue(
+            utilRatioLimitGW.dividedBy(PERCENT_DECIMAL)
+        ),
     };
 
     const stats = {
-        launch_timestamp: launchTimestamp,
         current_timestamp: nowTimestamp.toString(),
+        launch_timestamp: launchTimestamp,
         network: process.env.NODE_ENV.toLowerCase(),
         apy: apy,
         tvl: tvl,
@@ -362,12 +379,12 @@ const getGroStats = async function () {
         filename: statsFilename,
     };
     fs.writeFileSync(statsLatest, JSON.stringify(latestFilename));
-    sendMessage(DISCORD_CHANNELS.protocolAssets, {
-        type: MESSAGE_TYPES.stats,
-        timestamp: new Date(),
-        params: tvl,
-        result: 'Generate stats file',
-    });
+    // sendMessage(DISCORD_CHANNELS.protocolAssets, {
+    //     type: MESSAGE_TYPES.stats,
+    //     timestamp: new Date(),
+    //     params: tvl,
+    //     result: 'Generate stats file',
+    // });
     return statsFilename;
 };
 

@@ -7,11 +7,6 @@ const { pendingTransactions } = require('../services/jobService');
 const { getGroStatsContent } = require('../services/statsService');
 const { generateReport } = require('../services/accountService');
 const { validate } = require('../common/validate');
-const {
-    sendMessage,
-    DISCORD_CHANNELS,
-    MESSAGE_TYPES,
-} = require('../discord/discordService');
 const AUTH = 'Bear NzU3ODQ0MDczNTg2NjIyNDc2.jnQOs1-ul7W94nBtV9wIJwBx5AA';
 
 /* GET users listing. */
@@ -94,12 +89,6 @@ router.get(
             throw new ParameterError('Parameter network failed.');
         }
         const result = await generateReport(req.query.address);
-        sendMessage(DISCORD_CHANNELS.trades, {
-            result,
-            type: MESSAGE_TYPES.miniStatsPersonal,
-            timestamp: new Date(),
-            params: { account: req.query.address, network: network },
-        });
         res.json({ gro_personal_position: result });
     })
 );
