@@ -8,6 +8,7 @@ module.exports = {
     stats_latest: '../stats/gro-latest.json',
     vault_name: ['DAI', 'USDC', 'USDT'],
     strategy_name: ['Harvest', 'Yearn Metapool', 'Generic Lending'],
+    lifeguard_name: 'Curve-3pool',
     contracts: {
         controller: '0x99bbA657f2BbC93c02D617f8bA121cB8Fc104Acf',
     },
