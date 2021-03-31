@@ -28,6 +28,8 @@ const MESSAGE_TYPES = {
     rebalanceTrigger: 'Rebalance Trigger',
     rebalance: 'Rebalance',
     topup: 'Topup',
+    curveCheck: 'Curve Check',
+    stats: 'Generate Stats',
 };
 
 const formatMessage = function (obj) {

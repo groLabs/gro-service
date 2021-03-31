@@ -160,7 +160,7 @@ const rebalance = async function (blockNumber, rebalanceParams) {
                 return {};
             });
         transactionKey = 'rebalance';
-    } else {
+    } else if (rebalanceParams[1]) {
         rebalanceReponse = await getInsurance()
             .topup()
             .catch((error) => {

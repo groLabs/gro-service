@@ -42,68 +42,43 @@
             "anonymous": false,
             "inputs": [
                 {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "user",
-                    "type": "address"
-                },
-                {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "referral",
-                    "type": "address"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "address",
-                    "name": "gToken",
-                    "type": "address"
-                },
-                {
                     "indexed": false,
                     "internalType": "uint256",
-                    "name": "caseValue",
+                    "name": "deductedAssets",
                     "type": "uint256"
                 },
                 {
                     "indexed": false,
                     "internalType": "uint256",
-                    "name": "usdAmount",
+                    "name": "systemProfit",
                     "type": "uint256"
                 },
                 {
                     "indexed": false,
-                    "internalType": "uint256[]",
-                    "name": "tokens",
-                    "type": "uint256[]"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "bool",
-                    "name": "whale",
-                    "type": "bool"
-                }
-            ],
-            "name": "LogNewWithdrawal",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": false,
-                    "internalType": "address",
-                    "name": "user",
-                    "type": "address"
+                    "internalType": "uint256",
+                    "name": "beforeGvtAssets",
+                    "type": "uint256"
                 },
                 {
                     "indexed": false,
                     "internalType": "uint256",
-                    "name": "newFee",
+                    "name": "beforePwrdAssets",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "afterGvtAssets",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "afterPwrdAssets",
                     "type": "uint256"
                 }
             ],
-            "name": "LogNewWithdrawalFee",
+            "name": "LogPnLExecution",
             "type": "event"
         },
         {
@@ -244,6 +219,24 @@
             "type": "function"
         },
         {
+            "inputs": [],
+            "name": "calcPnL",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
             "inputs": [
                 {
                     "internalType": "address",
@@ -264,6 +257,50 @@
                     "internalType": "address",
                     "name": "",
                     "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "gTokenAddress",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "dollarAmount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "decreaseGTokenLastAmount",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "deductedAssets",
+                    "type": "uint256"
+                }
+            ],
+            "name": "execPnL",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "gainPercentThreshold",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
                 }
             ],
             "stateMutability": "view",
@@ -302,6 +339,63 @@
             "type": "function"
         },
         {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "gTokenAddress",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "dollarAmount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "increaseGTokenLastAmount",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "lastGvtAssets",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "lastPwrdAssets",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "lossPercentThreshold",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
             "inputs": [],
             "name": "pendingGovernance",
             "outputs": [
@@ -309,6 +403,19 @@
                     "internalType": "address",
                     "name": "",
                     "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "pnlTrigger",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
                 }
             ],
             "stateMutability": "view",
@@ -344,11 +451,11 @@
             "inputs": [
                 {
                     "internalType": "uint256",
-                    "name": "_utilizationRatioLimitGW",
+                    "name": "_gainPercentThreshold",
                     "type": "uint256"
                 }
             ],
-            "name": "setUtilizationRatioLimitGW",
+            "name": "setGainPercentThreshold",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
@@ -357,18 +464,18 @@
             "inputs": [
                 {
                     "internalType": "uint256",
-                    "name": "newFee",
+                    "name": "_lossPercentThreshold",
                     "type": "uint256"
                 }
             ],
-            "name": "setWithdrawalFee",
+            "name": "setLossPercentThreshold",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
         },
         {
             "inputs": [],
-            "name": "utilizationRatioLimitGW",
+            "name": "utilisationRatio",
             "outputs": [
                 {
                     "internalType": "uint256",
@@ -393,192 +500,6 @@
                     "internalType": "bool",
                     "name": "",
                     "type": "bool"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256[]",
-                    "name": "minAmounts",
-                    "type": "uint256[]"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawAllBalanced",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "account",
-                    "type": "address"
-                },
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "index",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "minAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawAllFromAccount",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "index",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "minAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawAllSingle",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "lpAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "uint256[]",
-                    "name": "minAmounts",
-                    "type": "uint256[]"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawByLPToken",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "index",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "lpAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "minAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawByStablecoin",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256[]",
-                    "name": "inAmounts",
-                    "type": "uint256[]"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "maxLPAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawByStablecoins",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [],
-            "name": "withdrawalFee",
-            "outputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "",
-                    "type": "uint256"
                 }
             ],
             "stateMutability": "view",

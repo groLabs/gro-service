@@ -1,4 +1,5 @@
 const { SettingError } = require('./customErrors');
+const logger = require('./logger');
 const config = require('config');
 
 const getConfig = function (key, existCheck = true) {

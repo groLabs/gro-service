@@ -46,74 +46,6 @@
                     "internalType": "address",
                     "name": "user",
                     "type": "address"
-                },
-                {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "referral",
-                    "type": "address"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "address",
-                    "name": "gToken",
-                    "type": "address"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256",
-                    "name": "caseValue",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256",
-                    "name": "usdAmount",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256[]",
-                    "name": "tokens",
-                    "type": "uint256[]"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "bool",
-                    "name": "whale",
-                    "type": "bool"
-                }
-            ],
-            "name": "LogNewWithdrawal",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": false,
-                    "internalType": "address",
-                    "name": "user",
-                    "type": "address"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256",
-                    "name": "newFee",
-                    "type": "uint256"
-                }
-            ],
-            "name": "LogNewWithdrawalFee",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "user",
-                    "type": "address"
                 }
             ],
             "name": "NewWhitelist",
@@ -246,6 +178,94 @@
         {
             "inputs": [
                 {
+                    "components": [
+                        {
+                            "internalType": "uint256",
+                            "name": "totalCurrentAssetsUsd",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "lifeguardCurrentAssetsUsd",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "vaultCurrentAssets",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "vaultCurrentAssetsUsd",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "rebalanceThreshold",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "utilisationRatio",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "targetBuffer",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "stablePercents",
+                            "type": "uint256[]"
+                        }
+                    ],
+                    "internalType": "struct SystemState",
+                    "name": "sysState",
+                    "type": "tuple"
+                }
+            ],
+            "name": "calcRiskExposure",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256[]",
+                            "name": "stablecoinExposure",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "protocolExposure",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "bool",
+                            "name": "stablecoinExposed",
+                            "type": "bool"
+                        },
+                        {
+                            "internalType": "bool",
+                            "name": "protocolExposed",
+                            "type": "bool"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "curveIndex",
+                            "type": "uint256"
+                        }
+                    ],
+                    "internalType": "struct ExposureState",
+                    "name": "expState",
+                    "type": "tuple"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
                     "internalType": "address",
                     "name": "govern",
                     "type": "address"
@@ -264,6 +284,19 @@
                     "internalType": "address",
                     "name": "",
                     "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "curveIndex",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
                 }
             ],
             "stateMutability": "view",
@@ -303,12 +336,38 @@
         },
         {
             "inputs": [],
+            "name": "makerUSDCExposure",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
             "name": "pendingGovernance",
             "outputs": [
                 {
                     "internalType": "address",
                     "name": "",
                     "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "protocolCount",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
                 }
             ],
             "stateMutability": "view",
@@ -344,11 +403,11 @@
             "inputs": [
                 {
                     "internalType": "uint256",
-                    "name": "_utilizationRatioLimitGW",
+                    "name": "_curveIndex",
                     "type": "uint256"
                 }
             ],
-            "name": "setUtilizationRatioLimitGW",
+            "name": "setCurveIndex",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
@@ -357,23 +416,57 @@
             "inputs": [
                 {
                     "internalType": "uint256",
-                    "name": "newFee",
+                    "name": "_makerUSDCExposure",
                     "type": "uint256"
                 }
             ],
-            "name": "setWithdrawalFee",
+            "name": "setMakerUSDCExposure",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
         },
         {
-            "inputs": [],
-            "name": "utilizationRatioLimitGW",
-            "outputs": [
+            "inputs": [
                 {
                     "internalType": "uint256",
-                    "name": "",
+                    "name": "_protocolCount",
                     "type": "uint256"
+                }
+            ],
+            "name": "setProtocolCount",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address[]",
+                    "name": "vaults",
+                    "type": "address[]"
+                },
+                {
+                    "internalType": "uint256[]",
+                    "name": "targetPercents",
+                    "type": "uint256[]"
+                }
+            ],
+            "name": "sortVaultsByDelta",
+            "outputs": [
+                {
+                    "internalType": "uint256[]",
+                    "name": "indexes",
+                    "type": "uint256[]"
+                },
+                {
+                    "internalType": "uint256[]",
+                    "name": "unifiedAssets",
+                    "type": "uint256[]"
+                },
+                {
+                    "internalType": "uint256[]",
+                    "name": "assets",
+                    "type": "uint256[]"
                 }
             ],
             "stateMutability": "view",
@@ -393,192 +486,6 @@
                     "internalType": "bool",
                     "name": "",
                     "type": "bool"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256[]",
-                    "name": "minAmounts",
-                    "type": "uint256[]"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawAllBalanced",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "account",
-                    "type": "address"
-                },
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "index",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "minAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawAllFromAccount",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "index",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "minAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawAllSingle",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "lpAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "uint256[]",
-                    "name": "minAmounts",
-                    "type": "uint256[]"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawByLPToken",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "index",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "lpAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "minAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawByStablecoin",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256[]",
-                    "name": "inAmounts",
-                    "type": "uint256[]"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "maxLPAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawByStablecoins",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [],
-            "name": "withdrawalFee",
-            "outputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "",
-                    "type": "uint256"
                 }
             ],
             "stateMutability": "view",
