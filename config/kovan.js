@@ -15,7 +15,7 @@ module.exports = {
     vault_name: ['DAI', 'USDC', 'USDT'],
     strategy_name: ['Harvest', 'Yearn Metapool', 'Generic Lending'],
     contracts: {
-        controller: '0xc6deb14D7C30C2e3f4a519735A8c18Bdec3F0fd9',
+        controller: '0xC42dB2005ADB6f579A3c4931c52139926E08F46C',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
