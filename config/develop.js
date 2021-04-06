@@ -1,8 +1,18 @@
 module.exports = {
     blockchain: {
         network: 'http://localhost:8545',
-        start_block: 12144512,
-        launch_timestamp: '1617157103',
+        start_block: 12184452,
+        launch_timestamp: '1617679356',
+    },
+    trigger_scheduler: {
+        pending_transaction_check: '5 30 * * * *',
+        bot_balance_check: '10 00 * * * *',
+        invest: '*/30 * * * * *',
+        harvest: '*/30 * * * * *',
+        pnl: '*/30 * * * * *',
+        rebalance: '*/30 * * * * *',
+        generate_stats: '*/30 * * * * *',
+        bot_curve_check: '*/30 * * * * *',
     },
     stats_folder: '../stats',
     stats_latest: '../stats/gro-latest.json',
@@ -10,7 +20,7 @@ module.exports = {
     strategy_name: ['Harvest', 'Yearn Metapool', 'Generic Lending'],
     lifeguard_name: 'Curve-3pool',
     contracts: {
-        controller: '0x99bbA657f2BbC93c02D617f8bA121cB8Fc104Acf',
+        controller: '0x0E801D84Fa97b50751Dbf25036d067dCf18858bF',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

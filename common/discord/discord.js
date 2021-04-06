@@ -1,8 +1,8 @@
 'use strict';
 
 const { DiscordError } = require('./discordError');
-const { getConfig } = require('../common/configUtil');
-const logger = require('../common/logger');
+const { getConfig } = require('../configUtil');
+const logger = require('../logger');
 const Discord = require('discord.js');
 const discordClient = new Discord.Client();
 

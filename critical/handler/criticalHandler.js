@@ -1,14 +1,14 @@
 'use strict';
 
 const { BigNumber } = require('ethers');
-const { getBuoy } = require('../contract/allContracts');
-const { pendingTransactions } = require('../common/storage');
+const { getBuoy } = require('../../contract/allContracts');
+const { pendingTransactions } = require('../../common/storage');
 const {
     sendMessage,
     MESSAGE_TYPES,
     DISCORD_CHANNELS,
-} = require('../discord/discordService');
-const logger = require('../common/logger');
+} = require('../../common/discord/discordService');
+const logger = require('../../common/logger');
 
 const curveCheck = async function () {
     const healthCheck = await getBuoy()

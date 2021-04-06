@@ -1,13 +1,13 @@
 'use strict';
 
-const { getInsurance, getPnl } = require('../contract/allContracts');
-const { pendingTransactions } = require('../common/storage');
+const { getInsurance, getPnl } = require('../../contract/allContracts');
+const { pendingTransactions } = require('../../common/storage');
 const {
     sendMessage,
     MESSAGE_TYPES,
     DISCORD_CHANNELS,
-} = require('../discord/discordService');
-const logger = require('../common/logger');
+} = require('../../common/discord/discordService');
+const logger = require('../../common/logger');
 
 const invest = async function (blockNumber, investParams) {
     const investResponse = await getInsurance()
