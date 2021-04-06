@@ -16,16 +16,16 @@ const {
     getDepositHandler,
     getWithdrawHandler,
     getBuoy,
-} = require('../contract/allContracts');
+} = require('../../contract/allContracts');
 const BlocksSanner = require('../common/blockscanner');
-const logger = require('../common/logger');
-const { getDefaultProvider } = require('../common/chainUtil');
+const logger = require('../../common/logger');
+const { getDefaultProvider } = require('../../common/chainUtil');
 const config = require('config');
 const {
     sendMessage,
     MESSAGE_TYPES,
     DISCORD_CHANNELS,
-} = require('../discord/discordService');
+} = require('../../common/discord/discordService');
 const provider = getDefaultProvider();
 const scanner = new BlocksSanner(getDefaultProvider());
 

@@ -5,13 +5,13 @@ const {
     getWithdrawHandler,
     getGvt: getGroVault,
     getPwrd: getPowerD,
-} = require('../contract/allContracts');
-const { getDefaultProvider } = require('../common/chainUtil');
-const { ContractCallError } = require('../common/customErrors');
-const { CONTRACT_ASSET_DECIAML, div } = require('../common/digitalUtil');
-const { getConfig } = require('../common/configUtil');
+} = require('../../contract/allContracts');
+const { getDefaultProvider } = require('../../common/chainUtil');
+const { ContractCallError } = require('../../common/customErrors');
+const { CONTRACT_ASSET_DECIAML, div } = require('../../common/digitalUtil');
+const { getConfig } = require('../../common/configUtil');
 const BN = require('bignumber.js');
-const logger = require('../common/logger');
+const logger = require('../../common/logger');
 const fromBlock = getConfig('blockchain.start_block');
 const launchTime = getConfig('blockchain.launch_timestamp', false) || 0;
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;

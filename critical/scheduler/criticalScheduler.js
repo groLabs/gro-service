@@ -2,7 +2,7 @@
 
 const schedule = require('node-schedule');
 const { curveCheck } = require('../handler/criticalHandler');
-const logger = require('../common/logger');
+const logger = require('../../common/logger');
 const config = require('config');
 let botCurveSchedulerSetting = '00 20 * * * *';
 

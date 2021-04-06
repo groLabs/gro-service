@@ -4,14 +4,14 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var { SettingError, ParameterError } = require('./common/customErrors');
-var customLogger = require('./common/logger');
+var { SettingError, ParameterError } = require('../common/customErrors');
+var customLogger = require('../common/logger');
 
 var botRouter = require('./routes/bot');
 var statsRouter = require('./routes/stats');
 var scheduler = require('./scheduler/statsScheduler');
 //var blockListener = require('./jobs/blockListener');
-var { initAllContracts } = require('./contract/allContracts');
+var { initAllContracts } = require('../contract/allContracts');
 var cors = require('cors');
 var app = express();
 

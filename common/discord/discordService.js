@@ -1,8 +1,8 @@
 'use strict';
 
-const { getConfig } = require('../common/configUtil');
+const { getConfig } = require('../configUtil');
 const { getDiscordClient } = require('./discord');
-const logger = require('../common/logger');
+const logger = require('../logger');
 const RETRY_TIMES = getConfig('discord.retry', false) || 2;
 const RESEND_DELAY_SETTING = getConfig('discord.resend_delay', false) || 2000;
 
