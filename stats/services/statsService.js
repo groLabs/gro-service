@@ -9,7 +9,6 @@ const getGroStatsContent = async function () {
     const filenameContent = data.toString();
     const content = JSON.parse(filenameContent);
     const filename = content.filename;
-    console.log(filename);
     const stats = fs.readFileSync(filename, { flag: 'a+' });
     return JSON.parse(stats.toString());
 };

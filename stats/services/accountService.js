@@ -8,7 +8,7 @@ const {
 } = require('../../contract/allContracts');
 const { getDefaultProvider } = require('../../common/chainUtil');
 const { ContractCallError } = require('../../common/customErrors');
-const { CONTRACT_ASSET_DECIAML, div } = require('../../common/digitalUtil');
+const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
 const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
 const BN = require('bignumber.js');
@@ -223,12 +223,12 @@ const getGroVaultTransferHistories = async function (account) {
     );
     logs.deposit.forEach((log) => {
         log.amount = new BN(log.args[2].toString())
-            .multipliedBy(CONTRACT_ASSET_DECIAML)
+            .multipliedBy(CONTRACT_ASSET_DECIMAL)
             .div(new BN(log.args[3].toString()));
     });
     logs.withdraw.forEach((log) => {
         log.amount = new BN(log.args[2].toString())
-            .multipliedBy(CONTRACT_ASSET_DECIAML)
+            .multipliedBy(CONTRACT_ASSET_DECIMAL)
             .div(new BN(log.args[3].toString()));
     });
     return logs;
@@ -317,17 +317,17 @@ const generateReport = async function (account) {
     const depositAmount = powerDDepositAmount.plus(groVaultDepositAmount);
     result.amount_added.pwrd = div(
         powerDDepositAmount,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
     result.amount_added.gvt = div(
         groVaultDepositAmount,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
     result.amount_added.total = div(
         depositAmount,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
 
@@ -335,17 +335,17 @@ const generateReport = async function (account) {
     const withdrawAmount = powerDWithdrawAmount.plus(groVaultWithdrawAmount);
     result.amount_removed.pwrd = div(
         powerDWithdrawAmount,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
     result.amount_removed.gvt = div(
         groVaultWithdrawAmount,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
     result.amount_removed.total = div(
         withdrawAmount,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
 
@@ -355,17 +355,17 @@ const generateReport = async function (account) {
     const netTotal = depositAmount.minus(withdrawAmount);
     result.net_amount_added.pwrd = div(
         netPwrdAmount,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
     result.net_amount_added.gvt = div(
         netGvtAmount,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
     result.net_amount_added.total = div(
         netTotal,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
 
@@ -373,17 +373,17 @@ const generateReport = async function (account) {
     const totalBalance = pwrdBalance.plus(gvtBalance);
     result.current_balance.pwrd = div(
         pwrdBalance,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
     result.current_balance.gvt = div(
         gvtBalance,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
     result.current_balance.total = div(
         totalBalance,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
 
@@ -393,17 +393,17 @@ const generateReport = async function (account) {
     const totalReturn = pwrdReturn.plus(gvtReturn);
     result.net_returns.pwrd = div(
         pwrdReturn,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
     result.net_returns.gvt = div(
         gvtReturn,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
     result.net_returns.total = div(
         totalReturn,
-        CONTRACT_ASSET_DECIAML,
+        CONTRACT_ASSET_DECIMAL,
         amountDecimal
     );
 
