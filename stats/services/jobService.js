@@ -1,7 +1,7 @@
 'use strict';
 
 //const { start, stop, blockWorker } = require('../jobs/blockListener')
-const logger = require('../../common/logger');
+const logger = require('../statsLogger');
 
 const startListener = function () {
     //start();

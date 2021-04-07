@@ -1,32 +1,26 @@
 'use strict';
 
-const { BigNumber } = require('ethers');
 const { getBuoy } = require('../../contract/allContracts');
-const { pendingTransactions } = require('../../common/storage');
+const { ContractCallError } = require('../../common/customErrors');
 const {
-    sendMessage,
+    sendMessageToCriticalEventChannel,
     MESSAGE_TYPES,
-    DISCORD_CHANNELS,
 } = require('../../common/discord/discordService');
-const logger = require('../../common/logger');
+const logger = require('../criticalLogger');
 
 const curveCheck = async function () {
     const healthCheck = await getBuoy()
         .checkCurveHealth()
         .catch((error) => {
             logger.error(error);
-            sendMessage(DISCORD_CHANNELS.critActionEvents, {
-                result: 'Failed: call curveCheck.',
-                type: MESSAGE_TYPES.curveCheck,
-                timestamp: new Date(),
-            });
-            return false;
+            throw new ContractCallError(
+                'Check curve health failed.',
+                MESSAGE_TYPES.curveCheck
+            );
         });
-    logger.info(`check Curve. ${healthCheck}`);
-    sendMessage(DISCORD_CHANNELS.critActionEvents, {
-        result: healthCheck,
+    sendMessageToCriticalEventChannel({
+        message: `Current curve health is ${healthCheck}`,
         type: MESSAGE_TYPES.curveCheck,
-        timestamp: new Date(),
     });
     return healthCheck;
 };

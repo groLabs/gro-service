@@ -4,8 +4,13 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var { SettingError, ParameterError } = require('../common/customErrors');
-var customLogger = require('../common/logger');
+var {
+    SettingError,
+    ParameterError,
+    ContractCallError,
+} = require('../common/customErrors');
+var { sendMessageToAlertChannel } = require('../common/discord/discordService');
+var customLogger = require('./statsLogger');
 
 var botRouter = require('./routes/bot');
 var statsRouter = require('./routes/stats');
@@ -51,9 +56,20 @@ app.use(function handleParameterError(error, req, res, next) {
     }
 });
 
+app.use(function handleContractCallError(error, req, res, next) {
+    customLogger.error(error);
+    if (error instanceof ContractCallError) {
+        res.status(400).json({ message: `${error.name}: ${error.message}` });
+        sendMessageToAlertChannel(error);
+    } else {
+        next(error);
+    }
+});
+
 app.use(function handleDefaultError(error, req, res, next) {
     customLogger.error(`${error.name}: ${error.message}`);
     res.status(500).json({ message: error.name + ': ' + error.message });
+    sendMessageToAlertChannel(error);
     next(error);
 });
 
