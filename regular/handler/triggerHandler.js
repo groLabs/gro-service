@@ -225,7 +225,7 @@ const pnlTrigger = async function () {
         throw new PendingTransactionError(result, MESSAGE_TYPES.pnlTrigger);
     }
 
-    const needPnl = await getPnl()
+    const needPnlVault = await getPnl()
         .pnlTrigger()
         .catch((error) => {
             logger.error(error);
@@ -234,13 +234,26 @@ const pnlTrigger = async function () {
                 MESSAGE_TYPES.pnlTrigger
             );
         });
-    logger.info(`pnl trigger. ${needPnl}`);
+    logger.info(`pnl trigger. ${needPnlVault}`);
+
+    const needPnlAssets = await getPnl()
+        .totalAssetsChangeTrigger()
+        .catch((error) => {
+            logger.error(error);
+            throw new ContractCallError(
+                `Call totalAssetsChangeTrigger to check if the system need execute pnl failed.`,
+                MESSAGE_TYPES.pnlTrigger
+            );
+        });
+
+    logger.info(`totalAssetsChangeTrigger. ${needPnlAssets}`);
+
     let msgObj = {
         message: 'No need run PnL.',
         type: MESSAGE_TYPES.pnlTrigger,
     };
     let pnlTriggerResult = NONEED_TRIGGER;
-    if (needPnl) {
+    if (needPnlVault || needPnlAssets) {
         pnlTriggerResult = {
             needCall: true,
         };
