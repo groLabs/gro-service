@@ -2,7 +2,8 @@
 
 const { DiscordError } = require('./discordError');
 const { getConfig } = require('../configUtil');
-const logger = require('../logger');
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const Discord = require('discord.js');
 const discordClient = new Discord.Client();
 

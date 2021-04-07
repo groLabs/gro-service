@@ -9,9 +9,10 @@ const {
 const { getDefaultProvider } = require('../../common/chainUtil');
 const { ContractCallError } = require('../../common/customErrors');
 const { CONTRACT_ASSET_DECIAML, div } = require('../../common/digitalUtil');
+const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
 const BN = require('bignumber.js');
-const logger = require('../../common/logger');
+const logger = require('../statsLogger');
 const fromBlock = getConfig('blockchain.start_block');
 const launchTime = getConfig('blockchain.launch_timestamp', false) || 0;
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
@@ -77,7 +78,7 @@ const getFilter = function (account, type) {
             filter = powerD.filters.LogTransfer(account);
             break;
         default:
-            logger.warn(`No type: ${type}`);
+            logger.error(`No type: ${type}`);
     }
     return filter;
 };
@@ -85,11 +86,20 @@ const getFilter = function (account, type) {
 const getDepositHistories = async function (account) {
     const provider = getDefaultProvider();
     const depositFilter = getFilter(account, EVENT_TYPE.deposit);
+    if (!depositFilter) {
+        throw new ContractCallError(
+            `Get deposit filter for account:${account} failed.`,
+            MESSAGE_TYPES.miniStatsPersonal
+        );
+    }
     depositFilter.fromBlock = fromBlock;
     depositFilter.toBlock = 'latest';
     const depositLogs = await provider.getLogs(depositFilter).catch((error) => {
         logger.error(error);
-        throw new ContractCallError(`Get deposit logs of ${account} failed.`);
+        throw new ContractCallError(
+            `Get deposit logs of ${account} failed.`,
+            MESSAGE_TYPES.miniStatsPersonal
+        );
     });
     const controllerInstance = new ethers.utils.Interface(
         EVENT_FRAGMENT[EVENT_TYPE.deposit]
@@ -115,6 +125,12 @@ const getDepositHistories = async function (account) {
 const getWithdrawHistories = async function (account) {
     const provider = getDefaultProvider();
     const withdrawFilter = getFilter(account, EVENT_TYPE.withdraw);
+    if (!withdrawFilter) {
+        throw new ContractCallError(
+            `Get withdraw filter for account:${account} failed.`,
+            MESSAGE_TYPES.miniStatsPersonal
+        );
+    }
     withdrawFilter.fromBlock = fromBlock;
     withdrawFilter.toBlock = 'latest';
     const withdrawLogs = await provider
@@ -122,7 +138,8 @@ const getWithdrawHistories = async function (account) {
         .catch((error) => {
             logger.error(error);
             throw new ContractCallError(
-                `Get withdraw logs of ${account} failed.`
+                `Get withdraw logs of ${account} failed.`,
+                MESSAGE_TYPES.miniStatsPersonal
             );
         });
     const controllerInstance = new ethers.utils.Interface(
@@ -150,12 +167,19 @@ const getTransferHistories = async function (account, filters, eventFragment) {
     const provider = getDefaultProvider();
     // in amount
     const inFilter = getFilter(account, filters[0]);
+    if (!inFilter) {
+        throw new ContractCallError(
+            `Get transfer in filter for account:${account} failed.`,
+            MESSAGE_TYPES.miniStatsPersonal
+        );
+    }
     inFilter.fromBlock = fromBlock;
     inFilter.toBlock = 'latest';
     const inLogs = await provider.getLogs(inFilter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(
-            `Get groVault transfer in logs of ${account} failed.`
+            `Get groVault transfer in logs of ${account} failed.`,
+            MESSAGE_TYPES.miniStatsPersonal
         );
     });
     const controllerInstance = new ethers.utils.Interface(eventFragment);
@@ -166,12 +190,19 @@ const getTransferHistories = async function (account, filters, eventFragment) {
 
     // out amount
     const outFilter = getFilter(account, filters[1]);
+    if (!inFilter) {
+        throw new ContractCallError(
+            `Get transfer out filter for account:${account} failed.`,
+            MESSAGE_TYPES.miniStatsPersonal
+        );
+    }
     outFilter.fromBlock = fromBlock;
     outFilter.toBlock = 'latest';
     const outLogs = await provider.getLogs(outFilter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(
-            `Get groVault transfer out logs of ${account} failed.`
+            `Get groVault transfer out logs of ${account} failed.`,
+            MESSAGE_TYPES.miniStatsPersonal
         );
     });
     let logs2 = [];

@@ -2,7 +2,7 @@
 
 const schedule = require('node-schedule');
 const { getGroStats } = require('../handler/statsHandler');
-const logger = require('../../common/logger');
+const logger = require('../statsLogger');
 const config = require('config');
 let generateStatsSchedulerSetting = '* 10 * * * *';
 

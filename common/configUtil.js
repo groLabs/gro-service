@@ -1,5 +1,6 @@
 const { SettingError } = require('./customErrors');
-const logger = require('./logger');
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const logger = require(`../${botEnv}/${botEnv}Logger`);
 const config = require('config');
 
 const getConfig = function (key, existCheck = true) {
