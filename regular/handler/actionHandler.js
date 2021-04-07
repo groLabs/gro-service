@@ -2,35 +2,31 @@
 
 const { getInsurance, getPnl } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
+const { ContractSendError } = require('../../common/customErrors');
 const {
-    sendMessage,
     MESSAGE_TYPES,
-    DISCORD_CHANNELS,
+    sendMessageToProtocolEventChannel,
 } = require('../../common/discord/discordService');
-const logger = require('../../common/logger');
+const logger = require('../regularLogger');
 
 const invest = async function (blockNumber, investParams) {
     const investResponse = await getInsurance()
         .invest(investParams)
         .catch((error) => {
             logger.error(error);
-            sendMessage(DISCORD_CHANNELS.botAlerts, {
-                type: MESSAGE_TYPES.invest,
-                timestamp: new Date(),
-                params: investParams,
-                result: 'Failed: call invest.',
-            });
-            return {};
+            throw new ContractSendError(
+                'Call invest function to invest asset failed.',
+                MESSAGE_TYPES.invest,
+                investParams
+            );
         });
-
-    if (!investResponse.hash) return;
 
     pendingTransactions.set('invest', {
         blockNumber,
         reSendTimes: 0,
         hash: investResponse.hash,
-        label: 'invest',
-        createdTime: Date.now(),
+        label: MESSAGE_TYPES.invest,
+        createdTime: new Date(),
         transactionRequest: {
             nonce: investResponse.nonce,
             gasPrice: investResponse.gasPrice.hex,
@@ -43,9 +39,9 @@ const invest = async function (blockNumber, investParams) {
         },
     });
 
-    sendMessage(DISCORD_CHANNELS.protocolEvents, {
+    sendMessageToProtocolEventChannel({
+        message: `Call invest function with parameter ${investParams} to invest system assets.`,
         type: MESSAGE_TYPES.invest,
-        timestamp: new Date(),
         params: investParams,
         transactionHash: investResponse.hash,
     });
@@ -59,27 +55,23 @@ const harvest = async function (blockNumber, harvestStrategies) {
             .strategyHarvest(strategyInfo.strategyIndex, strategyInfo.callCost)
             .catch((error) => {
                 logger.error(error);
-                sendMessage(DISCORD_CHANNELS.botAlerts, {
-                    type: MESSAGE_TYPES.harvest,
-                    timestamp: new Date(),
-                    params: {
+                throw new ContractSendError(
+                    `Call strategyHarvest function to harvest vault:${strategyInfo.vault.address}'s index:${strategyInfo.strategyIndex} strategy failed.`,
+                    MESSAGE_TYPES.harvest,
+                    {
                         vault: strategyInfo.vault.address,
                         strategyIndex: strategyInfo.strategyIndex,
-                        callCost: strategyInfo.callCost,
-                    },
-                    result: 'Failed: call strategyHarvest.',
-                });
-                return {};
+                        callCost: strategyInfo.callCost.toString(),
+                    }
+                );
             });
-
-        if (!harvestResult.hash) return;
 
         pendingTransactions.set(key, {
             blockNumber,
             reSendTimes: 0,
             hash: harvestResult.hash,
-            createdTime: Date.now(),
-            label: 'harvest',
+            createdTime: new Date(),
+            label: MESSAGE_TYPES.harvest,
             transactionRequest: {
                 nonce: harvestResult.nonce,
                 gasPrice: harvestResult.gasPrice.hex,
@@ -92,13 +84,13 @@ const harvest = async function (blockNumber, harvestStrategies) {
             },
         });
 
-        sendMessage(DISCORD_CHANNELS.protocolEvents, {
+        sendMessageToProtocolEventChannel({
+            message: `Call strategyHarvest function to harvest vault:${strategyInfo.vault.address}'s index:${strategyInfo.strategyIndex} strategy`,
             type: MESSAGE_TYPES.harvest,
-            timestamp: new Date(),
             params: {
                 vault: strategyInfo.vault.address,
                 strategyIndex: strategyInfo.strategyIndex,
-                callCost: strategyInfo.callCost,
+                callCost: strategyInfo.callCost.toString(),
             },
             transactionHash: harvestResult.hash,
         });
@@ -107,25 +99,20 @@ const harvest = async function (blockNumber, harvestStrategies) {
 
 const execPnl = async function (blockNumber) {
     const pnl = getPnl();
-    logger.info(`pnl address ${pnl.address}`);
     const pnlResponse = await pnl.execPnL(0).catch((error) => {
         logger.error(error);
-        sendMessage(DISCORD_CHANNELS.botAlerts, {
-            type: MESSAGE_TYPES.pnl,
-            timestamp: new Date(),
-            result: 'Failed: call execPnL.',
-        });
-        return {};
+        throw new ContractSendError(
+            'Call execPnL function to execuate PnL failed.',
+            MESSAGE_TYPES.pnl
+        );
     });
-
-    if (!pnlResponse.hash) return;
 
     pendingTransactions.set('pnl', {
         blockNumber,
         reSendTimes: 0,
         hash: pnlResponse.hash,
-        createdTime: Date.now(),
-        label: 'pnl',
+        createdTime: new Date(),
+        label: MESSAGE_TYPES.pnl,
         transactionRequest: {
             nonce: pnlResponse.nonce,
             gasPrice: pnlResponse.gasPrice.hex,
@@ -137,9 +124,9 @@ const execPnl = async function (blockNumber) {
             from: pnlResponse.from,
         },
     });
-    sendMessage(DISCORD_CHANNELS.protocolEvents, {
+    sendMessageToProtocolEventChannel({
+        message: 'Call execPnL function to execuate PnL',
         type: MESSAGE_TYPES.pnl,
-        timestamp: new Date(),
         transactionHash: pnlResponse.hash,
     });
 };
@@ -152,12 +139,10 @@ const rebalance = async function (blockNumber, rebalanceParams) {
             .rebalance()
             .catch((error) => {
                 logger.error(error);
-                sendMessage(DISCORD_CHANNELS.botAlerts, {
-                    type: MESSAGE_TYPES.rebalance,
-                    timestamp: new Date(),
-                    result: 'Failed: call rebalance.',
-                });
-                return {};
+                throw new ContractSendError(
+                    'Call rebalance function to adjust system assets failed.',
+                    MESSAGE_TYPES.rebalance
+                );
             });
         transactionKey = 'rebalance';
     } else if (rebalanceParams[1]) {
@@ -165,24 +150,20 @@ const rebalance = async function (blockNumber, rebalanceParams) {
             .topup()
             .catch((error) => {
                 logger.error(error);
-                sendMessage(DISCORD_CHANNELS.botAlerts, {
-                    type: MESSAGE_TYPES.topup,
-                    timestamp: new Date(),
-                    result: 'Failed: call topup.',
-                });
-                return {};
+                throw new ContractSendError(
+                    'Call topup function to full up lifeguard failed.',
+                    MESSAGE_TYPES.rebalance
+                );
             });
         transactionKey = 'topup';
     }
-
-    if (!rebalanceReponse.hash) return;
 
     pendingTransactions.set(transactionKey, {
         blockNumber,
         reSendTimes: 0,
         hash: rebalanceReponse.hash,
         createdTime: new Date(),
-        label: 'rebalance',
+        label: MESSAGE_TYPES[transactionKey],
         transactionRequest: {
             nonce: rebalanceReponse.nonce,
             gasPrice: rebalanceReponse.gasPrice.hex,
@@ -195,11 +176,15 @@ const rebalance = async function (blockNumber, rebalanceParams) {
         },
     });
 
-    sendMessage(DISCORD_CHANNELS.protocolEvents, {
+    const msgObj = {
+        message: 'Call rebalance function to adjust system assets',
         type: MESSAGE_TYPES[transactionKey],
-        timestamp: new Date(),
         transactionHash: rebalanceReponse.hash,
-    });
+    };
+    if (transactionKey == 'topup') {
+        msgObj.message = 'Call topup function to full up lifeguard';
+    }
+    sendMessageToProtocolEventChannel(msgObj);
 };
 
 const execActions = async function (blockNumber, triggerResult) {

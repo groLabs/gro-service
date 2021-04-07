@@ -11,6 +11,7 @@ module.exports = {
         launch_timestamp: '1617442180',
     },
     stats_folder: '../stats',
+    log_folder: '../logs',
     stats_latest: '../stats/gro-latest.json',
     vault_name: ['DAI', 'USDC', 'USDT'],
     strategy_name: ['Harvest', 'Yearn Metapool', 'Generic Lending'],
@@ -31,4 +32,4 @@ module.exports = {
             bot_logs: '826416451744825404',
         },
     },
-}
+};

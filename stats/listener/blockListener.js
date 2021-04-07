@@ -1,7 +1,7 @@
 'use strict';
 
 const { getDefaultProvider } = require('../common/chainUtil');
-const logger = require('../common/logger');
+const logger = require('../statsLogger');
 const BlockWorker = require('./blockWorker');
 const provider = getDefaultProvider();
 

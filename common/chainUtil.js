@@ -2,14 +2,15 @@
 
 const { ethers } = require('ethers');
 const { NonceManager } = require('@ethersproject/experimental');
-const { SettingError } = require('./customErrors');
+const { SettingError, BlockChainCallError } = require('./customErrors');
 const { pendingTransactions } = require('./storage');
 const {
-    sendMessage,
-    DISCORD_CHANNELS,
+    sendMessageToLogChannel,
+    sendMessageToProtocolEventChannel,
     MESSAGE_TYPES,
 } = require('./discord/discordService');
-const logger = require('./logger');
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const logger = require(`../${botEnv}/${botEnv}Logger`);
 const config = require('config');
 
 if (!config.has('blockchain.network')) {
@@ -22,6 +23,12 @@ if (!process.env.BOT_PRIVATE_KEY) {
     const err = new SettingError(
         'Environment variable BOT_PRIVATE_KEY are not set.'
     );
+    logger.error(err);
+    throw err;
+}
+
+if (!config.has('blockchain.network')) {
+    const err = new SettingError('Config: blockchain.network not setted.');
     logger.error(err);
     throw err;
 }
@@ -65,7 +72,7 @@ const getRpcProvider = function () {
             'Config:blockchain.api_keys.alchemy not setted.'
         );
         logger.error(err);
-        return;
+        throw err;
     }
     logger.info('Create a new Rpc provider.');
     const apiKey = config.get('blockchain.api_keys.alchemy');
@@ -109,23 +116,20 @@ const syncNounce = async function () {
         .getTransactionCount()
         .catch((error) => {
             logger.error(error);
-            return -1;
+            throw new BlockChainCallError(
+                'Get bot nonce from chain failed.',
+                MESSAGE_TYPES.adjustNonce
+            );
         });
-    if (transactionCountInChain == -1) {
-        logger.error('Get transactionCountInChain failed.');
-        return;
-    }
     // Get local nonce
     const transactionCountInLocal = await nonceManager
         .getTransactionCount('pending')
         .catch((error) => {
-            logger.error(error);
-            return -1;
+            throw new BlockChainCallError(
+                'Get bot nonce from local failed.',
+                MESSAGE_TYPES.adjustNonce
+            );
         });
-    if (transactionCountInLocal == -1) {
-        logger.error('Get transactionCountInLocal failed.');
-        return;
-    }
     // Adjust local nonce
     if (transactionCountInChain > transactionCountInLocal) {
         const result = await nonceManager
@@ -133,20 +137,15 @@ const syncNounce = async function () {
             .wait()
             .catch((error) => {
                 logger.error(error);
-                sendMessage(DISCORD_CHANNELS.botAlerts, {
-                    result: 'Failed',
-                    type: MESSAGE_TYPES.adjustNonce,
-                    timestamp: new Date(),
-                });
-                return {};
+                throw new BlockChainCallError(
+                    `Set bot Nonce to ${transactionCountInChain} failed.`,
+                    MESSAGE_TYPES.adjustNonce
+                );
             });
-        if (result.transactionHash) {
-            sendMessage(DISCORD_CHANNELS.botLogs, {
-                result: 'Success',
-                type: MESSAGE_TYPES.adjustNonce,
-                timestamp: new Date(),
-            });
-        }
+        sendMessageToLogChannel({
+            message: `Set bot Nonce to ${transactionCountInChain}`,
+            type: MESSAGE_TYPES.adjustNonce,
+        });
     }
 };
 
@@ -161,23 +160,24 @@ const checkPendingTransactions = async function () {
             .getTransactionReceipt(hash)
             .catch((err) => {
                 logger.error(err);
-                sendMessage(DISCORD_CHANNELS.botAlerts, {
-                    type: MESSAGE_TYPES[msgLabel],
-                    timestamp: transactionInfo.createdTime,
-                    result: `Failed: getTransactionReceipt for ${hash}`,
-                    transactionHash: hash,
-                });
-                return null;
+                throw new BlockChainCallError(
+                    `Get receipt of ${hash} from chain failed.`,
+                    MESSAGE_TYPES[msgLabel],
+                    hash
+                );
             });
-        if (!transactionReceipt) return;
         // remove type from pending transactions
         pendingTransactions.delete(type);
-        sendMessage(DISCORD_CHANNELS.protocolEvents, {
-            type: MESSAGE_TYPES[msgLabel],
+        const msgObj = {
+            type: msgLabel,
             timestamp: transactionInfo.createdTime,
-            result: `${type} mined. Status: ${transactionReceipt.status}`,
+            message: `${type} transaction ${hash} has mined to chain.`,
             transactionHash: hash,
-        });
+        };
+        if (!transactionReceipt.status) {
+            msgObj.result = `${type} transaction ${hash} reverted.`;
+        }
+        sendMessageToProtocolEventChannel(msgObj);
     }
 };
 

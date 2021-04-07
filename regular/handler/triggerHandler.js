@@ -9,52 +9,57 @@ const {
 } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
 const {
-    sendMessage,
+    sendMessageToProtocolEventChannel,
     MESSAGE_TYPES,
-    DISCORD_CHANNELS,
 } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
-const logger = require('../../common/logger');
+const {
+    PendingTransactionError,
+    ContractCallError,
+} = require('../../common/customErrors');
+const logger = require('../regularLogger');
 const config = require('config');
 const NONEED_TRIGGER = { needCall: false };
 
 const investTrigger = async function () {
     if (pendingTransactions.get('invest')) {
-        const result = `Already has pending invest transaction: ${pendingTransactions.get(
-            'invest'
-        )}`;
+        const result = `Already has pending invest transaction: ${
+            pendingTransactions.get('invest').hash
+        }`;
         logger.info(result);
-        sendMessage(DISCORD_CHANNELS.botLogs, {
-            result,
-            type: MESSAGE_TYPES.investTrigger,
-            timestamp: new Date(),
-        });
-        return NONEED_TRIGGER;
+        throw new PendingTransactionError(result, MESSAGE_TYPES.investTrigger);
     }
     const investParams = await getInsurance()
         .investTrigger()
         .catch((error) => {
             logger.error(error);
-            sendMessage(DISCORD_CHANNELS.botAlerts, {
-                result: 'Failed: call invest trigger.',
-                type: MESSAGE_TYPES.investTrigger,
-                timestamp: new Date(),
-            });
-            return [];
+            throw new ContractCallError(
+                'Call investTrigger function to check if the system need investment failed'
+            );
         });
-    logger.info(`invest trigger: ${JSON.stringify(investParams)}`);
-    sendMessage(DISCORD_CHANNELS.protocolEvents, {
-        result: investParams,
+    let msgObj = {
+        message: 'No need invest.',
         type: MESSAGE_TYPES.investTrigger,
-        timestamp: new Date(),
-    });
+        params: [],
+    };
+
+    let investTriggerResult = NONEED_TRIGGER;
+
     if (investParams.length) {
-        return {
+        investTriggerResult = {
             needCall: true,
             params: investParams,
         };
+        let paramsMsg = '';
+        investParams.forEach((item) => {
+            paramsMsg += `${item.toString()}, `;
+        });
+        msgObj.message = `Need invest with parameter: [${paramsMsg}]`;
+        msgObj.params = `[${paramsMsg}]`;
     }
-    return NONEED_TRIGGER;
+    logger.info(`invest trigger: ${msgObj.params}`);
+    sendMessageToProtocolEventChannel(msgObj);
+    return investTriggerResult;
 };
 
 const checkVaultStrategyHarvest = function (vault, vaultIndex, strategyLength) {
@@ -63,7 +68,10 @@ const checkVaultStrategyHarvest = function (vault, vaultIndex, strategyLength) {
         const key = `harvest-${vault.address}-${i}`;
 
         if (pendingTransactions.get(key)) {
-            logger.info(`Already has pending ${key} transaction.`);
+            const msg = `Already has pending harvest:${key} transaction: ${
+                pendingTransactions.get(key).hash
+            }`;
+            logger.info(msg);
             continue;
         }
 
@@ -96,8 +104,11 @@ const harvestTrigger = async function () {
     const vaultsStrategyLength = getStrategyLength();
     //console.log(`vaults: ${JSON.stringify(vaults)}`)
     if (vaults.length == 0) {
-        logger.info('Not fund any vault.');
-        return NONEED_TRIGGER;
+        logger.error('Not fund any vault.');
+        throw new ContractCallError(
+            'Try to call investTrigger function but not found any vaults.',
+            MESSAGE_TYPES.investTrigger
+        );
     }
 
     let strategyHarvestTrigger = [];
@@ -133,7 +144,10 @@ const harvestOneTrigger = async function () {
     const vaults = getVaults();
     if (vaults.length == 0) {
         logger.info('Not fund any vault.');
-        return NONEED_TRIGGER;
+        throw new ContractCallError(
+            'Try to call investTrigger function but not found any vaults.',
+            MESSAGE_TYPES.investTrigger
+        );
     }
 
     const vaultsStrategyLength = getStrategyLength();
@@ -145,15 +159,14 @@ const harvestOneTrigger = async function () {
             const key = `harvest-${vault.address}-${j}`;
 
             if (pendingTransactions.get(key)) {
-                const result = 'Already has pending harvest transaction.';
+                const result = `Already has pending harvest transaction: ${
+                    pendingTransactions.get(key).hash
+                }`;
                 logger.info(result);
-                sendMessage(DISCORD_CHANNELS.botLogs, {
+                throw new PendingTransactionError(
                     result,
-                    type: MESSAGE_TYPES.harvestTrigger,
-                    timestamp: new Date(),
-                    params: `vault: ${vault.address} strategy index: ${j}`,
-                });
-                return NONEED_TRIGGER;
+                    MESSAGE_TYPES.investTrigger
+                );
             }
 
             // Get harvest callCost
@@ -164,32 +177,24 @@ const harvestOneTrigger = async function () {
                 .strategyHarvestTrigger(j, callCost)
                 .catch((error) => {
                     logger.error(error);
-                    sendMessage(DISCORD_CHANNELS.botAlerts, {
-                        result: 'Failed: call strategyHarvestTrigger.',
-                        type: MESSAGE_TYPES.harvestTrigger,
-                        timestamp: new Date(),
-                        params: {
-                            callCost,
-                            vault: vault.address,
-                            strategyIndex: j,
-                        },
-                    });
-                    return false;
+                    throw new ContractCallError(
+                        `Call vault:${vault.address}'s strategyHarvestTrigger function with strategy index:${j} and callCost: ${callCost} failed.`,
+                        MESSAGE_TYPES.investTrigger
+                    );
                 });
             logger.info(
                 `vault:${i} strategy:${j} strategyHarvestTrigger: ${result}`
             );
-            sendMessage(DISCORD_CHANNELS.protocolEvents, {
-                result,
-                type: MESSAGE_TYPES.harvestTrigger,
-                timestamp: new Date(),
-                params: {
-                    callCost,
-                    vault: vault.address,
-                    strategyIndex: j,
-                },
-            });
-            if (result)
+            if (result) {
+                sendMessageToProtocolEventChannel({
+                    message: `vault:${vault.address}'s strategy ${j} need harvest.`,
+                    type: MESSAGE_TYPES.harvestTrigger,
+                    params: {
+                        callCost: callCost.toString(),
+                        vault: vault.address,
+                        strategyIndex: j,
+                    },
+                });
                 return {
                     needCall: true,
                     params: [
@@ -201,95 +206,101 @@ const harvestOneTrigger = async function () {
                         },
                     ],
                 };
+            }
         }
     }
+    sendMessageToProtocolEventChannel({
+        message: `No any strategies need harvest.`,
+        type: MESSAGE_TYPES.harvestTrigger,
+    });
     return NONEED_TRIGGER;
 };
 
 const pnlTrigger = async function () {
     if (pendingTransactions.get('pnl')) {
-        const result = 'Already has pending pnl transaction.';
+        const result = `Already has pending pnl transaction: ${
+            pendingTransactions.get('pnl').hash
+        }`;
         logger.info(result);
-        sendMessage(DISCORD_CHANNELS.botLogs, {
-            result,
-            type: MESSAGE_TYPES.pnlTrigger,
-            timestamp: new Date(),
-        });
-        return NONEED_TRIGGER;
+        throw new PendingTransactionError(result, MESSAGE_TYPES.pnlTrigger);
     }
 
     const needPnl = await getPnl()
         .pnlTrigger()
         .catch((error) => {
             logger.error(error);
-            sendMessage(DISCORD_CHANNELS.botAlerts, {
-                result: 'Failed: call pnl trigger.',
-                type: MESSAGE_TYPES.pnlTrigger,
-                timestamp: new Date(),
-            });
-            return false;
+            throw new ContractCallError(
+                `Call pnlTrigger to check if the system need execute pnl failed.`,
+                MESSAGE_TYPES.pnlTrigger
+            );
         });
     logger.info(`pnl trigger. ${needPnl}`);
-    sendMessage(DISCORD_CHANNELS.protocolEvents, {
-        result: needPnl,
+    let msgObj = {
+        message: 'No need run PnL.',
         type: MESSAGE_TYPES.pnlTrigger,
-        timestamp: new Date(),
-    });
+    };
+    let pnlTriggerResult = NONEED_TRIGGER;
     if (needPnl) {
-        return {
+        pnlTriggerResult = {
             needCall: true,
         };
+        msgObj.message = 'Need run Pnl.';
     }
 
-    return NONEED_TRIGGER;
+    sendMessageToProtocolEventChannel(msgObj);
+    return pnlTriggerResult;
 };
 
 const rebalanceTrigger = async function () {
     if (pendingTransactions.get('rebalance')) {
-        const result = 'Already has pending rebalance transaction.';
+        const result = `Already has pending rebalance transaction: ${
+            pendingTransactions.get('rebalance').hash
+        }`;
         logger.info(result);
-        sendMessage(DISCORD_CHANNELS.botLogs, {
+        throw new PendingTransactionError(
             result,
-            type: MESSAGE_TYPES.rebalanceTrigger,
-            timestamp: new Date(),
-        });
-        return NONEED_TRIGGER;
+            MESSAGE_TYPES.rebalanceTrigger
+        );
     }
     if (pendingTransactions.get('topup')) {
-        const result = 'Already has pending topup transaction.';
+        const result = `Already has pending topup transaction: ${
+            pendingTransactions.get('rebalance').hash
+        }`;
         logger.info(result);
-        sendMessage(DISCORD_CHANNELS.botLogs, {
+        throw new PendingTransactionError(
             result,
-            type: MESSAGE_TYPES.rebalanceTrigger,
-            timestamp: new Date(),
-        });
-        return NONEED_TRIGGER;
+            MESSAGE_TYPES.rebalanceTrigger
+        );
     }
 
     const needRebalance = await getInsurance()
         .rebalanceTrigger()
         .catch((error) => {
             logger.error(error);
-            sendMessage(DISCORD_CHANNELS.botAlerts, {
-                result: 'Failed: call rebalance trigger.',
-                type: MESSAGE_TYPES.rebalanceTrigger,
-                timestamp: new Date(),
-            });
-            return [];
+            throw new ContractCallError(
+                'Call rebalanceTrigger function failed.',
+                MESSAGE_TYPES.rebalanceTrigger
+            );
         });
     logger.info(`needRebalance: ${needRebalance}`);
-    sendMessage(DISCORD_CHANNELS.protocolEvents, {
-        result: needRebalance,
+    let msgObj = {
+        message: 'No need run rebalance or topup.',
         type: MESSAGE_TYPES.rebalanceTrigger,
-        timestamp: new Date(),
-    });
+    };
+    let rebalanceTriggerResult = NONEED_TRIGGER;
     if (needRebalance.length && (needRebalance[0] || needRebalance[1])) {
-        return {
+        rebalanceTriggerResult = {
             needCall: true,
             params: needRebalance,
         };
+        if (needRebalance[0]) {
+            msgObj.message = 'Need run rebalance to adjust the system asset.';
+        } else {
+            msgObj.message = 'Need run topup to full up asset to lifeguard.';
+        }
     }
-    return NONEED_TRIGGER;
+    sendMessageToProtocolEventChannel(msgObj);
+    return rebalanceTriggerResult;
 };
 
 const callTriggers = async function () {
@@ -298,10 +309,7 @@ const callTriggers = async function () {
     triggerPromises.push(harvestTrigger());
     triggerPromises.push(pnlTrigger());
     triggerPromises.push(rebalanceTrigger());
-    const triggerResult = await Promise.all(triggerPromises).catch((error) => {
-        logger.error(error);
-        return [];
-    });
+    const triggerResult = await Promise.all(triggerPromises);
     return triggerResult;
 };
 

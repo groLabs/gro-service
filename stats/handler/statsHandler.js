@@ -18,7 +18,7 @@ const {
     getBuoy,
 } = require('../../contract/allContracts');
 const BlocksSanner = require('../common/blockscanner');
-const logger = require('../../common/logger');
+const logger = require('../statsLogger');
 const { getDefaultProvider } = require('../../common/chainUtil');
 const config = require('config');
 const {
