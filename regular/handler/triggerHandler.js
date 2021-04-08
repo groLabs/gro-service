@@ -21,44 +21,55 @@ const logger = require('../regularLogger');
 const config = require('config');
 const NONEED_TRIGGER = { needCall: false };
 
-const investTrigger = async function () {
-    if (pendingTransactions.get('invest')) {
-        const result = `Already has pending invest transaction: ${
-            pendingTransactions.get('invest').hash
-        }`;
+const adapterInvestTrigger = async function (vault) {
+    if (pendingTransactions.get(`invest-${vault.address}`)) {
+        const result = `Already has pending invest in adapter:${
+            vault.address
+        } transaction: ${pendingTransactions.get('invest').hash}`;
         logger.info(result);
         throw new PendingTransactionError(result, MESSAGE_TYPES.investTrigger);
     }
-    const investParams = await getInsurance()
-        .investTrigger()
-        .catch((error) => {
-            logger.error(error);
-            throw new ContractCallError(
-                'Call investTrigger function to check if the system need investment failed'
-            );
-        });
+    const investTriggerResult = await vault.investTrigger().catch((error) => {
+        logger.error(error);
+        throw new ContractCallError(
+            `Call investTrigger of adapter: ${vault.address} to check if the adapter need investment failed`
+        );
+    });
     let msgObj = {
-        message: 'No need invest.',
+        message: `Adapter: ${vault.address} doesn't need invest.`,
         type: MESSAGE_TYPES.investTrigger,
-        params: [],
     };
+    if (investTriggerResult) {
+        msgObj.message = `Adapter: ${vault.address} need invest.`;
+    }
+    logger.info(
+        `Adapter:${vault.address} invest trigger: ${investTriggerResult}`
+    );
+    sendMessageToProtocolEventChannel(msgObj);
+    return investTriggerResult;
+};
 
+const investTrigger = async function () {
+    const vaults = getVaults();
+    if (vaults.length == 0) {
+        logger.error('Not fund any vault.');
+        throw new ContractCallError(
+            'Try to call investTrigger function but not found any vaults.',
+            MESSAGE_TYPES.investTrigger
+        );
+    }
+    let triggerPromises = [];
+    for (let i = 0; i < vaults.length; i++) {
+        triggerPromises.push(adapterInvestTrigger(vaults[i]));
+    }
+    const result = await Promise.all(triggerPromises);
     let investTriggerResult = NONEED_TRIGGER;
-
-    if (investParams.length) {
+    if (result[0] || result[1] || result[2]) {
         investTriggerResult = {
             needCall: true,
-            params: investParams,
+            params: result,
         };
-        let paramsMsg = '';
-        investParams.forEach((item) => {
-            paramsMsg += `${item.toString()}, `;
-        });
-        msgObj.message = `Need invest with parameter: [${paramsMsg}]`;
-        msgObj.params = `[${paramsMsg}]`;
     }
-    logger.info(`invest trigger: ${msgObj.params}`);
-    sendMessageToProtocolEventChannel(msgObj);
     return investTriggerResult;
 };
 
@@ -297,20 +308,15 @@ const rebalanceTrigger = async function () {
         });
     logger.info(`needRebalance: ${needRebalance}`);
     let msgObj = {
-        message: 'No need run rebalance or topup.',
+        message: 'No need run rebalance.',
         type: MESSAGE_TYPES.rebalanceTrigger,
     };
     let rebalanceTriggerResult = NONEED_TRIGGER;
-    if (needRebalance.length && (needRebalance[0] || needRebalance[1])) {
+    if (needRebalance[0]) {
         rebalanceTriggerResult = {
             needCall: true,
-            params: needRebalance,
         };
-        if (needRebalance[0]) {
-            msgObj.message = 'Need run rebalance to adjust the system asset.';
-        } else {
-            msgObj.message = 'Need run topup to full up asset to lifeguard.';
-        }
+        msgObj.message = 'Need run rebalance to adjust the system asset.';
     }
     sendMessageToProtocolEventChannel(msgObj);
     return rebalanceTriggerResult;

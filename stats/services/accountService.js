@@ -31,10 +31,10 @@ const EVENT_TYPE = {
 
 const EVENT_FRAGMENT = {};
 EVENT_FRAGMENT[EVENT_TYPE.deposit] = [
-    'event LogNewDeposit(address indexed user, address indexed referral, address gtoken, uint256 usdAmount, uint256[] tokens, bool whale)',
+    'event LogNewDeposit(address indexed user, address indexed referral, address gtoken, uint256 usdAmount, uint256[] tokens)',
 ];
 EVENT_FRAGMENT[EVENT_TYPE.withdraw] = [
-    'event LogNewWithdrawal(address indexed user, address indexed referral, address gtoken, uint256 caseValue, uint256 usdAmount, uint256[] tokens, bool whale)',
+    'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
 ];
 EVENT_FRAGMENT[EVENT_TYPE.gvtTransfer] = [
     'event LogTransfer(address indexed sender, address indexed recipient, uint256 indexed amount, uint256 factor)',
@@ -151,13 +151,12 @@ const getWithdrawHistories = async function (account) {
     });
     const result = { groVault: [], powerD: [] };
     if (!logs.length) return result;
-    const groVaultAddress = getGroVault().address;
     logs.forEach((log) => {
-        log.amount = new BN(log.args[4].toString());
-        if (log.args[2] == groVaultAddress) {
-            result.groVault.push(log);
-        } else {
+        log.amount = new BN(log.args[5].toString());
+        if (log.args[2]) {
             result.powerD.push(log);
+        } else {
+            result.groVault.push(log);
         }
     });
     return result;

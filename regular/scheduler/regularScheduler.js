@@ -264,7 +264,7 @@ const rebalanceTriggerScheduler = function () {
             if (!currectBlockNumber) return;
 
             await syncNounce();
-            await rebalance(currectBlockNumber, triggerResult.params);
+            await rebalance(currectBlockNumber);
         } catch (error) {
             sendMessageToAlertChannel(error);
         }

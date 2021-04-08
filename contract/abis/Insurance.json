@@ -268,6 +268,19 @@
             "type": "function"
         },
         {
+            "inputs": [],
+            "name": "calculateDepositDeltasOnAllVaults",
+            "outputs": [
+                {
+                    "internalType": "uint256[]",
+                    "name": "",
+                    "type": "uint256[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
             "inputs": [
                 {
                     "internalType": "address",
@@ -320,6 +333,35 @@
             "type": "function"
         },
         {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getVaultDelta",
+            "outputs": [
+                {
+                    "internalType": "uint256[]",
+                    "name": "",
+                    "type": "uint256[]"
+                },
+                {
+                    "internalType": "uint256[]",
+                    "name": "",
+                    "type": "uint256[]"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
             "inputs": [],
             "name": "governance",
             "outputs": [
@@ -352,26 +394,13 @@
             "type": "function"
         },
         {
-            "inputs": [
-                {
-                    "internalType": "uint256[]",
-                    "name": "swapOutPercent",
-                    "type": "uint256[]"
-                }
-            ],
-            "name": "invest",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
             "inputs": [],
-            "name": "investTrigger",
+            "name": "maxPercentForDeposit",
             "outputs": [
                 {
-                    "internalType": "uint256[]",
+                    "internalType": "uint256",
                     "name": "",
-                    "type": "uint256[]"
+                    "type": "uint256"
                 }
             ],
             "stateMutability": "view",
@@ -469,13 +498,13 @@
             "inputs": [
                 {
                     "internalType": "uint256",
-                    "name": "gvtToWithdraw",
+                    "name": "withdrawUsd",
                     "type": "uint256"
                 },
                 {
-                    "internalType": "uint256",
-                    "name": "pwrdToWithdraw",
-                    "type": "uint256"
+                    "internalType": "bool",
+                    "name": "pwrd",
+                    "type": "bool"
                 }
             ],
             "name": "rebalanceForWithdraw",
@@ -570,6 +599,19 @@
             "inputs": [
                 {
                     "internalType": "uint256",
+                    "name": "_maxPercentForDeposit",
+                    "type": "uint256"
+                }
+            ],
+            "name": "setMaxPercentForDeposit",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
                     "name": "_maxPercentForWithdraw",
                     "type": "uint256"
                 }
@@ -593,13 +635,6 @@
                 }
             ],
             "name": "setUnderlyingTokensPercents",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [],
-            "name": "topup",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
