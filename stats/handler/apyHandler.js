@@ -9,11 +9,13 @@ const { getGvt, getPwrd } = require('../../contract/allContracts');
 const BlocksScanner = require('../common/blockScanner');
 const logger = require('../statsLogger');
 const { getDefaultProvider } = require('../../common/chainUtil');
+const { BlockChainCallError } = require('../../common/customErrors');
 const config = require('config');
 const provider = getDefaultProvider();
 const scanner = new BlocksScanner(provider);
 
 const FACTOR_DECIMAL = BigNumber.from(10).pow(BigNumber.from(18));
+const GVT_INIT_FACTOR = BigNumber.from('3333333333333333');
 const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(4));
 const ZERO = BigNumber.from(0);
 const SECONDS_IN_YEAR = BigNumber.from(31536000);
@@ -67,7 +69,10 @@ const calcApyByPeriod = async function (
 const calculatePriceDiff = function (factorStart, factorEnd) {
     const startPrice = FACTOR_DECIMAL.mul(PERCENT_DECIMAL).div(factorStart);
     const endPrice = FACTOR_DECIMAL.mul(PERCENT_DECIMAL).div(factorEnd);
-    return endPrice.sub(startPrice);
+    if(startPrice.toString() == '0') {
+        throw new BlockChainCallError('calculatePriceDiff failed: startPrice is 0.')
+    }
+    return endPrice.sub(startPrice).mul(PERCENT_DECIMAL).div(startPrice);
 };
 
 // In effect if start timestamp of "the period"  < launch_timestamp then just use all time apy. // // Where "the_period" is 24h/daily/weekly/monthly
@@ -86,7 +91,7 @@ const calcFirstDayApy = async function (latestBlock) {
 
     const gvtFactorNow = await getGvt().factor(latestBlockTag);
     const pwrdFactorNow = await getPwrd().factor(latestBlockTag);
-    const gvtApy = calculatePriceDiff(FACTOR_DECIMAL, gvtFactorNow)
+    const gvtApy = calculatePriceDiff(GVT_INIT_FACTOR, gvtFactorNow)
         .mul(SECONDS_IN_YEAR)
         .div(duration);
 
@@ -99,7 +104,7 @@ const calcFirstDayApy = async function (latestBlock) {
         gvt: gvtApy,
     };
     logger.info(
-        `block ${latestBlock.block} ${gvtFactorNow} ${pwrdFactorNow} factor gvt ${FACTOR_DECIMAL} ${gvtApy} pwrd ${FACTOR_DECIMAL} ${pwrdApy}`
+        `block ${latestBlock.number} now factor: ${gvtFactorNow} ${pwrdFactorNow} factor gvt ${GVT_INIT_FACTOR} ${gvtApy} pwrd ${FACTOR_DECIMAL} ${pwrdApy}`
     );
     return firstDayApy;
 };
@@ -130,7 +135,7 @@ const calcAlltimeApy = async function (startOfToday) {
     const gvtFactorEnd = await gvt.factor(blockTagUtcToday);
     const pwrdFactorEnd = await pwrd.factor(blockTagUtcToday);
 
-    const gvtApy = calculatePriceDiff(FACTOR_DECIMAL, gvtFactorEnd)
+    const gvtApy = calculatePriceDiff(GVT_INIT_FACTOR, gvtFactorEnd)
         .mul(SECONDS_IN_YEAR)
         .div(duration);
 
@@ -143,7 +148,7 @@ const calcAlltimeApy = async function (startOfToday) {
         gvt: gvtApy,
     };
     logger.info(
-        `alltime block ${blockUtcToday.block} ${gvtFactorEnd} ${pwrdFactorEnd} factor gvt ${FACTOR_DECIMAL} ${gvtApy} pwrd ${FACTOR_DECIMAL} ${pwrdApy}`
+        `alltime block ${blockUtcToday.block} ${gvtFactorEnd} ${pwrdFactorEnd} factor gvt ${GVT_INIT_FACTOR} ${gvtApy} pwrd ${FACTOR_DECIMAL} ${pwrdApy}`
     );
     return allTimeApy;
 };
