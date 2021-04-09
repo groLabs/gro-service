@@ -431,6 +431,29 @@
         {
             "inputs": [
                 {
+                    "internalType": "bool",
+                    "name": "pwrd",
+                    "type": "bool"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "index",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "minAmount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "withdrawAllSingle",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
                     "internalType": "address",
                     "name": "account",
                     "type": "address"
@@ -451,30 +474,7 @@
                     "type": "uint256"
                 }
             ],
-            "name": "withdrawAllFromAccount",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "bool",
-                    "name": "pwrd",
-                    "type": "bool"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "index",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "minAmount",
-                    "type": "uint256"
-                }
-            ],
-            "name": "withdrawAllSingle",
+            "name": "withdrawAllSingleFromAccount",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"

@@ -7,8 +7,8 @@ module.exports = {
             etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
             pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
         },
-        start_block: 24142471,
-        launch_timestamp: '1617442180',
+        start_block: 24205407,
+        launch_timestamp: '1617992244',
     },
     trigger_scheduler: {
         pending_transaction_check: '5 30 * * * *',
@@ -27,7 +27,7 @@ module.exports = {
     strategy_name: ['Harvest', 'Yearn Metapool', 'Generic Lending'],
     lifeguard_name: 'Curve-3pool',
     contracts: {
-        controller: '0xC42dB2005ADB6f579A3c4931c52139926E08F46C',
+        controller: '0x105FF0FA312d731d993C7Fa6Dab924fdA74468e5',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
