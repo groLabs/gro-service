@@ -1,5 +1,4 @@
 {
-    "contractName": "Allocation",
     "abi": [
         {
             "anonymous": false,
