@@ -81,6 +81,7 @@ const sendMessage = async function (channelId, msgObj, retry = 0) {
 };
 
 const sendMessageToAlertChannel = function (error) {
+	logger.error(error)
     const msgObj = {
         icon: ':warning:',
         message: error.message,

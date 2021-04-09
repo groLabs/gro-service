@@ -2,6 +2,7 @@
 
 const schedule = require('node-schedule');
 const { generateGroStatsFile } = require('../handler/statsHandler');
+const { sendMessageToAlertChannel } = require('../../common/discord/discordService');
 const logger = require('../statsLogger.js');
 const config = require('config');
 let generateStatsSchedulerSetting = '00 10 * * * *';
