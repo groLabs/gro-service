@@ -469,7 +469,7 @@
                     "type": "uint256"
                 }
             ],
-            "name": "factorWithParam",
+            "name": "factor",
             "outputs": [
                 {
                     "internalType": "uint256",

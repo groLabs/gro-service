@@ -1,6 +1,10 @@
 'use strict';
 
-const { getInsurance, getPnl } = require('../../contract/allContracts');
+const {
+    getInsurance,
+    getPnl,
+    getVaults,
+} = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
 const { ContractSendError } = require('../../common/customErrors');
 const {
@@ -9,19 +13,17 @@ const {
 } = require('../../common/discord/discordService');
 const logger = require('../regularLogger');
 
-const invest = async function (blockNumber, investParams) {
-    const investResponse = await getInsurance()
-        .invest(investParams)
-        .catch((error) => {
-            logger.error(error);
-            throw new ContractSendError(
-                'Call invest function to invest asset failed.',
-                MESSAGE_TYPES.invest,
-                investParams
-            );
-        });
+const adapterInvest = async function (blockNumber, isInvested, vault) {
+    if (!isInvested) return;
 
-    pendingTransactions.set('invest', {
+    const investResponse = await vault.invest().catch((error) => {
+        logger.error(error);
+        throw new ContractSendError(
+            `Call adapter:${vault.address}'s invest function to invest asset failed.`,
+            MESSAGE_TYPES.invest
+        );
+    });
+    pendingTransactions.set(`invest-${vault.address}`, {
         blockNumber,
         reSendTimes: 0,
         hash: investResponse.hash,
@@ -38,13 +40,18 @@ const invest = async function (blockNumber, investParams) {
             from: investResponse.from,
         },
     });
-
     sendMessageToProtocolEventChannel({
-        message: `Call invest function with parameter ${investParams} to invest system assets.`,
+        message: `Call adapter:${vault.address}'s invest function to invest assets.`,
         type: MESSAGE_TYPES.invest,
-        params: investParams,
         transactionHash: investResponse.hash,
     });
+};
+
+const invest = async function (blockNumber, investParams) {
+    const vaults = getVaults();
+    for (let i = 0; i < vaults.length; i++) {
+        await adapterInvest(blockNumber, investParams[i], vaults[i]);
+    }
 };
 
 const harvest = async function (blockNumber, harvestStrategies) {
@@ -131,34 +138,18 @@ const execPnl = async function (blockNumber) {
     });
 };
 
-const rebalance = async function (blockNumber, rebalanceParams) {
-    let rebalanceReponse;
-    let transactionKey;
-    if (rebalanceParams[0]) {
-        rebalanceReponse = await getInsurance()
-            .rebalance()
-            .catch((error) => {
-                logger.error(error);
-                throw new ContractSendError(
-                    'Call rebalance function to adjust system assets failed.',
-                    MESSAGE_TYPES.rebalance
-                );
-            });
-        transactionKey = 'rebalance';
-    } else if (rebalanceParams[1]) {
-        rebalanceReponse = await getInsurance()
-            .topup()
-            .catch((error) => {
-                logger.error(error);
-                throw new ContractSendError(
-                    'Call topup function to full up lifeguard failed.',
-                    MESSAGE_TYPES.rebalance
-                );
-            });
-        transactionKey = 'topup';
-    }
+const rebalance = async function (blockNumber) {
+    let rebalanceReponse = await getInsurance()
+        .rebalance()
+        .catch((error) => {
+            logger.error(error);
+            throw new ContractSendError(
+                'Call rebalance function to adjust system assets failed.',
+                MESSAGE_TYPES.rebalance
+            );
+        });
 
-    pendingTransactions.set(transactionKey, {
+    pendingTransactions.set('rebalance', {
         blockNumber,
         reSendTimes: 0,
         hash: rebalanceReponse.hash,
@@ -181,9 +172,6 @@ const rebalance = async function (blockNumber, rebalanceParams) {
         type: MESSAGE_TYPES[transactionKey],
         transactionHash: rebalanceReponse.hash,
     };
-    if (transactionKey == 'topup') {
-        msgObj.message = 'Call topup function to full up lifeguard';
-    }
     sendMessageToProtocolEventChannel(msgObj);
 };
 

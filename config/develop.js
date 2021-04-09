@@ -1,7 +1,7 @@
 module.exports = {
     blockchain: {
         network: 'http://localhost:8545',
-        start_block: 12083864,
+        start_block: 12184411,
         launch_timestamp: '1617679356',
     },
     trigger_scheduler: {
@@ -21,7 +21,7 @@ module.exports = {
     strategy_name: ['Harvest', 'Yearn Metapool', 'Generic Lending'],
     lifeguard_name: 'Curve-3pool',
     contracts: {
-        controller: '0x7bc06c482DEAd17c0e297aFbC32f6e63d3846650',
+        controller: '0x38F6F2caE52217101D7CA2a5eC040014b4164E6C',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

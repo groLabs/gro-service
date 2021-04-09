@@ -5,6 +5,7 @@ node_modules
 ./statsLogs
 ./regularLogs
 ./criticalLogs
+./logs
 .idea/
 .prettierrc
 views/
