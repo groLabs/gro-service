@@ -181,6 +181,11 @@ const checkLongPendingTransactions = async function () {
             return;
         }
 
+		if(!transactionReceipt) {
+			logger.info(`${type} transaction: ${hash} is still pending.`)
+			continue
+		}
+
         // remove hash from pending transactions
         pendingTransactions.delete(type);
 

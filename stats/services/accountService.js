@@ -152,7 +152,7 @@ const getWithdrawHistories = async function (account) {
     const result = { groVault: [], powerD: [] };
     if (!logs.length) return result;
     logs.forEach((log) => {
-        log.amount = new BN(log.args[5].toString());
+        log.amount = new BN(log.args[6].toString());
         if (log.args[2]) {
             result.powerD.push(log);
         } else {
