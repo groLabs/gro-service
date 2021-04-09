@@ -10,6 +10,10 @@ const logger = require('../statsLogger');
 const { getDefaultProvider } = require('../../common/chainUtil');
 const { getSystemApy } = require('./apyHandler');
 const {
+    sendMessageToProtocolAssetChannel,
+    MESSAGE_TYPES,
+} = require('../../common/discord/discordService');
+const {
     getTvlStats,
     getSystemStats,
     getExposureStats,
@@ -156,6 +160,10 @@ const generateGroStatsFile = async function () {
         filename: statsFilename,
     };
     fs.writeFileSync(statsLatest, JSON.stringify(latestFilename));
+    sendMessageToProtocolAssetChannel({
+        message: `\nPower Dollar:${formattedStats.tvl.pwrd}\nGro Vault:${formattedStats.tvl.gvt}\nTotalAssets:${formattedStats.tvl.total}\nUtilization Ratio:${formattedStats.tvl.util_ratio}\nUtilization Ratio Limit PD:${formattedStats.tvl.util_ratio_limit_PD}\nUtilization Ratio Limit GW:${formattedStats.tvl.util_ratio_limit_GW}`,
+        type: MESSAGE_TYPES.stats,
+    });
     return statsFilename;
 };
 

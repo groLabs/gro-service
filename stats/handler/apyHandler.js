@@ -98,7 +98,9 @@ const calcFirstDayApy = async function (latestBlock) {
         pwrd: pwrdApy,
         gvt: gvtApy,
     };
-
+    logger.info(
+        `block ${latestBlock.block} ${gvtFactorNow} ${pwrdFactorNow} factor gvt ${FACTOR_DECIMAL} ${gvtApy} pwrd ${FACTOR_DECIMAL} ${pwrdApy}`
+    );
     return firstDayApy;
 };
 

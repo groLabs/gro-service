@@ -96,7 +96,7 @@ const getDefaultProvider = function () {
 
 const getBotWallet = function () {
     if (botWallet) return botWallet;
-    const provider = getDefaultProvider();
+    const provider = getRpcProvider();
     botWallet = new ethers.Wallet(botPrivateKey, provider);
     return botWallet;
 };
