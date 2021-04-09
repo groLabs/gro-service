@@ -263,13 +263,6 @@
         },
         {
             "inputs": [],
-            "name": "deposit",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [],
             "name": "execPnL",
             "outputs": [],
             "stateMutability": "nonpayable",
