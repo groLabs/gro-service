@@ -32,6 +32,8 @@ const {
     rebalance,
     harvest,
 } = require('../handler/actionHandler');
+
+const { getVaults, getStrategyLength } = require('../../contract/allContracts');
 const logger = require('../regularLogger');
 const config = require('config');
 const provider = getDefaultProvider();
@@ -180,19 +182,20 @@ const checkLongPendingTransactions = async function () {
             });
             return;
         }
+		const msgObj = {
+            type: 'Bot Pending Transactions',
+            params: botAccount,
+        };
 
 		if(!transactionReceipt) {
-			logger.info(`${type} transaction: ${hash} is still pending.`)
+			msgObj.message = `${type} transaction: ${hash} is still pending.`;
+			logger.info(msgObj.message);
+			sendMessageToProtocolEventChannel(msgObj);
 			continue
 		}
 
         // remove hash from pending transactions
         pendingTransactions.delete(type);
-
-        const msgObj = {
-            type: 'Bot Pending Transactions',
-            params: botAccount,
-        };
 
         if (transactionReceipt.status == 1) {
             msgObj.message = `${type} transaction: ${hash} has mined to chain.`;
@@ -219,7 +222,13 @@ const longPendingTransactionsScheduler = function () {
 const investTriggerScheduler = function () {
     schedule.scheduleJob(investTriggerSchedulerSetting, async function () {
         try {
-            await checkPendingTransactions();
+			const vaults = getVaults()
+			const keys = []
+			vaults.forEach(vault => {
+				keys.push(`invest-${vault.address}`)
+			})
+
+            await checkPendingTransactions(keys);
 
             const triggerResult = await investTrigger();
 
@@ -239,7 +248,7 @@ const investTriggerScheduler = function () {
 const pnlTriggerScheduler = function () {
     schedule.scheduleJob(pnlTriggerSchedulerSetting, async function () {
         try {
-            await checkPendingTransactions();
+            await checkPendingTransactions(['pnl']);
 
             const triggerResult = await pnlTrigger();
 
@@ -259,7 +268,7 @@ const pnlTriggerScheduler = function () {
 const rebalanceTriggerScheduler = function () {
     schedule.scheduleJob(rebalanceTriggerSchedulerSetting, async function () {
         try {
-            await checkPendingTransactions();
+            await checkPendingTransactions(['rebalance']);
 
             const triggerResult = await rebalanceTrigger();
 
@@ -279,7 +288,16 @@ const rebalanceTriggerScheduler = function () {
 const harvestTriggerScheduler = function () {
     schedule.scheduleJob(harvestTriggerSchedulerSetting, async function () {
         try {
-            await checkPendingTransactions();
+			const vaults = getVaults();
+			const vaultsStrategyLength = getStrategyLength();
+			const keys = [];
+			for (let i = 0; i < vaults.length; i++) {
+				const strategyLength = vaultsStrategyLength[i];
+				for (let j = 0; j < strategyLength; j++) {
+					keys.push(`harvest-${vaults[i].address}-${j}`);
+				}
+			}
+            await checkPendingTransactions(keys);
 
             const triggerResult = await harvestOneTrigger();
 

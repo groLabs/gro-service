@@ -149,11 +149,14 @@ const syncNounce = async function () {
     }
 };
 
-const checkPendingTransactions = async function () {
+const checkPendingTransactions = async function (types) {
     logger.info(`pendingTransactions.size: ${pendingTransactions.size}`);
     if (!pendingTransactions.size) return;
-    for (let type of pendingTransactions.keys()) {
+	types = types || pendingTransactions.keys();
+    for (let type of types) {
+		logger.info(`pending keys: ${type}`)
         const transactionInfo = pendingTransactions.get(type);
+		if(!transactionInfo) continue
         const msgLabel = transactionInfo.label;
         const hash = transactionInfo.hash;
         const transactionReceipt = await defaultProvider
@@ -166,16 +169,23 @@ const checkPendingTransactions = async function () {
                     hash
                 );
             });
-        // remove type from pending transactions
-        pendingTransactions.delete(type);
-        const msgObj = {
+		const msgObj = {
             type: msgLabel,
             timestamp: transactionInfo.createdTime,
             message: `${type} transaction ${hash} has mined to chain.`,
             transactionHash: hash,
         };
+		if(!transactionReceipt) {
+			msgObj.message = `${type} transaction: ${hash} is still pending.`
+			logger.info(msgObj.message)
+			sendMessageToProtocolEventChannel(msgObj);
+			continue
+		}
+        // remove type from pending transactions
+        pendingTransactions.delete(type);
+       
         if (!transactionReceipt.status) {
-            msgObj.result = `${type} transaction ${hash} reverted.`;
+            msgObj.message = `${type} transaction ${hash} reverted.`;
         }
         sendMessageToProtocolEventChannel(msgObj);
     }
