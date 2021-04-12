@@ -6,7 +6,7 @@ const { BigNumber } = require('ethers');
 
 dayjs.extend(utc);
 const { getGvt, getPwrd } = require('../../contract/allContracts');
-const BlocksScanner = require('../common/blockScanner');
+const BlocksScanner = require('../common/blockscanner');
 const logger = require('../statsLogger');
 const { getDefaultProvider } = require('../../common/chainUtil');
 const { BlockChainCallError } = require('../../common/customErrors');

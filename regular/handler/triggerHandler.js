@@ -286,16 +286,6 @@ const rebalanceTrigger = async function () {
             MESSAGE_TYPES.rebalanceTrigger
         );
     }
-    if (pendingTransactions.get('topup')) {
-        const result = `Already has pending topup transaction: ${
-            pendingTransactions.get('rebalance').hash
-        }`;
-        logger.info(result);
-        throw new PendingTransactionError(
-            result,
-            MESSAGE_TYPES.rebalanceTrigger
-        );
-    }
 
     const needRebalance = await getInsurance()
         .rebalanceTrigger()
