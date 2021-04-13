@@ -1,11 +1,13 @@
 'use strict';
-const { ethers } = require('ethers');
 const {
-    getDepositHandler,
-    getWithdrawHandler,
     getGvt: getGroVault,
     getPwrd: getPowerD,
 } = require('../../contract/allContracts');
+const {
+    EVENT_TYPE,
+    getEvents,
+    getTransferEvents,
+} = require('../../common/logFilter');
 const { getDefaultProvider } = require('../../common/chainUtil');
 const { ContractCallError } = require('../../common/customErrors');
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
@@ -18,95 +20,17 @@ const launchTime = getConfig('blockchain.launch_timestamp', false) || 0;
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 
-const EVENT_TYPE = {
-    deposit: 'deposit',
-    withdraw: 'withdraw',
-    gvtTransfer: 'gvtTransfer',
-    inGvtTransfer: 'transfer-gvt-in',
-    outGvtTransfer: 'transfer-gvt-out',
-    pwrdTransfer: 'pwrdTransfer',
-    inPwrdTransfer: 'transfer-pwrd-in',
-    outPwrdTransfer: 'transfer-pwrd-out',
-};
-
-const EVENT_FRAGMENT = {};
-EVENT_FRAGMENT[EVENT_TYPE.deposit] = [
-    'event LogNewDeposit(address indexed user, address indexed referral, address gtoken, uint256 usdAmount, uint256[] tokens)',
-];
-EVENT_FRAGMENT[EVENT_TYPE.withdraw] = [
-    'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
-];
-EVENT_FRAGMENT[EVENT_TYPE.gvtTransfer] = [
-    'event LogTransfer(address indexed sender, address indexed recipient, uint256 indexed amount, uint256 factor)',
-];
-EVENT_FRAGMENT[EVENT_TYPE.pwrdTransfer] = [
-    'event LogTransfer(address indexed sender, address indexed recipient, uint256 indexed amount)',
-];
-
-const getEventInfo = function (log) {
-    return {
-        name: log.name,
-        signature: log.signature,
-        topic: log.topic,
-        args: log.args,
-    };
-};
-
-const getFilter = function (account, type) {
-    const depositHandler = getDepositHandler();
-    const withdrawHandler = getWithdrawHandler();
-    const groVault = getGroVault();
-    const powerD = getPowerD();
-    let filter;
-    switch (type) {
-        case EVENT_TYPE.deposit:
-            filter = depositHandler.filters.LogNewDeposit(account);
-            break;
-        case EVENT_TYPE.withdraw:
-            filter = withdrawHandler.filters.LogNewWithdrawal(account);
-            break;
-        case EVENT_TYPE.inGvtTransfer:
-            filter = groVault.filters.LogTransfer(null, account);
-            break;
-        case EVENT_TYPE.outGvtTransfer:
-            filter = groVault.filters.LogTransfer(account);
-            break;
-        case EVENT_TYPE.inPwrdTransfer:
-            filter = powerD.filters.LogTransfer(null, account);
-            break;
-        case EVENT_TYPE.outPwrdTransfer:
-            filter = powerD.filters.LogTransfer(account);
-            break;
-        default:
-            logger.error(`No type: ${type}`);
-    }
-    return filter;
-};
-
-const getDepositHistories = async function (account) {
-    const provider = getDefaultProvider();
-    const depositFilter = getFilter(account, EVENT_TYPE.deposit);
-    if (!depositFilter) {
-        throw new ContractCallError(
-            `Get deposit filter for account:${account} failed.`,
-            MESSAGE_TYPES.miniStatsPersonal
-        );
-    }
-    depositFilter.fromBlock = fromBlock;
-    depositFilter.toBlock = 'latest';
-    const depositLogs = await provider.getLogs(depositFilter).catch((error) => {
-        logger.error(error);
+const getDepositHistories = async function (account, toBlock) {
+    const logs = await getEvents(
+        EVENT_TYPE.deposit,
+        fromBlock,
+        toBlock,
+        account
+    ).catch((error) => {
         throw new ContractCallError(
             `Get deposit logs of ${account} failed.`,
             MESSAGE_TYPES.miniStatsPersonal
         );
-    });
-    const controllerInstance = new ethers.utils.Interface(
-        EVENT_FRAGMENT[EVENT_TYPE.deposit]
-    );
-    let logs = [];
-    depositLogs.forEach((log) => {
-        logs.push(getEventInfo(controllerInstance.parseLog(log)));
     });
     const result = { groVault: [], powerD: [] };
     if (!logs.length) return result;
@@ -122,32 +46,17 @@ const getDepositHistories = async function (account) {
     return result;
 };
 
-const getWithdrawHistories = async function (account) {
-    const provider = getDefaultProvider();
-    const withdrawFilter = getFilter(account, EVENT_TYPE.withdraw);
-    if (!withdrawFilter) {
+const getWithdrawHistories = async function (account, toBlock) {
+    const logs = await getEvents(
+        EVENT_TYPE.withdraw,
+        fromBlock,
+        toBlock,
+        account
+    ).catch((error) => {
         throw new ContractCallError(
             `Get withdraw filter for account:${account} failed.`,
             MESSAGE_TYPES.miniStatsPersonal
         );
-    }
-    withdrawFilter.fromBlock = fromBlock;
-    withdrawFilter.toBlock = 'latest';
-    const withdrawLogs = await provider
-        .getLogs(withdrawFilter)
-        .catch((error) => {
-            logger.error(error);
-            throw new ContractCallError(
-                `Get withdraw logs of ${account} failed.`,
-                MESSAGE_TYPES.miniStatsPersonal
-            );
-        });
-    const controllerInstance = new ethers.utils.Interface(
-        EVENT_FRAGMENT[EVENT_TYPE.withdraw]
-    );
-    let logs = [];
-    withdrawLogs.forEach((log) => {
-        logs.push(getEventInfo(controllerInstance.parseLog(log)));
     });
     const result = { groVault: [], powerD: [] };
     if (!logs.length) return result;
@@ -162,51 +71,30 @@ const getWithdrawHistories = async function (account) {
     return result;
 };
 
-const getTransferHistories = async function (account, filters, eventFragment) {
-    const provider = getDefaultProvider();
-    // in amount
-    const inFilter = getFilter(account, filters[0]);
-    if (!inFilter) {
-        throw new ContractCallError(
-            `Get transfer in filter for account:${account} failed.`,
-            MESSAGE_TYPES.miniStatsPersonal
-        );
-    }
-    inFilter.fromBlock = fromBlock;
-    inFilter.toBlock = 'latest';
-    const inLogs = await provider.getLogs(inFilter).catch((error) => {
+const getTransferHistories = async function (account, filters, toBlock) {
+    const logs1 = await getTransferEvents(
+        filters[0],
+        fromBlock,
+        toBlock,
+        account
+    ).catch((error) => {
         logger.error(error);
         throw new ContractCallError(
-            `Get groVault transfer in logs of ${account} failed.`,
+            `Get ${filters[0]} logs of ${account} failed.`,
             MESSAGE_TYPES.miniStatsPersonal
         );
-    });
-    const controllerInstance = new ethers.utils.Interface(eventFragment);
-    let logs1 = [];
-    inLogs.forEach((log) => {
-        logs1.push(getEventInfo(controllerInstance.parseLog(log)));
     });
 
-    // out amount
-    const outFilter = getFilter(account, filters[1]);
-    if (!inFilter) {
+    const logs2 = await getTransferEvents(
+        filters[1],
+        fromBlock,
+        toBlock,
+        account
+    ).catch((error) => {
         throw new ContractCallError(
-            `Get transfer out filter for account:${account} failed.`,
+            `Get ${filters[1]} logs of ${account} failed.`,
             MESSAGE_TYPES.miniStatsPersonal
         );
-    }
-    outFilter.fromBlock = fromBlock;
-    outFilter.toBlock = 'latest';
-    const outLogs = await provider.getLogs(outFilter).catch((error) => {
-        logger.error(error);
-        throw new ContractCallError(
-            `Get groVault transfer out logs of ${account} failed.`,
-            MESSAGE_TYPES.miniStatsPersonal
-        );
-    });
-    let logs2 = [];
-    outLogs.forEach((log) => {
-        logs2.push(getEventInfo(controllerInstance.parseLog(log)));
     });
     return {
         deposit: logs1,
@@ -214,11 +102,11 @@ const getTransferHistories = async function (account, filters, eventFragment) {
     };
 };
 
-const getGroVaultTransferHistories = async function (account) {
+const getGroVaultTransferHistories = async function (account, toBlock) {
     const logs = await getTransferHistories(
         account,
         [EVENT_TYPE.inGvtTransfer, EVENT_TYPE.outGvtTransfer],
-        EVENT_FRAGMENT[EVENT_TYPE.gvtTransfer]
+        toBlock
     );
     logs.deposit.forEach((log) => {
         log.amount = new BN(log.args[2].toString())
@@ -233,11 +121,11 @@ const getGroVaultTransferHistories = async function (account) {
     return logs;
 };
 
-const getPowerDTransferHistories = async function (account) {
+const getPowerDTransferHistories = async function (account, toBlock) {
     const logs = await getTransferHistories(
         account,
         [EVENT_TYPE.inPwrdTransfer, EVENT_TYPE.outPwrdTransfer],
-        EVENT_FRAGMENT[EVENT_TYPE.pwrdTransfer]
+        toBlock
     );
     logs.deposit.forEach((log) => {
         log.amount = new BN(log.args[2].toString());
@@ -248,12 +136,12 @@ const getPowerDTransferHistories = async function (account) {
     return logs;
 };
 
-const getTransactionHistories = async function (account) {
+const getTransactionHistories = async function (account, toBlock) {
     let promises = [];
-    promises.push(getGroVaultTransferHistories(account));
-    promises.push(getPowerDTransferHistories(account));
-    promises.push(getDepositHistories(account));
-    promises.push(getWithdrawHistories(account));
+    promises.push(getGroVaultTransferHistories(account, toBlock));
+    promises.push(getPowerDTransferHistories(account, toBlock));
+    promises.push(getDepositHistories(account, toBlock));
+    promises.push(getWithdrawHistories(account, toBlock));
     let result = await Promise.all(promises);
     const powerD = result[1];
     const depositLogs = result[2];
@@ -268,16 +156,15 @@ const getTransactionHistories = async function (account) {
 };
 
 const generateReport = async function (account) {
+    const latestBlock = await getDefaultProvider().getBlock();
     let promises = [];
-    promises.push(getTransactionHistories(account));
-    promises.push(getDefaultProvider().getBlock());
+    promises.push(getTransactionHistories(account, latestBlock.number));
     promises.push(getPowerD().getAssets(account));
     promises.push(getGroVault().getAssets(account));
     const results = await Promise.all(promises);
     const data = results[0];
-    const latestBlock = results[1];
-    const pwrdBalance = new BN(results[2].toString());
-    const gvtBalance = new BN(results[3].toString());
+    const pwrdBalance = new BN(results[1].toString());
+    const gvtBalance = new BN(results[2].toString());
 
     logger.info(`${account} historical: ${JSON.stringify(data)}`);
     const result = {

@@ -34,6 +34,14 @@ const {
 } = require('../handler/actionHandler');
 
 const { getVaults, getStrategyLength } = require('../../contract/allContracts');
+const {
+    getLastBlockNumber,
+    updateLastBlockNumber,
+    generateDepositReport,
+    generateWithdrawReport,
+    generateGvtTransfer,
+    generatePwrdTransfer,
+} = require('../handler/eventHandler');
 const logger = require('../regularLogger');
 const config = require('config');
 const provider = getDefaultProvider();
@@ -44,6 +52,7 @@ let investTriggerSchedulerSetting = '0 * * * *';
 let harvestTriggerSchedulerSetting = '15 * * * *';
 let pnlTriggerSchedulerSetting = '30 * * * *';
 let rebalanceTriggerSchedulerSetting = '45 * * * *';
+let depositWithdrawEventSchedulerSetting = '*/5 * * * *';
 let botBalanceWarnVault = '2000000000000000000';
 
 if (!process.env.BOT_ADDRESS) {
@@ -83,6 +92,12 @@ if (config.has('trigger_scheduler.pending_transaction_check')) {
 if (config.has('trigger_scheduler.bot_balance_check')) {
     botBalanceSchedulerSetting = config.get(
         'trigger_scheduler.bot_balance_check'
+    );
+}
+
+if (config.has('trigger_scheduler.deposit_withdraw_event')) {
+    depositWithdrawEventSchedulerSetting = config.get(
+        'trigger_scheduler.deposit_withdraw_event'
     );
 }
 
@@ -187,11 +202,11 @@ const checkLongPendingTransactions = async function () {
             params: botAccount,
         };
 
-        if(!transactionReceipt) {
+        if (!transactionReceipt) {
             msgObj.message = `${type} transaction: ${hash} is still pending.`;
             logger.info(msgObj.message);
             sendMessageToProtocolEventChannel(msgObj);
-            continue
+            continue;
         }
 
         // remove hash from pending transactions
@@ -222,11 +237,11 @@ const longPendingTransactionsScheduler = function () {
 const investTriggerScheduler = function () {
     schedule.scheduleJob(investTriggerSchedulerSetting, async function () {
         try {
-            const vaults = getVaults()
-            const keys = []
-            vaults.forEach(vault => {
-                keys.push(`invest-${vault.address}`)
-            })
+            const vaults = getVaults();
+            const keys = [];
+            vaults.forEach((vault) => {
+                keys.push(`invest-${vault.address}`);
+            });
 
             await checkPendingTransactions(keys);
 
@@ -314,6 +329,28 @@ const harvestTriggerScheduler = function () {
     });
 };
 
+const depositWithdrawEventScheduler = function () {
+    schedule.scheduleJob(
+        depositWithdrawEventSchedulerSetting,
+        async function () {
+            try {
+                const lastBlockNumber = getLastBlockNumber();
+                const currectBlockNumber = await getCurrentBlockNumber();
+                if (!currectBlockNumber) return;
+                await Promise.all([
+                    generateDepositReport(lastBlockNumber, currectBlockNumber),
+                    generateWithdrawReport(lastBlockNumber, currectBlockNumber),
+                    generateGvtTransfer(lastBlockNumber, currectBlockNumber),
+                    generatePwrdTransfer(lastBlockNumber, currectBlockNumber),
+                ]);
+                updateLastBlockNumber(currectBlockNumber);
+            } catch (error) {
+                sendMessageToAlertChannel(error);
+            }
+        }
+    );
+};
+
 const startRegularJobs = function () {
     checkBotAccountBalance();
     investTriggerScheduler();
@@ -321,6 +358,7 @@ const startRegularJobs = function () {
     pnlTriggerScheduler();
     rebalanceTriggerScheduler();
     longPendingTransactionsScheduler();
+    depositWithdrawEventScheduler();
 };
 
 module.exports = {

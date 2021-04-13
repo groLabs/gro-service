@@ -18,6 +18,9 @@ DISCORD_CHANNELS.botAlerts = getConfig('discord.channel.bot_alerts');
 DISCORD_CHANNELS.botLogs = getConfig('discord.channel.bot_logs');
 
 const MESSAGE_TYPES = {
+    depositEvent: 'Deposit Event',
+    withdrawEvent: 'Withdraw Event',
+    transferEvent: 'Transfer',
     miniStatsPersonal: 'Personal Stats',
     adjustNonce: 'Adjust Nonce',
     investTrigger: 'Invest Trigger',
@@ -81,7 +84,7 @@ const sendMessage = async function (channelId, msgObj, retry = 0) {
 };
 
 const sendMessageToAlertChannel = function (error) {
-	logger.error(error)
+    logger.error(error);
     const msgObj = {
         icon: ':warning:',
         message: error.message,
@@ -90,7 +93,11 @@ const sendMessageToAlertChannel = function (error) {
     };
     if (error.messageTag == MESSAGE_TYPES.curveCheck) {
         sendMessageToCriticalEventChannel(msgObj);
-    } else if (error.messageTag == MESSAGE_TYPES.miniStatsPersonal) {
+    } else if (
+        error.messageTag == MESSAGE_TYPES.miniStatsPersonal ||
+        error.messageTag == MESSAGE_TYPES.depositEvent ||
+        error.messageTag == MESSAGE_TYPES.withdrawEvent
+    ) {
         sendMessageToTradeChannel(msgObj);
     } else if (error.messageTag == MESSAGE_TYPES.stats) {
         sendMessageToProtocolAssetChannel(msgObj);
