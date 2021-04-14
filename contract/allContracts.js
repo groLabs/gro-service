@@ -90,18 +90,37 @@ const initVaults = async function () {
     });
 };
 
+const renameDuplicatedFactorEntry = function (abi) {
+    const keys = abi.keys();
+    for (const key of keys) {
+        const node = abi[key];
+        if (node.name === 'factor' && node.inputs.length > 0) {
+            node.name = 'factorWithParam';
+        }
+    }
+    return abi;
+};
+
 const initGvt = async function () {
     const gvtABI = require('./abis/NonRebasingGToken.json').abi;
     const gvtAddresses = await controller.gvt();
     logger.info(`gvt address: ${gvtAddresses}`);
-    gvt = new ethers.Contract(gvtAddresses, gvtABI, nonceManager);
+    gvt = new ethers.Contract(
+        gvtAddresses,
+        renameDuplicatedFactorEntry(gvtABI),
+        nonceManager
+    );
 };
 
 const initPwrd = async function () {
     const pwrdABI = require('./abis/RebasingGToken.json').abi;
     const pwrdAddresses = await controller.pwrd();
     logger.info(`pwrd address: ${pwrdAddresses}`);
-    pwrd = new ethers.Contract(pwrdAddresses, pwrdABI, nonceManager);
+    pwrd = new ethers.Contract(
+        pwrdAddresses,
+        renameDuplicatedFactorEntry(pwrdABI),
+        nonceManager
+    );
 };
 
 const initDepositHandler = async function () {

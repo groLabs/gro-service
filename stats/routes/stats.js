@@ -6,10 +6,6 @@ const { ParameterError } = require('../../common/customErrors');
 const { pendingTransactions } = require('../services/jobService');
 const { getGroStatsContent } = require('../services/statsService');
 const { generateReport } = require('../services/accountService');
-const {
-    sendMessageToTradeChannel,
-    MESSAGE_TYPES,
-} = require('../../common/discord/discordService');
 const { validate } = require('../common/validate');
 const AUTH = 'Bear NzU3ODQ0MDczNTg2NjIyNDc2.jnQOs1-ul7W94nBtV9wIJwBx5AA';
 
@@ -93,11 +89,6 @@ router.get(
             throw new ParameterError('Parameter network failed.');
         }
         const result = await generateReport(req.query.address);
-        sendMessageToTradeChannel({
-            result,
-            type: MESSAGE_TYPES.miniStatsPersonal,
-            message: `Get personal stats for account:${req.query.address}`,
-        });
         res.json({ gro_personal_position: result });
     })
 );
