@@ -280,6 +280,19 @@
         },
         {
             "inputs": [],
+            "name": "curveVault",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
             "name": "depositHandler",
             "outputs": [
                 {
@@ -326,6 +339,19 @@
         {
             "inputs": [],
             "name": "gTokenTotalAssets",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getSkimPercent",
             "outputs": [
                 {
                     "internalType": "uint256",
@@ -574,6 +600,19 @@
             "inputs": [
                 {
                     "internalType": "address",
+                    "name": "_curveVault",
+                    "type": "address"
+                }
+            ],
+            "name": "setCurveVault",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
                     "name": "_depositHandler",
                     "type": "address"
                 }
@@ -710,6 +749,11 @@
                 {
                     "internalType": "uint256",
                     "name": "_whaleLimit",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_absolute",
                     "type": "uint256"
                 }
             ],
@@ -863,6 +907,19 @@
                     "internalType": "address[]",
                     "name": "",
                     "type": "address[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "whaleAbsolute",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
                 }
             ],
             "stateMutability": "view",

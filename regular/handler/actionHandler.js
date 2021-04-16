@@ -3,6 +3,7 @@
 const {
     getInsurance,
     getPnl,
+    getLifeguard,
     getVaults,
 } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
@@ -154,7 +155,7 @@ const rebalance = async function (blockNumber) {
         reSendTimes: 0,
         hash: rebalanceReponse.hash,
         createdTime: new Date(),
-        label: MESSAGE_TYPES[transactionKey],
+        label: MESSAGE_TYPES.rebalance,
         transactionRequest: {
             nonce: rebalanceReponse.nonce,
             gasPrice: rebalanceReponse.gasPrice.hex,
@@ -171,6 +172,43 @@ const rebalance = async function (blockNumber) {
         message: 'Call rebalance function to adjust system assets',
         type: MESSAGE_TYPES[transactionKey],
         transactionHash: rebalanceReponse.hash,
+    };
+    sendMessageToProtocolEventChannel(msgObj);
+};
+
+const curveInvest = async function (blockNumber) {
+    let investResponse = await getLifeguard()
+        .investToCurveVault()
+        .catch((error) => {
+            logger.error(error);
+            throw new ContractSendError(
+                'Call investToCurveVault to invest lifeguard assets failed.',
+                MESSAGE_TYPES.curveInvest
+            );
+        });
+
+    pendingTransactions.set('curveInvest', {
+        blockNumber,
+        reSendTimes: 0,
+        hash: investResponse.hash,
+        createdTime: new Date(),
+        label: MESSAGE_TYPES.curveInvest,
+        transactionRequest: {
+            nonce: investResponse.nonce,
+            gasPrice: investResponse.gasPrice.hex,
+            gasLimit: investResponse.gasLimit.hex,
+            to: investResponse.to,
+            value: investResponse.value.hex,
+            data: investResponse.data,
+            chainId: investResponse.chainId,
+            from: investResponse.from,
+        },
+    });
+
+    const msgObj = {
+        message: 'Call investToCurveVault function to invest lifeguard assets',
+        type: MESSAGE_TYPES.curveInvest,
+        transactionHash: investResponse.hash,
     };
     sendMessageToProtocolEventChannel(msgObj);
 };
@@ -194,14 +232,22 @@ const execActions = async function (blockNumber, triggerResult) {
         await execPnl(blockNumber);
     }
 
+    // Handle Rebalance
     if (triggerResult[3].needCall) {
         logger.info('rebalance');
-        await rebalance(blockNumber, triggerResult[3].params);
+        await rebalance(blockNumber);
+    }
+
+    // Handle Curve invest
+    if (triggerResult[4].needCall) {
+        logger.info('curve invest');
+        await curveInvest(blockNumber);
     }
 };
 
 module.exports = {
     invest,
+    curveInvest,
     harvest,
     execPnl,
     rebalance,

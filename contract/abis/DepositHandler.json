@@ -55,9 +55,9 @@
                 },
                 {
                     "indexed": false,
-                    "internalType": "address",
-                    "name": "gToken",
-                    "type": "address"
+                    "internalType": "bool",
+                    "name": "pwrd",
+                    "type": "bool"
                 },
                 {
                     "indexed": false,

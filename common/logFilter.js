@@ -25,7 +25,7 @@ const EVENT_TYPE = {
 
 const EVENT_FRAGMENT = {};
 EVENT_FRAGMENT[EVENT_TYPE.deposit] = [
-    'event LogNewDeposit(address indexed user, address indexed referral, address gtoken, uint256 usdAmount, uint256[] tokens)',
+    'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)',
 ];
 EVENT_FRAGMENT[EVENT_TYPE.withdraw] = [
     'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
