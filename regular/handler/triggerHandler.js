@@ -4,6 +4,7 @@ const { BigNumber } = require('ethers');
 const {
     getInsurance,
     getPnl,
+    getLifeguard,
     getVaults,
     getStrategyLength,
 } = require('../../contract/allContracts');
@@ -245,7 +246,7 @@ const pnlTrigger = async function () {
                 MESSAGE_TYPES.pnlTrigger
             );
         });
-    logger.info(`pnl trigger. ${needPnlVault}`);
+    logger.info(`pnlTrigger. ${needPnlVault}`);
 
     const needPnlAssets = await getPnl()
         .totalAssetsChangeTrigger()
@@ -296,13 +297,13 @@ const rebalanceTrigger = async function () {
                 MESSAGE_TYPES.rebalanceTrigger
             );
         });
-    logger.info(`needRebalance: ${needRebalance}`);
+    logger.info(`rebalanceTrigger: ${needRebalance}`);
     let msgObj = {
         message: 'No need run rebalance.',
         type: MESSAGE_TYPES.rebalanceTrigger,
     };
     let rebalanceTriggerResult = NONEED_TRIGGER;
-    if (needRebalance[0]) {
+    if (needRebalance) {
         rebalanceTriggerResult = {
             needCall: true,
         };
@@ -312,12 +313,49 @@ const rebalanceTrigger = async function () {
     return rebalanceTriggerResult;
 };
 
+const curveInvestTrigger = async function () {
+    if (pendingTransactions.get('curveInvest')) {
+        const result = `Already has pending Curve invest transaction: ${
+            pendingTransactions.get('curveInvest').hash
+        }`;
+        logger.info(result);
+        throw new PendingTransactionError(
+            result,
+            MESSAGE_TYPES.curveInvestTrigger
+        );
+    }
+
+    const needInvest = await getLifeguard()
+        .investToCurveVaultTrigger()
+        .catch((error) => {
+            logger.error(error);
+            throw new ContractCallError(
+                'Call investToCurveVaultTrigger function failed.',
+                MESSAGE_TYPES.curveInvestTrigger
+            );
+        });
+    logger.info(`curveInvestTrigger : ${needInvest}`);
+    let msgObj = {
+        message: 'No need run curve invest.',
+        type: MESSAGE_TYPES.curveInvestTrigger,
+    };
+
+    let investResult = NONEED_TRIGGER;
+    if (needInvest) {
+        investResult = { needCall: true };
+        msgObj.message = 'Need run curve invest to invest lifeguard assets.';
+    }
+    sendMessageToProtocolEventChannel(msgObj);
+    return investResult;
+};
+
 const callTriggers = async function () {
     let triggerPromises = [];
     triggerPromises.push(investTrigger());
     triggerPromises.push(harvestTrigger());
     triggerPromises.push(pnlTrigger());
     triggerPromises.push(rebalanceTrigger());
+    triggerPromises.push(curveInvestTrigger());
     const triggerResult = await Promise.all(triggerPromises);
     return triggerResult;
 };
@@ -328,5 +366,6 @@ module.exports = {
     harvestOneTrigger,
     pnlTrigger,
     rebalanceTrigger,
+    curveInvestTrigger,
     callTriggers,
 };

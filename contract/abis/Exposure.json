@@ -186,6 +186,11 @@
                         },
                         {
                             "internalType": "uint256",
+                            "name": "curveCurrentAssetsUsd",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
                             "name": "lifeguardCurrentAssetsUsd",
                             "type": "uint256"
                         },
@@ -218,6 +223,11 @@
                             "internalType": "uint256[]",
                             "name": "stablePercents",
                             "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "curvePercent",
+                            "type": "uint256"
                         }
                     ],
                     "internalType": "struct SystemState",
@@ -240,6 +250,11 @@
                             "type": "uint256[]"
                         },
                         {
+                            "internalType": "uint256",
+                            "name": "curveExposure",
+                            "type": "uint256"
+                        },
+                        {
                             "internalType": "bool",
                             "name": "stablecoinExposed",
                             "type": "bool"
@@ -248,11 +263,6 @@
                             "internalType": "bool",
                             "name": "protocolExposed",
                             "type": "bool"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "curveIndex",
-                            "type": "uint256"
                         }
                     ],
                     "internalType": "struct ExposureState",
@@ -284,19 +294,6 @@
                     "internalType": "address",
                     "name": "",
                     "type": "address"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [],
-            "name": "curveIndex",
-            "outputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "",
-                    "type": "uint256"
                 }
             ],
             "stateMutability": "view",
@@ -419,19 +416,6 @@
                 }
             ],
             "name": "setController",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "_curveIndex",
-                    "type": "uint256"
-                }
-            ],
-            "name": "setCurveIndex",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"

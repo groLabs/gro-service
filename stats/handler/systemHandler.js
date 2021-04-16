@@ -6,6 +6,7 @@ const {
     getExposure,
     getLifeguard,
     getVaults,
+    getCurveVault,
     getStrategyLength,
     getDepositHandler,
     getWithdrawHandler,
@@ -20,12 +21,19 @@ const SHARE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(4));
 const ZERO = BigNumber.from(0);
 
 // config
+const stabeCoinNames = config.get('stable_coin');
 const vaultNames = config.get('vault_name');
+const protocolNames = config.get('protocol');
 const strategyNames = config.get('strategy_name');
 const lifeguardNames = config.get('lifeguard_name');
 
 const getUsdValue = async function (i, amount, blockTag) {
     const usdValue = await getBuoy().singleStableToUsd(amount, i, blockTag);
+    return usdValue;
+};
+
+const getUsdValueForLP = async function (amount, blockTag) {
+    const usdValue = await getBuoy().lpToUsd(amount, blockTag);
     return usdValue;
 };
 
@@ -37,7 +45,8 @@ const getVaultStats = async function (blockTag) {
     const vaults = getVaults();
     const strategyLength = getStrategyLength();
     const vaultAssets = [];
-    for (let vaultIndex = 0; vaultIndex < vaults.length; vaultIndex += 1) {
+    //
+    for (let vaultIndex = 0; vaultIndex < vaults.length - 1; vaultIndex += 1) {
         vault = vaults[vaultIndex];
         const vaultTotalAsset = await vault.totalAssets(blockTag);
         const assetUsd = await getUsdValue(
@@ -53,12 +62,31 @@ const getVaultStats = async function (blockTag) {
             blockTag
         );
         vaultAssets.push({
-            stablecoin: vaultNames[vaultIndex],
+            name: vaultNames[vaultIndex],
             amount: assetUsd,
             strategies: strategyStats,
         });
     }
+    const curveVaultStats = await getCurveVaultStats(blockTag);
+    vaultAssets.push(curveVaultStats);
+
     return vaultAssets;
+};
+
+const getCurveVaultStats = async function (blockTag) {
+    const curveVault = getCurveVault();
+    const vaultTotalAsset = await curveVault.totalAssets(blockTag);
+    const assetUsd = await getUsdValueForLP(vaultTotalAsset, blockTag);
+    const strategyStats = await getCurveStrategyStats(
+        curveVault,
+        vaultTotalAsset,
+        blockTag
+    );
+    return {
+        name: 'Curve yVault',
+        amount: assetUsd,
+        strategies: strategyStats,
+    };
 };
 
 const getStrategiesStats = async function (
@@ -87,7 +115,34 @@ const getStrategiesStats = async function (
     }
     const reservedUSD = await getUsdValue(index, reservedAssets, blockTag);
     strategies.push({
-        name: vaultNames[index],
+        name: stabeCoinNames[index],
+        amount: reservedUSD,
+        assets: reservedAssets,
+    });
+    return strategies;
+};
+
+const getCurveStrategyStats = async function (
+    vault,
+    vaultTotalAsset,
+    blockTag
+) {
+    let strategies = [];
+    let reservedAssets = BigNumber.from(vaultTotalAsset);
+    logger.info(`vta ${vaultTotalAsset} ra ${reservedAssets}`);
+
+    const strategyAssets = await vault.getStrategyAssets(0, blockTag);
+    const strategyAssetsUsd = await getUsdValueForLP(strategyAssets, blockTag);
+    strategies.push({
+        name: 'XPool',
+        amount: strategyAssetsUsd,
+        assets: strategyAssets,
+    });
+
+    reservedAssets = reservedAssets.sub(strategyAssets);
+    const reservedUSD = await getUsdValueForLP(reservedAssets, blockTag);
+    strategies.push({
+        name: '3CRV',
         amount: reservedUSD,
         assets: reservedAssets,
     });
@@ -104,22 +159,27 @@ const getLifeguardStats = async function (blockTag) {
 };
 
 const getExposureStats = async function (blockTag) {
-    logger.info('ExposureStats');
     const exposure = getExposure();
+    logger.info(`blockTag : ${JSON.stringify(blockTag)}`);
     const preCal = await getInsurance().prepareCalculation(blockTag);
     const riskResult = await exposure.calcRiskExposure(preCal, blockTag);
     const exposureStableCoin = riskResult[0].map((concentration, i) => {
         return {
-            stablecoin: vaultNames[i],
+            name: stabeCoinNames[i],
+            concentration,
+        };
+    });
+    const exposureProtocol = riskResult[1].map((concentration, i) => {
+        return {
+            name: protocolNames[i],
             concentration,
         };
     });
 
-    const exposureProtocol = riskResult[1].map((concentration, i) => {
-        return {
-            name: strategyNames[i],
-            concentration,
-        };
+    // add curve 3pool exposure
+    exposureProtocol.push({
+        name: 'Curve',
+        concentration: riskResult[2],
     });
     const exposureStats = {
         stablecoins: exposureStableCoin,
@@ -175,7 +235,7 @@ const getSystemStats = async function (totalAssetsUsd, blockTag) {
         systemShare = systemShare.add(share);
         systemTotal = systemTotal.add(vaultAsset.amount);
         return {
-            stablecoin: vaultAsset.stablecoin,
+            name: vaultAsset.name,
             amount: vaultAsset.amount,
             share,
             strategies,
