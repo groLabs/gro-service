@@ -78,85 +78,6 @@
             "type": "event"
         },
         {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": false,
-                    "internalType": "uint256",
-                    "name": "totalCurrentAssetsUsd",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256",
-                    "name": "lifeguardCurrentAssetsUsd",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256",
-                    "name": "rebalanceThreshold",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256",
-                    "name": "utilisationRatio",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256",
-                    "name": "targetBuffer",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256[]",
-                    "name": "stablePercents",
-                    "type": "uint256[]"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256",
-                    "name": "curveIndex",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256[]",
-                    "name": "strategyTargetRatio",
-                    "type": "uint256[]"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "bool",
-                    "name": "needProtocolWithdrawal",
-                    "type": "bool"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256",
-                    "name": "protocolExposedIndex",
-                    "type": "uint256"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "uint256[]",
-                    "name": "protocolWithdrawalUsd",
-                    "type": "uint256[]"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "int256[]",
-                    "name": "stablecoinExposedDeltaUsd",
-                    "type": "int256[]"
-                }
-            ],
-            "name": "StablecoinExposed",
-            "type": "event"
-        },
-        {
             "inputs": [],
             "name": "DEFAULT_DECIMALS",
             "outputs": [
@@ -269,6 +190,19 @@
         },
         {
             "inputs": [],
+            "name": "calcSkim",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
             "name": "calculateDepositDeltasOnAllVaults",
             "outputs": [
                 {
@@ -301,6 +235,19 @@
                     "internalType": "address",
                     "name": "",
                     "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "curveVaultPercent",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
                 }
             ],
             "stateMutability": "view",
@@ -445,6 +392,11 @@
                         },
                         {
                             "internalType": "uint256",
+                            "name": "curveCurrentAssetsUsd",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
                             "name": "lifeguardCurrentAssetsUsd",
                             "type": "uint256"
                         },
@@ -477,6 +429,11 @@
                             "internalType": "uint256[]",
                             "name": "stablePercents",
                             "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "curvePercent",
+                            "type": "uint256"
                         }
                     ],
                     "internalType": "struct SystemState",
@@ -520,11 +477,6 @@
                     "internalType": "bool",
                     "name": "sysNeedRebalance",
                     "type": "bool"
-                },
-                {
-                    "internalType": "bool",
-                    "name": "lgNeedTopup",
-                    "type": "bool"
                 }
             ],
             "stateMutability": "view",
@@ -565,6 +517,19 @@
                 }
             ],
             "name": "setController",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_curveVaultPercent",
+                    "type": "uint256"
+                }
+            ],
+            "name": "setCurveVaultPercent",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"

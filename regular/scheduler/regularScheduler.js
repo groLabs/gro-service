@@ -25,12 +25,14 @@ const {
     pnlTrigger,
     rebalanceTrigger,
     harvestOneTrigger,
+    curveInvestTrigger,
 } = require('../handler/triggerHandler');
 const {
     invest,
     execPnl,
     rebalance,
     harvest,
+    curveInvest,
 } = require('../handler/actionHandler');
 
 const { getVaults, getStrategyLength } = require('../../contract/allContracts');
@@ -238,22 +240,29 @@ const investTriggerScheduler = function () {
     schedule.scheduleJob(investTriggerSchedulerSetting, async function () {
         try {
             const vaults = getVaults();
-            const keys = [];
+            const keys = ['curveInvest'];
             vaults.forEach((vault) => {
                 keys.push(`invest-${vault.address}`);
             });
 
             await checkPendingTransactions(keys);
 
-            const triggerResult = await investTrigger();
+            const investTriggers = await Promise.all([
+                investTrigger(),
+                curveInvestTrigger(),
+            ]);
 
-            if (!triggerResult.needCall) return;
+            if (!investTriggers[0].needCall && !investTriggers[1].needCall)
+                return;
 
             const currectBlockNumber = await getCurrentBlockNumber();
             if (!currectBlockNumber) return;
 
             await syncNounce();
-            await invest(currectBlockNumber, triggerResult.params);
+            if (investTriggers[0].needCall)
+                await invest(currectBlockNumber, investTriggers[0].params);
+            if (investTriggers[1].needCall)
+                await curveInvest(currectBlockNumber);
         } catch (error) {
             sendMessageToAlertChannel(error);
         }

@@ -18,6 +18,7 @@ let depositHandler;
 let withdrawHandler;
 let lifeguard;
 let buoy;
+let curveVault;
 let vaults = [];
 let strategyLength = [];
 
@@ -27,6 +28,7 @@ const initAllContracts = async function () {
     promises.push(initInsurance());
     promises.push(initPnl());
     promises.push(initVaults());
+    promises.push(initCurveVault());
     promises.push(initGvt());
     promises.push(initPwrd());
     promises.push(initLifeguard());
@@ -80,6 +82,8 @@ const initPnl = async function () {
 
 const initVaults = async function () {
     const vaultsABI = require('./abis/VaultAdaptorYearnV2_032.json').abi;
+
+    // Stable coin vault
     const vaultAddresses = await controller.vaults();
     vaultAddresses.forEach(async (address) => {
         let vault = new ethers.Contract(address, vaultsABI, nonceManager);
@@ -88,6 +92,27 @@ const initVaults = async function () {
         logger.info(`vault ${address} has ${strategiesLength} strategies.`);
         strategyLength.push(strategiesLength);
     });
+
+    // Curve vault
+    const curveVaultAddress = await controller.curveVault();
+    const curveVault = new ethers.Contract(
+        curveVaultAddress,
+        vaultsABI,
+        nonceManager
+    );
+    vaults.push(curveVault);
+    const curveVaultStrategyLength = await curveVault.getStrategiesLength();
+    logger.info(
+        `curve vault ${curveVaultAddress} has ${curveVaultStrategyLength} strategies.`
+    );
+    strategyLength.push(curveVaultStrategyLength);
+};
+
+const initCurveVault = async function () {
+    const vaultABI = require('./abis/VaultAdaptorYearnV2_032.json').abi;
+    const curveVaultAddress = await controller.curveVault();
+    logger.info(`curve vault address: ${curveVaultAddress}`);
+    curveVault = new ethers.Contract(curveVaultAddress, vaultABI, nonceManager);
 };
 
 const renameDuplicatedFactorEntry = function (abi) {
@@ -176,6 +201,10 @@ const getVaults = function () {
     return vaults;
 };
 
+const getCurveVault = function () {
+    return curveVault;
+};
+
 const getPnl = function () {
     return pnl;
 };
@@ -214,6 +243,7 @@ module.exports = {
     getInsurance,
     getExposure,
     getVaults,
+    getCurveVault,
     getPnl,
     getGvt,
     getPwrd,

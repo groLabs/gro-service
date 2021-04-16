@@ -52,7 +52,6 @@ const generateDepositReport = async function (fromBlock, toBlock) {
         }
     );
     const result = [];
-    const pwrdAddress = getPwrd().address;
     const total = {
         gvt: {
             usdAmount: BigNumber.from(0),
@@ -69,7 +68,7 @@ const generateDepositReport = async function (fromBlock, toBlock) {
     };
     logs.forEach((log) => {
         const item = {};
-        if (log.args[2] == pwrdAddress) {
+        if (log.args[2]) {
             item.gtoken = 'Pwrd';
             total.pwrd.usdAmount = total.pwrd.usdAmount.add(log.args[3]);
             total.pwrd.dai = total.pwrd.dai.add(log.args[4][0]);

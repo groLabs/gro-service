@@ -96,7 +96,7 @@ const generateGroStatsFile = async function () {
     };
     fs.writeFileSync(statsLatest, JSON.stringify(latestFilename));
     sendMessageToProtocolAssetChannel({
-        message: `\nPower Dollar:${formattedStats.tvl.pwrd}\nGro Vault:${formattedStats.tvl.gvt}\nTotalAssets:${formattedStats.tvl.total}\nUtilization Ratio:${formattedStats.tvl.util_ratio}`,
+        message: `\nPower Dollar:${stats.tvl.pwrd}\nGro Vault:${stats.tvl.gvt}\nTotalAssets:${stats.tvl.total}\nUtilization Ratio:${stats.tvl.util_ratio}`,
         type: MESSAGE_TYPES.stats,
     });
     return statsFilename;

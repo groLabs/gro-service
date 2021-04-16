@@ -34,13 +34,12 @@ const getDepositHistories = async function (account, toBlock) {
     });
     const result = { groVault: [], powerD: [] };
     if (!logs.length) return result;
-    const groVaultAddress = getGroVault().address;
     logs.forEach((log) => {
         log.amount = new BN(log.args[3].toString());
-        if (log.args[2] == groVaultAddress) {
-            result.groVault.push(log);
-        } else {
+        if (log.args[2]) {
             result.powerD.push(log);
+        } else {
+            result.groVault.push(log);
         }
     });
     return result;
