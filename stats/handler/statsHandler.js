@@ -1,13 +1,12 @@
-'use strict';
-
 const { BigNumber: BN } = require('bignumber.js');
+const config = require('config');
 const mapObject = require('map-obj');
 const fs = require('fs');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
+
 dayjs.extend(utc);
 
-const logger = require('../statsLogger');
 const { getDefaultProvider } = require('../../common/chainUtil');
 const { getSystemApy } = require('./apyHandler');
 const {
@@ -20,7 +19,6 @@ const {
     getExposureStats,
 } = require('./systemHandler');
 
-const config = require('config');
 const provider = getDefaultProvider();
 
 const FIXED_PERCENT = 4;
@@ -33,33 +31,34 @@ const launchTimestamp = config.get('blockchain.launch_timestamp');
 const statsDir = config.get('stats_folder');
 const statsLatest = config.get('stats_latest');
 
-const printPercent = function (value) {
+function printPercent(value) {
     return BN(value.toString())
         .div(PERCENT_DECIAML)
         .toFixed(FIXED_PERCENT)
         .toString();
-};
+}
 
-const printUsd = function (value) {
+function printUsd(value) {
     return BN(value.toString()).div(USD_DECIAML).toFixed(FIXED_USD).toString();
-};
+}
 
-const mapper = function (original, percentKeys, amountKeys) {
+function mapper(original, percentKeys, amountKeys) {
     return mapObject(
         original,
         (key, value) => {
+            let result = [key, value];
             if (percentKeys.length > 0 && percentKeys.includes(key)) {
-                return [key, printPercent(value)];
+                result = [key, printPercent(value)];
             } else if (amountKeys.length > 0 && amountKeys.includes(key)) {
-                return [key, printUsd(value)];
+                result = [key, printUsd(value)];
             }
-            return [key, value];
+            return result;
         },
         { deep: true }
     );
-};
+}
 
-const generateGroStatsFile = async function () {
+async function generateGroStatsFile() {
     const latestBlock = await provider.getBlock();
     const latestBlockTag = {
         blockTag: latestBlock.number,
@@ -100,7 +99,7 @@ const generateGroStatsFile = async function () {
         type: MESSAGE_TYPES.stats,
     });
     return statsFilename;
-};
+}
 
 module.exports = {
     generateGroStatsFile,

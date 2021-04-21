@@ -1,24 +1,25 @@
 require('dotenv').config();
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var {
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const cors = require('cors');
+const {
     SettingError,
     ParameterError,
     ContractCallError,
-} = require('../common/customErrors');
-var { sendMessageToAlertChannel } = require('../common/discord/discordService');
-var customLogger = require('./statsLogger');
+} = require('../common/error');
+const {
+    sendMessageToAlertChannel,
+} = require('../common/discord/discordService');
+const customLogger = require('./statsLogger');
 
-var botRouter = require('./routes/bot');
-var statsRouter = require('./routes/stats');
-var scheduler = require('./scheduler/statsScheduler');
-//var blockListener = require('./jobs/blockListener');
-var { initAllContracts } = require('../contract/allContracts');
-var cors = require('cors');
-var app = express();
+const statsRouter = require('./routes/stats');
+const scheduler = require('./scheduler/statsScheduler');
+const { initAllContracts } = require('../contract/allContracts');
+
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -30,15 +31,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/bot', cors(), botRouter);
 app.use('/stats', cors(), statsRouter);
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
     next(createError(404));
 });
 
-app.use(function handleSettingError(error, req, res, next) {
+app.use((error, req, res, next) => {
     customLogger.error(error);
     if (error instanceof SettingError) {
         res.status(400).json({ message: `${error.name}: ${error.message}` });
@@ -47,7 +47,7 @@ app.use(function handleSettingError(error, req, res, next) {
     }
 });
 
-app.use(function handleParameterError(error, req, res, next) {
+app.use((error, req, res, next) => {
     customLogger.error(error);
     if (error instanceof ParameterError) {
         res.status(400).json({ message: `${error.name}: ${error.message}` });
@@ -56,7 +56,7 @@ app.use(function handleParameterError(error, req, res, next) {
     }
 });
 
-app.use(function handleContractCallError(error, req, res, next) {
+app.use((error, req, res, next) => {
     customLogger.error(error);
     if (error instanceof ContractCallError) {
         res.status(400).json({ message: `${error.name}: ${error.message}` });
@@ -66,16 +66,15 @@ app.use(function handleContractCallError(error, req, res, next) {
     }
 });
 
-app.use(function handleDefaultError(error, req, res, next) {
+app.use((error, req, res, next) => {
     customLogger.error(`${error.name}: ${error.message}`);
-    res.status(500).json({ message: error.name + ': ' + error.message });
+    res.status(500).json({ message: `${error.name} : ${error.message}` });
     sendMessageToAlertChannel(error);
     next(error);
 });
 
 // start the schedule task
-initAllContracts().then((resolve, rejected) => {
-    //blockListener.start();
+initAllContracts().then(() => {
     scheduler.starStatsJobs();
 });
 

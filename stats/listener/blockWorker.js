@@ -1,28 +1,29 @@
-'use strict';
-
 const logger = require('../statsLogger');
-const { getDefaultProvider, getNonceManager } = require('../common/chainUtil');
-const { pendingTransactions } = require('../common/storage');
-const { execActions } = require('../handler/actionHandler');
-const { callTriggers } = require('../handler/triggerHandler');
+const {
+    getDefaultProvider,
+    getNonceManager,
+} = require('../../common/chainUtil');
+const { pendingTransactions } = require('../../common/storage');
+const { execActions } = require('../../regular/handler/actionHandler');
+const { callTriggers } = require('../../regular/handler/triggerHandler');
+
 const nonceManager = getNonceManager();
 
 class BlockWorker {
-    blockQueues = [];
-
     constructor() {
+        this.blockQueues = [];
         this.currenctHandlePromise = undefined;
         logger.info('HandleBlockService initialize done.');
     }
 
     handleNewBlock(blockNumber) {
         this.blockQueues.push(blockNumber);
-        this.#startHandleBlock();
+        this.startHandleBlock();
     }
 
     startHandleBlock() {
         if (this.currenctHandlePromise) return;
-        const blockNumber = this.#blockQueues.shift();
+        const blockNumber = this.blockQueues.shift();
         if (!blockNumber) return;
 
         // handle triggers
@@ -32,18 +33,21 @@ class BlockWorker {
         this.currenctHandlePromise.then(() => {
             const endTime = Date.now();
             this.currenctHandlePromise = undefined;
-            if (this.#blockQueues.length) {
-                logger.info('Process time: ' + (endTime - startTime));
-                this.#startHandleBlock();
+            if (this.blockQueues.length) {
+                logger.info(`Process time: ${endTime - startTime}`);
+                this.startHandleBlock();
             }
         });
     }
 
     async checkPendingTransactions() {
         if (!pendingTransactions.size) return;
-        for (let type of pendingTransactions.values()) {
+        const types = pendingTransactions.values();
+        for (let i = 0; i < types.length; i += 1) {
+            const type = types[i];
             const transactionInfo = pendingTransactions.get(type);
-            const hash = transactionInfo.hash;
+            const { hash } = transactionInfo;
+            // eslint-disable-next-line no-await-in-loop
             const transactionReceipt = await getDefaultProvider()
                 .getTransactionReceipt(hash)
                 .catch((err) => {
@@ -55,7 +59,7 @@ class BlockWorker {
             // remove type from pending transactions
             pendingTransactions.delete(type);
 
-            if (transactionReceipt.status == 1) {
+            if (transactionReceipt.status === 1) {
                 logger.info(`${type} ${hash} mined.`);
             } else {
                 logger.info(`${type} ${hash} reverted.`);
@@ -64,7 +68,7 @@ class BlockWorker {
     }
 
     getPendingBlocks() {
-        return Array.from(this.#blockQueues);
+        return Array.from(this.blockQueues);
     }
 
     async syncNounce() {
@@ -75,7 +79,7 @@ class BlockWorker {
                 logger.error(error);
                 return -1;
             });
-        if (transactionCountInChain == -1) {
+        if (transactionCountInChain === -1) {
             logger.error('Get transactionCountInChain failed.');
             return;
         }
@@ -86,7 +90,7 @@ class BlockWorker {
                 logger.error(error);
                 return -1;
             });
-        if (transactionCountInLocal == -1) {
+        if (transactionCountInLocal === -1) {
             logger.error('Get transactionCountInLocal failed.');
             return;
         }
@@ -98,13 +102,13 @@ class BlockWorker {
     }
 
     async handleBlock(blockNumber) {
-        logger.info('Block Number: ' + blockNumber);
+        logger.info(`Block Number: ${blockNumber}`);
         await this.syncNounce();
         // Check Pending transactions
         await this.checkPendingTransactions();
         // Call trigger
         const triggerResult = await callTriggers();
-        if (triggerResult.length == 0) return;
+        if (triggerResult.length === 0) return;
         // Call transaction
         await execActions(blockNumber, triggerResult);
     }

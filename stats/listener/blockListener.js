@@ -1,27 +1,26 @@
-'use strict';
-
-const { getDefaultProvider } = require('../common/chainUtil');
+const { getDefaultProvider } = require('../../common/chainUtil');
 const logger = require('../statsLogger');
 const BlockWorker = require('./blockWorker');
+
 const provider = getDefaultProvider();
 
 const blockWorker = new BlockWorker();
 
-const handleBlock = function (blockNumber) {
+function handleBlock(blockNumber) {
     blockWorker.handleNewBlock(blockNumber);
-};
+}
 
-const start = function () {
-    provider.on('block', handleBlock).on('error', function (err) {
+function start() {
+    provider.on('block', handleBlock).on('error', (err) => {
         logger.error(err);
     });
     logger.info('Start listen new blocks.');
-};
+}
 
-const stop = function () {
+function stop() {
     provider.off('block');
     logger.info('Stop listen new blocks.');
-};
+}
 
 module.exports = {
     blockWorker,

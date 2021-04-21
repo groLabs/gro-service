@@ -1,11 +1,12 @@
-'use strict';
+const Discord = require('discord.js');
 
 const { DiscordError } = require('./discordError');
 const { getConfig } = require('../configUtil');
+
 const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
-const Discord = require('discord.js');
 const discordClient = new Discord.Client();
+// eslint-disable-next-line import/no-dynamic-require
+const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 const TOKEN = getConfig('discord.token');
 let isClientReady = false;
@@ -22,12 +23,12 @@ discordClient.on('error', (err) => {
     logger.error(err);
 });
 
-const getDiscordClient = function () {
+function getDiscordClient() {
     if (isClientReady) return discordClient;
     const err = new DiscordError('Discord Service is not readly.');
     logger.error(err);
     throw err;
-};
+}
 
 module.exports = {
     getDiscordClient,

@@ -1,44 +1,43 @@
-'use strict';
-
+const fs = require('fs');
+const config = require('config');
+const BN = require('bignumber.js');
+const { BigNumber } = require('ethers');
 const {
     EVENT_TYPE,
     getEvents,
     getTransferEvents,
 } = require('../../common/logFilter');
-const { ContractCallError } = require('../../common/customErrors');
+const { ContractCallError } = require('../../common/error');
 const {
     MESSAGE_TYPES,
     sendMessageToTradeChannel,
 } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
-const { getPwrd } = require('../../contract/allContracts');
-const fs = require('fs');
-const config = require('config');
-const BN = require('bignumber.js');
+
 const logger = require('../regularLogger');
-const { BigNumber } = require('ethers');
+
 let blockNumberFile = '../lastBlockNumber.json';
 
 if (config.has('blockNumberFile')) {
     blockNumberFile = config.get('blockNumberFile');
 }
 
-const getLastBlockNumber = function () {
+function getLastBlockNumber() {
     const data = fs.readFileSync(blockNumberFile, { flag: 'a+' });
     let content = data.toString();
-    if (content.length == 0) {
+    if (content.length === 0) {
         content = '{}';
     }
     const blockObj = JSON.parse(content);
     return blockObj.lastBlockNumber || getConfig('blockchain.start_block');
-};
+}
 
-const updateLastBlockNumber = async function (blockNumber) {
+async function updateLastBlockNumber(blockNumber) {
     const content = { lastBlockNumber: blockNumber + 1 };
     fs.writeFileSync(blockNumberFile, JSON.stringify(content));
-};
+}
 
-const generateDepositReport = async function (fromBlock, toBlock) {
+async function generateDepositReport(fromBlock, toBlock) {
     logger.info(
         `Start to get deposit event from block:${fromBlock} to ${toBlock}`
     );
@@ -82,10 +81,9 @@ const generateDepositReport = async function (fromBlock, toBlock) {
             total.gvt.usdt = total.gvt.dai.add(log.args[4][2]);
         }
 
-        item.account = log.args[0];
+        [item.account, item.referral] = log.args;
         item.blockNumber = log.blockNumber;
         item.transactionHash = log.transactionHash;
-        item.referral = log.args[1];
         item.usdAmount = log.args[3].toString();
         item.tokens = [
             log.args[4][0].toString(),
@@ -115,9 +113,9 @@ const generateDepositReport = async function (fromBlock, toBlock) {
             type: MESSAGE_TYPES.depositEvent,
         });
     });
-};
+}
 
-const generateWithdrawReport = async function (fromBlock, toBlock) {
+async function generateWithdrawReport(fromBlock, toBlock) {
     logger.info(
         `Start to get withdraw event from block:${fromBlock} to ${toBlock}`
     );
@@ -168,12 +166,9 @@ const generateWithdrawReport = async function (fromBlock, toBlock) {
             total.gvt.usdc = total.gvt.dai.add(log.args[8][1]);
             total.gvt.usdt = total.gvt.dai.add(log.args[8][2]);
         }
-        item.account = log.args[0];
+        [item.account, item.referral, , item.balanced, item.all] = log.args;
         item.blockNumber = log.blockNumber;
         item.transactionHash = log.transactionHash;
-        item.referral = log.args[1];
-        item.balanced = log.args[3];
-        item.all = log.args[4];
         item.deductUsd = log.args[5].toString();
         item.returnUsd = log.args[6].toString();
         item.lpAmount = log.args[7].toString();
@@ -227,9 +222,9 @@ const generateWithdrawReport = async function (fromBlock, toBlock) {
             type: MESSAGE_TYPES.withdrawEvent,
         });
     });
-};
+}
 
-const generateGvtTransfer = async function (fromBlock, toBlock) {
+async function generateGvtTransfer(fromBlock, toBlock) {
     logger.info(
         `Start to get Gvt transfer event from block:${fromBlock} to ${toBlock}`
     );
@@ -251,8 +246,7 @@ const generateGvtTransfer = async function (fromBlock, toBlock) {
         item.blockNumber = log.blockNumber;
         item.transactionHash = log.transactionHash;
         item.gToken = 'Gvt';
-        item.sender = log.args[0];
-        item.recipient = log.args[1];
+        [item.sender, item.recipient] = log;
         item.amount = log.args[2].toString();
         item.factor = log.args[3].toString();
         result.push(item);
@@ -271,9 +265,9 @@ const generateGvtTransfer = async function (fromBlock, toBlock) {
             type: MESSAGE_TYPES.transferEvent,
         });
     });
-};
+}
 
-const generatePwrdTransfer = async function (fromBlock, toBlock) {
+async function generatePwrdTransfer(fromBlock, toBlock) {
     logger.info(
         `Start to get Pwrd transfer event from block:${fromBlock} to ${toBlock}`
     );
@@ -295,8 +289,7 @@ const generatePwrdTransfer = async function (fromBlock, toBlock) {
         item.blockNumber = log.blockNumber;
         item.transactionHash = log.transactionHash;
         item.gToken = 'Pwrd';
-        item.sender = log.args[0];
-        item.recipient = log.args[1];
+        [item.sender, item.recipient] = log;
         item.amount = log.args[2].toString();
         result.push(item);
     });
@@ -314,7 +307,7 @@ const generatePwrdTransfer = async function (fromBlock, toBlock) {
             type: MESSAGE_TYPES.transferEvent,
         });
     });
-};
+}
 
 module.exports = {
     getLastBlockNumber,

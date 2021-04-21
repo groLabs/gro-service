@@ -1,7 +1,5 @@
-'use strict'
-
-const pendingTransactions = new Map()
+const pendingTransactions = new Map();
 
 module.exports = {
-  pendingTransactions,
-}
+    pendingTransactions,
+};

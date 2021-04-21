@@ -1,4 +1,5 @@
-'use strict';
+const BN = require('bignumber.js');
+const logger = require('../statsLogger');
 const {
     getGvt: getGroVault,
     getPwrd: getPowerD,
@@ -9,24 +10,24 @@ const {
     getTransferEvents,
 } = require('../../common/logFilter');
 const { getDefaultProvider } = require('../../common/chainUtil');
-const { ContractCallError } = require('../../common/customErrors');
+const { ContractCallError } = require('../../common/error');
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
 const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
-const BN = require('bignumber.js');
-const logger = require('../statsLogger');
+
 const fromBlock = getConfig('blockchain.start_block');
 const launchTime = getConfig('blockchain.launch_timestamp', false) || 0;
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 
-const getDepositHistories = async function (account, toBlock) {
+async function getDepositHistories(account, toBlock) {
     const logs = await getEvents(
         EVENT_TYPE.deposit,
         fromBlock,
         toBlock,
         account
     ).catch((error) => {
+        logger.error(error);
         throw new ContractCallError(
             `Get deposit logs of ${account} failed.`,
             MESSAGE_TYPES.miniStatsPersonal
@@ -43,15 +44,16 @@ const getDepositHistories = async function (account, toBlock) {
         }
     });
     return result;
-};
+}
 
-const getWithdrawHistories = async function (account, toBlock) {
+async function getWithdrawHistories(account, toBlock) {
     const logs = await getEvents(
         EVENT_TYPE.withdraw,
         fromBlock,
         toBlock,
         account
     ).catch((error) => {
+        logger.error(error);
         throw new ContractCallError(
             `Get withdraw filter for account:${account} failed.`,
             MESSAGE_TYPES.miniStatsPersonal
@@ -68,9 +70,9 @@ const getWithdrawHistories = async function (account, toBlock) {
         }
     });
     return result;
-};
+}
 
-const getTransferHistories = async function (account, filters, toBlock) {
+async function getTransferHistories(account, filters, toBlock) {
     const logs1 = await getTransferEvents(
         filters[0],
         fromBlock,
@@ -90,6 +92,7 @@ const getTransferHistories = async function (account, filters, toBlock) {
         toBlock,
         account
     ).catch((error) => {
+        logger.error(error);
         throw new ContractCallError(
             `Get ${filters[1]} logs of ${account} failed.`,
             MESSAGE_TYPES.miniStatsPersonal
@@ -99,9 +102,9 @@ const getTransferHistories = async function (account, filters, toBlock) {
         deposit: logs1,
         withdraw: logs2,
     };
-};
+}
 
-const getGroVaultTransferHistories = async function (account, toBlock) {
+async function getGroVaultTransferHistories(account, toBlock) {
     const logs = await getTransferHistories(
         account,
         [EVENT_TYPE.inGvtTransfer, EVENT_TYPE.outGvtTransfer],
@@ -118,9 +121,9 @@ const getGroVaultTransferHistories = async function (account, toBlock) {
             .div(new BN(log.args[3].toString()));
     });
     return logs;
-};
+}
 
-const getPowerDTransferHistories = async function (account, toBlock) {
+async function getPowerDTransferHistories(account, toBlock) {
     const logs = await getTransferHistories(
         account,
         [EVENT_TYPE.inPwrdTransfer, EVENT_TYPE.outPwrdTransfer],
@@ -133,15 +136,15 @@ const getPowerDTransferHistories = async function (account, toBlock) {
         log.amount = new BN(log.args[2].toString());
     });
     return logs;
-};
+}
 
-const getTransactionHistories = async function (account, toBlock) {
-    let promises = [];
+async function getTransactionHistories(account, toBlock) {
+    const promises = [];
     promises.push(getGroVaultTransferHistories(account, toBlock));
     promises.push(getPowerDTransferHistories(account, toBlock));
     promises.push(getDepositHistories(account, toBlock));
     promises.push(getWithdrawHistories(account, toBlock));
-    let result = await Promise.all(promises);
+    const result = await Promise.all(promises);
     const powerD = result[1];
     const depositLogs = result[2];
     const groVault = result[0];
@@ -152,11 +155,11 @@ const getTransactionHistories = async function (account, toBlock) {
     groVault.withdraw.push(...withdrawLogs.groVault);
     powerD.withdraw.push(...withdrawLogs.powerD);
     return { groVault, powerD };
-};
+}
 
-const generateReport = async function (account) {
+async function generateReport(account) {
     const latestBlock = await getDefaultProvider().getBlock();
-    let promises = [];
+    const promises = [];
     promises.push(getTransactionHistories(account, latestBlock.number));
     promises.push(getPowerD().getAssets(account));
     promises.push(getGroVault().getAssets(account));
@@ -307,7 +310,7 @@ const generateReport = async function (account) {
     result.net_returns_ratio.total = totalRatio.toFixed(ratioDecimal);
 
     return result;
-};
+}
 
 module.exports = {
     generateReport,

@@ -1,7 +1,9 @@
+const config = require('config');
 const { createLogger, format, transports } = require('winston');
+
 const { combine, timestamp, printf, errors } = format;
 require('winston-daily-rotate-file');
-const config = require('config');
+
 let logFolder = './';
 
 if (config.has('log_folder')) {
@@ -22,7 +24,7 @@ const statsLogger = createLogger({
             filename: 'stats-error-%DATE%.log',
             level: 'error',
             datePattern: 'YYYY-MM-DD',
-            dirname: logFolder + '/statsLogs',
+            dirname: `${logFolder}/statsLogs`,
             auditFile: 'stats-error-audit.json',
             zippedArchive: true,
             maxSize: '10m',
@@ -31,7 +33,7 @@ const statsLogger = createLogger({
         new transports.DailyRotateFile({
             filename: 'stats-%DATE%.log',
             datePattern: 'YYYY-MM-DD',
-            dirname: logFolder + '/statsLogs',
+            dirname: `${logFolder}/statsLogs`,
             auditFile: 'stats-audit.json',
             zippedArchive: true,
             maxSize: '10m',
@@ -42,7 +44,7 @@ const statsLogger = createLogger({
         new transports.DailyRotateFile({
             filename: 'stats-exception-%DATE%.log',
             datePattern: 'YYYY-MM-DD',
-            dirname: logFolder + '/statsLogs',
+            dirname: `${logFolder}/statsLogs`,
             auditFile: 'stats-exception-audit.json',
             zippedArchive: true,
             maxSize: '10m',
@@ -53,7 +55,7 @@ const statsLogger = createLogger({
         new transports.DailyRotateFile({
             filename: 'stats-rejection-%DATE%.log',
             datePattern: 'YYYY-MM-DD',
-            dirname: logFolder + '/statsLogs',
+            dirname: `${logFolder}/statsLogs`,
             auditFile: 'stats-rejection-audit.json',
             zippedArchive: true,
             maxSize: '10m',

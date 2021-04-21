@@ -1,8 +1,8 @@
-'use strict';
-
 const { getConfig } = require('../configUtil');
 const { getDiscordClient } = require('./discord');
+
 const botEnv = process.env.BOT_ENV.toLowerCase();
+/* eslint-disable import/no-dynamic-require */
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const RETRY_TIMES = getConfig('discord.retry', false) || 2;
 const RESEND_DELAY_SETTING = getConfig('discord.resend_delay', false) || 2000;
@@ -39,7 +39,7 @@ const MESSAGE_TYPES = {
     other: 'Others',
 };
 
-const formatMessage = function (obj) {
+function formatMessage(obj) {
     let msg = '';
     msg += `Message: ${obj.message}\n`;
     msg += `Date: ${obj.timestamp}\n`;
@@ -56,10 +56,10 @@ const formatMessage = function (obj) {
 
     const icon = obj.icon || '';
 
-    return `${icon}**${obj.type || 'Others'}**\n` + '```' + msg + '```';
-};
+    return `${icon}**${obj.type || 'Others'}**\n${'```'}${msg}${'```'}`;
+}
 
-const sendMessage = async function (channelId, msgObj, retry = 0) {
+async function sendMessage(channelId, msgObj, retry = 0) {
     if (retry > RETRY_TIMES) {
         logger.info(
             `Discord message retry: ${retry} channel:${channelId}; msg: ${JSON.stringify(
@@ -83,9 +83,29 @@ const sendMessage = async function (channelId, msgObj, retry = 0) {
             retry + 1
         );
     }
-};
+}
 
-const sendMessageToAlertChannel = function (error) {
+function sendMessageToLogChannel(msgObj) {
+    sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
+}
+
+function sendMessageToProtocolEventChannel(msgObj) {
+    sendMessage(DISCORD_CHANNELS.protocolEvents, msgObj);
+}
+
+function sendMessageToCriticalEventChannel(msgObj) {
+    sendMessage(DISCORD_CHANNELS.critActionEvents, msgObj);
+}
+
+function sendMessageToTradeChannel(msgObj) {
+    sendMessage(DISCORD_CHANNELS.trades, msgObj);
+}
+
+function sendMessageToProtocolAssetChannel(msgObj) {
+    sendMessage(DISCORD_CHANNELS.protocolAssets, msgObj);
+}
+
+function sendMessageToAlertChannel(error) {
     logger.error(error);
     const msgObj = {
         icon: ':warning:',
@@ -93,44 +113,25 @@ const sendMessageToAlertChannel = function (error) {
         type: error.messageTag,
         transactionHash: error.transactionHash,
     };
-    if (error.messageTag == MESSAGE_TYPES.curveCheck) {
+
+    if (error.messageTag === MESSAGE_TYPES.curveCheck) {
         sendMessageToCriticalEventChannel(msgObj);
     } else if (
-        error.messageTag == MESSAGE_TYPES.miniStatsPersonal ||
-        error.messageTag == MESSAGE_TYPES.depositEvent ||
-        error.messageTag == MESSAGE_TYPES.withdrawEvent
+        error.messageTag === MESSAGE_TYPES.miniStatsPersonal ||
+        error.messageTag === MESSAGE_TYPES.depositEvent ||
+        error.messageTag === MESSAGE_TYPES.withdrawEvent
     ) {
         sendMessageToTradeChannel(msgObj);
-    } else if (error.messageTag == MESSAGE_TYPES.stats) {
+    } else if (error.messageTag === MESSAGE_TYPES.stats) {
         sendMessageToProtocolAssetChannel(msgObj);
-    } else if (error.messageTag == MESSAGE_TYPES.other || !error.messageTag) {
+    } else if (error.messageTag === MESSAGE_TYPES.other || !error.messageTag) {
         sendMessageToLogChannel(msgObj);
     } else {
         sendMessageToProtocolEventChannel(msgObj);
     }
 
     sendMessage(DISCORD_CHANNELS.botAlerts, msgObj);
-};
-
-const sendMessageToLogChannel = function (msgObj) {
-    sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
-};
-
-const sendMessageToProtocolEventChannel = function (msgObj) {
-    sendMessage(DISCORD_CHANNELS.protocolEvents, msgObj);
-};
-
-const sendMessageToCriticalEventChannel = function (msgObj) {
-    sendMessage(DISCORD_CHANNELS.critActionEvents, msgObj);
-};
-
-const sendMessageToTradeChannel = function (msgObj) {
-    sendMessage(DISCORD_CHANNELS.trades, msgObj);
-};
-
-const sendMessageToProtocolAssetChannel = function (msgObj) {
-    sendMessage(DISCORD_CHANNELS.protocolAssets, msgObj);
-};
+}
 
 module.exports = {
     DISCORD_CHANNELS,
