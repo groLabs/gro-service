@@ -1,14 +1,12 @@
-'use strict';
-
 const { getBuoy } = require('../../contract/allContracts');
-const { ContractCallError } = require('../../common/customErrors');
+const { ContractCallError } = require('../../common/error');
 const {
     sendMessageToCriticalEventChannel,
     MESSAGE_TYPES,
 } = require('../../common/discord/discordService');
 const logger = require('../criticalLogger');
 
-const curveCheck = async function () {
+async function curveCheck() {
     const healthCheck = await getBuoy()
         .checkCurveHealth()
         .catch((error) => {
@@ -23,7 +21,7 @@ const curveCheck = async function () {
         type: MESSAGE_TYPES.curveCheck,
     });
     return healthCheck;
-};
+}
 
 module.exports = {
     curveCheck,

@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+const config = require('config');
 const { BigNumber } = require('ethers');
 const {
     getGvt,
@@ -13,10 +15,8 @@ const {
     getBuoy,
 } = require('../../contract/allContracts');
 const logger = require('../statsLogger');
-const config = require('config');
 
 // constant
-const USD_DECIMAL = BigNumber.from(10).pow(BigNumber.from(18));
 const SHARE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(4));
 const ZERO = BigNumber.from(0);
 
@@ -27,27 +27,99 @@ const protocolNames = config.get('protocol');
 const strategyNames = config.get('strategy_name');
 const lifeguardNames = config.get('lifeguard_name');
 
-const getUsdValue = async function (i, amount, blockTag) {
+async function getUsdValue(i, amount, blockTag) {
     const usdValue = await getBuoy().singleStableToUsd(amount, i, blockTag);
     return usdValue;
-};
+}
 
-const getUsdValueForLP = async function (amount, blockTag) {
+async function getUsdValueForLP(amount, blockTag) {
     const usdValue = await getBuoy().lpToUsd(amount, blockTag);
     return usdValue;
-};
+}
 
-const calculateSharePercent = function (assets, total) {
+function calculateSharePercent(assets, total) {
     return total.isZero() ? ZERO : assets.mul(SHARE_DECIMAL).div(total);
-};
+}
 
-const getVaultStats = async function (blockTag) {
+async function getCurveStrategyStats(vault, vaultTotalAsset, blockTag) {
+    const strategies = [];
+    let reservedAssets = BigNumber.from(vaultTotalAsset);
+    logger.info(`vta ${vaultTotalAsset} ra ${reservedAssets}`);
+
+    const strategyAssets = await vault.getStrategyAssets(0, blockTag);
+    const strategyAssetsUsd = await getUsdValueForLP(strategyAssets, blockTag);
+    strategies.push({
+        name: 'XPool',
+        amount: strategyAssetsUsd,
+        assets: strategyAssets,
+    });
+
+    reservedAssets = reservedAssets.sub(strategyAssets);
+    const reservedUSD = await getUsdValueForLP(reservedAssets, blockTag);
+    strategies.push({
+        name: '3CRV',
+        amount: reservedUSD,
+        assets: reservedAssets,
+    });
+    return strategies;
+}
+
+async function getCurveVaultStats(blockTag) {
+    const curveVault = getCurveVault();
+    const vaultTotalAsset = await curveVault.totalAssets(blockTag);
+    const assetUsd = await getUsdValueForLP(vaultTotalAsset, blockTag);
+    const strategyStats = await getCurveStrategyStats(
+        curveVault,
+        vaultTotalAsset,
+        blockTag
+    );
+    return {
+        name: 'Curve yVault',
+        amount: assetUsd,
+        strategies: strategyStats,
+    };
+}
+
+async function getStrategiesStats(
+    vault,
+    index,
+    length,
+    vaultTotalAsset,
+    blockTag
+) {
+    const strategies = [];
+    let reservedAssets = BigNumber.from(vaultTotalAsset);
+    logger.info(`vta ${vaultTotalAsset} ra ${reservedAssets}`);
+    for (let j = 0; j < length; j += 1) {
+        const strategyAssets = await vault.getStrategyAssets(j, blockTag);
+        reservedAssets = reservedAssets.sub(strategyAssets);
+        const strategyAssetsUsd = await getUsdValue(
+            index,
+            strategyAssets,
+            blockTag
+        );
+        strategies.push({
+            name: strategyNames[j],
+            amount: strategyAssetsUsd,
+            assets: strategyAssets,
+        });
+    }
+    const reservedUSD = await getUsdValue(index, reservedAssets, blockTag);
+    strategies.push({
+        name: stabeCoinNames[index],
+        amount: reservedUSD,
+        assets: reservedAssets,
+    });
+    return strategies;
+}
+
+async function getVaultStats(blockTag) {
     const vaults = getVaults();
     const strategyLength = getStrategyLength();
     const vaultAssets = [];
     //
     for (let vaultIndex = 0; vaultIndex < vaults.length - 1; vaultIndex += 1) {
-        vault = vaults[vaultIndex];
+        const vault = vaults[vaultIndex];
         const vaultTotalAsset = await vault.totalAssets(blockTag);
         const assetUsd = await getUsdValue(
             vaultIndex,
@@ -71,110 +143,30 @@ const getVaultStats = async function (blockTag) {
     vaultAssets.push(curveVaultStats);
 
     return vaultAssets;
-};
+}
 
-const getCurveVaultStats = async function (blockTag) {
-    const curveVault = getCurveVault();
-    const vaultTotalAsset = await curveVault.totalAssets(blockTag);
-    const assetUsd = await getUsdValueForLP(vaultTotalAsset, blockTag);
-    const strategyStats = await getCurveStrategyStats(
-        curveVault,
-        vaultTotalAsset,
-        blockTag
-    );
-    return {
-        name: 'Curve yVault',
-        amount: assetUsd,
-        strategies: strategyStats,
-    };
-};
-
-const getStrategiesStats = async function (
-    vault,
-    index,
-    length,
-    vaultTotalAsset,
-    blockTag
-) {
-    let strategies = [];
-    let reservedAssets = BigNumber.from(vaultTotalAsset);
-    logger.info(`vta ${vaultTotalAsset} ra ${reservedAssets}`);
-    for (let j = 0; j < length; j++) {
-        const strategyAssets = await vault.getStrategyAssets(j, blockTag);
-        reservedAssets = reservedAssets.sub(strategyAssets);
-        const strategyAssetsUsd = await getUsdValue(
-            index,
-            strategyAssets,
-            blockTag
-        );
-        strategies.push({
-            name: strategyNames[j],
-            amount: strategyAssetsUsd,
-            assets: strategyAssets,
-        });
-    }
-    const reservedUSD = await getUsdValue(index, reservedAssets, blockTag);
-    strategies.push({
-        name: stabeCoinNames[index],
-        amount: reservedUSD,
-        assets: reservedAssets,
-    });
-    return strategies;
-};
-
-const getCurveStrategyStats = async function (
-    vault,
-    vaultTotalAsset,
-    blockTag
-) {
-    let strategies = [];
-    let reservedAssets = BigNumber.from(vaultTotalAsset);
-    logger.info(`vta ${vaultTotalAsset} ra ${reservedAssets}`);
-
-    const strategyAssets = await vault.getStrategyAssets(0, blockTag);
-    const strategyAssetsUsd = await getUsdValueForLP(strategyAssets, blockTag);
-    strategies.push({
-        name: 'XPool',
-        amount: strategyAssetsUsd,
-        assets: strategyAssets,
-    });
-
-    reservedAssets = reservedAssets.sub(strategyAssets);
-    const reservedUSD = await getUsdValueForLP(reservedAssets, blockTag);
-    strategies.push({
-        name: '3CRV',
-        amount: reservedUSD,
-        assets: reservedAssets,
-    });
-    return strategies;
-};
-
-const getLifeguardStats = async function (blockTag) {
+async function getLifeguardStats(blockTag) {
     const lifeGuard = getLifeguard();
     const lifeGuardStats = {
         name: lifeguardNames,
         amount: await lifeGuard.totalAssetsUsd(blockTag),
     };
     return lifeGuardStats;
-};
+}
 
-const getExposureStats = async function (blockTag) {
+async function getExposureStats(blockTag) {
     const exposure = getExposure();
     logger.info(`blockTag : ${JSON.stringify(blockTag)}`);
     const preCal = await getInsurance().prepareCalculation(blockTag);
     const riskResult = await exposure.calcRiskExposure(preCal, blockTag);
-    const exposureStableCoin = riskResult[0].map((concentration, i) => {
-        return {
-            name: stabeCoinNames[i],
-            concentration,
-        };
-    });
-    const exposureProtocol = riskResult[1].map((concentration, i) => {
-        return {
-            name: protocolNames[i],
-            concentration,
-        };
-    });
+    const exposureStableCoin = riskResult[0].map((concentration, i) => ({
+        name: stabeCoinNames[i],
+        concentration,
+    }));
+    const exposureProtocol = riskResult[1].map((concentration, i) => ({
+        name: protocolNames[i],
+        concentration,
+    }));
 
     // add curve 3pool exposure
     exposureProtocol.push({
@@ -186,9 +178,9 @@ const getExposureStats = async function (blockTag) {
         protocols: exposureProtocol,
     };
     return exposureStats;
-};
+}
 
-const getTvlStats = async function (blockTag) {
+async function getTvlStats(blockTag) {
     logger.info('TvlStats');
     const gvtAssets = await getGvt().totalAssets(blockTag);
     const prwdAssets = await getPwrd().totalSupply(blockTag);
@@ -210,9 +202,9 @@ const getTvlStats = async function (blockTag) {
         util_ratio_limit_GW: utilRatioLimitGW,
     };
     return tvl;
-};
+}
 
-const getSystemStats = async function (totalAssetsUsd, blockTag) {
+async function getSystemStats(totalAssetsUsd, blockTag) {
     logger.info('SystemStats');
     const lifeGuardStats = await getLifeguardStats(blockTag);
     lifeGuardStats.share = calculateSharePercent(
@@ -224,14 +216,12 @@ const getSystemStats = async function (totalAssetsUsd, blockTag) {
     let systemShare = lifeGuardStats.share;
     const vaultAssets = await getVaultStats(blockTag);
     const vaultStats = vaultAssets.map((vaultAsset) => {
-        const strategies = vaultAsset.strategies.map((strategy) => {
-            return {
-                name: strategy.name,
-                amount: strategy.amount,
-                share: calculateSharePercent(strategy.amount, totalAssetsUsd),
-            };
-        });
-        let share = calculateSharePercent(vaultAsset.amount, totalAssetsUsd);
+        const strategies = vaultAsset.strategies.map((strategy) => ({
+            name: strategy.name,
+            amount: strategy.amount,
+            share: calculateSharePercent(strategy.amount, totalAssetsUsd),
+        }));
+        const share = calculateSharePercent(vaultAsset.amount, totalAssetsUsd);
         systemShare = systemShare.add(share);
         systemTotal = systemTotal.add(vaultAsset.amount);
         return {
@@ -248,7 +238,7 @@ const getSystemStats = async function (totalAssetsUsd, blockTag) {
         vaults: vaultStats,
     };
     return systemStats;
-};
+}
 
 module.exports = {
     getTvlStats,

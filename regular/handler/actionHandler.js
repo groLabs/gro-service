@@ -1,5 +1,3 @@
-'use strict';
-
 const {
     getInsurance,
     getPnl,
@@ -7,14 +5,14 @@ const {
     getVaults,
 } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
-const { ContractSendError } = require('../../common/customErrors');
+const { ContractSendError } = require('../../common/error');
 const {
     MESSAGE_TYPES,
     sendMessageToProtocolEventChannel,
 } = require('../../common/discord/discordService');
 const logger = require('../regularLogger');
 
-const adapterInvest = async function (blockNumber, isInvested, vault) {
+async function adapterInvest(blockNumber, isInvested, vault) {
     if (!isInvested) return;
 
     const investResponse = await vault.invest().catch((error) => {
@@ -46,66 +44,78 @@ const adapterInvest = async function (blockNumber, isInvested, vault) {
         type: MESSAGE_TYPES.invest,
         transactionHash: investResponse.hash,
     });
-};
+}
 
-const invest = async function (blockNumber, investParams) {
+async function invest(blockNumber, investParams) {
     const vaults = getVaults();
-    for (let i = 0; i < vaults.length; i++) {
-        await adapterInvest(blockNumber, investParams[i], vaults[i]);
+    const investPromises = [];
+    for (let i = 0; i < vaults.length; i += 1) {
+        investPromises.push(
+            adapterInvest(blockNumber, investParams[i], vaults[i])
+        );
     }
-};
+    await Promise.all(investPromises);
+}
 
-const harvest = async function (blockNumber, harvestStrategies) {
-    for (let i = 0; i < harvestStrategies.length; i++) {
+async function harvestStrategy(blockNumber, strategyInfo) {
+    const key = `harvest-${strategyInfo.vault.address}-${strategyInfo.strategyIndex}`;
+    const harvestResult = await strategyInfo.vault
+        .strategyHarvest(strategyInfo.strategyIndex, strategyInfo.callCost)
+        .catch((error) => {
+            logger.error(error);
+            throw new ContractSendError(
+                `Call strategyHarvest function to harvest vault:${strategyInfo.vault.address}'s index:${strategyInfo.strategyIndex} strategy failed.`,
+                MESSAGE_TYPES.harvest,
+                {
+                    vault: strategyInfo.vault.address,
+                    strategyIndex: strategyInfo.strategyIndex,
+                    callCost: strategyInfo.callCost.toString(),
+                }
+            );
+        });
+
+    pendingTransactions.set(key, {
+        blockNumber,
+        reSendTimes: 0,
+        hash: harvestResult.hash,
+        createdTime: new Date(),
+        label: MESSAGE_TYPES.harvest,
+        transactionRequest: {
+            nonce: harvestResult.nonce,
+            gasPrice: harvestResult.gasPrice.hex,
+            gasLimit: harvestResult.gasLimit.hex,
+            to: harvestResult.to,
+            value: harvestResult.value.hex,
+            data: harvestResult.data,
+            chainId: harvestResult.chainId,
+            from: harvestResult.from,
+        },
+    });
+
+    sendMessageToProtocolEventChannel({
+        message: `Call strategyHarvest function to harvest vault:${strategyInfo.vault.address}'s index:${strategyInfo.strategyIndex} strategy`,
+        type: MESSAGE_TYPES.harvest,
+        params: {
+            vault: strategyInfo.vault.address,
+            strategyIndex: strategyInfo.strategyIndex,
+            callCost: strategyInfo.callCost.toString(),
+        },
+        transactionHash: harvestResult.hash,
+    });
+}
+
+async function harvest(blockNumber, harvestStrategies) {
+    const harvestPromises = [];
+    for (let i = 0; i < harvestStrategies.length; i += 1) {
         const strategyInfo = harvestStrategies[i];
-        const key = `harvest-${strategyInfo.vault.address}-${strategyInfo.strategyIndex}`;
-        const harvestResult = await strategyInfo.vault
-            .strategyHarvest(strategyInfo.strategyIndex, strategyInfo.callCost)
-            .catch((error) => {
-                logger.error(error);
-                throw new ContractSendError(
-                    `Call strategyHarvest function to harvest vault:${strategyInfo.vault.address}'s index:${strategyInfo.strategyIndex} strategy failed.`,
-                    MESSAGE_TYPES.harvest,
-                    {
-                        vault: strategyInfo.vault.address,
-                        strategyIndex: strategyInfo.strategyIndex,
-                        callCost: strategyInfo.callCost.toString(),
-                    }
-                );
-            });
-
-        pendingTransactions.set(key, {
-            blockNumber,
-            reSendTimes: 0,
-            hash: harvestResult.hash,
-            createdTime: new Date(),
-            label: MESSAGE_TYPES.harvest,
-            transactionRequest: {
-                nonce: harvestResult.nonce,
-                gasPrice: harvestResult.gasPrice.hex,
-                gasLimit: harvestResult.gasLimit.hex,
-                to: harvestResult.to,
-                value: harvestResult.value.hex,
-                data: harvestResult.data,
-                chainId: harvestResult.chainId,
-                from: harvestResult.from,
-            },
-        });
-
-        sendMessageToProtocolEventChannel({
-            message: `Call strategyHarvest function to harvest vault:${strategyInfo.vault.address}'s index:${strategyInfo.strategyIndex} strategy`,
-            type: MESSAGE_TYPES.harvest,
-            params: {
-                vault: strategyInfo.vault.address,
-                strategyIndex: strategyInfo.strategyIndex,
-                callCost: strategyInfo.callCost.toString(),
-            },
-            transactionHash: harvestResult.hash,
-        });
+        harvestPromises.push(harvestStrategy(blockNumber, strategyInfo));
     }
-};
+    await Promise.all(harvestPromises).catch((error) => {
+        throw error;
+    });
+}
 
-const execPnl = async function (blockNumber) {
+async function execPnl(blockNumber) {
     const pnl = getPnl();
     const pnlResponse = await pnl.execPnL(0).catch((error) => {
         logger.error(error);
@@ -137,10 +147,10 @@ const execPnl = async function (blockNumber) {
         type: MESSAGE_TYPES.pnl,
         transactionHash: pnlResponse.hash,
     });
-};
+}
 
-const rebalance = async function (blockNumber) {
-    let rebalanceReponse = await getInsurance()
+async function rebalance(blockNumber) {
+    const rebalanceReponse = await getInsurance()
         .rebalance()
         .catch((error) => {
             logger.error(error);
@@ -170,14 +180,14 @@ const rebalance = async function (blockNumber) {
 
     const msgObj = {
         message: 'Call rebalance function to adjust system assets',
-        type: MESSAGE_TYPES[transactionKey],
+        type: MESSAGE_TYPES.rebalance,
         transactionHash: rebalanceReponse.hash,
     };
     sendMessageToProtocolEventChannel(msgObj);
-};
+}
 
-const curveInvest = async function (blockNumber) {
-    let investResponse = await getLifeguard()
+async function curveInvest(blockNumber) {
+    const investResponse = await getLifeguard()
         .investToCurveVault()
         .catch((error) => {
             logger.error(error);
@@ -211,9 +221,9 @@ const curveInvest = async function (blockNumber) {
         transactionHash: investResponse.hash,
     };
     sendMessageToProtocolEventChannel(msgObj);
-};
+}
 
-const execActions = async function (blockNumber, triggerResult) {
+async function execActions(blockNumber, triggerResult) {
     // Handle invest
     if (triggerResult[0].needCall) {
         logger.info('invest');
@@ -243,7 +253,7 @@ const execActions = async function (blockNumber, triggerResult) {
         logger.info('curve invest');
         await curveInvest(blockNumber);
     }
-};
+}
 
 module.exports = {
     invest,

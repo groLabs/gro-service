@@ -1,5 +1,3 @@
-'use strict';
-
 const { ethers } = require('ethers');
 const {
     getDepositHandler,
@@ -8,8 +6,10 @@ const {
     getPwrd: getPowerD,
 } = require('../contract/allContracts');
 const { getDefaultProvider } = require('./chainUtil');
-const { ContractCallError } = require('./customErrors');
+const { ContractCallError } = require('./error');
+
 const botEnv = process.env.BOT_ENV.toLowerCase();
+// eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 const EVENT_TYPE = {
@@ -49,7 +49,7 @@ EVENT_FRAGMENT[EVENT_TYPE.outPwrdTransfer] = [
     'event LogTransfer(address indexed sender, address indexed recipient, uint256 indexed amount)',
 ];
 
-const getFilter = function (account, type) {
+function getFilter(account, type) {
     const depositHandler = getDepositHandler();
     const withdrawHandler = getWithdrawHandler();
     const groVault = getGroVault();
@@ -84,9 +84,9 @@ const getFilter = function (account, type) {
             logger.error(`No type: ${type}`);
     }
     return filter;
-};
+}
 
-const getEvents = async function (
+async function getEvents(
     eventType,
     fromBlock,
     toBlock = 'latest',
@@ -110,7 +110,7 @@ const getEvents = async function (
     const controllerInstance = new ethers.utils.Interface(
         EVENT_FRAGMENT[eventType]
     );
-    let logs = [];
+    const logs = [];
     filterLogs.forEach((log) => {
         const eventInfo = {
             blockNumber: log.blockNumber,
@@ -125,9 +125,9 @@ const getEvents = async function (
     });
 
     return logs;
-};
+}
 
-const getTransferEvents = async function (
+async function getTransferEvents(
     eventType,
     fromBlock,
     toBlock = 'latest',
@@ -151,7 +151,7 @@ const getTransferEvents = async function (
     const controllerInstance = new ethers.utils.Interface(
         EVENT_FRAGMENT[eventType]
     );
-    let logs = [];
+    const logs = [];
     filterLogs.forEach((log) => {
         const eventInfo = {
             blockNumber: log.blockNumber,
@@ -166,7 +166,7 @@ const getTransferEvents = async function (
     });
 
     return logs;
-};
+}
 
 module.exports = {
     EVENT_TYPE,

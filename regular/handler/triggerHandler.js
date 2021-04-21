@@ -1,6 +1,5 @@
-'use strict';
-
 const { BigNumber } = require('ethers');
+const config = require('config');
 const {
     getInsurance,
     getPnl,
@@ -17,12 +16,12 @@ const { getConfig } = require('../../common/configUtil');
 const {
     PendingTransactionError,
     ContractCallError,
-} = require('../../common/customErrors');
+} = require('../../common/error');
 const logger = require('../regularLogger');
-const config = require('config');
+
 const NONEED_TRIGGER = { needCall: false };
 
-const adapterInvestTrigger = async function (vault) {
+async function adapterInvestTrigger(vault) {
     if (pendingTransactions.get(`invest-${vault.address}`)) {
         const result = `Already has pending invest in adapter:${
             vault.address
@@ -36,7 +35,7 @@ const adapterInvestTrigger = async function (vault) {
             `Call investTrigger of adapter: ${vault.address} to check if the adapter need investment failed`
         );
     });
-    let msgObj = {
+    const msgObj = {
         message: `Adapter: ${vault.address} doesn't need invest.`,
         type: MESSAGE_TYPES.investTrigger,
     };
@@ -48,19 +47,19 @@ const adapterInvestTrigger = async function (vault) {
     );
     sendMessageToProtocolEventChannel(msgObj);
     return investTriggerResult;
-};
+}
 
-const investTrigger = async function () {
+async function investTrigger() {
     const vaults = getVaults();
-    if (vaults.length == 0) {
+    if (vaults.length === 0) {
         logger.error('Not fund any vault.');
         throw new ContractCallError(
             'Try to call investTrigger function but not found any vaults.',
             MESSAGE_TYPES.investTrigger
         );
     }
-    let triggerPromises = [];
-    for (let i = 0; i < vaults.length; i++) {
+    const triggerPromises = [];
+    for (let i = 0; i < vaults.length; i += 1) {
         triggerPromises.push(adapterInvestTrigger(vaults[i]));
     }
     const result = await Promise.all(triggerPromises);
@@ -72,11 +71,11 @@ const investTrigger = async function () {
         };
     }
     return investTriggerResult;
-};
+}
 
-const checkVaultStrategyHarvest = function (vault, vaultIndex, strategyLength) {
-    let promises = [];
-    for (let i = 0; i < strategyLength; i++) {
+function checkVaultStrategyHarvest(vault, vaultIndex, strategyLength) {
+    const promises = [];
+    for (let i = 0; i < strategyLength; i += 1) {
         const key = `harvest-${vault.address}-${i}`;
 
         if (pendingTransactions.get(key)) {
@@ -84,38 +83,34 @@ const checkVaultStrategyHarvest = function (vault, vaultIndex, strategyLength) {
                 pendingTransactions.get(key).hash
             }`;
             logger.info(msg);
-            continue;
-        }
+        } else {
+            // Get harvest callCost
+            let callCost = BigNumber.from(0);
+            const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${i}`;
+            if (config.has(callCostKey)) {
+                callCost = BigNumber.from(config.get(callCostKey));
+            }
 
-        // Get harvest callCost
-        let callCost = BigNumber.from(0);
-        const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${i}`;
-        if (config.has(callCostKey)) {
-            callCost = BigNumber.from(config.get(callCostKey));
-        }
-
-        promises.push(
-            vault
-                .strategyHarvestTrigger(i, callCost)
-                .then((resolve, reject) => {
+            promises.push(
+                vault.strategyHarvestTrigger(i, callCost).then((resolve) => {
                     logger.info(`success ${vault.address} ${i} ${resolve}`);
                     return {
-                        vault: vault,
+                        vault,
                         strategyIndex: i,
                         callCost,
                         triggerResponse: resolve,
                     };
                 })
-        );
+            );
+        }
     }
     return promises;
-};
+}
 
-const harvestTrigger = async function () {
+async function harvestTrigger() {
     const vaults = getVaults();
     const vaultsStrategyLength = getStrategyLength();
-    //console.log(`vaults: ${JSON.stringify(vaults)}`)
-    if (vaults.length == 0) {
+    if (vaults.length === 0) {
         logger.error('Not fund any vault.');
         throw new ContractCallError(
             'Try to call investTrigger function but not found any vaults.',
@@ -123,11 +118,11 @@ const harvestTrigger = async function () {
         );
     }
 
-    let strategyHarvestTrigger = [];
-    let harvestPromises = [];
-    for (let i = 0; i < vaults.length; i++) {
+    const strategyHarvestTrigger = [];
+    const harvestPromises = [];
+    for (let i = 0; i < vaults.length; i += 1) {
         logger.info(`vault: ${i} : ${vaults[i].address}`);
-        let vaultPromises = checkVaultStrategyHarvest(
+        const vaultPromises = checkVaultStrategyHarvest(
             ...strategyHarvestTrigger,
             vaults[i],
             i,
@@ -136,25 +131,26 @@ const harvestTrigger = async function () {
         harvestPromises.push(...vaultPromises);
     }
 
-    let triggerResponses = await Promise.all(harvestPromises);
+    const triggerResponses = await Promise.all(harvestPromises);
     triggerResponses.forEach((resp) => {
-        //console.log(resp);
         if (resp.triggerResponse) {
             strategyHarvestTrigger.push(resp);
         }
     });
 
-    if (strategyHarvestTrigger.length)
+    if (strategyHarvestTrigger.length) {
         return {
             needCall: true,
             params: strategyHarvestTrigger,
         };
-    return NONEED_TRIGGER;
-};
+    }
 
-const harvestOneTrigger = async function () {
+    return NONEED_TRIGGER;
+}
+
+async function harvestOneTrigger() {
     const vaults = getVaults();
-    if (vaults.length == 0) {
+    if (vaults.length === 0) {
         logger.info('Not fund any vault.');
         throw new ContractCallError(
             'Try to call investTrigger function but not found any vaults.',
@@ -163,11 +159,11 @@ const harvestOneTrigger = async function () {
     }
 
     const vaultsStrategyLength = getStrategyLength();
-    for (let i = 0; i < vaults.length; i++) {
+    for (let i = 0; i < vaults.length; i += 1) {
         logger.info(`vault: ${i} : ${vaults[i].address}`);
         const vault = vaults[i];
         const strategyLength = vaultsStrategyLength[i];
-        for (let j = 0; j < strategyLength; j++) {
+        for (let j = 0; j < strategyLength; j += 1) {
             const key = `harvest-${vault.address}-${j}`;
 
             if (pendingTransactions.get(key)) {
@@ -185,6 +181,7 @@ const harvestOneTrigger = async function () {
             const callCostKey = `harvest_callcost.vault_${i}.strategy_${j}`;
             let callCost = getConfig(callCostKey, false) || 0;
             callCost = BigNumber.from(callCost);
+            // eslint-disable-next-line no-await-in-loop
             const result = await vault
                 .strategyHarvestTrigger(j, callCost)
                 .catch((error) => {
@@ -211,7 +208,7 @@ const harvestOneTrigger = async function () {
                     needCall: true,
                     params: [
                         {
-                            vault: vault,
+                            vault,
                             strategyIndex: j,
                             callCost,
                             triggerResponse: result,
@@ -222,13 +219,13 @@ const harvestOneTrigger = async function () {
         }
     }
     sendMessageToProtocolEventChannel({
-        message: `No any strategies need harvest.`,
+        message: 'No any strategies need harvest.',
         type: MESSAGE_TYPES.harvestTrigger,
     });
     return NONEED_TRIGGER;
-};
+}
 
-const pnlTrigger = async function () {
+async function pnlTrigger() {
     if (pendingTransactions.get('pnl')) {
         const result = `Already has pending pnl transaction: ${
             pendingTransactions.get('pnl').hash
@@ -242,7 +239,7 @@ const pnlTrigger = async function () {
         .catch((error) => {
             logger.error(error);
             throw new ContractCallError(
-                `Call pnlTrigger to check if the system need execute pnl failed.`,
+                'Call pnlTrigger to check if the system need execute pnl failed.',
                 MESSAGE_TYPES.pnlTrigger
             );
         });
@@ -253,14 +250,14 @@ const pnlTrigger = async function () {
         .catch((error) => {
             logger.error(error);
             throw new ContractCallError(
-                `Call totalAssetsChangeTrigger to check if the system need execute pnl failed.`,
+                'Call totalAssetsChangeTrigger to check if the system need execute pnl failed.',
                 MESSAGE_TYPES.pnlTrigger
             );
         });
 
     logger.info(`totalAssetsChangeTrigger. ${needPnlAssets}`);
 
-    let msgObj = {
+    const msgObj = {
         message: 'No need run PnL.',
         type: MESSAGE_TYPES.pnlTrigger,
     };
@@ -274,9 +271,9 @@ const pnlTrigger = async function () {
 
     sendMessageToProtocolEventChannel(msgObj);
     return pnlTriggerResult;
-};
+}
 
-const rebalanceTrigger = async function () {
+async function rebalanceTrigger() {
     if (pendingTransactions.get('rebalance')) {
         const result = `Already has pending rebalance transaction: ${
             pendingTransactions.get('rebalance').hash
@@ -298,7 +295,7 @@ const rebalanceTrigger = async function () {
             );
         });
     logger.info(`rebalanceTrigger: ${needRebalance}`);
-    let msgObj = {
+    const msgObj = {
         message: 'No need run rebalance.',
         type: MESSAGE_TYPES.rebalanceTrigger,
     };
@@ -311,9 +308,9 @@ const rebalanceTrigger = async function () {
     }
     sendMessageToProtocolEventChannel(msgObj);
     return rebalanceTriggerResult;
-};
+}
 
-const curveInvestTrigger = async function () {
+async function curveInvestTrigger() {
     if (pendingTransactions.get('curveInvest')) {
         const result = `Already has pending Curve invest transaction: ${
             pendingTransactions.get('curveInvest').hash
@@ -335,7 +332,7 @@ const curveInvestTrigger = async function () {
             );
         });
     logger.info(`curveInvestTrigger : ${needInvest}`);
-    let msgObj = {
+    const msgObj = {
         message: 'No need run curve invest.',
         type: MESSAGE_TYPES.curveInvestTrigger,
     };
@@ -347,10 +344,10 @@ const curveInvestTrigger = async function () {
     }
     sendMessageToProtocolEventChannel(msgObj);
     return investResult;
-};
+}
 
-const callTriggers = async function () {
-    let triggerPromises = [];
+async function callTriggers() {
+    const triggerPromises = [];
     triggerPromises.push(investTrigger());
     triggerPromises.push(harvestTrigger());
     triggerPromises.push(pnlTrigger());
@@ -358,7 +355,7 @@ const callTriggers = async function () {
     triggerPromises.push(curveInvestTrigger());
     const triggerResult = await Promise.all(triggerPromises);
     return triggerResult;
-};
+}
 
 module.exports = {
     investTrigger,

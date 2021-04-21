@@ -1,5 +1,4 @@
-'use strict';
-
+const config = require('config');
 const schedule = require('node-schedule');
 const { BigNumber } = require('ethers');
 const {
@@ -19,7 +18,7 @@ const {
     SettingError,
     BlockChainCallError,
     ContractCallError,
-} = require('../../common/customErrors');
+} = require('../../common/error');
 const {
     investTrigger,
     pnlTrigger,
@@ -45,7 +44,7 @@ const {
     generatePwrdTransfer,
 } = require('../handler/eventHandler');
 const logger = require('../regularLogger');
-const config = require('config');
+
 const provider = getDefaultProvider();
 const nonceManager = getNonceManager();
 let pendingTransactionSchedulerSetting = '30 * * * *';
@@ -107,7 +106,7 @@ if (config.has('bot_balance_warn')) {
     botBalanceWarnVault = config.get('bot_balance_warn');
 }
 
-const getCurrentBlockNumber = async function () {
+async function getCurrentBlockNumber() {
     const block = await provider.getBlockNumber().catch((error) => {
         logger.error(error);
         throw new BlockChainCallError(
@@ -115,10 +114,10 @@ const getCurrentBlockNumber = async function () {
         );
     });
     return block;
-};
+}
 
-const checkBotAccountBalance = function () {
-    schedule.scheduleJob(botBalanceSchedulerSetting, async function () {
+function checkBotAccountBalance() {
+    schedule.scheduleJob(botBalanceSchedulerSetting, async () => {
         const botAccount = process.env.BOT_ADDRESS;
         try {
             const balance = await nonceManager.getBalance();
@@ -146,75 +145,68 @@ const checkBotAccountBalance = function () {
             );
         }
     });
-};
+}
 
-const checkLongPendingTransactions = async function () {
-    if (!pendingTransactions.size) return;
-
-    for (let type of pendingTransactions.keys()) {
-        const oldTransaction = pendingTransactions.get(type);
-        const hash = oldTransaction.hash;
-        const msgLabel = oldTransaction.label;
-        const transactionReceipt = await provider
-            .getTransactionReceipt(hash)
-            .catch((err) => {
-                logger.error(err);
+async function checkPendingTransaction(type, oldTransaction) {
+    const { hash, label: msgLabel } = oldTransaction;
+    const transactionReceipt = await provider
+        .getTransactionReceipt(hash)
+        .catch((err) => {
+            logger.error(err);
+            throw new BlockChainCallError(
+                `Get receipt of ${hash} from chain failed.`,
+                msgLabel,
+                hash
+            );
+        });
+    const timestamps = Date.now() - oldTransaction.createdTime;
+    if (!transactionReceipt && timestamps > 3600000) {
+        // transactionReceipt == null, pending > 6s, resend
+        const signedTX = await nonceManager.signTransaction(
+            oldTransaction.transactionRequest
+        );
+        const transactionResponse = await nonceManager
+            .sendTransaction(signedTX)
+            .catch((error) => {
+                logger.error(error);
                 throw new BlockChainCallError(
-                    `Get receipt of ${hash} from chain failed.`,
+                    `Resend transaction: ${hash} failed.`,
                     msgLabel,
                     hash
                 );
             });
-        const timestamps = Date.now() - oldTransaction.createdTime;
-        if (!transactionReceipt && timestamps > 3600000) {
-            // transactionReceipt == null, pending > 6s, resend
-            const signedTX = await nonceManager.signTransaction(
-                oldTransaction.transactionRequest
-            );
-            const transactionResponse = await nonceManager
-                .sendTransaction(signedTX)
-                .catch((error) => {
-                    logger.error(error);
-                    throw new BlockChainCallError(
-                        `Resend transaction: ${hash} failed.`,
-                        msgLabel,
-                        hash
-                    );
-                });
-            pendingTransactions.set(type, {
-                blockNumber: oldTransaction.blockNumber,
-                reSendTimes: oldTransaction.reSendTimes + 1,
-                hash: transactionResponse.hash,
-                createdTime: Date.now(),
-                transactionRequest: {
-                    nonce: transactionResponse.nonce,
-                    gasPrice: transactionResponse.gasPrice.hex,
-                    gasLimit: transactionResponse.gasPrice.hex,
-                    to: transactionResponse.to,
-                    value: transactionResponse.value.hex,
-                    data: transactionResponse.data,
-                    chainId: transactionResponse.chainId,
-                    from: transactionResponse.from,
-                },
-            });
-            return;
-        }
-        const msgObj = {
-            type: 'Bot Pending Transactions',
-            params: botAccount,
-        };
+        pendingTransactions.set(type, {
+            blockNumber: oldTransaction.blockNumber,
+            reSendTimes: oldTransaction.reSendTimes + 1,
+            hash: transactionResponse.hash,
+            createdTime: Date.now(),
+            transactionRequest: {
+                nonce: transactionResponse.nonce,
+                gasPrice: transactionResponse.gasPrice.hex,
+                gasLimit: transactionResponse.gasPrice.hex,
+                to: transactionResponse.to,
+                value: transactionResponse.value.hex,
+                data: transactionResponse.data,
+                chainId: transactionResponse.chainId,
+                from: transactionResponse.from,
+            },
+        });
+        return;
+    }
+    const msgObj = {
+        type: 'Bot Pending Transactions',
+        params: botAccount,
+    };
 
-        if (!transactionReceipt) {
-            msgObj.message = `${type} transaction: ${hash} is still pending.`;
-            logger.info(msgObj.message);
-            sendMessageToProtocolEventChannel(msgObj);
-            continue;
-        }
-
+    if (!transactionReceipt) {
+        msgObj.message = `${type} transaction: ${hash} is still pending.`;
+        logger.info(msgObj.message);
+        sendMessageToProtocolEventChannel(msgObj);
+    } else {
         // remove hash from pending transactions
         pendingTransactions.delete(type);
 
-        if (transactionReceipt.status == 1) {
+        if (transactionReceipt.status === 1) {
             msgObj.message = `${type} transaction: ${hash} has mined to chain.`;
         } else {
             msgObj.message = `${type} transaction: ${hash} has reverted.`;
@@ -222,9 +214,24 @@ const checkLongPendingTransactions = async function () {
         logger.info(msgObj.message);
         sendMessageToProtocolEventChannel(msgObj);
     }
-};
-const longPendingTransactionsScheduler = function () {
-    schedule.scheduleJob(pendingTransactionSchedulerSetting, async function () {
+}
+
+async function checkLongPendingTransactions() {
+    if (!pendingTransactions.size) return;
+    const types = pendingTransactions.keys();
+    const pendingCheckPromises = [];
+    for (let i = 0; i < types.length; i += 1) {
+        const type = types[i];
+        const oldTransaction = pendingTransactions.get(type);
+        pendingCheckPromises.push(
+            checkPendingTransaction(type, oldTransaction)
+        );
+    }
+    await Promise.all(pendingCheckPromises);
+}
+
+function longPendingTransactionsScheduler() {
+    schedule.scheduleJob(pendingTransactionSchedulerSetting, async () => {
         logger.info(
             `schedulePendingTransactionsCheck running at ${Date.now()}`
         );
@@ -234,10 +241,10 @@ const longPendingTransactionsScheduler = function () {
             sendMessageToAlertChannel(error);
         }
     });
-};
+}
 
-const investTriggerScheduler = function () {
-    schedule.scheduleJob(investTriggerSchedulerSetting, async function () {
+function investTriggerScheduler() {
+    schedule.scheduleJob(investTriggerSchedulerSetting, async () => {
         try {
             const vaults = getVaults();
             const keys = ['curveInvest'];
@@ -252,25 +259,29 @@ const investTriggerScheduler = function () {
                 curveInvestTrigger(),
             ]);
 
-            if (!investTriggers[0].needCall && !investTriggers[1].needCall)
+            if (!investTriggers[0].needCall && !investTriggers[1].needCall) {
                 return;
+            }
 
             const currectBlockNumber = await getCurrentBlockNumber();
             if (!currectBlockNumber) return;
 
             await syncNounce();
-            if (investTriggers[0].needCall)
+            if (investTriggers[0].needCall) {
                 await invest(currectBlockNumber, investTriggers[0].params);
-            if (investTriggers[1].needCall)
+            }
+
+            if (investTriggers[1].needCall) {
                 await curveInvest(currectBlockNumber);
+            }
         } catch (error) {
             sendMessageToAlertChannel(error);
         }
     });
-};
+}
 
-const pnlTriggerScheduler = function () {
-    schedule.scheduleJob(pnlTriggerSchedulerSetting, async function () {
+function pnlTriggerScheduler() {
+    schedule.scheduleJob(pnlTriggerSchedulerSetting, async () => {
         try {
             await checkPendingTransactions(['pnl']);
 
@@ -287,10 +298,10 @@ const pnlTriggerScheduler = function () {
             sendMessageToAlertChannel(error);
         }
     });
-};
+}
 
-const rebalanceTriggerScheduler = function () {
-    schedule.scheduleJob(rebalanceTriggerSchedulerSetting, async function () {
+function rebalanceTriggerScheduler() {
+    schedule.scheduleJob(rebalanceTriggerSchedulerSetting, async () => {
         try {
             await checkPendingTransactions(['rebalance']);
 
@@ -307,17 +318,17 @@ const rebalanceTriggerScheduler = function () {
             sendMessageToAlertChannel(error);
         }
     });
-};
+}
 
-const harvestTriggerScheduler = function () {
-    schedule.scheduleJob(harvestTriggerSchedulerSetting, async function () {
+function harvestTriggerScheduler() {
+    schedule.scheduleJob(harvestTriggerSchedulerSetting, async () => {
         try {
             const vaults = getVaults();
             const vaultsStrategyLength = getStrategyLength();
             const keys = [];
-            for (let i = 0; i < vaults.length; i++) {
+            for (let i = 0; i < vaults.length; i += 1) {
                 const strategyLength = vaultsStrategyLength[i];
-                for (let j = 0; j < strategyLength; j++) {
+                for (let j = 0; j < strategyLength; j += 1) {
                     keys.push(`harvest-${vaults[i].address}-${j}`);
                 }
             }
@@ -336,31 +347,28 @@ const harvestTriggerScheduler = function () {
             sendMessageToAlertChannel(error);
         }
     });
-};
+}
 
-const depositWithdrawEventScheduler = function () {
-    schedule.scheduleJob(
-        depositWithdrawEventSchedulerSetting,
-        async function () {
-            try {
-                const lastBlockNumber = getLastBlockNumber();
-                const currectBlockNumber = await getCurrentBlockNumber();
-                if (!currectBlockNumber) return;
-                await Promise.all([
-                    generateDepositReport(lastBlockNumber, currectBlockNumber),
-                    generateWithdrawReport(lastBlockNumber, currectBlockNumber),
-                    generateGvtTransfer(lastBlockNumber, currectBlockNumber),
-                    generatePwrdTransfer(lastBlockNumber, currectBlockNumber),
-                ]);
-                updateLastBlockNumber(currectBlockNumber);
-            } catch (error) {
-                sendMessageToAlertChannel(error);
-            }
+function depositWithdrawEventScheduler() {
+    schedule.scheduleJob(depositWithdrawEventSchedulerSetting, async () => {
+        try {
+            const lastBlockNumber = getLastBlockNumber();
+            const currectBlockNumber = await getCurrentBlockNumber();
+            if (!currectBlockNumber) return;
+            await Promise.all([
+                generateDepositReport(lastBlockNumber, currectBlockNumber),
+                generateWithdrawReport(lastBlockNumber, currectBlockNumber),
+                generateGvtTransfer(lastBlockNumber, currectBlockNumber),
+                generatePwrdTransfer(lastBlockNumber, currectBlockNumber),
+            ]);
+            updateLastBlockNumber(currectBlockNumber);
+        } catch (error) {
+            sendMessageToAlertChannel(error);
         }
-    );
-};
+    });
+}
 
-const startRegularJobs = function () {
+function startRegularJobs() {
     checkBotAccountBalance();
     investTriggerScheduler();
     harvestTriggerScheduler();
@@ -368,7 +376,7 @@ const startRegularJobs = function () {
     rebalanceTriggerScheduler();
     longPendingTransactionsScheduler();
     depositWithdrawEventScheduler();
-};
+}
 
 module.exports = {
     startRegularJobs,
