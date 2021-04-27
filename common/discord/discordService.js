@@ -36,13 +36,17 @@ const MESSAGE_TYPES = {
     topup: 'Topup',
     curveCheck: 'Curve Check',
     stats: 'Generate Stats',
+    regularBot: 'Harvest Bot',
+    statsBot: 'Stats Bot',
+    criticalBot: 'Critical Bot',
     other: 'Others',
 };
 
 const MESSAGE_EMOJI = {};
 MESSAGE_EMOJI.Gvt = getConfig('emoji.gvt', false) || ':Vault:';
 MESSAGE_EMOJI.Pwrd = getConfig('emoji.pwrd', false) || ':GRO:';
-MESSAGE_EMOJI.error = getConfig('emoji.error', false) || ':GRO:';
+MESSAGE_EMOJI.error = getConfig('emoji.error', false) || ':x:';
+MESSAGE_EMOJI.reverted = getConfig('emoji.reverted', false) || ':warning:';
 MESSAGE_EMOJI[MESSAGE_TYPES.miniStatsPersonal] =
     getConfig('emoji.miniStatsPersonal', false) || ':bar_chart:';
 MESSAGE_EMOJI[MESSAGE_TYPES.stats] =
@@ -53,6 +57,32 @@ MESSAGE_EMOJI[MESSAGE_TYPES.withdrawEvent] =
     getConfig('emoji.withdrawEvent', false) || ':chart_with_downwards_trend:';
 MESSAGE_EMOJI[MESSAGE_TYPES.transferEvent] =
     getConfig('emoji.transferEvent', false) || ':left_right_arrow:';
+MESSAGE_EMOJI[MESSAGE_TYPES.investTrigger] =
+    getConfig('emoji.investTrigger', false) || ':inbox_tray:';
+MESSAGE_EMOJI[MESSAGE_TYPES.curveInvestTrigger] =
+    getConfig('emoji.curveInvestTrigger', false) || ':inbox_tray:';
+MESSAGE_EMOJI[MESSAGE_TYPES.invest] =
+    getConfig('emoji.invest', false) || ':inbox_tray:';
+MESSAGE_EMOJI[MESSAGE_TYPES.curveInvest] =
+    getConfig('emoji.curveInvest', false) || ':inbox_tray:';
+MESSAGE_EMOJI[MESSAGE_TYPES.harvestTrigger] =
+    getConfig('emoji.harvestTrigger', false) || ':hammer_pick:';
+MESSAGE_EMOJI[MESSAGE_TYPES.harvest] =
+    getConfig('emoji.harvest', false) || ':hammer_pick:';
+MESSAGE_EMOJI[MESSAGE_TYPES.pnlTrigger] =
+    getConfig('emoji.pnlTrigger', false) || ':moneybag:';
+MESSAGE_EMOJI[MESSAGE_TYPES.pnl] =
+    getConfig('emoji.pnl', false) || ':moneybag:';
+MESSAGE_EMOJI[MESSAGE_TYPES.rebalanceTrigger] =
+    getConfig('emoji.rebalanceTrigger', false) || ':scales:';
+MESSAGE_EMOJI[MESSAGE_TYPES.rebalance] =
+    getConfig('emoji.rebalance', false) || ':scales:';
+MESSAGE_EMOJI[MESSAGE_TYPES.regularBot] =
+    getConfig('emoji.regularBot', false) || ':robot:';
+MESSAGE_EMOJI[MESSAGE_TYPES.statsBot] =
+    getConfig('emoji.statsBot', false) || ':robot:';
+MESSAGE_EMOJI[MESSAGE_TYPES.criticalBot] =
+    getConfig('emoji.criticalBot', false) || ':robot:';
 
 function generateLink(urlDetail) {
     const nodeEnv = process.env.NODE_ENV.toLowerCase();
@@ -163,11 +193,21 @@ async function sendMessage(channelId, msgObj, retry = 0) {
 }
 
 function sendMessageToLogChannel(msgObj) {
+    if (!msgObj.emojis) {
+        msgObj.emojis = [];
+    }
+    msgObj.emojis.unshift(MESSAGE_EMOJI[msgObj.type]);
+    sendEmbedMessage(DISCORD_CHANNELS.botLogs, msgObj);
     sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
 }
 
 function sendMessageToProtocolEventChannel(msgObj) {
-    sendMessage(DISCORD_CHANNELS.protocolEvents, msgObj);
+    if (!msgObj.emojis) {
+        msgObj.emojis = [];
+    }
+    msgObj.emojis.unshift(MESSAGE_EMOJI[msgObj.type]);
+    sendEmbedMessage(DISCORD_CHANNELS.protocolEvents, msgObj);
+    sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
 }
 
 function sendMessageToCriticalEventChannel(msgObj) {

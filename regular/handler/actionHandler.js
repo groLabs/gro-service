@@ -13,6 +13,7 @@ const {
 const logger = require('../regularLogger');
 
 async function adapterInvest(blockNumber, isInvested, vault) {
+    // This is to skip curve invest
     if (!isInvested) return;
 
     const investResponse = await vault.invest().catch((error) => {
@@ -39,9 +40,24 @@ async function adapterInvest(blockNumber, isInvested, vault) {
             from: investResponse.from,
         },
     });
+    const txLabel = 'TX';
+    const vaultLabel = 'vault';
     sendMessageToProtocolEventChannel({
-        message: `Call adapter:${vault.address}'s invest function to invest assets.`,
         type: MESSAGE_TYPES.invest,
+        message: `Call adapter:${vault.address}'s invest function to invest assets`,
+        description: `${txLabel} Call ${vaultLabel}'s invest function`,
+        urls: [
+            {
+                label: txLabel,
+                type: 'tx',
+                value: investResponse.hash,
+            },
+            {
+                label: vaultLabel,
+                type: 'account',
+                value: vault.address,
+            },
+        ],
         transactionHash: investResponse.hash,
     });
 }
@@ -91,10 +107,24 @@ async function harvestStrategy(blockNumber, strategyInfo) {
             from: harvestResult.from,
         },
     });
-
+    const txLabel = 'TX';
+    const vaultLabel = 'vault';
     sendMessageToProtocolEventChannel({
-        message: `Call strategyHarvest function to harvest vault:${strategyInfo.vault.address}'s index:${strategyInfo.strategyIndex} strategy`,
         type: MESSAGE_TYPES.harvest,
+        message: `Call strategyHarvest function to harvest vault:${strategyInfo.vault.address}'s index:${strategyInfo.strategyIndex} strategy`,
+        description: `${txLabel} Call ${vaultLabel}'s ${strategyInfo.strategyIndex} strategy's harvest function`,
+        urls: [
+            {
+                label: txLabel,
+                type: 'tx',
+                value: harvestResult.hash,
+            },
+            {
+                label: vaultLabel,
+                type: 'account',
+                value: strategyInfo.vault.address,
+            },
+        ],
         params: {
             vault: strategyInfo.vault.address,
             strategyIndex: strategyInfo.strategyIndex,
@@ -142,9 +172,18 @@ async function execPnl(blockNumber) {
             from: pnlResponse.from,
         },
     });
+    const txLabel = 'TX';
     sendMessageToProtocolEventChannel({
-        message: 'Call execPnL function to execuate PnL',
         type: MESSAGE_TYPES.pnl,
+        message: 'Call execPnL function to execuate PnL',
+        description: `${txLabel} Call execPnL function`,
+        urls: [
+            {
+                label: txLabel,
+                type: 'tx',
+                value: pnlResponse.hash,
+            },
+        ],
         transactionHash: pnlResponse.hash,
     });
 }
@@ -177,10 +216,18 @@ async function rebalance(blockNumber) {
             from: rebalanceReponse.from,
         },
     });
-
+    const txLabel = 'TX';
     const msgObj = {
-        message: 'Call rebalance function to adjust system assets',
         type: MESSAGE_TYPES.rebalance,
+        message: 'Call rebalance function to adjust system assets',
+        description: `${txLabel} Call rebalance function`,
+        urls: [
+            {
+                label: txLabel,
+                type: 'tx',
+                value: rebalanceReponse.hash,
+            },
+        ],
         transactionHash: rebalanceReponse.hash,
     };
     sendMessageToProtocolEventChannel(msgObj);
@@ -215,9 +262,18 @@ async function curveInvest(blockNumber) {
         },
     });
 
+    const txLabel = 'TX';
     const msgObj = {
-        message: 'Call investToCurveVault function to invest lifeguard assets',
         type: MESSAGE_TYPES.curveInvest,
+        message: 'Call investToCurveVault function to invest lifeguard assets',
+        description: `${txLabel} Call curve vault's investToCurveVault function`,
+        urls: [
+            {
+                label: txLabel,
+                type: 'tx',
+                value: investResponse.hash,
+            },
+        ],
         transactionHash: investResponse.hash,
     };
     sendMessageToProtocolEventChannel(msgObj);
