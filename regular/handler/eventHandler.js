@@ -246,7 +246,7 @@ async function generateGvtTransfer(fromBlock, toBlock) {
         item.blockNumber = log.blockNumber;
         item.transactionHash = log.transactionHash;
         item.gToken = 'Gvt';
-        [item.sender, item.recipient] = log;
+        [item.sender, item.recipient] = log.args;
         item.amount = log.args[2].toString();
         item.factor = log.args[3].toString();
         result.push(item);
@@ -289,7 +289,7 @@ async function generatePwrdTransfer(fromBlock, toBlock) {
         item.blockNumber = log.blockNumber;
         item.transactionHash = log.transactionHash;
         item.gToken = 'Pwrd';
-        [item.sender, item.recipient] = log;
+        [item.sender, item.recipient] = log.args;
         item.amount = log.args[2].toString();
         result.push(item);
     });
