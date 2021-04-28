@@ -73,7 +73,7 @@ router.get(
             throw new ParameterError('Parameter network failed.');
         }
         const result = await generateReport(req.query.address);
-        res.json({ gro_personal_position: result });
+        res.json(result);
     })
 );
 
