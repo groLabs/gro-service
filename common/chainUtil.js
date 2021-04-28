@@ -90,7 +90,7 @@ function getDefaultProvider() {
         options = config.get('blockchain.api_keys');
     }
     logger.info('Create a new default provider.');
-    defaultProvider = new ethers.providers.getDefaultProvider(network, options);
+    defaultProvider = ethers.providers.getDefaultProvider(network, options);
     return defaultProvider;
 }
 

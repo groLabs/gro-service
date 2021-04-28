@@ -16,9 +16,9 @@ async function getBlockNumberTimestamp(blockNumber) {
 }
 
 async function fetchTimestamp(transaction) {
-    const blocknumber = transaction.blockNumber;
+    const blocknumber = transaction.block_number;
     transaction.timestamp = await getBlockNumberTimestamp(blocknumber);
-    transaction.blockNumber = `${blocknumber}`;
+    transaction.block_number = `${blocknumber}`;
     logger.info(`transaction: ${JSON.stringify(transaction)}`);
     return transaction;
 }
@@ -30,9 +30,13 @@ function parseData(events, token, type, transferType) {
         const item = {
             type,
             token,
-            transactionHash: event.transactionHash,
-            usdAmount: div(event.amount, CONTRACT_ASSET_DECIMAL, amountDecimal),
-            blockNumber: event.blockNumber,
+            hash: event.transactionHash,
+            usd_amount: div(
+                event.amount,
+                CONTRACT_ASSET_DECIMAL,
+                amountDecimal
+            ),
+            block_number: event.blockNumber,
         };
         if (event.name === 'LogTransfer') {
             item.type = transferType;
