@@ -1,8 +1,8 @@
 module.exports = {
     blockchain: {
         network: 'http://localhost:8545',
-        start_block: 403,
-        launch_timestamp: '1619489201',
+        start_block: 331,
+        launch_timestamp: '1619575207',
     },
     trigger_scheduler: {
         pending_transaction_check: '5 * * * * *',
@@ -43,10 +43,11 @@ module.exports = {
     log_folder: './logs',
     blockNumberFile: './lastBlockNumber.json',
     stats_latest: '../stats/gro-latest.json',
-    vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', '3CRV yVault'],
+    vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
     protocol: ['Harvest', 'Cream', 'Curve'],
     strategy_name: ['Harvest', 'Cream'],
+    curve_strategy_name: ['XPool'],
     lifeguard_name: '3CRV',
     contracts: {
         controller: '0xFC628dd79137395F3C9744e33b1c5DE554D94882',

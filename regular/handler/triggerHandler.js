@@ -5,7 +5,9 @@ const {
     getPnl,
     getLifeguard,
     getVaults,
+    getCurveVault,
     getStrategyLength,
+    getVaultAndStrategyLabels,
 } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
 const {
@@ -29,30 +31,30 @@ async function adapterInvestTrigger(vault) {
         logger.info(result);
         throw new PendingTransactionError(result, MESSAGE_TYPES.investTrigger);
     }
+    const vaultName = getVaultAndStrategyLabels()[vault.address].name;
     const investTriggerResult = await vault.investTrigger().catch((error) => {
         logger.error(error);
         throw new ContractCallError(
-            `Call investTrigger of adapter: ${vault.address} to check if the adapter need investment failed`
+            `Call investTrigger of ${vaultName} : ${vault.address} to check if the adapter need investment failed`
         );
     });
-    const label = 'Vault';
     const msgObj = {
         type: MESSAGE_TYPES.investTrigger,
-        message: `Adapter: ${vault.address} doesn't need invest.`,
-        description: `${label}'s investTrigger is false, doesn't need run invest`,
+        message: `${vaultName} : ${vault.address} doesn't need invest.`,
+        description: `${vaultName}'s investTrigger is false, doesn't need run invest`,
     };
     if (investTriggerResult) {
-        msgObj.message = `Adapter: ${vault.address} need invest.`;
-        msgObj.description = `${label}'s investTrigger is true, need run invest`;
+        msgObj.message = `${vaultName} : ${vault.address} need invest.`;
+        msgObj.description = `${vaultName}'s investTrigger is true, need run invest`;
     }
     msgObj.urls = [];
     msgObj.urls.push({
-        label,
+        label: vaultName,
         type: 'account',
         value: vault.address,
     });
     logger.info(
-        `Adapter:${vault.address} invest trigger: ${investTriggerResult}`
+        `${vaultName} : ${vault.address} invest trigger: ${investTriggerResult}`
     );
     sendMessageToProtocolEventChannel(msgObj);
     return investTriggerResult;
@@ -169,7 +171,11 @@ async function harvestOneTrigger() {
 
     const vaultsStrategyLength = getStrategyLength();
     for (let i = 0; i < vaults.length; i += 1) {
-        logger.info(`vault: ${i} : ${vaults[i].address}`);
+        const adapterAddress = vaults[i].address;
+        const vaultName = getVaultAndStrategyLabels()[adapterAddress].name;
+        const strategLabel = getVaultAndStrategyLabels()[adapterAddress]
+            .strategies;
+        logger.info(`${vaultName}: ${adapterAddress}`);
         const vault = vaults[i];
         const strategyLength = vaultsStrategyLength[i];
         for (let j = 0; j < strategyLength; j += 1) {
@@ -196,24 +202,28 @@ async function harvestOneTrigger() {
                 .catch((error) => {
                     logger.error(error);
                     throw new ContractCallError(
-                        `Call vault:${vault.address}'s strategyHarvestTrigger function with strategy index:${j} and callCost: ${callCost} failed.`,
+                        `Call ${vaultName}:${vault.address}'s strategyHarvestTrigger function on ${strategLabel[j].name} with callCost: ${callCost} failed.`,
                         MESSAGE_TYPES.investTrigger
                     );
                 });
             logger.info(
-                `vault:${i} strategy:${j} strategyHarvestTrigger: ${result}`
+                `${vaultName}:${i} ${strategLabel[j].name} strategyHarvestTrigger: ${result}`
             );
             if (result) {
-                const vaultLabel = 'Vault';
                 sendMessageToProtocolEventChannel({
                     type: MESSAGE_TYPES.harvestTrigger,
-                    message: `vault:${vault.address}'s strategy ${j} need harvest.`,
-                    description: `${vaultLabel}'s strategyHarvestTrigger is true, need run harvest`,
+                    message: `${vaultName}:${vault.address}'s ${strategLabel[j].name} strategy need harvest.`,
+                    description: `${vaultName}'s harvestTrigger on ${strategLabel[j].name} is true, need run harvest`,
                     urls: [
                         {
-                            label: vaultLabel,
+                            label: vaultName,
                             type: 'account',
                             value: vault.address,
+                        },
+                        {
+                            label: strategLabel[j].name,
+                            type: 'account',
+                            value: strategLabel[j].address,
                         },
                     ],
                     params: {
@@ -363,20 +373,26 @@ async function curveInvestTrigger() {
             );
         });
     logger.info(`curveInvestTrigger : ${needInvest}`);
+    const curveVaultAddress = getCurveVault().address;
+    const vaultName = getVaultAndStrategyLabels()[curveVaultAddress].name;
     const msgObj = {
         type: MESSAGE_TYPES.curveInvestTrigger,
         message: 'No need run curve invest.',
-        description:
-            "CurveInvestTrigger is false, doesn't need run curve invest",
+        description: `${vaultName}'s curveInvestTrigger is false, doesn't need run curve invest`,
     };
 
     let investResult = NONEED_TRIGGER;
     if (needInvest) {
         investResult = { needCall: true };
-        msgObj.message = 'Need run curve invest to invest lifeguard assets.';
-        msgObj.description =
-            'CurveInvestTrigger is true, need run curve invest';
+        msgObj.message = `${vaultName}'s curveInvestTrigger is true, need run invest`;
+        msgObj.description = `${vaultName}'s curveInvestTrigger is true, need run invest`;
     }
+    msgObj.urls = [];
+    msgObj.urls.push({
+        label: vaultName,
+        type: 'account',
+        value: curveVaultAddress,
+    });
     sendMessageToProtocolEventChannel(msgObj);
     return investResult;
 }

@@ -3,6 +3,8 @@ const {
     getPnl,
     getLifeguard,
     getVaults,
+    getVaultAndStrategyLabels,
+    getCurveVault,
 } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
 const { ContractSendError } = require('../../common/error');
@@ -15,11 +17,11 @@ const logger = require('../regularLogger');
 async function adapterInvest(blockNumber, isInvested, vault) {
     // This is to skip curve invest
     if (!isInvested) return;
-
+    const vaultName = getVaultAndStrategyLabels()[vault.address].name;
     const investResponse = await vault.invest().catch((error) => {
         logger.error(error);
         throw new ContractSendError(
-            `Call adapter:${vault.address}'s invest function to invest asset failed.`,
+            `Call ${vaultName}:${vault.address}'s invest function to invest asset failed.`,
             MESSAGE_TYPES.invest
         );
     });
@@ -41,11 +43,10 @@ async function adapterInvest(blockNumber, isInvested, vault) {
         },
     });
     const txLabel = 'TX';
-    const vaultLabel = 'vault';
     sendMessageToProtocolEventChannel({
         type: MESSAGE_TYPES.invest,
-        message: `Call adapter:${vault.address}'s invest function to invest assets`,
-        description: `${txLabel} Call ${vaultLabel}'s invest function`,
+        message: `Call ${vaultName}:${vault.address}'s invest function to invest assets`,
+        description: `${txLabel} Call ${vaultName}'s invest function`,
         urls: [
             {
                 label: txLabel,
@@ -53,7 +54,7 @@ async function adapterInvest(blockNumber, isInvested, vault) {
                 value: investResponse.hash,
             },
             {
-                label: vaultLabel,
+                label: vaultName,
                 type: 'account',
                 value: vault.address,
             },
@@ -75,12 +76,16 @@ async function invest(blockNumber, investParams) {
 
 async function harvestStrategy(blockNumber, strategyInfo) {
     const key = `harvest-${strategyInfo.vault.address}-${strategyInfo.strategyIndex}`;
+    const vaultName = getVaultAndStrategyLabels()[strategyInfo.vault.address]
+        .name;
+    const strategyName = getVaultAndStrategyLabels()[strategyInfo.vault.address]
+        .strategies[strategyInfo.strategyIndex].name;
     const harvestResult = await strategyInfo.vault
         .strategyHarvest(strategyInfo.strategyIndex, strategyInfo.callCost)
         .catch((error) => {
             logger.error(error);
             throw new ContractSendError(
-                `Call strategyHarvest function to harvest vault:${strategyInfo.vault.address}'s index:${strategyInfo.strategyIndex} strategy failed.`,
+                `Call strategyHarvest function to harvest ${vaultName}:${strategyInfo.vault.address}'s ${strategyName} failed.`,
                 MESSAGE_TYPES.harvest,
                 {
                     vault: strategyInfo.vault.address,
@@ -108,11 +113,10 @@ async function harvestStrategy(blockNumber, strategyInfo) {
         },
     });
     const txLabel = 'TX';
-    const vaultLabel = 'vault';
     sendMessageToProtocolEventChannel({
         type: MESSAGE_TYPES.harvest,
-        message: `Call strategyHarvest function to harvest vault:${strategyInfo.vault.address}'s index:${strategyInfo.strategyIndex} strategy`,
-        description: `${txLabel} Call ${vaultLabel}'s ${strategyInfo.strategyIndex} strategy's harvest function`,
+        message: `Call strategyHarvest function to harvest ${vaultName}:${strategyInfo.vault.address}'s ${strategyName}`,
+        description: `${txLabel} Call ${vaultName}'s ${strategyName}'s harvest function`,
         urls: [
             {
                 label: txLabel,
@@ -120,9 +124,15 @@ async function harvestStrategy(blockNumber, strategyInfo) {
                 value: harvestResult.hash,
             },
             {
-                label: vaultLabel,
+                label: vaultName,
                 type: 'account',
                 value: strategyInfo.vault.address,
+            },
+            {
+                label: strategyName,
+                type: 'account',
+                value: getVaultAndStrategyLabels()[strategyInfo.vault.address]
+                    .strategies[strategyInfo.strategyIndex].address,
             },
         ],
         params: {
@@ -234,12 +244,14 @@ async function rebalance(blockNumber) {
 }
 
 async function curveInvest(blockNumber) {
+    const curveVaultAddress = getCurveVault().address;
+    const vaultName = getVaultAndStrategyLabels()[curveVaultAddress].name;
     const investResponse = await getLifeguard()
         .investToCurveVault()
         .catch((error) => {
             logger.error(error);
             throw new ContractSendError(
-                'Call investToCurveVault to invest lifeguard assets failed.',
+                `Call ${vaultName}'s investToCurveVault to invest lifeguard assets failed.`,
                 MESSAGE_TYPES.curveInvest
             );
         });
@@ -265,13 +277,18 @@ async function curveInvest(blockNumber) {
     const txLabel = 'TX';
     const msgObj = {
         type: MESSAGE_TYPES.curveInvest,
-        message: 'Call investToCurveVault function to invest lifeguard assets',
-        description: `${txLabel} Call curve vault's investToCurveVault function`,
+        message: `Call ${vaultName} investToCurveVault function to invest lifeguard assets`,
+        description: `${txLabel} Call ${vaultName}'s investToCurveVault function`,
         urls: [
             {
                 label: txLabel,
                 type: 'tx',
                 value: investResponse.hash,
+            },
+            {
+                label: vaultName,
+                type: 'account',
+                value: curveVaultAddress,
             },
         ],
         transactionHash: investResponse.hash,
