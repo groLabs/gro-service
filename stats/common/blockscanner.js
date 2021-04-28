@@ -18,14 +18,15 @@ module.exports = class {
     }
 
     async getDate(date, after = true) {
-        if (!moment.isMoment(date)) date = moment(date).utc();
-        if (
-            typeof this.firstBlock === 'undefined' ||
-            typeof this.latestBlock === 'undefined' ||
-            typeof this.blockTime === 'undefined'
-        ) {
-            await this.getBoundaries();
-        }
+        if (!moment.isMoment(date)) date = moment(date);
+        // if (
+        //     typeof this.firstBlock === 'undefined' ||
+        //     typeof this.latestBlock === 'undefined' ||
+        //     typeof this.blockTime === 'undefined'
+        // ) {
+        //     await this.getBoundaries();
+        // }
+        await this.getBoundaries();
 
         if (date.isBefore(moment.unix(this.firstBlock.timestamp))) {
             return this.returnWrapper(date.format(), 1);

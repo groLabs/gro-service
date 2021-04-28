@@ -7,8 +7,8 @@ module.exports = {
             etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
             pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
         },
-        start_block: 24205407,
-        launch_timestamp: '1617992244',
+        start_block: 24286969,
+        launch_timestamp: '1618607668',
     },
     trigger_scheduler: {
         pending_transaction_check: '5 30 * * * *',
@@ -19,6 +19,7 @@ module.exports = {
         rebalance: '45 40 * * * *',
         generate_stats: '00 */15 * * * *',
         bot_curve_check: '00 50 * * * *',
+        deposit_withdraw_event: '30 */5 * * * *',
     },
     stats_folder: '../stats',
     log_folder: '../logs',
@@ -30,7 +31,7 @@ module.exports = {
     strategy_name: ['Harvest', 'Cream'],
     lifeguard_name: '3CRV',
     contracts: {
-        controller: '0x105FF0FA312d731d993C7Fa6Dab924fdA74468e5',
+        controller: '0x80Db207dE94ceFf57E43bcd57BbB592516127BF9',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
