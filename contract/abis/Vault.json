@@ -1644,8 +1644,7 @@
                 }
             ],
             "stateMutability": "view",
-            "type": "function",
-            "gas": 3300
+            "type": "function"
         },
         {
             "name": "emergencyShutdown",

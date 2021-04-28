@@ -5,7 +5,9 @@ const {
     getPnl,
     getLifeguard,
     getVaults,
+    getCurveVault,
     getStrategyLength,
+    getVaultAndStrategyLabels,
 } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
 const {
@@ -29,21 +31,30 @@ async function adapterInvestTrigger(vault) {
         logger.info(result);
         throw new PendingTransactionError(result, MESSAGE_TYPES.investTrigger);
     }
+    const vaultName = getVaultAndStrategyLabels()[vault.address].name;
     const investTriggerResult = await vault.investTrigger().catch((error) => {
         logger.error(error);
         throw new ContractCallError(
-            `Call investTrigger of adapter: ${vault.address} to check if the adapter need investment failed`
+            `Call investTrigger of ${vaultName} : ${vault.address} to check if the adapter need investment failed`
         );
     });
     const msgObj = {
-        message: `Adapter: ${vault.address} doesn't need invest.`,
         type: MESSAGE_TYPES.investTrigger,
+        message: `${vaultName} : ${vault.address} doesn't need invest.`,
+        description: `${vaultName}'s investTrigger is false, doesn't need run invest`,
     };
     if (investTriggerResult) {
-        msgObj.message = `Adapter: ${vault.address} need invest.`;
+        msgObj.message = `${vaultName} : ${vault.address} need invest.`;
+        msgObj.description = `${vaultName}'s investTrigger is true, need run invest`;
     }
+    msgObj.urls = [];
+    msgObj.urls.push({
+        label: vaultName,
+        type: 'account',
+        value: vault.address,
+    });
     logger.info(
-        `Adapter:${vault.address} invest trigger: ${investTriggerResult}`
+        `${vaultName} : ${vault.address} invest trigger: ${investTriggerResult}`
     );
     sendMessageToProtocolEventChannel(msgObj);
     return investTriggerResult;
@@ -59,7 +70,7 @@ async function investTrigger() {
         );
     }
     const triggerPromises = [];
-    for (let i = 0; i < vaults.length; i += 1) {
+    for (let i = 0; i < vaults.length - 1; i += 1) {
         triggerPromises.push(adapterInvestTrigger(vaults[i]));
     }
     const result = await Promise.all(triggerPromises);
@@ -160,7 +171,11 @@ async function harvestOneTrigger() {
 
     const vaultsStrategyLength = getStrategyLength();
     for (let i = 0; i < vaults.length; i += 1) {
-        logger.info(`vault: ${i} : ${vaults[i].address}`);
+        const adapterAddress = vaults[i].address;
+        const vaultName = getVaultAndStrategyLabels()[adapterAddress].name;
+        const strategLabel = getVaultAndStrategyLabels()[adapterAddress]
+            .strategies;
+        logger.info(`${vaultName}: ${adapterAddress}`);
         const vault = vaults[i];
         const strategyLength = vaultsStrategyLength[i];
         for (let j = 0; j < strategyLength; j += 1) {
@@ -187,17 +202,30 @@ async function harvestOneTrigger() {
                 .catch((error) => {
                     logger.error(error);
                     throw new ContractCallError(
-                        `Call vault:${vault.address}'s strategyHarvestTrigger function with strategy index:${j} and callCost: ${callCost} failed.`,
+                        `Call ${vaultName}:${vault.address}'s strategyHarvestTrigger function on ${strategLabel[j].name} with callCost: ${callCost} failed.`,
                         MESSAGE_TYPES.investTrigger
                     );
                 });
             logger.info(
-                `vault:${i} strategy:${j} strategyHarvestTrigger: ${result}`
+                `${vaultName}:${i} ${strategLabel[j].name} strategyHarvestTrigger: ${result}`
             );
             if (result) {
                 sendMessageToProtocolEventChannel({
-                    message: `vault:${vault.address}'s strategy ${j} need harvest.`,
                     type: MESSAGE_TYPES.harvestTrigger,
+                    message: `${vaultName}:${vault.address}'s ${strategLabel[j].name} strategy need harvest.`,
+                    description: `${vaultName}'s harvestTrigger on ${strategLabel[j].name} is true, need run harvest`,
+                    urls: [
+                        {
+                            label: vaultName,
+                            type: 'account',
+                            value: vault.address,
+                        },
+                        {
+                            label: strategLabel[j].name,
+                            type: 'account',
+                            value: strategLabel[j].address,
+                        },
+                    ],
                     params: {
                         callCost: callCost.toString(),
                         vault: vault.address,
@@ -220,6 +248,7 @@ async function harvestOneTrigger() {
     }
     sendMessageToProtocolEventChannel({
         message: 'No any strategies need harvest.',
+        description: 'No any strategies need harvest',
         type: MESSAGE_TYPES.harvestTrigger,
     });
     return NONEED_TRIGGER;
@@ -244,29 +273,39 @@ async function pnlTrigger() {
             );
         });
     logger.info(`pnlTrigger. ${needPnlVault}`);
-
-    const needPnlAssets = await getPnl()
-        .totalAssetsChangeTrigger()
-        .catch((error) => {
-            logger.error(error);
-            throw new ContractCallError(
-                'Call totalAssetsChangeTrigger to check if the system need execute pnl failed.',
-                MESSAGE_TYPES.pnlTrigger
-            );
-        });
-
-    logger.info(`totalAssetsChangeTrigger. ${needPnlAssets}`);
-
     const msgObj = {
-        message: 'No need run PnL.',
         type: MESSAGE_TYPES.pnlTrigger,
+        message: 'No need run PnL.',
+        description:
+            "PnlTrigger and totalAssetsChangeTrigger are both false, doesn't need run Pnl",
     };
     let pnlTriggerResult = NONEED_TRIGGER;
-    if (needPnlVault || needPnlAssets) {
+    if (!needPnlVault) {
+        const needPnlAssets = await getPnl()
+            .totalAssetsChangeTrigger()
+            .catch((error) => {
+                logger.error(error);
+                throw new ContractCallError(
+                    'Call totalAssetsChangeTrigger to check if the system need execute pnl failed.',
+                    MESSAGE_TYPES.pnlTrigger
+                );
+            });
+
+        logger.info(`totalAssetsChangeTrigger. ${needPnlAssets}`);
+        if (needPnlAssets) {
+            pnlTriggerResult = {
+                needCall: true,
+            };
+            msgObj.message = 'TotalAssetsChangeTrigger is true, need run Pnl';
+            msgObj.description =
+                'TotalAssetsChangeTrigger is true, need run Pnl';
+        }
+    } else {
         pnlTriggerResult = {
             needCall: true,
         };
-        msgObj.message = 'Need run Pnl.';
+        msgObj.message = 'PnlTrigger is true, need run Pnl';
+        msgObj.description = 'PnlTrigger is true, need run Pnl';
     }
 
     sendMessageToProtocolEventChannel(msgObj);
@@ -297,6 +336,7 @@ async function rebalanceTrigger() {
     logger.info(`rebalanceTrigger: ${needRebalance}`);
     const msgObj = {
         message: 'No need run rebalance.',
+        description: "RebalanceTrigger is false, doesn't need run rebalance",
         type: MESSAGE_TYPES.rebalanceTrigger,
     };
     let rebalanceTriggerResult = NONEED_TRIGGER;
@@ -305,6 +345,7 @@ async function rebalanceTrigger() {
             needCall: true,
         };
         msgObj.message = 'Need run rebalance to adjust the system asset.';
+        msgObj.description = 'RebalanceTrigger is true, need run rebalance';
     }
     sendMessageToProtocolEventChannel(msgObj);
     return rebalanceTriggerResult;
@@ -332,16 +373,26 @@ async function curveInvestTrigger() {
             );
         });
     logger.info(`curveInvestTrigger : ${needInvest}`);
+    const curveVaultAddress = getCurveVault().address;
+    const vaultName = getVaultAndStrategyLabels()[curveVaultAddress].name;
     const msgObj = {
-        message: 'No need run curve invest.',
         type: MESSAGE_TYPES.curveInvestTrigger,
+        message: 'No need run curve invest.',
+        description: `${vaultName}'s curveInvestTrigger is false, doesn't need run curve invest`,
     };
 
     let investResult = NONEED_TRIGGER;
     if (needInvest) {
         investResult = { needCall: true };
-        msgObj.message = 'Need run curve invest to invest lifeguard assets.';
+        msgObj.message = `${vaultName}'s curveInvestTrigger is true, need run invest`;
+        msgObj.description = `${vaultName}'s curveInvestTrigger is true, need run invest`;
     }
+    msgObj.urls = [];
+    msgObj.urls.push({
+        label: vaultName,
+        type: 'account',
+        value: curveVaultAddress,
+    });
     sendMessageToProtocolEventChannel(msgObj);
     return investResult;
 }

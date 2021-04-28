@@ -6,13 +6,16 @@ const {
     getNonceManager,
     syncNounce,
     checkPendingTransactions,
+    checkAccountBalance,
 } = require('../../common/chainUtil');
 const { pendingTransactions } = require('../../common/storage');
-const { ETH_DECIMAL, div } = require('../../common/digitalUtil');
+const { ETH_DECIMAL, div, shortAccount } = require('../../common/digitalUtil');
 const {
+    MESSAGE_EMOJI,
     sendMessageToLogChannel,
     sendMessageToAlertChannel,
     sendMessageToProtocolEventChannel,
+    MESSAGE_TYPES,
 } = require('../../common/discord/discordService');
 const {
     SettingError,
@@ -118,31 +121,11 @@ async function getCurrentBlockNumber() {
 
 function checkBotAccountBalance() {
     schedule.scheduleJob(botBalanceSchedulerSetting, async () => {
-        const botAccount = process.env.BOT_ADDRESS;
+        logger.info(`checkBotAccountBalance running at ${Date.now()}`);
         try {
-            const balance = await nonceManager.getBalance();
-            if (balance.lt(BigNumber.from(botBalanceWarnVault))) {
-                sendMessageToLogChannel({
-                    icon: ':warning:',
-                    message: `Bot:${botAccount}'s balance is ${div(
-                        balance,
-                        ETH_DECIMAL,
-                        4
-                    )}, need full up some balance.`,
-                    params: botAccount,
-                });
-            }
+            await checkAccountBalance(botBalanceWarnVault);
         } catch (error) {
-            logger.error(error);
-            sendMessageToLogChannel({
-                message: `Get eth balance of bot:${botAccount} failed.`,
-                params: botAccount,
-            });
-            sendMessageToAlertChannel(
-                new ContractCallError(
-                    `Get eth balance of bot:${botAccount} failed.`
-                )
-            );
+            sendMessageToAlertChannel(error);
         }
     });
 }
@@ -194,7 +177,7 @@ async function checkPendingTransaction(type, oldTransaction) {
         return;
     }
     const msgObj = {
-        type: 'Bot Pending Transactions',
+        type: msgLabel,
         params: botAccount,
     };
 
@@ -205,13 +188,22 @@ async function checkPendingTransaction(type, oldTransaction) {
     } else {
         // remove hash from pending transactions
         pendingTransactions.delete(type);
-
+        const label = 'TX';
         if (transactionReceipt.status === 1) {
             msgObj.message = `${type} transaction: ${hash} has mined to chain.`;
+            msgObj.description = `${label} ${type} action was minted to chain`;
         } else {
             msgObj.message = `${type} transaction: ${hash} has reverted.`;
+            msgObj.emojis = [MESSAGE_EMOJI.reverted];
+            msgObj.description = `${label} ${type} action has been reverted`;
         }
-        logger.info(msgObj.message);
+        msgObj.urls = [];
+        msgObj.urls.push({
+            label,
+            type: 'tx',
+            value: hash,
+        });
+        logger.info(JSON.stringify(msgObj));
         sendMessageToProtocolEventChannel(msgObj);
     }
 }
