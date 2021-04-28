@@ -14,6 +14,7 @@ const { ContractCallError } = require('../../common/error');
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
 const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
+const { getTransactionsWithTimestamp } = require('./generatePersonTransaction');
 
 const fromBlock = getConfig('blockchain.start_block');
 const launchTime = getConfig('blockchain.launch_timestamp', false) || 0;
@@ -169,7 +170,10 @@ async function generateReport(account) {
     const gvtBalance = new BN(results[2].toString());
 
     logger.info(`${account} historical: ${JSON.stringify(data)}`);
+    const transactions = await getTransactionsWithTimestamp(data);
+
     const result = {
+        transactions,
         current_timestamp: latestBlock.timestamp.toString(),
         launch_timestamp: launchTime,
         network: process.env.NODE_ENV,
@@ -309,7 +313,9 @@ async function generateReport(account) {
     result.net_returns_ratio.gvt = gvtRatio.toFixed(ratioDecimal);
     result.net_returns_ratio.total = totalRatio.toFixed(ratioDecimal);
 
-    return result;
+    return {
+        gro_personal_position: result,
+    };
 }
 
 module.exports = {
