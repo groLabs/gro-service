@@ -1,7 +1,7 @@
-const config = require('config');
 const { ethers } = require('ethers');
 const { getNonceManager } = require('../common/chainUtil');
-const { SettingError, ContractCallError } = require('../common/error');
+const { ContractCallError } = require('../common/error');
+const { getConfig } = require('../common/configUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -10,13 +10,14 @@ const controllerABI = require('./abis/Controller.json').abi;
 const insuranceABI = require('./abis/Insurance.json').abi;
 const exposureABI = require('./abis/Exposure.json').abi;
 const pnlABI = require('./abis/PnL.json').abi;
-const vaultsABI = require('./abis/VaultAdaptorYearnV2_032.json').abi;
+const vaultAdapterABI = require('./abis/VaultAdaptorYearnV2_032.json').abi;
 const gvtABI = require('./abis/NonRebasingGToken.json').abi;
 const pwrdABI = require('./abis/RebasingGToken.json').abi;
 const depositHandlerABI = require('./abis/DepositHandler.json').abi;
 const withdrawHandlerABI = require('./abis/WithdrawHandler.json').abi;
 const lifeguardABI = require('./abis/LifeGuard3Pool.json').abi;
 const buoyABI = require('./abis/Buoy3Pool.json').abi;
+const VaultABI = require('./abis/Vault.json').abi;
 
 const nonceManager = getNonceManager();
 
@@ -33,14 +34,10 @@ let buoy;
 let curveVault;
 const vaults = [];
 const strategyLength = [];
+const vaultAndStrategyLabels = {};
 
 function initController() {
-    if (!config.has('contracts.controller')) {
-        const err = new SettingError('Config:abi.controller not setted.');
-        logger.error(err);
-        throw err;
-    }
-    const controllerAddress = config.get('contracts.controller');
+    const controllerAddress = getConfig('contracts.controller');
     controller = new ethers.Contract(
         controllerAddress,
         controllerABI,
@@ -69,22 +66,71 @@ async function initPnl() {
     pnl = new ethers.Contract(pnlAddress, pnlABI, nonceManager);
 }
 
+async function initVaultStrategyLabel(
+    adapterIndex,
+    vaultAdapter,
+    strategyLength,
+    vaultNameConfig = 'vault_name',
+    strategyNameConfig = 'strategy_name'
+) {
+    const yearnVaultAddress = await vaultAdapter.vault();
+    const strategyName = getConfig(strategyNameConfig);
+    const vaultName = getConfig(vaultNameConfig);
+    logger.info(
+        `adapterIndex: ${adapterIndex}, strategyLength: ${strategyLength}`
+    );
+    vaultAndStrategyLabels[vaultAdapter.address] = {
+        address: vaultAdapter.address,
+        name: vaultName[adapterIndex],
+        strategies: [],
+    };
+    const yearnVault = new ethers.Contract(
+        yearnVaultAddress,
+        VaultABI,
+        nonceManager
+    );
+    const strategiesAddressesPromise = [];
+    for (let i = 0; i < strategyLength; i += 1) {
+        strategiesAddressesPromise.push(yearnVault.withdrawalQueue(i));
+    }
+    const strategyAddresses = await Promise.all(strategiesAddressesPromise);
+    for (let j = 0; j < strategyLength; j += 1) {
+        vaultAndStrategyLabels[vaultAdapter.address].strategies.push({
+            name: strategyName[j],
+            address: strategyAddresses[j],
+        });
+    }
+}
+
 async function initVaults() {
     // Stable coin vault
     const vaultAddresses = await controller.vaults();
-    vaultAddresses.forEach(async (address) => {
-        const vault = new ethers.Contract(address, vaultsABI, nonceManager);
+    logger.info(
+        `vaultAddresses.length: ${vaultAddresses.length}: ${JSON.stringify(
+            vaultAddresses
+        )}`
+    );
+    for (let i = 0; i < vaultAddresses.length; i += 1) {
+        const address = vaultAddresses[i];
+        const vault = new ethers.Contract(
+            address,
+            vaultAdapterABI,
+            nonceManager
+        );
         vaults.push(vault);
+        // eslint-disable-next-line no-await-in-loop
         const strategiesLength = await vault.getStrategiesLength();
         logger.info(`vault ${address} has ${strategiesLength} strategies.`);
         strategyLength.push(strategiesLength);
-    });
+        // eslint-disable-next-line no-await-in-loop
+        await initVaultStrategyLabel(i, vault, strategiesLength);
+    }
 
     // Curve vault
     const curveVaultAddress = await controller.curveVault();
     const tcurveVault = new ethers.Contract(
         curveVaultAddress,
-        vaultsABI,
+        vaultAdapterABI,
         nonceManager
     );
     vaults.push(tcurveVault);
@@ -93,6 +139,13 @@ async function initVaults() {
         `curve vault ${curveVaultAddress} has ${curveVaultStrategyLength} strategies.`
     );
     strategyLength.push(curveVaultStrategyLength);
+    await initVaultStrategyLabel(
+        3,
+        tcurveVault,
+        curveVaultStrategyLength,
+        'vault_name',
+        'curve_strategy_name'
+    );
 }
 
 async function initCurveVault() {
@@ -100,7 +153,7 @@ async function initCurveVault() {
     logger.info(`curve vault address: ${curveVaultAddress}`);
     curveVault = new ethers.Contract(
         curveVaultAddress,
-        vaultsABI,
+        vaultAdapterABI,
         nonceManager
     );
 }
@@ -187,6 +240,9 @@ async function initAllContracts() {
         logger.error(error);
         throw new ContractCallError('Initilize all used contracts failed');
     });
+    logger.info(
+        `Vault and strategy label: ${JSON.stringify(vaultAndStrategyLabels)}`
+    );
     logger.info('Init contracts done!.');
 }
 
@@ -242,6 +298,10 @@ function getBuoy() {
     return buoy;
 }
 
+function getVaultAndStrategyLabels() {
+    return vaultAndStrategyLabels;
+}
+
 module.exports = {
     initAllContracts,
     getController,
@@ -257,4 +317,5 @@ module.exports = {
     getLifeguard,
     getStrategyLength,
     getBuoy,
+    getVaultAndStrategyLabels,
 };

@@ -1,12 +1,15 @@
 const config = require('config');
 const { ethers } = require('ethers');
+const { BigNumber } = require('ethers');
 const { NonceManager } = require('@ethersproject/experimental');
 const { SettingError, BlockChainCallError } = require('./error');
 const { pendingTransactions } = require('./storage');
+const { shortAccount, div, ETH_DECIMAL } = require('./digitalUtil');
 const {
     sendMessageToLogChannel,
     sendMessageToProtocolEventChannel,
     MESSAGE_TYPES,
+    MESSAGE_EMOJI,
 } = require('./discord/discordService');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -96,7 +99,7 @@ function getDefaultProvider() {
 
 function getBotWallet() {
     if (botWallet) return botWallet;
-    const provider = getDefaultProvider();
+    const provider = getRpcProvider();
     botWallet = new ethers.Wallet(botPrivateKey, provider);
     return botWallet;
 }
@@ -163,12 +166,24 @@ async function getReceipt(type) {
                 hash
             );
         });
+    const label = 'TX';
     const msgObj = {
         type: msgLabel,
         timestamp: transactionInfo.createdTime,
         message: `${type} transaction ${hash} has mined to chain.`,
+        description: `${label} ${
+            type.split('-')[0]
+        } action was minted to chain`,
+        urls: [
+            {
+                label,
+                type: 'tx',
+                value: hash,
+            },
+        ],
         transactionHash: hash,
     };
+
     if (!transactionReceipt) {
         msgObj.message = `${type} transaction: ${hash} is still pending.`;
         logger.info(msgObj.message);
@@ -179,6 +194,8 @@ async function getReceipt(type) {
 
         if (!transactionReceipt.status) {
             msgObj.message = `${type} transaction ${hash} reverted.`;
+            msgObj.emojis = [MESSAGE_EMOJI.reverted];
+            msgObj.description = `${label} ${type} action has been reverted`;
         }
         sendMessageToProtocolEventChannel(msgObj);
     }
@@ -203,6 +220,43 @@ async function checkPendingTransactions(types) {
     });
 }
 
+async function checkAccountBalance(botBalanceWarnVault) {
+    const botAccount = process.env.BOT_ADDRESS;
+    const botType = `${process.env.BOT_ENV.toLowerCase()}Bot`;
+    const balance = await nonceManager.getBalance().catch((error) => {
+        logger.error(error);
+        throw new BlockChainCallError(
+            `Get ETH balance of bot:${botAccount} failed.`,
+            MESSAGE_TYPES[botType]
+        );
+    });
+    if (balance.lt(BigNumber.from(botBalanceWarnVault))) {
+        const accountLabel = shortAccount(botAccount);
+        sendMessageToLogChannel({
+            icon: ':warning:',
+            type: MESSAGE_TYPES[botType],
+            message: `Bot:${botAccount}'s balance is ${div(
+                balance,
+                ETH_DECIMAL,
+                4
+            )}, need full up some balance.`,
+            description: `${accountLabel} only has **${div(
+                balance,
+                ETH_DECIMAL,
+                4
+            )}** ETH balance, please recharge more`,
+            urls: [
+                {
+                    label: accountLabel,
+                    type: 'account',
+                    value: botAccount,
+                },
+            ],
+            params: botAccount,
+        });
+    }
+}
+
 module.exports = {
     getDefaultProvider,
     getNonceManager,
@@ -210,4 +264,5 @@ module.exports = {
     getRpcProvider,
     syncNounce,
     checkPendingTransactions,
+    checkAccountBalance,
 };
