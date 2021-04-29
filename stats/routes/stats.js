@@ -79,20 +79,20 @@ router.get(
         }
         const result = await generateReport(req.query.address);
         const label = shortAccount(req.query.address);
-        const discordMsg = {
-            type: MESSAGE_TYPES.miniStatsPersonal,
-            description: `${label} pulled down his personal data`,
-            urls: [
-                {
-                    label,
-                    type: 'account',
-                    value: req.query.address,
-                },
-            ],
-            message: `${req.query.address} pulled down his personal data`,
-        };
-        sendMessageToTradeChannel(discordMsg);
-        res.json({ gro_personal_position: result });
+        // const discordMsg = {
+        //     type: MESSAGE_TYPES.miniStatsPersonal,
+        //     description: `${label} pulled down his personal data`,
+        //     urls: [
+        //         {
+        //             label,
+        //             type: 'account',
+        //             value: req.query.address,
+        //         },
+        //     ],
+        //     message: `${req.query.address} pulled down his personal data`,
+        // };
+        // sendMessageToTradeChannel(discordMsg);
+        res.json(result);
     })
 );
 
