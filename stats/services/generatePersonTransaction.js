@@ -28,8 +28,8 @@ function parseData(events, token, type, transferType) {
     for (let i = 0; i < events.length; i += 1) {
         const event = events[i];
         const item = {
-            type,
             token,
+            transaction: type,
             hash: event.transactionHash,
             usd_amount: div(
                 event.amount,
@@ -39,7 +39,7 @@ function parseData(events, token, type, transferType) {
             block_number: event.blockNumber,
         };
         if (event.name === 'LogTransfer') {
-            item.type = transferType;
+            item.transaction = transferType;
         }
         transactions.push(item);
     }

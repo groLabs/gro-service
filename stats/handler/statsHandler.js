@@ -105,7 +105,7 @@ async function generateGroStatsFile() {
             0,
             4
         )}** ${MESSAGE_EMOJI.Gvt}: **$${formatNumber(
-            stats.tvl.total,
+            stats.tvl.gvt,
             0,
             4
         )}** TotalAssets: **$${formatNumber(
