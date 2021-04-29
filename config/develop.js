@@ -38,6 +38,7 @@ module.exports = {
         pnl: ':moneybag:',
         rebalanceTrigger: ':scales:',
         rebalance: ':scales:',
+        curveCheck: ':loudspeaker:',
     },
     stats_folder: '../stats',
     log_folder: './logs',
@@ -47,8 +48,25 @@ module.exports = {
     stable_coin: ['DAI', 'USDC', 'USDT'],
     protocol: ['Harvest', 'Cream', 'Curve'],
     strategy_name: ['Harvest', 'Cream'],
+    harvest_strategy_dependency: [
+        '0xe85C8581e60D7Cd32Bbfd86303d2A4FA6a951Dac',
+        '0xc3F7ffb5d5869B3ade9448D094d81B0521e8326f',
+        '0xc7EE21406BB581e741FBb8B21f213188433D9f2F',
+    ],
+    cream_strategy_dependency: [
+        '0x92B767185fB3B04F881e3aC8e5B0662a027A1D9f',
+        '0x44fbebd2f576670a6c33f6fc0b00aa8c5753b322',
+        '0x797AAB1ce7c01eB727ab980762bA88e7133d2157',
+    ],
     curve_strategy_name: ['XPool'],
+    curve_strategy_dependency: {
+        yearn: '0x1B5eb1173D2Bf770e50F10410C9a96F7a8eB6e75',
+        curve: '0x7Eb40E450b9655f4B3cC4259BCC731c63ff55ae6',
+    },
     lifeguard_name: '3CRV',
+    before_block: 30,
+    fail_percentage_total: 1000,
+    fail_percentage_pre_price: 50,
     contracts: {
         controller: '0xFC628dd79137395F3C9744e33b1c5DE554D94882',
     },

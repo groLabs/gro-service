@@ -77,6 +77,8 @@ MESSAGE_EMOJI[MESSAGE_TYPES.rebalanceTrigger] =
     getConfig('emoji.rebalanceTrigger', false) || ':scales:';
 MESSAGE_EMOJI[MESSAGE_TYPES.rebalance] =
     getConfig('emoji.rebalance', false) || ':scales:';
+MESSAGE_EMOJI[MESSAGE_TYPES.curveCheck] =
+    getConfig('emoji.curveCheck', false) || ':loudspeaker:';
 MESSAGE_EMOJI[MESSAGE_TYPES.regularBot] =
     getConfig('emoji.regularBot', false) || ':robot:';
 MESSAGE_EMOJI[MESSAGE_TYPES.statsBot] =
@@ -211,6 +213,11 @@ function sendMessageToProtocolEventChannel(msgObj) {
 }
 
 function sendMessageToCriticalEventChannel(msgObj) {
+    if (!msgObj.emojis) {
+        msgObj.emojis = [];
+    }
+    msgObj.emojis.unshift(MESSAGE_EMOJI[msgObj.type]);
+    sendEmbedMessage(DISCORD_CHANNELS.critActionEvents, msgObj);
     sendMessage(DISCORD_CHANNELS.critActionEvents, msgObj);
 }
 

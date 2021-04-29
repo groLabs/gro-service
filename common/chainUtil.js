@@ -257,6 +257,18 @@ async function checkAccountBalance(botBalanceWarnVault) {
     }
 }
 
+async function getCurrentBlockNumber() {
+    const block = await getDefaultProvider()
+        .getBlockNumber()
+        .catch((error) => {
+            logger.error(error);
+            throw new BlockChainCallError(
+                'Get current block number from chain failed.'
+            );
+        });
+    return block;
+}
+
 module.exports = {
     getDefaultProvider,
     getNonceManager,
@@ -265,4 +277,5 @@ module.exports = {
     syncNounce,
     checkPendingTransactions,
     checkAccountBalance,
+    getCurrentBlockNumber,
 };

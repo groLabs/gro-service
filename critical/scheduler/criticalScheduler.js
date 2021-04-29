@@ -1,6 +1,6 @@
 const schedule = require('node-schedule');
 const config = require('config');
-const { curveCheck } = require('../handler/criticalHandler');
+const { curveCheck, strategyCheck } = require('../handler/criticalHandler');
 const {
     sendMessageToAlertChannel,
 } = require('../../common/discord/discordService');
@@ -14,9 +14,10 @@ if (config.has('trigger_scheduler.bot_curve_check')) {
 
 function checkCurveHealth() {
     schedule.scheduleJob(botCurveSchedulerSetting, async () => {
+        logger.info(`Run critical check on : ${new Date()}`);
         try {
-            const curveHealth = await curveCheck();
-            logger.info(`curve health: ${curveHealth}`);
+            await curveCheck();
+            await strategyCheck();
         } catch (error) {
             sendMessageToAlertChannel(error);
         }
