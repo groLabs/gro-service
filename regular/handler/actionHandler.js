@@ -1,10 +1,12 @@
 const {
+    getController,
     getInsurance,
     getPnl,
     getLifeguard,
     getVaults,
     getVaultAndStrategyLabels,
     getCurveVault,
+    getChainPrice,
 } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
 const { ContractSendError } = require('../../common/error');
@@ -296,6 +298,24 @@ async function curveInvest(blockNumber) {
     sendMessageToProtocolEventChannel(msgObj);
 }
 
+async function updateChainlinkPrice() {
+    const stabeCoins = await await getController().stablecoins();
+    const prices = [];
+    for (let i = 0; i < stabeCoins.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        const check = await getChainPrice().getSafePriceFeed(stabeCoins[i]);
+        logger.info(`getSafePriceFeed ${i}, ${stabeCoins[i]}}`);
+    }
+    const msg = `Check and update chainlink price`;
+
+    sendMessageToProtocolEventChannel({
+        message: msg,
+        type: MESSAGE_TYPES.chainPrice,
+        description: msg,
+    });
+    return prices;
+}
+
 async function execActions(blockNumber, triggerResult) {
     // Handle invest
     if (triggerResult[0].needCall) {
@@ -335,4 +355,5 @@ module.exports = {
     execPnl,
     rebalance,
     execActions,
+    updateChainlinkPrice,
 };

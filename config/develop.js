@@ -1,8 +1,14 @@
 module.exports = {
     blockchain: {
         network: 'http://localhost:8545',
-        start_block: 331,
-        launch_timestamp: '1619575207',
+        api_keys: {
+            alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
+            infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
+            etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
+            pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
+        },
+        start_block: 12335976,
+        launch_timestamp: '1619698299',
     },
     trigger_scheduler: {
         pending_transaction_check: '5 * * * * *',
@@ -12,8 +18,9 @@ module.exports = {
         pnl: '23 * * * * *',
         rebalance: '33 * * * * *',
         generate_stats: '10 * * * * *',
-        bot_curve_check: '53 * * * * *',
+        bot_curve_check: '00,30 * * * * *',
         deposit_withdraw_event: '30 * * * * *',
+        bot_chainlink_check: '25,55 * * * * *',
     },
     emoji: {
         regularBot: ':control_knobs:',
@@ -49,9 +56,9 @@ module.exports = {
     protocol: ['Harvest', 'Cream', 'Curve'],
     strategy_name: ['Harvest', 'Cream'],
     harvest_strategy_dependency: [
-        '0xe85C8581e60D7Cd32Bbfd86303d2A4FA6a951Dac',
-        '0xc3F7ffb5d5869B3ade9448D094d81B0521e8326f',
-        '0xc7EE21406BB581e741FBb8B21f213188433D9f2F',
+        '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
+        '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE',
+        '0x053c80eA73Dc6941F518a68E2FC52Ac45BDE7c9C',
     ],
     cream_strategy_dependency: [
         '0x92B767185fB3B04F881e3aC8e5B0662a027A1D9f',
@@ -66,9 +73,9 @@ module.exports = {
     lifeguard_name: '3CRV',
     before_block: 30,
     fail_percentage_total: 1000,
-    fail_percentage_pre_price: 50,
+    fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0xFC628dd79137395F3C9744e33b1c5DE554D94882',
+        controller: '0x09635F643e140090A9A8Dcd712eD6285858ceBef',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

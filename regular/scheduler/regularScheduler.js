@@ -35,6 +35,7 @@ const {
     rebalance,
     harvest,
     curveInvest,
+    updateChainlinkPrice,
 } = require('../handler/actionHandler');
 
 const { getVaults, getStrategyLength } = require('../../contract/allContracts');
@@ -57,6 +58,8 @@ let harvestTriggerSchedulerSetting = '15 * * * *';
 let pnlTriggerSchedulerSetting = '30 * * * *';
 let rebalanceTriggerSchedulerSetting = '45 * * * *';
 let depositWithdrawEventSchedulerSetting = '*/5 * * * *';
+let botUpdateChainPriceSchedulerSetting = '00 20 * * * *';
+
 let botBalanceWarnVault = '2000000000000000000';
 
 if (!process.env.BOT_ADDRESS) {
@@ -107,6 +110,12 @@ if (config.has('trigger_scheduler.deposit_withdraw_event')) {
 
 if (config.has('bot_balance_warn')) {
     botBalanceWarnVault = config.get('bot_balance_warn');
+}
+
+if (config.has('trigger_scheduler.bot_chainlink_check')) {
+    botUpdateChainPriceSchedulerSetting = config.get(
+        'trigger_scheduler.bot_chainlink_check'
+    );
 }
 
 async function getCurrentBlockNumber() {
@@ -360,6 +369,17 @@ function depositWithdrawEventScheduler() {
     });
 }
 
+function updateChainPrice() {
+    schedule.scheduleJob(botUpdateChainPriceSchedulerSetting, async () => {
+        try {
+            const chainLinkPrice = await updateChainlinkPrice();
+            logger.info(`chainLinkPrice: ${chainLinkPrice}`);
+        } catch (error) {
+            sendMessageToAlertChannel(error);
+        }
+    });
+}
+
 function startRegularJobs() {
     checkBotAccountBalance();
     investTriggerScheduler();
@@ -368,6 +388,7 @@ function startRegularJobs() {
     rebalanceTriggerScheduler();
     longPendingTransactionsScheduler();
     depositWithdrawEventScheduler();
+    updateChainPrice();
 }
 
 module.exports = {

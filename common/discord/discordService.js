@@ -39,6 +39,7 @@ const MESSAGE_TYPES = {
     regularBot: 'Harvest Bot',
     statsBot: 'Stats Bot',
     criticalBot: 'Critical Bot',
+    chainPrice: 'Update Chain Price',
     other: 'Others',
 };
 
@@ -85,6 +86,8 @@ MESSAGE_EMOJI[MESSAGE_TYPES.statsBot] =
     getConfig('emoji.statsBot', false) || ':robot:';
 MESSAGE_EMOJI[MESSAGE_TYPES.criticalBot] =
     getConfig('emoji.criticalBot', false) || ':robot:';
+MESSAGE_EMOJI[MESSAGE_TYPES.chainPrice] =
+    getConfig('emoji.curveCheck', false) || ':loudspeaker:';
 
 function generateLink(urlDetail) {
     const nodeEnv = process.env.NODE_ENV.toLowerCase();
@@ -218,7 +221,7 @@ function sendMessageToCriticalEventChannel(msgObj) {
     }
     msgObj.emojis.unshift(MESSAGE_EMOJI[msgObj.type]);
     sendEmbedMessage(DISCORD_CHANNELS.critActionEvents, msgObj);
-    sendMessage(DISCORD_CHANNELS.critActionEvents, msgObj);
+    sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
 }
 
 function sendMessageToTradeChannel(msgObj) {

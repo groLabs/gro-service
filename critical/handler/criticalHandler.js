@@ -1,6 +1,5 @@
 const { BigNumber } = require('ethers');
 const { ethers } = require('ethers');
-const BN = require('bignumber.js');
 const {
     getBuoy,
     getChainPrice,
@@ -44,55 +43,47 @@ async function getStabeCoins() {
     return stabeCoins;
 }
 
-async function curveCheck() {
-    const stabeCoins = await getStabeCoins();
-    const safetyCheck = await getBuoy().safetyCheck();
-    let stopFlag = false;
-    if (!safetyCheck) {
-        const checkPromise = [];
-        for (let i = 0; i < stabeCoins.length; i += 1) {
-            checkPromise.push(getChainPrice().priceUpdateCheck(stabeCoins[i]));
-        }
-        const checkResult = await Promise.all(checkPromise);
-        const updateRatioPromise = [];
-        stopFlag = true;
-        for (let i = 0; i < checkResult.length; i += 1) {
-            if (!checkResult[i]) {
-                stopFlag = false;
-                updateRatioPromise.push(
-                    getChainPrice().updateTokenRatios(stabeCoins[i])
-                );
-            }
-        }
-        if (stopFlag) {
-            await getController().stop();
-        } else {
-            await Promise.all(updateRatioPromise);
-            const safetyCheckAgain = await getBuoy().safetyCheck();
-            if (!safetyCheckAgain) {
-                stopFlag = true;
-                await getController().stop();
-            }
+async function checkPriceUpdateInChainPrice(stabeCoins) {
+    const checkPromise = [];
+    for (let i = 0; i < stabeCoins.length; i += 1) {
+        checkPromise.push(getChainPrice().priceUpdateCheck(stabeCoins[i]));
+    }
+    const checkResult = await Promise.all(checkPromise);
+    const updateRatioPromise = [];
+    for (let i = 0; i < checkResult.length; i += 1) {
+        logger.info(`checkResult ${i}, ${checkResult[i]}`);
+        if (checkResult[i]) {
+            updateRatioPromise.push(
+                await getChainPrice().updateTokenRatios(stabeCoins[i])
+            );
         }
     }
+    await Promise.all(updateRatioPromise);
+}
 
-    let msg = `Curve price check is ${stopFlag}`;
-    if (stopFlag) {
-        msg = `Curve price check is ${stopFlag}, set system to **Stop** status`;
+async function curvePriceCheck() {
+    const stabeCoins = await getStabeCoins();
+    await checkPriceUpdateInChainPrice(stabeCoins);
+    const safetyCheck = await getBuoy().safetyCheck();
+    logger.info(`safetyCheck ${safetyCheck}`);
+    let msg = `Curve price check is ${safetyCheck}`;
+    if (!safetyCheck) {
+        await getController().stop();
+        msg = `Curve price check is ${safetyCheck}, set system to **Stop** status`;
     }
     sendMessageToCriticalEventChannel({
         message: msg,
         type: MESSAGE_TYPES.curveCheck,
         description: msg,
     });
-    return stopFlag;
+    return safetyCheck;
 }
 
 async function checkSingleStrategy(
     strategyAddress,
     method,
-    beforeBlockNumber,
     failedPercentage,
+    beforeBlockNumber,
     decimal = 4
 ) {
     let failed = 0;
@@ -102,20 +93,26 @@ async function checkSingleStrategy(
         dependencyStrategyABI,
         nonceManager
     );
+
     const currentSharePrice = await strategy[method]();
     const preSharePrice = await strategy[method]({
         blockTag: beforeBlockNumber,
     });
 
-    const changeValue = currentSharePrice.sub(preSharePrice);
-    if (changeValue.lt(BigNumber.from(0))) {
-        const changeValueABS = changeValue.abs();
-        const percentage = BN(changeValueABS.toString()).div(
-            BN(currentSharePrice.toString()).multipliedBy(BN(10).pow(decimal))
+    if (currentSharePrice.lt(preSharePrice)) {
+        const decrease = preSharePrice.sub(currentSharePrice);
+        const maxDecrease = preSharePrice
+            .mul(BigNumber.from(failedPercentage))
+            .div(BigNumber.from(10000));
+        failed = decrease.gt(maxDecrease);
+    } else {
+        const increase = currentSharePrice.sub(preSharePrice);
+        const percent = increase
+            .mul(BigNumber.from(10000))
+            .div(currentSharePrice);
+        logger.info(
+            `preSharePrice ${preSharePrice} currentSharePrice ${currentSharePrice} changePercent ${percent}`
         );
-        if (percentage.gt(BN(failedPercentage))) {
-            failed = 1;
-        }
     }
     return failed;
 }
@@ -125,7 +122,6 @@ async function strategyCheck() {
     const currentBlockNumber = await getCurrentBlockNumber();
     const beforeBlockNumber = currentBlockNumber - beforeBlock;
     let strategyFailedTotal = 0;
-    let continueCheck = true;
     const msgLabel = [];
     for (let i = 0; i < harvestStrategies.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
@@ -143,16 +139,12 @@ async function strategyCheck() {
             });
         }
         if (strategyFailedTotal > 1) {
-            // full stop system
-            // eslint-disable-next-line no-await-in-loop
-            await getController().handbreakUp();
-            continueCheck = false;
             break;
         }
     }
 
     // Cream strategy check
-    if (continueCheck) {
+    if (strategyFailedTotal < 2) {
         for (let i = 0; i < creamStrategies.length; i += 1) {
             // eslint-disable-next-line no-await-in-loop
             const creamStrategyResult = await checkSingleStrategy(
@@ -169,33 +161,26 @@ async function strategyCheck() {
                 });
             }
             if (strategyFailedTotal > 1) {
-                // full stop system
-                // eslint-disable-next-line no-await-in-loop
-                await getController().handbreakUp();
-                continueCheck = false;
                 break;
             }
         }
     }
 
-    if (continueCheck) {
+    if (strategyFailedTotal < 2) {
         // XPool strategy check
-        const xpoolStrategyResult = await checkSingleStrategy(
+        const xPoolStrategyResult = await checkSingleStrategy(
             curvePoolStrategy.yearn,
             'getPricePerFullShare',
             perPriceFailedPercentage,
             beforeBlockNumber
         );
 
-        strategyFailedTotal += xpoolStrategyResult;
-        if (xpoolStrategyResult) {
+        strategyFailedTotal += xPoolStrategyResult;
+        if (xPoolStrategyResult) {
             msgLabel.push({
                 name: 'Xpool Yearn',
                 address: curvePoolStrategy.yearn,
             });
-        }
-        if (strategyFailedTotal > 1) {
-            continueCheck = false;
         }
     }
 
@@ -218,6 +203,6 @@ async function strategyCheck() {
 }
 
 module.exports = {
-    curveCheck,
+    curvePriceCheck,
     strategyCheck,
 };
