@@ -20,6 +20,7 @@ module.exports = {
         generate_stats: '00 */15 * * * *',
         bot_curve_check: '00 50 * * * *',
         deposit_withdraw_event: '30 */5 * * * *',
+        bot_chainlink_check: '00 00 * * * *',
     },
     emoji: {
         regularBot: ':control_knobs:',
@@ -55,6 +56,9 @@ module.exports = {
     strategy_name: ['Harvest', 'Cream'],
     curve_strategy_name: ['XPool'],
     lifeguard_name: '3CRV',
+    before_block: 30,
+    fail_percentage_total: 1000,
+    fail_percentage_pre_price: 500,
     contracts: {
         controller: '0x80Db207dE94ceFf57E43bcd57BbB592516127BF9',
     },

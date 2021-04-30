@@ -39,6 +39,7 @@ const MESSAGE_TYPES = {
     regularBot: 'Harvest Bot',
     statsBot: 'Stats Bot',
     criticalBot: 'Critical Bot',
+    chainPrice: 'Update Chain Price',
     other: 'Others',
 };
 
@@ -77,12 +78,16 @@ MESSAGE_EMOJI[MESSAGE_TYPES.rebalanceTrigger] =
     getConfig('emoji.rebalanceTrigger', false) || ':scales:';
 MESSAGE_EMOJI[MESSAGE_TYPES.rebalance] =
     getConfig('emoji.rebalance', false) || ':scales:';
+MESSAGE_EMOJI[MESSAGE_TYPES.curveCheck] =
+    getConfig('emoji.curveCheck', false) || ':loudspeaker:';
 MESSAGE_EMOJI[MESSAGE_TYPES.regularBot] =
     getConfig('emoji.regularBot', false) || ':robot:';
 MESSAGE_EMOJI[MESSAGE_TYPES.statsBot] =
     getConfig('emoji.statsBot', false) || ':robot:';
 MESSAGE_EMOJI[MESSAGE_TYPES.criticalBot] =
     getConfig('emoji.criticalBot', false) || ':robot:';
+MESSAGE_EMOJI[MESSAGE_TYPES.chainPrice] =
+    getConfig('emoji.curveCheck', false) || ':loudspeaker:';
 
 function generateLink(urlDetail) {
     const nodeEnv = process.env.NODE_ENV.toLowerCase();
@@ -211,7 +216,12 @@ function sendMessageToProtocolEventChannel(msgObj) {
 }
 
 function sendMessageToCriticalEventChannel(msgObj) {
-    sendMessage(DISCORD_CHANNELS.critActionEvents, msgObj);
+    if (!msgObj.emojis) {
+        msgObj.emojis = [];
+    }
+    msgObj.emojis.unshift(MESSAGE_EMOJI[msgObj.type]);
+    sendEmbedMessage(DISCORD_CHANNELS.critActionEvents, msgObj);
+    sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
 }
 
 function sendMessageToTradeChannel(msgObj) {

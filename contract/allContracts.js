@@ -18,6 +18,7 @@ const withdrawHandlerABI = require('./abis/WithdrawHandler.json').abi;
 const lifeguardABI = require('./abis/LifeGuard3Pool.json').abi;
 const buoyABI = require('./abis/Buoy3Pool.json').abi;
 const VaultABI = require('./abis/Vault.json').abi;
+const chainPriceABI = require('./abis/ChainPrice.json').abi;
 
 const nonceManager = getNonceManager();
 
@@ -32,6 +33,7 @@ let withdrawHandler;
 let lifeguard;
 let buoy;
 let curveVault;
+let chainPrice;
 const vaults = [];
 const strategyLength = [];
 const vaultAndStrategyLabels = {};
@@ -222,6 +224,14 @@ async function initLifeguard() {
     const buoyAddresses = await lifeguard.buoy();
     logger.info(`bouy address: ${buoyAddresses}`);
     buoy = new ethers.Contract(buoyAddresses, buoyABI, nonceManager);
+
+    const chainPriceAddress = await buoy.chainOracle();
+    chainPrice = new ethers.Contract(
+        chainPriceAddress,
+        chainPriceABI,
+        nonceManager
+    );
+    logger.info(`chainPrice address: ${chainPriceAddress}`);
 }
 
 async function initAllContracts() {
@@ -243,6 +253,7 @@ async function initAllContracts() {
     logger.info(
         `Vault and strategy label: ${JSON.stringify(vaultAndStrategyLabels)}`
     );
+
     logger.info('Init contracts done!.');
 }
 
@@ -302,6 +313,10 @@ function getVaultAndStrategyLabels() {
     return vaultAndStrategyLabels;
 }
 
+function getChainPrice() {
+    return chainPrice;
+}
+
 module.exports = {
     initAllContracts,
     getController,
@@ -318,4 +333,5 @@ module.exports = {
     getStrategyLength,
     getBuoy,
     getVaultAndStrategyLabels,
+    getChainPrice,
 };
