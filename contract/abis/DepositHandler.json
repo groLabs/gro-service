@@ -55,9 +55,9 @@
                 },
                 {
                     "indexed": false,
-                    "internalType": "address",
-                    "name": "gToken",
-                    "type": "address"
+                    "internalType": "bool",
+                    "name": "pwrd",
+                    "type": "bool"
                 },
                 {
                     "indexed": false,
@@ -70,12 +70,6 @@
                     "internalType": "uint256[]",
                     "name": "tokens",
                     "type": "uint256[]"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "bool",
-                    "name": "whale",
-                    "type": "bool"
                 }
             ],
             "name": "LogNewDeposit",
@@ -208,10 +202,28 @@
         {
             "inputs": [
                 {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
+                    "internalType": "uint256[]",
+                    "name": "inAmounts",
+                    "type": "uint256[]"
                 },
+                {
+                    "internalType": "uint256",
+                    "name": "minAmount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "address",
+                    "name": "_referral",
+                    "type": "address"
+                }
+            ],
+            "name": "depositGvt",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
                 {
                     "internalType": "uint256[]",
                     "name": "inAmounts",
@@ -224,16 +236,11 @@
                 },
                 {
                     "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                },
-                {
-                    "internalType": "address",
                     "name": "_referral",
                     "type": "address"
                 }
             ],
-            "name": "deposit",
+            "name": "depositPwrd",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"

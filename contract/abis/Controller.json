@@ -280,6 +280,19 @@
         },
         {
             "inputs": [],
+            "name": "curveVault",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
             "name": "depositHandler",
             "outputs": [
                 {
@@ -305,8 +318,40 @@
             "type": "function"
         },
         {
+            "inputs": [
+                {
+                    "internalType": "bool",
+                    "name": "isPWRD",
+                    "type": "bool"
+                }
+            ],
+            "name": "gToken",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
             "inputs": [],
             "name": "gTokenTotalAssets",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getSkimPercent",
             "outputs": [
                 {
                     "internalType": "uint256",
@@ -392,12 +437,17 @@
         {
             "inputs": [
                 {
-                    "internalType": "address",
-                    "name": "token",
-                    "type": "address"
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "isPwrd",
+                    "type": "bool"
                 }
             ],
-            "name": "isGToken",
+            "name": "isWhale",
             "outputs": [
                 {
                     "internalType": "bool",
@@ -550,6 +600,19 @@
             "inputs": [
                 {
                     "internalType": "address",
+                    "name": "_curveVault",
+                    "type": "address"
+                }
+            ],
+            "name": "setCurveVault",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
                     "name": "_depositHandler",
                     "type": "address"
                 }
@@ -677,6 +740,24 @@
                 }
             ],
             "name": "setVault",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_whaleLimit",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_absolute",
+                    "type": "uint256"
+                }
+            ],
+            "name": "setWhaleLimit",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
@@ -826,6 +907,32 @@
                     "internalType": "address[]",
                     "name": "",
                     "type": "address[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "whaleAbsolute",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "whaleLimit",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
                 }
             ],
             "stateMutability": "view",

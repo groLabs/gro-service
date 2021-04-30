@@ -42,19 +42,6 @@
             "anonymous": false,
             "inputs": [
                 {
-                    "indexed": true,
-                    "internalType": "address",
-                    "name": "pendingGovernance",
-                    "type": "address"
-                }
-            ],
-            "name": "SetPendingGovernance",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
                     "indexed": false,
                     "internalType": "uint256",
                     "name": "amount",
@@ -91,7 +78,20 @@
                     "type": "uint256"
                 }
             ],
-            "name": "logTest",
+            "name": "LogEmergencyWithdrawal",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "pendingGovernance",
+                    "type": "address"
+                }
+            ],
+            "name": "SetPendingGovernance",
             "type": "event"
         },
         {
@@ -208,19 +208,9 @@
         {
             "inputs": [
                 {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
                     "internalType": "uint256",
                     "name": "tokenIndex",
                     "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
                 }
             ],
             "name": "emergencyWithdrawal",

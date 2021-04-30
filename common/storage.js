@@ -1,7 +1,7 @@
-'use strict'
-
-const pendingTransactions = new Map()
+const pendingTransactions = new Map();
+const blockNumberTimestamp = [];
 
 module.exports = {
-  pendingTransactions,
-}
+    pendingTransactions,
+    blockNumberTimestamp,
+};

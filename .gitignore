@@ -2,8 +2,13 @@
 .prettierrc
 node_modules
 .vscode/
+./statsLogs
+./regularLogs
+./criticalLogs
+./logs
 .idea/
 .prettierrc
 views/
 public/
 *.log
+*-audit.json

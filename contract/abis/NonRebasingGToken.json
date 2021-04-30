@@ -594,6 +594,19 @@
             "type": "function"
         },
         {
+            "inputs": [],
+            "name": "initBase",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
             "inputs": [
                 {
                     "internalType": "string",
@@ -710,6 +723,19 @@
                 }
             ],
             "name": "setController",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_initBase",
+                    "type": "uint256"
+                }
+            ],
+            "name": "setInitBase",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"

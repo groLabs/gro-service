@@ -1,18 +1,4 @@
 module.exports = {
-    blockchain: {
-        start_block: 24142471,
-        launch_timestamp: '1617442180',
-    },
-    trigger_scheduler: {
-        pending_transaction_check: '5 30 * * * *',
-        bot_balance_check: '10 00 * * * *',
-        invest: '00 10 * * * * *',
-        harvest: '15 20 * * * *',
-        pnl: '30 30 * * * *',
-        rebalance: '45 40 * * * *',
-        generate_stats: '20 */15 * * * *',
-        bot_curve_check: '00 50 * * * *',
-    },
     bot_balance_warn: '20000000000000000000',
     harvest_callcost: {
         vault_0: {

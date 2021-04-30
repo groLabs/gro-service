@@ -7,15 +7,15 @@
         "dev": "nodemon ./bin/www",
         "regular": "node ./regular/index.js",
         "critical": "node ./critical/index.js",
-        "start:develop:stats": "cross-env NODE_ENV=develop BOT_ENV=STATS node ./regular/index.js",
-        "start:develop:regular": "cross-env NODE_ENV=develop BOT_ENV=REGULAR node ./bin/www",
-        "start:develop:critic": "cross-env NODE_ENV=develop BOT_ENV=CRITIC node ./critical/index.js",
-        "start:kovan:stats": "cross-env NODE_ENV=kovan BOT_ENV=STATS node ./bin/www",
+        "start:develop:stats": "cross-env NODE_ENV=develop BOT_ENV=STATS node ./stats/bin/www",
+        "start:develop:regular": "cross-env NODE_ENV=develop BOT_ENV=REGULAR node ./regular/index.js",
+        "start:develop:critic": "cross-env NODE_ENV=develop BOT_ENV=CRITICAL node ./critical/index.js",
+        "start:kovan:stats": "cross-env NODE_ENV=kovan BOT_ENV=STATS node ./stats/bin/www",
         "start:kovan:regular": "cross-env NODE_ENV=kovan BOT_ENV=REGULAR node ./regular/index.js",
-        "start:kovan:critic": "cross-env NODE_ENV=kovan BOT_ENV=CRITIC node ./critical/index.js",
-        "start:mainnet:stats": "cross-env NODE_ENV=mainnet BOT_ENV=STATS node ./bin/www",
+        "start:kovan:critic": "cross-env NODE_ENV=kovan BOT_ENV=CRITICAL node ./critical/index.js",
+        "start:mainnet:stats": "cross-env NODE_ENV=mainnet BOT_ENV=STATS node ./stats/bin/www",
         "start:mainnet:regular": "cross-env NODE_ENV=mainnet BOT_ENV=REGULAR node ./regular/index.js",
-        "start:mainnet:critic": "cross-env NODE_ENV=mainnet BOT_ENV=CRITIC node ./critical/index.js"
+        "start:mainnet:critic": "cross-env NODE_ENV=mainnet BOT_ENV=CRITICAL node ./critical/index.js"
     },
     "dependencies": {
         "@ethersproject/experimental": "^5.0.10",
@@ -33,11 +33,31 @@
         "express": "~4.16.1",
         "express-validator": "^6.10.0",
         "http-errors": "~1.6.3",
+        "map-obj": "^4.2.1",
         "moment": "^2.29.1",
         "morgan": "~1.9.1",
         "node-schedule": "^2.0.0",
         "nodemon": "^2.0.7",
         "pug": "2.0.0-beta11",
-        "winston": "^3.3.3"
+        "winston": "^3.3.3",
+        "winston-daily-rotate-file": "^4.5.2"
+    },
+    "devDependencies": {
+        "babel-eslint": "^10.1.0",
+        "eslint": "^7.23.0",
+        "eslint-config-airbnb-base": "^14.2.1",
+        "eslint-plugin-import": "^2.22.1"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "git add . && lint-staged"
+        }
+    },
+    "lint-staged": {
+        "./**/*.{js}": [
+            "prettier --write",
+            "eslint",
+            "git add ."
+        ]
     }
 }

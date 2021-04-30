@@ -55,33 +55,45 @@
                 },
                 {
                     "indexed": false,
-                    "internalType": "address",
-                    "name": "gToken",
-                    "type": "address"
+                    "internalType": "bool",
+                    "name": "pwrd",
+                    "type": "bool"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bool",
+                    "name": "balanced",
+                    "type": "bool"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bool",
+                    "name": "all",
+                    "type": "bool"
                 },
                 {
                     "indexed": false,
                     "internalType": "uint256",
-                    "name": "caseValue",
+                    "name": "deductUsd",
                     "type": "uint256"
                 },
                 {
                     "indexed": false,
                     "internalType": "uint256",
-                    "name": "usdAmount",
+                    "name": "returnUsd",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "lpAmount",
                     "type": "uint256"
                 },
                 {
                     "indexed": false,
                     "internalType": "uint256[]",
-                    "name": "tokens",
+                    "name": "tokenAmounts",
                     "type": "uint256[]"
-                },
-                {
-                    "indexed": false,
-                    "internalType": "bool",
-                    "name": "whale",
-                    "type": "bool"
                 }
             ],
             "name": "LogNewWithdrawal",
@@ -401,22 +413,40 @@
         {
             "inputs": [
                 {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
+                    "internalType": "bool",
+                    "name": "pwrd",
+                    "type": "bool"
                 },
                 {
                     "internalType": "uint256[]",
                     "name": "minAmounts",
                     "type": "uint256[]"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
                 }
             ],
             "name": "withdrawAllBalanced",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bool",
+                    "name": "pwrd",
+                    "type": "bool"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "index",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "minAmount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "withdrawAllSingle",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
@@ -429,9 +459,9 @@
                     "type": "address"
                 },
                 {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
+                    "internalType": "bool",
+                    "name": "pwrd",
+                    "type": "bool"
                 },
                 {
                     "internalType": "uint256",
@@ -442,14 +472,9 @@
                     "internalType": "uint256",
                     "name": "minAmount",
                     "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
                 }
             ],
-            "name": "withdrawAllFromAccount",
+            "name": "withdrawAllSingleFromAccount",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
@@ -457,37 +482,9 @@
         {
             "inputs": [
                 {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "index",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "minAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawAllSingle",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
+                    "internalType": "bool",
+                    "name": "pwrd",
+                    "type": "bool"
                 },
                 {
                     "internalType": "uint256",
@@ -498,11 +495,6 @@
                     "internalType": "uint256[]",
                     "name": "minAmounts",
                     "type": "uint256[]"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
                 }
             ],
             "name": "withdrawByLPToken",
@@ -513,9 +505,9 @@
         {
             "inputs": [
                 {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
+                    "internalType": "bool",
+                    "name": "pwrd",
+                    "type": "bool"
                 },
                 {
                     "internalType": "uint256",
@@ -531,42 +523,9 @@
                     "internalType": "uint256",
                     "name": "minAmount",
                     "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
                 }
             ],
             "name": "withdrawByStablecoin",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "gTokenAddress",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256[]",
-                    "name": "inAmounts",
-                    "type": "uint256[]"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "maxLPAmount",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "pool",
-                    "type": "address"
-                }
-            ],
-            "name": "withdrawByStablecoins",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"

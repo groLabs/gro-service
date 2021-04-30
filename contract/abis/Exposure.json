@@ -186,6 +186,11 @@
                         },
                         {
                             "internalType": "uint256",
+                            "name": "curveCurrentAssetsUsd",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
                             "name": "lifeguardCurrentAssetsUsd",
                             "type": "uint256"
                         },
@@ -218,6 +223,11 @@
                             "internalType": "uint256[]",
                             "name": "stablePercents",
                             "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "curvePercent",
+                            "type": "uint256"
                         }
                     ],
                     "internalType": "struct SystemState",
@@ -240,6 +250,11 @@
                             "type": "uint256[]"
                         },
                         {
+                            "internalType": "uint256",
+                            "name": "curveExposure",
+                            "type": "uint256"
+                        },
+                        {
                             "internalType": "bool",
                             "name": "stablecoinExposed",
                             "type": "bool"
@@ -248,11 +263,6 @@
                             "internalType": "bool",
                             "name": "protocolExposed",
                             "type": "bool"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "curveIndex",
-                            "type": "uint256"
                         }
                     ],
                     "internalType": "struct ExposureState",
@@ -290,13 +300,24 @@
             "type": "function"
         },
         {
-            "inputs": [],
-            "name": "curveIndex",
+            "inputs": [
+                {
+                    "internalType": "address[]",
+                    "name": "vaults",
+                    "type": "address[]"
+                }
+            ],
+            "name": "getUnifiedAssets",
             "outputs": [
                 {
                     "internalType": "uint256",
-                    "name": "",
+                    "name": "unifiedTotalAssets",
                     "type": "uint256"
+                },
+                {
+                    "internalType": "uint256[]",
+                    "name": "unifiedAssets",
+                    "type": "uint256[]"
                 }
             ],
             "stateMutability": "view",
@@ -403,19 +424,6 @@
             "inputs": [
                 {
                     "internalType": "uint256",
-                    "name": "_curveIndex",
-                    "type": "uint256"
-                }
-            ],
-            "name": "setCurveIndex",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "uint256",
                     "name": "_makerUSDCExposure",
                     "type": "uint256"
                 }
@@ -441,9 +449,19 @@
         {
             "inputs": [
                 {
-                    "internalType": "address[]",
-                    "name": "vaults",
-                    "type": "address[]"
+                    "internalType": "bool",
+                    "name": "bigFirst",
+                    "type": "bool"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "unifiedTotalAssets",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256[]",
+                    "name": "unifiedAssets",
+                    "type": "uint256[]"
                 },
                 {
                     "internalType": "uint256[]",
@@ -455,21 +473,11 @@
             "outputs": [
                 {
                     "internalType": "uint256[]",
-                    "name": "indexes",
-                    "type": "uint256[]"
-                },
-                {
-                    "internalType": "uint256[]",
-                    "name": "unifiedAssets",
-                    "type": "uint256[]"
-                },
-                {
-                    "internalType": "uint256[]",
-                    "name": "assets",
+                    "name": "vaultIndexes",
                     "type": "uint256[]"
                 }
             ],
-            "stateMutability": "view",
+            "stateMutability": "pure",
             "type": "function"
         },
         {
