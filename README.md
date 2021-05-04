@@ -9,7 +9,7 @@ Gro bot service APIs and stats APIs
 
 ## Run on kovan
 
-1. run `yarn install` in workspace root folder
+1. run `yarn` in workspace root folder
 2. run `npm run dev` in workspance root to start service
 3. run `curl -X POST http://localhost:3000/bot/subscribe-new-block` to start listener
 4. run `curl -X POST http://localhost:3000/bot/unsubscribe` to stop listener
