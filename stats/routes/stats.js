@@ -12,6 +12,7 @@ const {
     MESSAGE_TYPES,
     sendMessageToTradeChannel,
 } = require('../../common/discord/discordService');
+const { postDegenScore } = require('../services/degenscoreService');
 
 /**
  * @api {get} /stats/user Get /stats/user
@@ -106,6 +107,15 @@ router.get(
         }
         const groStats = await getGroStatsContent();
         res.json({ gro_stats: groStats });
+    })
+);
+
+
+router.post(
+    '/degenscore',
+    wrapAsync(async (req, res) => {
+        const data = await postDegenScore(req.body);
+        res.json({ degenscore: data });
     })
 );
 

@@ -19,6 +19,7 @@
     },
     "dependencies": {
         "@ethersproject/experimental": "^5.0.10",
+        "axios": "^0.21.1",
         "bignumber.js": "^9.0.1",
         "config": "^3.3.6",
         "cookie-parser": "~1.4.4",
