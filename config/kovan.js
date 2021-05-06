@@ -7,7 +7,7 @@ module.exports = {
             etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
             pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
         },
-        start_block: 24569972,,
+        start_block: 24569972,
         launch_timestamp: '1619808904',
     },
     trigger_scheduler: {
@@ -60,7 +60,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x80Db207dE94ceFf57E43bcd57BbB592516127BF9',
+        controller: '0x22c91608d7B14fc15aEE41DCbB717f6a384b1162',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
