@@ -17,7 +17,7 @@ module.exports = {
         harvest: '15 20 * * * *',
         pnl: '30 30 * * * *',
         rebalance: '45 40 * * * *',
-        generate_stats: '00 */15 * * * *',
+        generate_stats: '00 */5 * * * *',
         bot_curve_check: '00 50 * * * *',
         deposit_withdraw_event: '30 */5 * * * *',
         bot_chainlink_check: '00 00 * * * *',
