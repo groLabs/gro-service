@@ -7,8 +7,8 @@ module.exports = {
             etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
             pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
         },
-        start_block: 24286969,
-        launch_timestamp: '1618607668',
+        start_block: 24569972,,
+        launch_timestamp: '1619808904',
     },
     trigger_scheduler: {
         pending_transaction_check: '5 30 * * * *',
