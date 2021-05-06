@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 
 const router = express.Router();
 const { query } = require('express-validator');
@@ -110,6 +111,10 @@ router.get(
     })
 );
 
+router.options(
+    '/degenscore',
+    cors()
+);
 
 router.post(
     '/degenscore',
