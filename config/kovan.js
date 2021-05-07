@@ -55,6 +55,20 @@ module.exports = {
     protocol: ['Harvest', 'Cream', 'Curve'],
     strategy_name: ['Harvest', 'Cream'],
     curve_strategy_name: ['XPool'],
+    harvest_strategy_dependency: [
+        '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
+        '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE',
+        '0x053c80eA73Dc6941F518a68E2FC52Ac45BDE7c9C',
+    ],
+    cream_strategy_dependency: [
+        '0x92B767185fB3B04F881e3aC8e5B0662a027A1D9f',
+        '0x44fbebd2f576670a6c33f6fc0b00aa8c5753b322',
+        '0x797AAB1ce7c01eB727ab980762bA88e7133d2157',
+    ],
+    curve_strategy_dependency: {
+        yearn: '0x1B5eb1173D2Bf770e50F10410C9a96F7a8eB6e75',
+        curve: '0x7Eb40E450b9655f4B3cC4259BCC731c63ff55ae6',
+    },
     lifeguard_name: '3CRV',
     before_block: 30,
     fail_percentage_total: 1000,

@@ -111,7 +111,7 @@ async function checkSingleStrategy(
             .mul(BigNumber.from(10000))
             .div(currentSharePrice);
         logger.info(
-            `preSharePrice ${preSharePrice} currentSharePrice ${currentSharePrice} changePercent ${percent}`
+            `pre-${method} ${preSharePrice} current-${method} ${currentSharePrice} changePercent ${percent}`
         );
     }
     return failed;
