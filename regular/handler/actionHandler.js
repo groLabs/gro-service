@@ -67,13 +67,10 @@ async function adapterInvest(blockNumber, isInvested, vault) {
 
 async function invest(blockNumber, investParams) {
     const vaults = getVaults();
-    const investPromises = [];
     for (let i = 0; i < vaults.length; i += 1) {
-        investPromises.push(
-            adapterInvest(blockNumber, investParams[i], vaults[i])
-        );
+        // eslint-disable-next-line no-await-in-loop
+        await adapterInvest(blockNumber, investParams[i], vaults[i]);
     }
-    await Promise.all(investPromises);
 }
 
 async function harvestStrategy(blockNumber, strategyInfo) {

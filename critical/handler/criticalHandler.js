@@ -44,21 +44,17 @@ async function getStabeCoins() {
 }
 
 async function checkPriceUpdateInChainPrice(stabeCoins) {
-    const checkPromise = [];
     for (let i = 0; i < stabeCoins.length; i += 1) {
-        checkPromise.push(getChainPrice().priceUpdateCheck(stabeCoins[i]));
-    }
-    const checkResult = await Promise.all(checkPromise);
-    const updateRatioPromise = [];
-    for (let i = 0; i < checkResult.length; i += 1) {
-        logger.info(`checkResult ${i}, ${checkResult[i]}`);
-        if (checkResult[i]) {
-            updateRatioPromise.push(
-                await getChainPrice().updateTokenRatios(stabeCoins[i])
-            );
+        // eslint-disable-next-line no-await-in-loop
+        const checkResult = await getChainPrice().priceUpdateCheck(
+            stabeCoins[i]
+        );
+        logger.info(`stabeCoins ${i}, ${checkResult}`);
+        if (checkResult) {
+            // eslint-disable-next-line no-await-in-loop
+            await getChainPrice().updateTokenRatios(stabeCoins[i]);
         }
     }
-    await Promise.all(updateRatioPromise);
 }
 
 async function curvePriceCheck() {
