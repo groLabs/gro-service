@@ -81,12 +81,12 @@ module.exports = {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
         retry: 3,
         channel: {
-            trades: '825998630828638239',
-            protocol_assets: '825998746696810536',
-            protocol_events: '825998886249168896',
-            crit_action_events: '825998966691987456',
-            bot_alerts: '825999025487609927',
-            bot_logs: '825999075971039283',
+            trades: '840219146277093456',
+            protocol_assets: '840219248915120148',
+            protocol_events: '840219356860514405',
+            crit_action_events: '840219422509760522',
+            bot_alerts: '840219078185713705',
+            bot_logs: '840219541488402473',
         },
     },
 };

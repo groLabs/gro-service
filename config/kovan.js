@@ -74,7 +74,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x22c91608d7B14fc15aEE41DCbB717f6a384b1162',
+        controller: '0xe71A4991CaeEc8F550CCC2626B0218a7c9ff94BB'
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
