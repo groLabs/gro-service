@@ -7,8 +7,8 @@ module.exports = {
             etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
             pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
         },
-        start_block: 12335976,
-        launch_timestamp: '1619698299',
+        start_block: 12404379,
+        launch_timestamp: '1620625849',
     },
     trigger_scheduler: {
         pending_transaction_check: '5 * * * * *',
@@ -18,6 +18,7 @@ module.exports = {
         pnl: '23 * * * * *',
         rebalance: '33 * * * * *',
         generate_stats: '10 * * * * *',
+        remove_stats_file: '*/2 * * * *',
         bot_curve_check: '00,30 * * * * *',
         deposit_withdraw_event: '30 * * * * *',
         bot_chainlink_check: '25,55 * * * * *',
@@ -47,6 +48,7 @@ module.exports = {
         rebalance: ':scales:',
         curveCheck: ':loudspeaker:',
     },
+    keep_stats_file_number: 80,
     stats_folder: '../stats',
     log_folder: './logs',
     blockNumberFile: './lastBlockNumber.json',
@@ -75,7 +77,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x09635F643e140090A9A8Dcd712eD6285858ceBef',
+        controller: '0x4EE6eCAD1c2Dae9f525404De8555724e3c35d07B',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
