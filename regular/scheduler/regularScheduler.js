@@ -1,6 +1,5 @@
 const config = require('config');
 const schedule = require('node-schedule');
-const { BigNumber } = require('ethers');
 const {
     getDefaultProvider,
     getNonceManager,
@@ -9,19 +8,12 @@ const {
     checkAccountBalance,
 } = require('../../common/chainUtil');
 const { pendingTransactions } = require('../../common/storage');
-const { ETH_DECIMAL, div, shortAccount } = require('../../common/digitalUtil');
 const {
     MESSAGE_EMOJI,
-    sendMessageToLogChannel,
     sendMessageToAlertChannel,
     sendMessageToProtocolEventChannel,
-    MESSAGE_TYPES,
 } = require('../../common/discord/discordService');
-const {
-    SettingError,
-    BlockChainCallError,
-    ContractCallError,
-} = require('../../common/error');
+const { SettingError, BlockChainCallError } = require('../../common/error');
 const {
     investTrigger,
     pnlTrigger,
@@ -42,11 +34,10 @@ const { getVaults, getStrategyLength } = require('../../contract/allContracts');
 const {
     getLastBlockNumber,
     updateLastBlockNumber,
-    generateDepositReport,
-    generateWithdrawReport,
-    generateGvtTransfer,
-    generatePwrdTransfer,
+    generateDepositAndWithdrawReport,
+    generateSummaryReport,
 } = require('../handler/eventHandler');
+const { getConfig } = require('../../common/configUtil');
 const logger = require('../regularLogger');
 
 const provider = getDefaultProvider();
@@ -58,6 +49,8 @@ let harvestTriggerSchedulerSetting = '15 * * * *';
 let pnlTriggerSchedulerSetting = '30 * * * *';
 let rebalanceTriggerSchedulerSetting = '45 * * * *';
 let depositWithdrawEventSchedulerSetting = '*/5 * * * *';
+const eventSummarySchedulerSetting =
+    getConfig('trigger_scheduler.event_summary', false) || '00 * * * *';
 let botUpdateChainPriceSchedulerSetting = '00 20 * * * *';
 
 let botBalanceWarnVault = '2000000000000000000';
@@ -353,16 +346,39 @@ function harvestTriggerScheduler() {
 function depositWithdrawEventScheduler() {
     schedule.scheduleJob(depositWithdrawEventSchedulerSetting, async () => {
         try {
-            const lastBlockNumber = getLastBlockNumber();
+            const lastBlockNumber = getLastBlockNumber(
+                'lastDepositAndWithdrawBlockNumber'
+            );
             const currectBlockNumber = await getCurrentBlockNumber();
             if (!currectBlockNumber) return;
             await Promise.all([
-                generateDepositReport(lastBlockNumber, currectBlockNumber),
-                generateWithdrawReport(lastBlockNumber, currectBlockNumber),
-                generateGvtTransfer(lastBlockNumber, currectBlockNumber),
-                generatePwrdTransfer(lastBlockNumber, currectBlockNumber),
+                generateDepositAndWithdrawReport(
+                    lastBlockNumber,
+                    currectBlockNumber
+                ),
             ]);
-            updateLastBlockNumber(currectBlockNumber);
+            updateLastBlockNumber(
+                currectBlockNumber,
+                'lastDepositAndWithdrawBlockNumber'
+            );
+        } catch (error) {
+            sendMessageToAlertChannel(error);
+        }
+    });
+}
+
+function EventSummaryScheduler() {
+    schedule.scheduleJob(eventSummarySchedulerSetting, async () => {
+        try {
+            const lastBlockNumber = getLastBlockNumber(
+                'lastSummaryBlockNumber'
+            );
+            const currectBlockNumber = await getCurrentBlockNumber();
+            if (!currectBlockNumber) return;
+            await Promise.all([
+                generateSummaryReport(lastBlockNumber, currectBlockNumber),
+            ]);
+            updateLastBlockNumber(currectBlockNumber, 'lastSummaryBlockNumber');
         } catch (error) {
             sendMessageToAlertChannel(error);
         }
@@ -388,6 +404,7 @@ function startRegularJobs() {
     rebalanceTriggerScheduler();
     longPendingTransactionsScheduler();
     depositWithdrawEventScheduler();
+    EventSummaryScheduler();
     updateChainPrice();
 }
 

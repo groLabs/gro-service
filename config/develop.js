@@ -19,7 +19,8 @@ module.exports = {
         rebalance: '33 * * * * *',
         generate_stats: '10 * * * * *',
         bot_curve_check: '00,30 * * * * *',
-        deposit_withdraw_event: '30 * * * * *',
+        deposit_withdraw_event: '*/2 * * * *',
+        event_summary: '* * * * *',
         bot_chainlink_check: '25,55 * * * * *',
     },
     emoji: {
@@ -75,7 +76,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x09635F643e140090A9A8Dcd712eD6285858ceBef',
+        controller: '0x4EE6eCAD1c2Dae9f525404De8555724e3c35d07B',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

@@ -1,6 +1,5 @@
 const fs = require('fs');
 const config = require('config');
-const BN = require('bignumber.js');
 const dayjs = require('dayjs');
 const { BigNumber } = require('ethers');
 const {
@@ -17,8 +16,17 @@ const {
 const { getConfig } = require('../../common/configUtil');
 const { getDefaultProvider } = require('../../common/chainUtil');
 const { formatNumber, shortAccount } = require('../../common/digitalUtil');
+const { getGvt, getPwrd } = require('../../contract/allContracts');
+const { calculateDelta } = require('../../common/digitalUtil');
+
+const {
+    depositEventMessage,
+    withdrawEventMessage,
+    summaryMessage,
+} = require('../../discordMessage/eventMessage');
 
 const logger = require('../regularLogger');
+const { json } = require('express');
 
 let blockNumberFile = '../lastBlockNumber.json';
 
@@ -26,30 +34,28 @@ if (config.has('blockNumberFile')) {
     blockNumberFile = config.get('blockNumberFile');
 }
 
-function getLastBlockNumber() {
+function getLastBlockNumber(type) {
     const data = fs.readFileSync(blockNumberFile, { flag: 'a+' });
     let content = data.toString();
     if (content.length === 0) {
         content = '{}';
     }
     const blockObj = JSON.parse(content);
-    return blockObj.lastBlockNumber || getConfig('blockchain.start_block');
+    return blockObj[type] || getConfig('blockchain.start_block');
 }
 
-async function updateLastBlockNumber(blockNumber) {
-    const content = { lastBlockNumber: blockNumber + 1 };
-    fs.writeFileSync(blockNumberFile, JSON.stringify(content));
+async function updateLastBlockNumber(blockNumber, type) {
+    const data = fs.readFileSync(blockNumberFile, { flag: 'a+' });
+    let content = data.toString();
+    if (content.length === 0) {
+        content = '{}';
+    }
+    const blockObj = JSON.parse(content);
+    blockObj[type] = blockNumber + 1;
+    fs.writeFileSync(blockNumberFile, JSON.stringify(blockObj));
 }
 
 async function generateDepositReport(fromBlock, toBlock) {
-    logger.info(
-        `Start to get deposit event from block:${fromBlock} to ${toBlock}`
-    );
-    const startBlock = await getDefaultProvider().getBlock(fromBlock);
-    const endBlock = await getDefaultProvider().getBlock(toBlock);
-    const startTime = dayjs.unix(startBlock.timestamp);
-    const endTime = dayjs.unix(endBlock.timestamp);
-
     const logs = await getEvents(EVENT_TYPE.deposit, fromBlock, toBlock).catch(
         (error) => {
             logger.error(error);
@@ -62,12 +68,14 @@ async function generateDepositReport(fromBlock, toBlock) {
     const result = [];
     const total = {
         gvt: {
+            count: 0,
             usdAmount: BigNumber.from(0),
             dai: BigNumber.from(0),
             usdc: BigNumber.from(0),
             usdt: BigNumber.from(0),
         },
         pwrd: {
+            count: 0,
             usdAmount: BigNumber.from(0),
             dai: BigNumber.from(0),
             usdc: BigNumber.from(0),
@@ -77,13 +85,17 @@ async function generateDepositReport(fromBlock, toBlock) {
     logs.forEach((log) => {
         const item = {};
         if (log.args[2]) {
-            item.gtoken = 'Pwrd';
+            item.gtoken = 'PWRD';
+            item.action = 'bought';
+            total.pwrd.count += 1;
             total.pwrd.usdAmount = total.pwrd.usdAmount.add(log.args[3]);
             total.pwrd.dai = total.pwrd.dai.add(log.args[4][0]);
             total.pwrd.usdc = total.pwrd.usdc.add(log.args[4][1]);
             total.pwrd.usdt = total.pwrd.usdt.add(log.args[4][2]);
         } else {
-            item.gtoken = 'Gvt';
+            item.gtoken = 'Vault';
+            item.action = 'deposited';
+            total.gvt.count += 1;
             total.gvt.usdAmount = total.gvt.usdAmount.add(log.args[3]);
             total.gvt.dai = total.gvt.dai.add(log.args[4][0]);
             total.gvt.usdc = total.gvt.usdc.add(log.args[4][1]);
@@ -106,70 +118,11 @@ async function generateDepositReport(fromBlock, toBlock) {
             result
         )}`
     );
-    // send report to discord
-    const totalMsg = `\nBlock from ${fromBlock} to ${toBlock}\n===Gvt===\nUsdAmount: ${total.gvt.usdAmount}\nDAI: ${total.gvt.dai}\nUSDC: ${total.gvt.usdc}\nUSDT: ${total.gvt.usdt}\n===Pwrd===\nUsdAmount: ${total.pwrd.usdAmount}\nDAI: ${total.pwrd.dai}\nUSDC: ${total.pwrd.usdc}\nUSDT: ${total.pwrd.usdt}`;
 
-    let embedDescription = '';
-    if (total.gvt.usdAmount.add(total.pwrd.usdAmount).toString() !== '0') {
-        embedDescription = `**From** ${startTime} **To** ${endTime} ${
-            MESSAGE_EMOJI.Gvt
-        } **${formatNumber(total.gvt.dai, 18, 2)}** DAI **${formatNumber(
-            total.gvt.usdc,
-            6,
-            2
-        )}** USDC **${formatNumber(total.gvt.usdt, 6, 2)}** USDT ${
-            MESSAGE_EMOJI.Pwrd
-        } **${formatNumber(total.pwrd.dai, 18, 2)}** DAI **${formatNumber(
-            total.pwrd.usdc,
-            6,
-            2
-        )}** USDC **${formatNumber(total.pwrd.usdt, 6, 2)}** USDT`;
-    }
-    const discordMsg = {
-        type: MESSAGE_TYPES.depositEvent,
-        description: embedDescription,
-        message: totalMsg,
-    };
-
-    logger.info(discordMsg);
-    sendMessageToTradeChannel(discordMsg);
-
-    result.forEach((log) => {
-        const msg = `\nGToken: ${log.gtoken}\nAccount: ${log.account}\nBlockNumer: ${log.blockNumber}\nTransactionHash: ${log.transactionHash}\nReferral: ${log.referral}\nUsdAmount: ${log.usdAmount}\nDAI: ${log.tokens[0]}\nUSDC: ${log.tokens[1]}\nUSDT: ${log.tokens[2]}`;
-        const label = 'TX';
-        sendMessageToTradeChannel({
-            message: msg,
-            type: MESSAGE_TYPES.depositEvent,
-            emojis: [MESSAGE_EMOJI[log.gtoken]],
-            description: `${label} **${formatNumber(
-                log.tokens[0],
-                18,
-                2
-            )} DAI ${formatNumber(log.tokens[1], 6, 2)} USDC ${formatNumber(
-                log.tokens[2],
-                6,
-                2
-            )} USDT** supply by ${shortAccount(log.account)}`,
-            urls: [
-                {
-                    label,
-                    type: 'tx',
-                    value: log.transactionHash,
-                },
-            ],
-        });
-    });
+    return { total, items: result };
 }
 
 async function generateWithdrawReport(fromBlock, toBlock) {
-    logger.info(
-        `Start to get withdraw event from block:${fromBlock} to ${toBlock}`
-    );
-    const startBlock = await getDefaultProvider().getBlock(fromBlock);
-    const endBlock = await getDefaultProvider().getBlock(toBlock);
-    const startTime = dayjs.unix(startBlock.timestamp);
-    const endTime = dayjs.unix(endBlock.timestamp);
-
     const logs = await getEvents(EVENT_TYPE.withdraw, fromBlock, toBlock).catch(
         (error) => {
             logger.error(error);
@@ -182,6 +135,7 @@ async function generateWithdrawReport(fromBlock, toBlock) {
     const result = [];
     const total = {
         gvt: {
+            count: 0,
             deductUsd: BigNumber.from(0),
             returnUsd: BigNumber.from(0),
             lpAmount: BigNumber.from(0),
@@ -190,6 +144,7 @@ async function generateWithdrawReport(fromBlock, toBlock) {
             usdt: BigNumber.from(0),
         },
         pwrd: {
+            count: 0,
             deductUsd: BigNumber.from(0),
             returnUsd: BigNumber.from(0),
             lpAmount: BigNumber.from(0),
@@ -201,7 +156,9 @@ async function generateWithdrawReport(fromBlock, toBlock) {
     logs.forEach((log) => {
         const item = {};
         if (log.args[2]) {
-            item.gtoken = 'Pwrd';
+            item.gtoken = 'PWRD';
+            item.action = 'sold';
+            total.pwrd.count += 1;
             total.pwrd.deductUsd = total.pwrd.deductUsd.add(log.args[5]);
             total.pwrd.returnUsd = total.pwrd.returnUsd.add(log.args[6]);
             total.pwrd.lpAmount = total.pwrd.lpAmount.add(log.args[7]);
@@ -209,7 +166,9 @@ async function generateWithdrawReport(fromBlock, toBlock) {
             total.pwrd.usdc = total.pwrd.usdc.add(log.args[8][1]);
             total.pwrd.usdt = total.pwrd.usdt.add(log.args[8][2]);
         } else {
-            item.gtoken = 'Gvt';
+            item.gtoken = 'Vault';
+            item.action = 'withdrew';
+            total.gvt.count += 1;
             total.gvt.deductUsd = total.gvt.deductUsd.add(log.args[5]);
             total.gvt.returnUsd = total.gvt.returnUsd.add(log.args[6]);
             total.gvt.lpAmount = total.gvt.lpAmount.add(log.args[7]);
@@ -235,82 +194,103 @@ async function generateWithdrawReport(fromBlock, toBlock) {
             result
         )}`
     );
-    // send report to discord
-    const totalMsg = `\nBlock from ${fromBlock} to ${toBlock}\n===Gvt===\nWithdrawAmount: ${
-        total.gvt.returnUsd
-    }\nHOLD Bonus: ${total.gvt.deductUsd.sub(total.gvt.returnUsd)}\nLPAmount: ${
-        total.gvt.lpAmount
-    }\nDAI: ${total.gvt.dai}\nUSDC: ${total.gvt.usdc}\nUSDT: ${
-        total.gvt.usdt
-    }\n===Pwrd===\nWithdrawAmount: ${
-        total.pwrd.returnUsd
-    }\nHOLD Bonus: ${total.pwrd.deductUsd.sub(
-        total.pwrd.returnUsd
-    )}\nLPAmount: ${total.pwrd.lpAmount}\nDAI: ${total.pwrd.dai}\nUSDC: ${
-        total.pwrd.usdc
-    }\nUSDT: ${total.pwrd.usdt}`;
 
-    let embedDescription = '';
-    if (total.gvt.lpAmount.add(total.pwrd.lpAmount).toString() !== '0') {
-        embedDescription = `**From** ${startTime} **To** ${endTime} ${
-            MESSAGE_EMOJI.Gvt
-        } **${formatNumber(total.gvt.dai, 18, 2)}** DAI **${formatNumber(
-            total.gvt.usdc,
-            6,
-            2
-        )}** USDC **${formatNumber(total.gvt.usdt, 6, 2)}** USDT ${
-            MESSAGE_EMOJI.Pwrd
-        } **${formatNumber(total.pwrd.dai, 18, 2)}** DAI **${formatNumber(
-            total.pwrd.usdc,
-            6,
-            2
-        )}** USDC **${formatNumber(total.pwrd.usdt, 6, 2)}** USDT`;
-    }
+    return { total, items: result };
+}
 
-    const discordMsg = {
-        type: MESSAGE_TYPES.withdrawEvent,
-        description: embedDescription,
-        message: totalMsg,
-    };
-
-    logger.info(discordMsg);
-    sendMessageToTradeChannel(discordMsg);
-
-    result.forEach((log) => {
-        const msg = `\nGToken: ${log.gtoken}\nAccount: ${
-            log.account
-        }\nBlockNumer: ${log.blockNumber}\nTransactionHash: ${
-            log.transactionHash
-        }\nReferral: ${log.referral}\nBalanced: ${log.balanced}\nAll: ${
-            log.all
-        }\nWithdrawAmount: ${log.returnUsd}\nHOLD Bonus: ${BN(
-            log.deductUsd
-        ).minus(BN(log.returnUsd))}\nLPAmount: ${log.lpAmount}\nDAI: ${
-            log.tokens[0]
-        }\nUSDC: ${log.tokens[1]}\nUSDT: ${log.tokens[2]}`;
-        const label = 'TX';
-        sendMessageToTradeChannel({
-            message: msg,
-            type: MESSAGE_TYPES.withdrawEvent,
-            emojis: [MESSAGE_EMOJI[log.gtoken]],
-            description: `${label} **${formatNumber(
-                log.tokens[0],
-                18,
-                2
-            )} DAI ${formatNumber(log.tokens[1], 6, 2)} USDC ${formatNumber(
-                log.tokens[2],
-                6,
-                2
-            )} USDT** supply by ${shortAccount(log.account)}`,
-            urls: [
-                {
-                    label,
-                    type: 'tx',
-                    value: log.transactionHash,
-                },
-            ],
+async function getGTokenAsset(gtoken, blockNumber) {
+    const asset = await gtoken
+        .totalAssets({ blockTag: blockNumber })
+        .catch((error) => {
+            logger.error(error);
+            throw new ContractCallError(
+                `Call totalAssets of token: ${gtoken.address} failed`
+            );
         });
-    });
+    const result = {
+        originValue: asset,
+        value: formatNumber(asset, 18, 2),
+    };
+    logger.info(`getGTokenAsset: ${JSON.stringify(result)}`);
+    return result;
+}
+
+async function generateDepositAndWithdrawReport(fromBlock, toBlock) {
+    logger.info(`Start to get event from block:${fromBlock} to ${toBlock}`);
+    const depositEventResult = await generateDepositReport(fromBlock, toBlock);
+    const withdrawEventResult = await generateWithdrawReport(
+        fromBlock,
+        toBlock
+    );
+
+    depositEventMessage(depositEventResult.items);
+
+    withdrawEventMessage(withdrawEventResult.items);
+}
+
+function getTVLDelta(deposintTotalContent, withdrawTotalContent, currentTVL) {
+    const vaultDeposits = deposintTotalContent.gvt;
+    const pwrdDeposits = deposintTotalContent.pwrd;
+    const vaultWithdraws = withdrawTotalContent.gvt;
+    const pwrdWithdraws = withdrawTotalContent.pwrd;
+
+    const vaultDiff = vaultDeposits.usdAmount.sub(vaultWithdraws.returnUsd);
+    const pwrdDiff = pwrdDeposits.usdAmount.sub(pwrdWithdraws.returnUsd);
+    logger.info(`vaultDiff: ${vaultDiff}`);
+    logger.info(`pwrdDiff: ${pwrdDiff}`);
+    const previousVault = vaultDiff.add(currentTVL.vault);
+    const previousPwrd = pwrdDiff.add(currentTVL.pwrd);
+    logger.info(`previousVault: ${previousVault}`);
+    logger.info(`previousPwrd: ${previousPwrd}`);
+    const vaultDelta = calculateDelta(vaultDiff, previousVault);
+    const pwrdDelta = calculateDelta(pwrdDiff, previousPwrd);
+    logger.info(`vaultDelta: ${vaultDelta}`);
+    logger.info(`pwrdDelta: ${pwrdDelta}`);
+    return { vaultDelta, pwrdDelta };
+}
+
+async function generateSummaryReport(fromBlock, toBlock) {
+    logger.info(`Start to get event from block:${fromBlock} to ${toBlock}`);
+    const startBlock = await getDefaultProvider().getBlock(fromBlock);
+    const endBlock = await getDefaultProvider().getBlock(toBlock);
+    const startTime = dayjs.unix(startBlock.timestamp);
+    const startTimeDisplay = startTime.format('ha');
+    const endTime = dayjs.unix(endBlock.timestamp);
+    const endTimeDisplay = endTime.format('ha');
+
+    const depositEventResult = await generateDepositReport(fromBlock, toBlock);
+    const withdrawEventResult = await generateWithdrawReport(
+        fromBlock,
+        toBlock
+    );
+    const {
+        originValue: originVaultValue,
+        value: vaultTVL,
+    } = await getGTokenAsset(getGvt(), toBlock);
+    const {
+        originValue: originPwrdValue,
+        value: pwrdTVL,
+    } = await getGTokenAsset(getPwrd(), toBlock);
+    const tvl = getTVLDelta(
+        depositEventResult.total,
+        withdrawEventResult.total,
+        { vault: originVaultValue, pwrd: originPwrdValue }
+    );
+    const result = {
+        tvl,
+        depositContent: depositEventResult.total,
+        withdrawContent: withdrawEventResult.total,
+        systemAssets: {
+            vaultTVL,
+            pwrdTVL,
+        },
+        time: {
+            start: startTimeDisplay,
+            end: endTimeDisplay,
+        },
+    };
+    logger.info(`result: ${JSON.stringify(result)}`);
+    summaryMessage(result);
 }
 
 async function generateGvtTransfer(fromBlock, toBlock) {
@@ -452,9 +432,9 @@ async function generatePwrdTransfer(fromBlock, toBlock) {
 
 module.exports = {
     getLastBlockNumber,
-    generateDepositReport,
-    generateWithdrawReport,
     generateGvtTransfer,
     generatePwrdTransfer,
     updateLastBlockNumber,
+    generateDepositAndWithdrawReport,
+    generateSummaryReport,
 };
