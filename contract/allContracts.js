@@ -162,8 +162,8 @@ async function initCurveVault() {
 
 function renameDuplicatedFactorEntry(abi) {
     const keys = abi.keys();
-    for (let i = 0; i < keys.length; i += 1) {
-        const key = keys[i];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const key of keys) {
         const node = abi[key];
         if (node.name === 'factor' && node.inputs.length > 0) {
             node.name = 'factorWithParam';

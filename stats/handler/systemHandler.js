@@ -186,12 +186,10 @@ async function getTvlStats(blockTag) {
     const prwdAssets = await getPwrd().totalSupply(blockTag);
     const totalAssetsUsd = gvtAssets.add(prwdAssets);
     const utilRatio = calculateSharePercent(prwdAssets, gvtAssets);
-    const utilRatioLimitPD = await getDepositHandler().utilizationRatioLimitPD(
-        blockTag
-    );
-    const utilRatioLimitGW = await getWithdrawHandler().utilizationRatioLimitGW(
-        blockTag
-    );
+    const utilRatioLimitPD =
+        await getDepositHandler().utilisationRatioLimitPwrd(blockTag);
+    const utilRatioLimitGW =
+        await getWithdrawHandler().utilisationRatioLimitGvt(blockTag);
 
     const tvl = {
         pwrd: prwdAssets,
