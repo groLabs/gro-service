@@ -22,9 +22,9 @@ if (!config.has('blockchain.network')) {
     throw err;
 }
 
-if (!process.env.BOT_PRIVATE_KEY) {
+if (!process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`]) {
     const err = new SettingError(
-        'Environment variable BOT_PRIVATE_KEY are not set.'
+        `Environment variable ${`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`} are not set.`
     );
     logger.error(err);
     throw err;
@@ -44,7 +44,8 @@ let botWallet;
 
 const network = config.get('blockchain.network');
 logger.info(`network: ${network}`);
-const botPrivateKey = process.env.BOT_PRIVATE_KEY;
+const botPrivateKey = process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`];
+logger.info(`bot private key : ${botPrivateKey}`);
 
 function getSocketProvider() {
     if (socketProvider) {
@@ -136,16 +137,7 @@ async function syncNounce() {
         });
     // Adjust local nonce
     if (transactionCountInChain > transactionCountInLocal) {
-        await nonceManager
-            .setTransactionCount(transactionCountInChain)
-            .wait()
-            .catch((error) => {
-                logger.error(error);
-                throw new BlockChainCallError(
-                    `Set bot Nonce to ${transactionCountInChain} failed.`,
-                    MESSAGE_TYPES.adjustNonce
-                );
-            });
+        nonceManager.setTransactionCount(transactionCountInChain);
         sendMessageToLogChannel({
             message: `Set bot Nonce to ${transactionCountInChain}`,
             type: MESSAGE_TYPES.adjustNonce,
@@ -221,7 +213,7 @@ async function checkPendingTransactions(types) {
 }
 
 async function checkAccountBalance(botBalanceWarnVault) {
-    const botAccount = process.env.BOT_ADDRESS;
+    const botAccount = process.env[`BOT_ADDRESS_${process.env.BOT_ENV}`];
     const botType = `${process.env.BOT_ENV.toLowerCase()}Bot`;
     const balance = await nonceManager.getBalance().catch((error) => {
         logger.error(error);

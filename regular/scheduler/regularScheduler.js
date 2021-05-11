@@ -9,19 +9,12 @@ const {
     checkAccountBalance,
 } = require('../../common/chainUtil');
 const { pendingTransactions } = require('../../common/storage');
-const { ETH_DECIMAL, div, shortAccount } = require('../../common/digitalUtil');
 const {
     MESSAGE_EMOJI,
-    sendMessageToLogChannel,
     sendMessageToAlertChannel,
     sendMessageToProtocolEventChannel,
-    MESSAGE_TYPES,
 } = require('../../common/discord/discordService');
-const {
-    SettingError,
-    BlockChainCallError,
-    ContractCallError,
-} = require('../../common/error');
+const { SettingError, BlockChainCallError } = require('../../common/error');
 const {
     investTrigger,
     pnlTrigger,
@@ -61,16 +54,16 @@ let depositWithdrawEventSchedulerSetting = '*/5 * * * *';
 let botUpdateChainPriceSchedulerSetting = '00 20 * * * *';
 
 let botBalanceWarnVault = '2000000000000000000';
-
-if (!process.env.BOT_ADDRESS) {
+const botAddressKey = `BOT_ADDRESS_${process.env.BOT_ENV}`;
+if (!process.env[botAddressKey]) {
     const err = new SettingError(
-        'Environment variable BOT_ADDRESS are not set.'
+        `Environment variable ${botAddressKey} are not set.`
     );
     logger.error(err);
     throw err;
 }
 
-const botAccount = process.env.BOT_ADDRESS;
+const botAccount = process.env[botAddressKey];
 
 if (config.has('trigger_scheduler.invest')) {
     investTriggerSchedulerSetting = config.get('trigger_scheduler.invest');
