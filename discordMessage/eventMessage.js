@@ -100,6 +100,13 @@ function summaryMessage(content) {
         withdrawContent.gvt.count +
         withdrawContent.pwrd.count;
     const { vaultTVL, pwrdTVL } = systemAssets;
+
+    const vaultDelta = tvl.vaultDelta.isGreaterThan(BN(0))
+        ? `+${tvl.vaultDelta.toFixed(2)}`
+        : `${tvl.vaultDelta.toFixed(2)}`;
+    const pwrdDelta = tvl.pwrdDelta.isGreaterThan(BN(0))
+        ? `+${tvl.pwrdDelta.toFixed(2)}`
+        : `${tvl.pwrdDelta.toFixed(2)}`;
     const msg = `**GRO Protocol Trade summary** for last hour (from ${
         time.start
     } To ${time.end} UTC):\n${MESSAGE_EMOJI.Vault} Vault deposits - ${
@@ -116,7 +123,7 @@ function summaryMessage(content) {
         withdrawContent.gvt.returnUsd,
         18,
         2
-    )}\n  **New Vault TVL - $${vaultTVL}**(${tvl.vaultDelta}%)\n${
+    )}\n  **New Vault TVL - $${vaultTVL}** (${vaultDelta}%)\n${
         MESSAGE_EMOJI.PWRD
     } PWRD bought - ${depositContent.pwrd.count} ${
         depositContent.pwrd.count === 1 ? 'trade' : 'trades'
@@ -130,7 +137,7 @@ function summaryMessage(content) {
         withdrawContent.pwrd.returnUsd,
         18,
         2
-    )}\n  **New PWRD TVL - $${pwrdTVL}**(${tvl.pwrdDelta}%)`;
+    )}\n  **New PWRD TVL - $${pwrdTVL}** (${pwrdDelta}%)`;
     let embedDescription = '';
     if (eventTotal > 0) {
         embedDescription = msg;

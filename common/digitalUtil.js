@@ -9,15 +9,14 @@ function div(mol, deno, decimal) {
     return BN(mol.toString()).div(deno).toFixed(decimal);
 }
 
-function calculateDelta(diff, total, decimal = 4) {
+function calculateDelta(diff, total) {
     let result;
     if (total.eq(BigNumber.from(0))) {
         result = BN(100);
     } else {
         result = BN(diff.toString())
             .multipliedBy(BN(100))
-            .div(BN(total.toString()))
-            .toFixed(decimal);
+            .div(BN(total.toString()));
     }
     return result;
 }
