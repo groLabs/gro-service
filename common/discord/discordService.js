@@ -44,8 +44,8 @@ const MESSAGE_TYPES = {
 };
 
 const MESSAGE_EMOJI = {};
-MESSAGE_EMOJI.Gvt = getConfig('emoji.gvt', false) || ':Vault:';
-MESSAGE_EMOJI.Pwrd = getConfig('emoji.pwrd', false) || ':GRO:';
+MESSAGE_EMOJI.Vault = getConfig('emoji.gvt', false) || ':Vault:';
+MESSAGE_EMOJI.PWRD = getConfig('emoji.pwrd', false) || ':GRO:';
 MESSAGE_EMOJI.error = getConfig('emoji.error', false) || ':x:';
 MESSAGE_EMOJI.reverted = getConfig('emoji.reverted', false) || ':warning:';
 MESSAGE_EMOJI[MESSAGE_TYPES.miniStatsPersonal] =

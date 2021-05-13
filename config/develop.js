@@ -20,7 +20,8 @@ module.exports = {
         generate_stats: '10 * * * * *',
         remove_stats_file: '*/2 * * * *',
         bot_curve_check: '00,30 * * * * *',
-        deposit_withdraw_event: '30 * * * * *',
+        deposit_withdraw_event: '*/2 * * * *',
+        event_summary: '* * * * *',
         bot_chainlink_check: '25,55 * * * * *',
     },
     emoji: {

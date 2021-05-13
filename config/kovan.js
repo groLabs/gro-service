@@ -20,6 +20,7 @@ module.exports = {
         generate_stats: '00 */5 * * * *',
         bot_curve_check: '00 50 * * * *',
         deposit_withdraw_event: '30 */5 * * * *',
+        event_summary: '00 * * * *',
         bot_chainlink_check: '00 00 * * * *',
     },
     emoji: {
@@ -27,8 +28,6 @@ module.exports = {
         criticalBot: ':ambulance:',
         statsBot: ':control_knobs:',
         error: ':x:',
-        gvt: ':high_brightness:',
-        pwrd: ':low_brightness:',
         miniStatsPersonal: ':bar_chart:',
         stats: ':bar_chart:',
         depositEvent: ':chart_with_upwards_trend:',
