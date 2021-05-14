@@ -26,7 +26,6 @@ const {
 } = require('../../discordMessage/eventMessage');
 
 const logger = require('../regularLogger');
-const { json } = require('express');
 
 let blockNumberFile = '../lastBlockNumber.json';
 
@@ -254,9 +253,14 @@ async function generateSummaryReport(fromBlock, toBlock) {
     const startBlock = await getDefaultProvider().getBlock(fromBlock);
     const endBlock = await getDefaultProvider().getBlock(toBlock);
     const startTime = dayjs.unix(startBlock.timestamp);
-    const startTimeDisplay = startTime.format('ha');
+    let startTimeDisplay = startTime.format('h');
     const endTime = dayjs.unix(endBlock.timestamp);
-    const endTimeDisplay = endTime.format('ha');
+    const endTimeDisplay = endTime.format('h');
+    const flag = endTime.format('a');
+
+    if (startTimeDisplay === endTimeDisplay) {
+        startTimeDisplay = endTimeDisplay - 1;
+    }
 
     const depositEventResult = await generateDepositReport(fromBlock, toBlock);
     const withdrawEventResult = await generateWithdrawReport(
@@ -285,8 +289,8 @@ async function generateSummaryReport(fromBlock, toBlock) {
             pwrdTVL,
         },
         time: {
-            start: startTimeDisplay,
-            end: endTimeDisplay,
+            start: `${startTimeDisplay}${flag}`,
+            end: `${endTimeDisplay}${flag}`,
         },
     };
     logger.info(`result: ${JSON.stringify(result)}`);

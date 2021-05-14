@@ -100,11 +100,11 @@ async function generateGroStatsFile() {
     const totalMsg = `\nPower Dollar:${stats.tvl.pwrd}\nGro Vault:${stats.tvl.gvt}\nTotalAssets:${stats.tvl.total}\nUtilization Ratio:${stats.tvl.util_ratio}`;
     const discordMsg = {
         type: MESSAGE_TYPES.stats,
-        description: `${MESSAGE_EMOJI.Pwrd}: **$${formatNumber(
+        description: `${MESSAGE_EMOJI.PWRD}: **$${formatNumber(
             stats.tvl.pwrd,
             0,
             4
-        )}** ${MESSAGE_EMOJI.Gvt}: **$${formatNumber(
+        )}** ${MESSAGE_EMOJI.Vault}: **$${formatNumber(
             stats.tvl.gvt,
             0,
             4
