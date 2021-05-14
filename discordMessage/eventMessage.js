@@ -14,6 +14,7 @@ function depositEventMessage(content) {
     content.forEach((log) => {
         const msg = `\nGToken: ${log.gtoken}\nAccount: ${log.account}\nBlockNumer: ${log.blockNumber}\nTransactionHash: ${log.transactionHash}\nReferral: ${log.referral}\nUsdAmount: ${log.usdAmount}\nDAI: ${log.tokens[0]}\nUSDC: ${log.tokens[1]}\nUSDT: ${log.tokens[2]}`;
         const account = shortAccount(log.account);
+        const toAccount = log.gtoken === 'Vault' ? 'into Vault' : log.gtoken;
         sendMessageToTradeChannel({
             message: msg,
             type: MESSAGE_TYPES.depositEvent,
@@ -22,7 +23,7 @@ function depositEventMessage(content) {
                 log.usdAmount,
                 18,
                 2
-            )} ${log.gtoken}** (${formatNumber(
+            )} ${toAccount}** (${formatNumber(
                 log.tokens[0],
                 18,
                 2
@@ -57,6 +58,7 @@ function withdrawEventMessage(content) {
             log.tokens[0]
         }\nUSDC: ${log.tokens[1]}\nUSDT: ${log.tokens[2]}`;
         const account = shortAccount(log.account);
+        const toAccount = log.gtoken === 'Vault' ? 'from Vault' : log.gtoken;
         sendMessageToTradeChannel({
             message: msg,
             type: MESSAGE_TYPES.withdrawEvent,
@@ -65,7 +67,7 @@ function withdrawEventMessage(content) {
                 log.returnUsd,
                 18,
                 2
-            )} ${log.gtoken}** (${formatNumber(
+            )} ${toAccount}** (${formatNumber(
                 log.tokens[0],
                 18,
                 2
@@ -85,59 +87,51 @@ function withdrawEventMessage(content) {
     });
 }
 
+function displayTotalling(count, amount) {
+    if (count === 0) return '';
+    return `totaling **$${formatNumber(amount, 18, 2)}**`;
+}
 function summaryMessage(content) {
-    const {
-        depositContent,
-        withdrawContent,
-        systemAssets,
-        time,
-        tvl,
-    } = content;
+    const { depositContent, withdrawContent, time } = content;
     // Send summary message
     const eventTotal =
         depositContent.gvt.count +
         depositContent.pwrd.count +
         withdrawContent.gvt.count +
         withdrawContent.pwrd.count;
-    const { vaultTVL, pwrdTVL } = systemAssets;
-
-    const vaultDelta = tvl.vaultDelta.isGreaterThan(BN(0))
-        ? `+${tvl.vaultDelta.toFixed(2)}`
-        : `${tvl.vaultDelta.toFixed(2)}`;
-    const pwrdDelta = tvl.pwrdDelta.isGreaterThan(BN(0))
-        ? `+${tvl.pwrdDelta.toFixed(2)}`
-        : `${tvl.pwrdDelta.toFixed(2)}`;
-    const msg = `**GRO Protocol Trade summary** for last hour (from ${
-        time.start
-    } To ${time.end} UTC):\n${MESSAGE_EMOJI.Vault} Vault deposits - ${
-        depositContent.gvt.count
-    } ${
+    const msg = `${
+        MESSAGE_EMOJI.company
+    } **Gro Protocol Trade summary** for last hour (from ${time.start} To ${
+        time.end
+    } UTC):\n${MESSAGE_EMOJI[MESSAGE_TYPES.depositEvent]}${
+        MESSAGE_EMOJI.Vault
+    } Vault deposits - ${depositContent.gvt.count} ${
         depositContent.gvt.count === 1 ? 'trade' : 'trades'
-    } totaling $${formatNumber(
-        depositContent.gvt.usdAmount,
-        18,
-        2
-    )}\n  Vault withdrawals - ${withdrawContent.gvt.count} ${
+    } ${displayTotalling(
+        depositContent.gvt.count,
+        depositContent.gvt.usdAmount
+    )}\n${MESSAGE_EMOJI[MESSAGE_TYPES.withdrawEvent]}${
+        MESSAGE_EMOJI.Vault
+    } Vault withdrawals - ${withdrawContent.gvt.count} ${
         withdrawContent.gvt.count === 1 ? 'trade' : 'trades'
-    } totaling $${formatNumber(
-        withdrawContent.gvt.returnUsd,
-        18,
-        2
-    )}\n  **New Vault TVL - $${vaultTVL}** (${vaultDelta}%)\n${
+    } ${displayTotalling(
+        withdrawContent.gvt.count,
+        withdrawContent.gvt.returnUsd
+    )}\n${MESSAGE_EMOJI[MESSAGE_TYPES.depositEvent]}${
         MESSAGE_EMOJI.PWRD
     } PWRD bought - ${depositContent.pwrd.count} ${
         depositContent.pwrd.count === 1 ? 'trade' : 'trades'
-    } totaling $${formatNumber(
-        depositContent.pwrd.usdAmount,
-        18,
-        2
-    )}\n  PWRD sold - ${withdrawContent.pwrd.count} ${
+    } ${displayTotalling(
+        depositContent.pwrd.count,
+        depositContent.pwrd.usdAmount
+    )}\n${MESSAGE_EMOJI[MESSAGE_TYPES.withdrawEvent]}${
+        MESSAGE_EMOJI.PWRD
+    } PWRD sold - ${withdrawContent.pwrd.count} ${
         withdrawContent.pwrd.count === 1 ? 'trade' : 'trades'
-    } totaling $${formatNumber(
-        withdrawContent.pwrd.returnUsd,
-        18,
-        2
-    )}\n  **New PWRD TVL - $${pwrdTVL}** (${pwrdDelta}%)`;
+    } ${displayTotalling(
+        withdrawContent.pwrd.count,
+        withdrawContent.pwrd.returnUsd
+    )}`;
     let embedDescription = '';
     if (eventTotal > 0) {
         embedDescription = msg;

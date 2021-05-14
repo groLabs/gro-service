@@ -15,11 +15,34 @@ const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
 const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
 const { getTransactionsWithTimestamp } = require('./generatePersonTransaction');
+const { shortAccount } = require('../../common/digitalUtil');
 
 const fromBlock = getConfig('blockchain.start_block');
 const launchTime = getConfig('blockchain.launch_timestamp', false) || 0;
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
+
+function getFailedEmbedMessage(account) {
+    const label = shortAccount(account);
+    return {
+        type: MESSAGE_TYPES.miniStatsPersonal,
+        description: `${label} get his personal stats failed`,
+        urls: [
+            {
+                label,
+                type: 'account',
+                value: account,
+            },
+        ],
+    };
+}
+
+function handleError(error, message, account) {
+    logger.error(error);
+    throw new ContractCallError(message, MESSAGE_TYPES.miniStatsPersonal, {
+        embedMessage: getFailedEmbedMessage(account),
+    });
+}
 
 async function getDepositHistories(account, toBlock) {
     const logs = await getEvents(
@@ -28,11 +51,7 @@ async function getDepositHistories(account, toBlock) {
         toBlock,
         account
     ).catch((error) => {
-        logger.error(error);
-        throw new ContractCallError(
-            `Get deposit logs of ${account} failed.`,
-            MESSAGE_TYPES.miniStatsPersonal
-        );
+        handleError(error, `Get deposit logs of ${account} failed.`, account);
     });
     const result = { groVault: [], powerD: [] };
     if (!logs.length) return result;
@@ -54,10 +73,10 @@ async function getWithdrawHistories(account, toBlock) {
         toBlock,
         account
     ).catch((error) => {
-        logger.error(error);
-        throw new ContractCallError(
+        handleError(
+            error,
             `Get withdraw filter for account:${account} failed.`,
-            MESSAGE_TYPES.miniStatsPersonal
+            account
         );
     });
     const result = { groVault: [], powerD: [] };
@@ -80,10 +99,10 @@ async function getTransferHistories(account, filters, toBlock) {
         toBlock,
         account
     ).catch((error) => {
-        logger.error(error);
-        throw new ContractCallError(
+        handleError(
+            error,
             `Get ${filters[0]} logs of ${account} failed.`,
-            MESSAGE_TYPES.miniStatsPersonal
+            account
         );
     });
 
@@ -93,10 +112,10 @@ async function getTransferHistories(account, filters, toBlock) {
         toBlock,
         account
     ).catch((error) => {
-        logger.error(error);
-        throw new ContractCallError(
+        handleError(
+            error,
             `Get ${filters[1]} logs of ${account} failed.`,
-            MESSAGE_TYPES.miniStatsPersonal
+            account
         );
     });
     return {

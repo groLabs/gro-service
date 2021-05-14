@@ -1,4 +1,5 @@
 module.exports = {
+    bot_balance_warn: '20000000000000000000',
     blockchain: {
         network: 'http://localhost:8545',
         api_keys: {
@@ -13,15 +14,15 @@ module.exports = {
     trigger_scheduler: {
         pending_transaction_check: '5 * * * * *',
         bot_balance_check: '10 * * * * *',
-        invest: '3 * * * * *',
-        harvest: '13 * * * * *',
+        invest: '*/3 * * * *',
+        harvest: '*/1 * * * *',
         pnl: '23 * * * * *',
         rebalance: '33 * * * * *',
         generate_stats: '10 * * * * *',
         remove_stats_file: '*/2 * * * *',
         bot_curve_check: '00,30 * * * * *',
         deposit_withdraw_event: '*/2 * * * *',
-        event_summary: '* * * * *',
+        event_summary: '*/2 * * * *',
         bot_chainlink_check: '25,55 * * * * *',
     },
     emoji: {
@@ -31,6 +32,7 @@ module.exports = {
         error: ':x:',
         gvt: ':high_brightness:',
         pwrd: ':low_brightness:',
+        company: ':jigsaw:',
         miniStatsPersonal: ':bar_chart:',
         stats: ':bar_chart:',
         depositEvent: ':chart_with_upwards_trend:',

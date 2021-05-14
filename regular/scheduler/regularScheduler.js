@@ -1,4 +1,3 @@
-const config = require('config');
 const schedule = require('node-schedule');
 const {
     getDefaultProvider,
@@ -6,6 +5,7 @@ const {
     syncNounce,
     checkPendingTransactions,
     checkAccountBalance,
+    getCurrentBlockNumber,
 } = require('../../common/chainUtil');
 const { pendingTransactions } = require('../../common/storage');
 const {
@@ -38,22 +38,44 @@ const {
     generateSummaryReport,
 } = require('../handler/eventHandler');
 const { getConfig } = require('../../common/configUtil');
+const {
+    investTransactionMessage,
+} = require('../../discordMessage/investMessage');
+const { pnlTransactionMessage } = require('../../discordMessage/pnlMessage');
+const {
+    rebalanceTransactionMessage,
+} = require('../../discordMessage/rebalanceMessage');
+const {
+    harvestTransactionMessage,
+} = require('../../discordMessage/harvestMessage');
 const logger = require('../regularLogger');
 
 const provider = getDefaultProvider();
 const nonceManager = getNonceManager();
-let pendingTransactionSchedulerSetting = '30 * * * *';
-let botBalanceSchedulerSetting = '20 * * * *';
-let investTriggerSchedulerSetting = '0 * * * *';
-let harvestTriggerSchedulerSetting = '15 * * * *';
-let pnlTriggerSchedulerSetting = '30 * * * *';
-let rebalanceTriggerSchedulerSetting = '45 * * * *';
-let depositWithdrawEventSchedulerSetting = '*/5 * * * *';
+const pendingTransactionSchedulerSetting =
+    getConfig('trigger_scheduler.pending_transaction_check', false) ||
+    '30 * * * *';
+const botBalanceSchedulerSetting =
+    getConfig('trigger_scheduler.bot_balance_check', false) || '20 * * * *';
+const investTriggerSchedulerSetting =
+    getConfig('trigger_scheduler.invest', false) || '0 * * * *';
+const harvestTriggerSchedulerSetting =
+    getConfig('trigger_scheduler.harvest', false) || '15 * * * *';
+const pnlTriggerSchedulerSetting =
+    getConfig('trigger_scheduler.pnl', false) || '30 * * * *';
+const rebalanceTriggerSchedulerSetting =
+    getConfig('trigger_scheduler.rebalance', false) || '45 * * * *';
+const depositWithdrawEventSchedulerSetting =
+    getConfig('trigger_scheduler.deposit_withdraw_event', false) ||
+    '*/5 * * * *';
 const eventSummarySchedulerSetting =
     getConfig('trigger_scheduler.event_summary', false) || '00 * * * *';
-let botUpdateChainPriceSchedulerSetting = '00 20 * * * *';
+const botUpdateChainPriceSchedulerSetting =
+    getConfig('trigger_scheduler.bot_chainlink_check', false) ||
+    '00 20 * * * *';
 
-let botBalanceWarnVault = '2000000000000000000';
+const botBalanceWarnVault =
+    getConfig('bot_balance_warn', false) || '2000000000000000000';
 const botAddressKey = `BOT_ADDRESS_${process.env.BOT_ENV}`;
 if (!process.env[botAddressKey]) {
     const err = new SettingError(
@@ -64,62 +86,6 @@ if (!process.env[botAddressKey]) {
 }
 
 const botAccount = process.env[botAddressKey];
-
-if (config.has('trigger_scheduler.invest')) {
-    investTriggerSchedulerSetting = config.get('trigger_scheduler.invest');
-}
-
-if (config.has('trigger_scheduler.harvest')) {
-    harvestTriggerSchedulerSetting = config.get('trigger_scheduler.harvest');
-}
-
-if (config.has('trigger_scheduler.pnl')) {
-    pnlTriggerSchedulerSetting = config.get('trigger_scheduler.pnl');
-}
-
-if (config.has('trigger_scheduler.rebalance')) {
-    rebalanceTriggerSchedulerSetting = config.get(
-        'trigger_scheduler.rebalance'
-    );
-}
-
-if (config.has('trigger_scheduler.pending_transaction_check')) {
-    pendingTransactionSchedulerSetting = config.get(
-        'trigger_scheduler.pending_transaction_check'
-    );
-}
-
-if (config.has('trigger_scheduler.bot_balance_check')) {
-    botBalanceSchedulerSetting = config.get(
-        'trigger_scheduler.bot_balance_check'
-    );
-}
-
-if (config.has('trigger_scheduler.deposit_withdraw_event')) {
-    depositWithdrawEventSchedulerSetting = config.get(
-        'trigger_scheduler.deposit_withdraw_event'
-    );
-}
-
-if (config.has('bot_balance_warn')) {
-    botBalanceWarnVault = config.get('bot_balance_warn');
-}
-
-if (config.has('trigger_scheduler.bot_chainlink_check')) {
-    botUpdateChainPriceSchedulerSetting = config.get(
-        'trigger_scheduler.bot_chainlink_check'
-    );
-}
-
-async function getCurrentBlockNumber() {
-    const block = await provider.getBlockNumber().catch((error) => {
-        logger.error(error);
-        throw new BlockChainCallError(
-            'Get current block number from chain failed.'
-        );
-    });
-    return block;
-}
 
 function checkBotAccountBalance() {
     schedule.scheduleJob(botBalanceSchedulerSetting, async () => {
@@ -241,13 +207,13 @@ function investTriggerScheduler() {
     schedule.scheduleJob(investTriggerSchedulerSetting, async () => {
         try {
             const vaults = getVaults();
-            const keys = ['curveInvest'];
+            const keys = [];
             vaults.forEach((vault) => {
                 keys.push(`invest-${vault.address}`);
             });
 
-            await checkPendingTransactions(keys);
-
+            const result = await checkPendingTransactions(keys);
+            investTransactionMessage(result);
             const investTriggers = await Promise.all([
                 investTrigger(),
                 curveInvestTrigger(),
@@ -277,7 +243,8 @@ function investTriggerScheduler() {
 function pnlTriggerScheduler() {
     schedule.scheduleJob(pnlTriggerSchedulerSetting, async () => {
         try {
-            await checkPendingTransactions(['pnl']);
+            const result = await checkPendingTransactions(['pnl']);
+            pnlTransactionMessage(result);
 
             const triggerResult = await pnlTrigger();
 
@@ -297,7 +264,8 @@ function pnlTriggerScheduler() {
 function rebalanceTriggerScheduler() {
     schedule.scheduleJob(rebalanceTriggerSchedulerSetting, async () => {
         try {
-            await checkPendingTransactions(['rebalance']);
+            const result = await checkPendingTransactions(['rebalance']);
+            rebalanceTransactionMessage(result);
 
             const triggerResult = await rebalanceTrigger();
 
@@ -326,7 +294,8 @@ function harvestTriggerScheduler() {
                     keys.push(`harvest-${vaults[i].address}-${j}`);
                 }
             }
-            await checkPendingTransactions(keys);
+            const result = await checkPendingTransactions(keys);
+            harvestTransactionMessage(result);
 
             const triggerResult = await harvestOneTrigger();
 

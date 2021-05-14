@@ -256,7 +256,6 @@ async function generateSummaryReport(fromBlock, toBlock) {
     let startTimeDisplay = startTime.format('h');
     const endTime = dayjs.unix(endBlock.timestamp);
     const endTimeDisplay = endTime.format('h');
-    const flag = endTime.format('a');
 
     if (startTimeDisplay === endTimeDisplay) {
         startTimeDisplay = endTimeDisplay - 1;
@@ -289,8 +288,8 @@ async function generateSummaryReport(fromBlock, toBlock) {
             pwrdTVL,
         },
         time: {
-            start: `${startTimeDisplay}${flag}`,
-            end: `${endTimeDisplay}${flag}`,
+            start: `${startTimeDisplay}:00`,
+            end: `${endTimeDisplay}:00`,
         },
     };
     logger.info(`result: ${JSON.stringify(result)}`);

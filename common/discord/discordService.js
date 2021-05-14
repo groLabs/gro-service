@@ -35,6 +35,7 @@ const MESSAGE_TYPES = {
     rebalance: 'Rebalance',
     topup: 'Topup',
     curveCheck: 'Curve Check',
+    strategyCheck: 'Strategy Price Check',
     stats: 'Generate Stats',
     regularBot: 'Harvest Bot',
     statsBot: 'Stats Bot',
@@ -44,50 +45,50 @@ const MESSAGE_TYPES = {
 };
 
 const MESSAGE_EMOJI = {};
-MESSAGE_EMOJI.Vault = getConfig('emoji.gvt', false) || ':Vault:';
-MESSAGE_EMOJI.PWRD = getConfig('emoji.pwrd', false) || ':GRO:';
-MESSAGE_EMOJI.error = getConfig('emoji.error', false) || ':x:';
-MESSAGE_EMOJI.reverted = getConfig('emoji.reverted', false) || ':warning:';
+MESSAGE_EMOJI.Vault =
+    getConfig('emoji.gvt', false) || '<:Vault:834796096797802507>';
+MESSAGE_EMOJI.PWRD =
+    getConfig('emoji.pwrd', false) || '<:PWRD:834796096915767306>';
+MESSAGE_EMOJI.error = getConfig('emoji.error', false) || '';
+MESSAGE_EMOJI.company =
+    getConfig('emoji.company', false) || '<:GRO:834796096685211689>';
+MESSAGE_EMOJI.reverted = getConfig('emoji.reverted', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.miniStatsPersonal] =
-    getConfig('emoji.miniStatsPersonal', false) || ':bar_chart:';
-MESSAGE_EMOJI[MESSAGE_TYPES.stats] =
-    getConfig('emoji.stats', false) || ':bar_chart:';
+    getConfig('emoji.miniStatsPersonal', false) || '';
+MESSAGE_EMOJI[MESSAGE_TYPES.stats] = getConfig('emoji.stats', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.depositEvent] =
-    getConfig('emoji.depositEvent', false) || ':chart_with_upwards_trend:';
+    getConfig('emoji.depositEvent', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.withdrawEvent] =
-    getConfig('emoji.withdrawEvent', false) || ':chart_with_downwards_trend:';
+    getConfig('emoji.withdrawEvent', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.transferEvent] =
-    getConfig('emoji.transferEvent', false) || ':left_right_arrow:';
+    getConfig('emoji.transferEvent', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.investTrigger] =
-    getConfig('emoji.investTrigger', false) || ':inbox_tray:';
+    getConfig('emoji.investTrigger', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.curveInvestTrigger] =
-    getConfig('emoji.curveInvestTrigger', false) || ':inbox_tray:';
-MESSAGE_EMOJI[MESSAGE_TYPES.invest] =
-    getConfig('emoji.invest', false) || ':inbox_tray:';
+    getConfig('emoji.curveInvestTrigger', false) || '';
+MESSAGE_EMOJI[MESSAGE_TYPES.invest] = getConfig('emoji.invest', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.curveInvest] =
-    getConfig('emoji.curveInvest', false) || ':inbox_tray:';
+    getConfig('emoji.curveInvest', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.harvestTrigger] =
-    getConfig('emoji.harvestTrigger', false) || ':hammer_pick:';
-MESSAGE_EMOJI[MESSAGE_TYPES.harvest] =
-    getConfig('emoji.harvest', false) || ':hammer_pick:';
+    getConfig('emoji.harvestTrigger', false) || '';
+MESSAGE_EMOJI[MESSAGE_TYPES.harvest] = getConfig('emoji.harvest', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.pnlTrigger] =
-    getConfig('emoji.pnlTrigger', false) || ':moneybag:';
-MESSAGE_EMOJI[MESSAGE_TYPES.pnl] =
-    getConfig('emoji.pnl', false) || ':moneybag:';
+    getConfig('emoji.pnlTrigger', false) || '';
+MESSAGE_EMOJI[MESSAGE_TYPES.pnl] = getConfig('emoji.pnl', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.rebalanceTrigger] =
-    getConfig('emoji.rebalanceTrigger', false) || ':scales:';
+    getConfig('emoji.rebalanceTrigger', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.rebalance] =
-    getConfig('emoji.rebalance', false) || ':scales:';
+    getConfig('emoji.rebalance', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.curveCheck] =
-    getConfig('emoji.curveCheck', false) || ':loudspeaker:';
+    getConfig('emoji.curveCheck', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.regularBot] =
-    getConfig('emoji.regularBot', false) || ':robot:';
+    getConfig('emoji.regularBot', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.statsBot] =
-    getConfig('emoji.statsBot', false) || ':robot:';
+    getConfig('emoji.statsBot', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.criticalBot] =
-    getConfig('emoji.criticalBot', false) || ':robot:';
+    getConfig('emoji.criticalBot', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.chainPrice] =
-    getConfig('emoji.curveCheck', false) || ':loudspeaker:';
+    getConfig('emoji.curveCheck', false) || '';
 
 function generateLink(urlDetail) {
     const nodeEnv = process.env.NODE_ENV.toLowerCase();
@@ -172,6 +173,7 @@ async function sendEmbedMessage(channelId, msgObj, retry = 0) {
 }
 
 async function sendMessage(channelId, msgObj, retry = 0) {
+    if (!msgObj.message) return;
     if (retry > RETRY_TIMES) {
         logger.info(
             `Discord message retry: ${retry} channel:${channelId}; msg: ${JSON.stringify(
@@ -248,27 +250,11 @@ function sendMessageToAlertChannel(error) {
         icon: ':warning:',
         message: error.message,
         type: error.messageTag,
-        description: error.message,
+        description: error.embedMessage,
         emojis: [MESSAGE_EMOJI.error],
         transactionHash: error.transactionHash,
     };
-
-    if (error.messageTag === MESSAGE_TYPES.curveCheck) {
-        sendMessageToCriticalEventChannel(msgObj);
-    } else if (
-        error.messageTag === MESSAGE_TYPES.miniStatsPersonal ||
-        error.messageTag === MESSAGE_TYPES.depositEvent ||
-        error.messageTag === MESSAGE_TYPES.withdrawEvent
-    ) {
-        sendMessageToTradeChannel(msgObj);
-    } else if (error.messageTag === MESSAGE_TYPES.stats) {
-        sendMessageToProtocolAssetChannel(msgObj);
-    } else if (error.messageTag === MESSAGE_TYPES.other || !error.messageTag) {
-        sendMessageToLogChannel(msgObj);
-    } else {
-        sendMessageToProtocolEventChannel(msgObj);
-    }
-
+    sendEmbedMessage(DISCORD_CHANNELS.botLogs, msgObj);
     sendMessage(DISCORD_CHANNELS.botAlerts, msgObj);
 }
 
@@ -277,6 +263,7 @@ module.exports = {
     MESSAGE_TYPES,
     MESSAGE_EMOJI,
     sendMessage,
+    sendEmbedMessage,
     sendMessageToLogChannel,
     sendMessageToProtocolEventChannel,
     sendMessageToCriticalEventChannel,

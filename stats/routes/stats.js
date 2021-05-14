@@ -8,12 +8,8 @@ const { ParameterError } = require('../../common/error');
 const { getGroStatsContent } = require('../services/statsService');
 const { generateReport } = require('../services/accountService');
 const { validate } = require('../common/validate');
-const { shortAccount } = require('../../common/digitalUtil');
-const {
-    MESSAGE_TYPES,
-    sendMessageToTradeChannel,
-} = require('../../common/discord/discordService');
 const { postDegenScore } = require('../services/degenscoreService');
+const { personalStatsMessage } = require('../../discordMessage/statsMessage');
 
 /**
  * @api {get} /stats/user Get /stats/user
@@ -80,20 +76,7 @@ router.get(
             throw new ParameterError('Parameter network failed.');
         }
         const result = await generateReport(req.query.address);
-        const label = shortAccount(req.query.address);
-        // const discordMsg = {
-        //     type: MESSAGE_TYPES.miniStatsPersonal,
-        //     description: `${label} pulled down his personal data`,
-        //     urls: [
-        //         {
-        //             label,
-        //             type: 'account',
-        //             value: req.query.address,
-        //         },
-        //     ],
-        //     message: `${req.query.address} pulled down his personal data`,
-        // };
-        // sendMessageToTradeChannel(discordMsg);
+        personalStatsMessage({ address: req.query.address });
         res.json(result);
     })
 );
@@ -111,10 +94,7 @@ router.get(
     })
 );
 
-router.options(
-    '/degenscore',
-    cors()
-);
+router.options('/degenscore', cors());
 
 router.post(
     '/degenscore',
