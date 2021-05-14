@@ -6,19 +6,19 @@ const { getConfig } = require('../common/configUtil');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
-const controllerABI = require('./abis/Controller.json').abi;
-const insuranceABI = require('./abis/Insurance.json').abi;
-const exposureABI = require('./abis/Exposure.json').abi;
-const pnlABI = require('./abis/PnL.json').abi;
-const vaultAdapterABI = require('./abis/VaultAdaptorYearnV2_032.json').abi;
-const gvtABI = require('./abis/NonRebasingGToken.json').abi;
-const pwrdABI = require('./abis/RebasingGToken.json').abi;
-const depositHandlerABI = require('./abis/DepositHandler.json').abi;
-const withdrawHandlerABI = require('./abis/WithdrawHandler.json').abi;
-const lifeguardABI = require('./abis/LifeGuard3Pool.json').abi;
-const buoyABI = require('./abis/Buoy3Pool.json').abi;
-const VaultABI = require('./abis/Vault.json').abi;
-const chainPriceABI = require('./abis/ChainPrice.json').abi;
+const controllerABI = require('./abis/Controller.json');
+const insuranceABI = require('./abis/Insurance.json');
+const exposureABI = require('./abis/Exposure.json');
+const pnlABI = require('./abis/PnL.json');
+const vaultAdapterABI = require('./abis/VaultAdaptorYearnV2_032.json');
+const gvtABI = require('./abis/NonRebasingGToken.json');
+const pwrdABI = require('./abis/RebasingGToken.json');
+const depositHandlerABI = require('./abis/DepositHandler.json');
+const withdrawHandlerABI = require('./abis/WithdrawHandler.json');
+const lifeguardABI = require('./abis/LifeGuard3Pool.json');
+const buoyABI = require('./abis/Buoy3Pool.json');
+const VaultABI = require('./abis/Vault.json');
+const chainPriceABI = require('./abis/ChainPrice.json');
 
 const nonceManager = getNonceManager();
 
@@ -162,8 +162,8 @@ async function initCurveVault() {
 
 function renameDuplicatedFactorEntry(abi) {
     const keys = abi.keys();
-    for (let i = 0; i < keys.length; i += 1) {
-        const key = keys[i];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const key of keys) {
         const node = abi[key];
         if (node.name === 'factor' && node.inputs.length > 0) {
             node.name = 'factorWithParam';
