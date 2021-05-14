@@ -17,7 +17,8 @@ const {
 const logger = require('../statsLogger');
 
 // constant
-const SHARE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(4));
+const SHARE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
+const THRESHOLD_DECIMAL = BigNumber.from(10).pow(BigNumber.from(4));
 const ZERO = BigNumber.from(0);
 
 // config
@@ -39,6 +40,10 @@ async function getUsdValueForLP(amount, blockTag) {
 
 function calculateSharePercent(assets, total) {
     return total.isZero() ? ZERO : assets.mul(SHARE_DECIMAL).div(total);
+}
+
+function convertToSharePercentDecimal(value) {
+    return value.mul(SHARE_DECIMAL).div(THRESHOLD_DECIMAL);
 }
 
 async function getCurveStrategyStats(vault, vaultTotalAsset, blockTag) {
@@ -161,17 +166,17 @@ async function getExposureStats(blockTag) {
     const riskResult = await exposure.calcRiskExposure(preCal, blockTag);
     const exposureStableCoin = riskResult[0].map((concentration, i) => ({
         name: stabeCoinNames[i],
-        concentration,
+        concentration: convertToSharePercentDecimal(concentration),
     }));
     const exposureProtocol = riskResult[1].map((concentration, i) => ({
         name: protocolNames[i],
-        concentration,
+        concentration: convertToSharePercentDecimal(concentration),
     }));
 
     // add curve 3pool exposure
     exposureProtocol.push({
         name: 'Curve',
-        concentration: riskResult[2],
+        concentration: convertToSharePercentDecimal(riskResult[2]),
     });
     const exposureStats = {
         stablecoins: exposureStableCoin,
@@ -196,8 +201,8 @@ async function getTvlStats(blockTag) {
         gvt: gvtAssets,
         total: totalAssetsUsd,
         util_ratio: utilRatio,
-        util_ratio_limit_PD: utilRatioLimitPD,
-        util_ratio_limit_GW: utilRatioLimitGW,
+        util_ratio_limit_PD: convertToSharePercentDecimal(utilRatioLimitPD),
+        util_ratio_limit_GW: convertToSharePercentDecimal(utilRatioLimitGW),
     };
     return tvl;
 }
