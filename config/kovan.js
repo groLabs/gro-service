@@ -18,6 +18,7 @@ module.exports = {
         pnl: '30 30 * * * *',
         rebalance: '45 40 * * * *',
         generate_stats: '00 */5 * * * *',
+        remove_stats_file: '00 00 * * * *',
         bot_curve_check: '00 50 * * * *',
         deposit_withdraw_event: '30 */5 * * * *',
         event_summary: '00 * * * *',
@@ -28,6 +29,8 @@ module.exports = {
         criticalBot: ':ambulance:',
         statsBot: ':control_knobs:',
         error: ':x:',
+        gvt: '<:Vault:834796096797802507>',
+        pwrd: '<:PWRD:834796096915767306>',
         miniStatsPersonal: ':bar_chart:',
         stats: ':bar_chart:',
         depositEvent: ':chart_with_upwards_trend:',
@@ -45,6 +48,7 @@ module.exports = {
         rebalanceTrigger: ':scales:',
         rebalance: ':scales:',
     },
+    keep_stats_file_number: 250,
     stats_folder: '../stats',
     log_folder: '../logs',
     blockNumberFile: './lastBlockNumber.json',
@@ -73,7 +77,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x29278bccb99Fd088EB7f9ef57D3E710571de1AA5',
+        controller: '0xA3BD8156Ee0EF8D063DE69Ba7e597664057dCb2E',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

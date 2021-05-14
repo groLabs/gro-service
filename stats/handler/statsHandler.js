@@ -24,10 +24,10 @@ const { formatNumber } = require('../../common/digitalUtil');
 
 const provider = getDefaultProvider();
 
-const FIXED_PERCENT = 4;
+const FIXED_PERCENT = 6;
 const FIXED_USD = 7;
 const USD_DECIAML = BN(10).pow(BN(18));
-const PERCENT_DECIAML = BN(10).pow(BN(4));
+const PERCENT_DECIAML = BN(10).pow(BN(6));
 
 // config
 const launchTimestamp = config.get('blockchain.launch_timestamp');

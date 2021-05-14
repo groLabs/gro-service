@@ -15,7 +15,7 @@ const scanner = new BlocksScanner(provider);
 
 const FACTOR_DECIMAL = BigNumber.from(10).pow(BigNumber.from(18));
 const GVT_INIT_FACTOR = BigNumber.from('3333333333333333');
-const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(4));
+const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
 const SECONDS_IN_YEAR = BigNumber.from(31536000);
 const DAYS_IN_YEAR = BigNumber.from(365);
 const WEEKS_IN_YEAR = BigNumber.from(52);
@@ -78,9 +78,9 @@ async function calcApyByPeriod(
 
 // In effect if start timestamp of "the period"  < launch_timestamp then just use all time apy.
 // Where "the_period" is 24h/daily/weekly/monthly
-async function calcFirstDayApy(latestBlock) {
+async function calcFirstTimePeriodApy(latestBlock) {
     logger.info(
-        `calculate first day apy ${latestBlock.timestamp} ${launchTimestamp}`
+        `calculate first time period apy ${latestBlock.timestamp} ${launchTimestamp}`
     );
     // TODO compare now and launchDate and duration zero check
     const duration = BigNumber.from(latestBlock.timestamp).sub(
@@ -171,17 +171,35 @@ async function getSystemApy(latestBlock) {
         .startOf('day');
     logger.info(`startOfUTCToday ${startOfUTCToday}`);
     const allTimeApy = startOfUTCToday.isBefore(launchDate)
-        ? await calcFirstDayApy(latestBlock)
+        ? await calcFirstTimePeriodApy(latestBlock)
         : await calcAlltimeApy(startOfUTCToday);
+
+    const latestGvtFactor = await gvt.factor(latestBlockTag);
+    const latestPwrdFactor = await pwrd.factor(latestBlockTag);
 
     // last 24h
     const apyLast24h = await calcApyByPeriod(
         dayjs.unix(latestBlock.timestamp).subtract(1, 'day'),
-        await gvt.factor(latestBlockTag),
-        await pwrd.factor(latestBlockTag),
+        latestGvtFactor,
+        latestPwrdFactor,
         DAYS_IN_YEAR,
         allTimeApy
     );
+
+    const startOf7DaysAgo = dayjs
+        .unix(latestBlock.timestamp)
+        .subtract(7, 'day');
+    const before = startOf7DaysAgo.isBefore(launchDate);
+    logger.info(`7days ago ${startOf7DaysAgo} ${before}`);
+    const apyLast7d = startOf7DaysAgo.isBefore(launchDate)
+        ? await calcFirstTimePeriodApy(latestBlock)
+        : await calcApyByPeriod(
+              startOf7DaysAgo,
+              latestGvtFactor,
+              latestPwrdFactor,
+              WEEKS_IN_YEAR,
+              allTimeApy
+          );
 
     const blockUtcToday = await scanner
         .getDate(startOfUTCToday)
@@ -190,7 +208,7 @@ async function getSystemApy(latestBlock) {
             logger.error(`Could not get block ${startOfUTCToday}`);
         });
     const blockTagUtcToday = {
-        blockTag: blockUtcToday.number,
+        blockTag: blockUtcToday.block,
     };
 
     const gvtFactorUtcToday = await gvt.factor(blockTagUtcToday);
@@ -228,6 +246,7 @@ async function getSystemApy(latestBlock) {
 
     const apy = {
         last24h: apyLast24h,
+        last7d: apyLast7d,
         daily: apyDaily,
         weekly: apyWeekly,
         monthly: apyMonthly,
