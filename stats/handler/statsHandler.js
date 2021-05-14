@@ -57,6 +57,20 @@ function mapper(original, percentKeys, amountKeys) {
     );
 }
 
+function formatArgentResponse(stats) {
+    const argentStats = {};
+    argentStats.current_timestamp = stats.current_timestamp;
+    argentStats.launch_timestamp = stats.launch_timestamp;
+    argentStats.network = stats.network;
+    argentStats.apy = {};
+    argentStats.apy.last7d = stats.apy.last7d;
+    argentStats.tvl = {};
+    argentStats.tvl.pwrd = stats.tvl.pwrd;
+    argentStats.tvl.gvt = stats.tvl.gvt;
+    argentStats.tvl.total = stats.tvl.total;
+    return argentStats;
+}
+
 async function generateGroStatsFile() {
     const latestBlock = await provider.getBlock();
     const latestBlockTag = {
@@ -89,8 +103,14 @@ async function generateGroStatsFile() {
 
     const statsFilename = `${statsDir}/gro-stats-${latestBlock.timestamp}.json`;
     fs.writeFileSync(statsFilename, JSON.stringify(stats));
+    const argentStatsFilename = `${statsDir}/argent-stats-${latestBlock.timestamp}.json`;
+    fs.writeFileSync(
+        argentStatsFilename,
+        JSON.stringify(formatArgentResponse(stats))
+    );
     const latestFilename = {
         filename: statsFilename,
+        argentFilename: argentStatsFilename,
     };
     fs.writeFileSync(statsLatest, JSON.stringify(latestFilename));
     logger.info(

@@ -19,7 +19,7 @@ module.exports = {
         rebalance: '45 40 * * * *',
         generate_stats: '00 */5 * * * *',
         remove_stats_file: '00 00 * * * *',
-        bot_curve_check: '00 50 * * * *',
+        bot_curve_check: '00 */5 * * * *',
         deposit_withdraw_event: '30 */5 * * * *',
         event_summary: '00 * * * *',
         bot_chainlink_check: '00 00 * * * *',
