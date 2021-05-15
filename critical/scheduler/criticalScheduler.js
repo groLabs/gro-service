@@ -1,5 +1,5 @@
 const schedule = require('node-schedule');
-const config = require('config');
+const { getConfig } = require('../../common/configUtil');
 const {
     curvePriceCheck,
     strategyCheck,
@@ -9,11 +9,8 @@ const {
 } = require('../../common/discord/discordService');
 const logger = require('../criticalLogger');
 
-let botCurveSchedulerSetting = '00 30 * * * *';
-
-if (config.has('trigger_scheduler.bot_curve_check')) {
-    botCurveSchedulerSetting = config.get('trigger_scheduler.bot_curve_check');
-}
+const botCurveSchedulerSetting =
+    getConfig('trigger_scheduler.bot_curve_check', false) || '00 30 * * * *';
 
 function checkCurveHealth() {
     schedule.scheduleJob(botCurveSchedulerSetting, async () => {

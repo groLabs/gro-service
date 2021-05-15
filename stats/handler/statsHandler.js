@@ -10,17 +10,13 @@ dayjs.extend(utc);
 const { getDefaultProvider } = require('../../common/chainUtil');
 const { getSystemApy } = require('./apyHandler');
 const {
-    sendMessageToProtocolAssetChannel,
-    MESSAGE_TYPES,
-    MESSAGE_EMOJI,
-} = require('../../common/discord/discordService');
-const {
     getTvlStats,
     getSystemStats,
     getExposureStats,
 } = require('./systemHandler');
 
-const { formatNumber } = require('../../common/digitalUtil');
+const { apyStatsMessage } = require('../../discordMessage/statsMessage');
+const logger = require('../statsLogger');
 
 const provider = getDefaultProvider();
 
@@ -97,26 +93,14 @@ async function generateGroStatsFile() {
         filename: statsFilename,
     };
     fs.writeFileSync(statsLatest, JSON.stringify(latestFilename));
-    const totalMsg = `\nPower Dollar:${stats.tvl.pwrd}\nGro Vault:${stats.tvl.gvt}\nTotalAssets:${stats.tvl.total}\nUtilization Ratio:${stats.tvl.util_ratio}`;
-    const discordMsg = {
-        type: MESSAGE_TYPES.stats,
-        description: `${MESSAGE_EMOJI.PWRD}: **$${formatNumber(
-            stats.tvl.pwrd,
-            0,
-            4
-        )}** ${MESSAGE_EMOJI.Vault}: **$${formatNumber(
-            stats.tvl.gvt,
-            0,
-            4
-        )}** TotalAssets: **$${formatNumber(
-            stats.tvl.total,
-            0,
-            4
-        )}** Utilization Ratio: **${stats.tvl.util_ratio}**`,
-        message: totalMsg,
-    };
-
-    sendMessageToProtocolAssetChannel(discordMsg);
+    logger.info(
+        `Power Dollar:${stats.tvl.pwrd} Gro Vault:${stats.tvl.gvt} TotalAssets:${stats.tvl.total} Utilization Ratio:${stats.tvl.util_ratio}`
+    );
+    apyStatsMessage({
+        vaultTVL: stats.tvl.gvt,
+        pwrdTVL: stats.tvl.pwrd,
+        total: stats.tvl.total,
+    });
     return statsFilename;
 }
 

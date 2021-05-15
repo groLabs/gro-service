@@ -3,7 +3,6 @@ const { BigNumber } = require('ethers');
 
 const ETH_DECIMAL = BN(10).pow(18);
 const CONTRACT_ASSET_DECIMAL = BN(10).pow(18);
-const internationalNumberFormat = new Intl.NumberFormat('en-US');
 
 function div(mol, deno, decimal) {
     return BN(mol.toString()).div(deno).toFixed(decimal);
@@ -18,14 +17,12 @@ function calculateDelta(diff, total) {
             .multipliedBy(BN(100))
             .div(BN(total.toString()));
     }
-    return result;
+    return result.toFormat(2);
 }
 
 function formatNumber(originalNumber, decimal, fixed) {
-    const tempNum = BN(originalNumber.toString())
-        .div(BN(10).pow(decimal))
-        .toFixed(fixed);
-    return internationalNumberFormat.format(tempNum);
+    const tempNum = BN(originalNumber.toString()).div(BN(10).pow(decimal));
+    return tempNum.toFormat(fixed);
 }
 
 function shortAccount(accountAddress, fixed = 6) {

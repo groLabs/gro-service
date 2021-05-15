@@ -8,15 +8,16 @@ const {
 
 const { ContractCallError } = require('../../common/error');
 
-const {
-    sendMessageToCriticalEventChannel,
-    MESSAGE_TYPES,
-} = require('../../common/discord/discordService');
+const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
 const {
     getCurrentBlockNumber,
     getNonceManager,
 } = require('../../common/chainUtil');
+const {
+    curvePriceMessage,
+    strategyCheckMessage,
+} = require('../../discordMessage/criticalMessage');
 const dependencyStrategyABI = require('../abis/DependencyStrategy.json').abi;
 
 const beforeBlock = getConfig('before_block', false) || 30;
@@ -30,15 +31,48 @@ const nonceManager = getNonceManager();
 
 const logger = require('../criticalLogger');
 
+function getFailedEmbedMessage(messageType, criticalType) {
+    return {
+        type: messageType,
+        description: `**${criticalType}** an internal call error has occurred`,
+    };
+}
+
+function handleError(error, content) {
+    logger.error(error);
+    if (content.curveCheck) {
+        throw new ContractCallError(
+            content.curveCheck.message,
+            MESSAGE_TYPES.curveCheck,
+            {
+                embedMessage: getFailedEmbedMessage(
+                    MESSAGE_TYPES.curveCheck,
+                    'Curve Price Check'
+                ),
+            }
+        );
+    }
+    if (content.strategyCheck) {
+        throw new ContractCallError(
+            content.strategyCheck.message,
+            MESSAGE_TYPES.strategyCheck,
+            {
+                embedMessage: getFailedEmbedMessage(
+                    MESSAGE_TYPES.strategyCheck,
+                    'Strategy Price Check'
+                ),
+            }
+        );
+    }
+}
+
 async function getStabeCoins() {
     const stabeCoins = await getController()
         .stablecoins()
         .catch((error) => {
-            logger.error(error);
-            throw new ContractCallError(
-                'Get underlyingTokens failed',
-                MESSAGE_TYPES.curveCheck
-            );
+            handleError(error, {
+                curveCheck: { message: 'Get underlyingTokens failed' },
+            });
         });
     return stabeCoins;
 }
@@ -46,13 +80,27 @@ async function getStabeCoins() {
 async function checkPriceUpdateInChainPrice(stabeCoins) {
     for (let i = 0; i < stabeCoins.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        const checkResult = await getChainPrice().priceUpdateCheck(
-            stabeCoins[i]
-        );
+        const checkResult = await getChainPrice()
+            .priceUpdateCheck(stabeCoins[i])
+            .catch((error) => {
+                handleError(error, {
+                    curveCheck: {
+                        message: 'Call priceUpdateCheck failed',
+                    },
+                });
+            });
         logger.info(`stabeCoins ${i}, ${checkResult}`);
         if (checkResult) {
             // eslint-disable-next-line no-await-in-loop
-            await getChainPrice().updateTokenRatios(stabeCoins[i]);
+            await getChainPrice()
+                .updateTokenRatios(stabeCoins[i])
+                .catch((error) => {
+                    handleError(error, {
+                        curveCheck: {
+                            message: 'Call updateTokenRatios failed',
+                        },
+                    });
+                });
         }
     }
 }
@@ -60,18 +108,28 @@ async function checkPriceUpdateInChainPrice(stabeCoins) {
 async function curvePriceCheck() {
     const stabeCoins = await getStabeCoins();
     await checkPriceUpdateInChainPrice(stabeCoins);
-    const safetyCheck = await getBuoy().safetyCheck();
+    const safetyCheck = await getBuoy()
+        .safetyCheck()
+        .catch((error) => {
+            handleError(error, {
+                curveCheck: {
+                    message: "Call Buoy's safetyCheck failed",
+                },
+            });
+        });
     logger.info(`safetyCheck ${safetyCheck}`);
-    let msg = `Curve price check is ${safetyCheck}`;
     if (!safetyCheck) {
-        await getController().stop();
-        msg = `Curve price check is ${safetyCheck}, set system to **Stop** status`;
+        await getController()
+            .stop()
+            .catch((error) => {
+                handleError(error, {
+                    curveCheck: {
+                        message: 'Call stop function to stop system failed',
+                    },
+                });
+            });
     }
-    sendMessageToCriticalEventChannel({
-        message: msg,
-        type: MESSAGE_TYPES.curveCheck,
-        description: msg,
-    });
+    curvePriceMessage({ isSafety: safetyCheck });
     return safetyCheck;
 }
 
@@ -79,20 +137,30 @@ async function checkSingleStrategy(
     strategyAddress,
     method,
     failedPercentage,
-    beforeBlockNumber,
-    decimal = 4
+    beforeBlockNumber
 ) {
     let failed = 0;
-    decimal = getConfig('failed_percentage_decimal', false) || decimal;
     const strategy = new ethers.Contract(
         strategyAddress,
         dependencyStrategyABI,
         nonceManager
     );
 
-    const currentSharePrice = await strategy[method]();
+    const currentSharePrice = await strategy[method]().catch((error) => {
+        handleError(error, {
+            strategyCheck: {
+                message: `Call ${strategyAddress}'s ${method} function failed`,
+            },
+        });
+    });
     const preSharePrice = await strategy[method]({
         blockTag: beforeBlockNumber,
+    }).catch((error) => {
+        handleError(error, {
+            strategyCheck: {
+                message: `Call ${strategyAddress}'s ${method} function on block: ${beforeBlockNumber} failed`,
+            },
+        });
     });
 
     if (currentSharePrice.lt(preSharePrice)) {
@@ -115,7 +183,13 @@ async function checkSingleStrategy(
 
 async function strategyCheck() {
     // Harvest strategy check
-    const currentBlockNumber = await getCurrentBlockNumber();
+    const currentBlockNumber = await getCurrentBlockNumber().catch((error) => {
+        handleError(error, {
+            strategyCheck: {
+                message: 'Get current block number failed',
+            },
+        });
+    });
     const beforeBlockNumber = currentBlockNumber - beforeBlock;
     let strategyFailedTotal = 0;
     const msgLabel = [];
@@ -180,21 +254,30 @@ async function strategyCheck() {
         }
     }
 
-    let msg = 'All strategies are healthy';
     if (strategyFailedTotal === 1) {
-        await getController().pause();
-        msg = 'Have one abnormal strategy, and the system enters stop status';
+        await getController()
+            .pause()
+            .catch((error) => {
+                handleError(error, {
+                    strategyCheck: {
+                        message: 'Call pause function to pause system failed',
+                    },
+                });
+            });
     } else if (strategyFailedTotal > 1) {
-        await getController().handbreakUp();
-        msg =
-            'At least 2 strategies are abnormal, and the system enters full stop status';
+        await getController()
+            .handbreakUp()
+            .catch((error) => {
+                handleError(error, {
+                    strategyCheck: {
+                        message:
+                            'Call handbreakUp function to full stop system failed',
+                    },
+                });
+            });
     }
 
-    sendMessageToCriticalEventChannel({
-        message: msg,
-        type: MESSAGE_TYPES.curveCheck,
-        description: msg,
-    });
+    strategyCheckMessage({ failedNumber: strategyFailedTotal });
     return strategyFailedTotal;
 }
 

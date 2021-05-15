@@ -4,13 +4,12 @@ const { BigNumber } = require('ethers');
 const { NonceManager } = require('@ethersproject/experimental');
 const { SettingError, BlockChainCallError } = require('./error');
 const { pendingTransactions } = require('./storage');
-const { shortAccount, div, ETH_DECIMAL } = require('./digitalUtil');
+const { shortAccount } = require('./digitalUtil');
 const {
     sendMessageToLogChannel,
-    sendMessageToProtocolEventChannel,
     MESSAGE_TYPES,
-    MESSAGE_EMOJI,
 } = require('./discord/discordService');
+const { botBalanceMessage } = require('../discordMessage/botBalanceMessage');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -25,6 +24,14 @@ if (!config.has('blockchain.network')) {
 if (!process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`]) {
     const err = new SettingError(
         `Environment variable ${`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`} are not set.`
+    );
+    logger.error(err);
+    throw err;
+}
+
+if (!process.env[`BOT_ADDRESS_${process.env.BOT_ENV}`]) {
+    const err = new SettingError(
+        `Environment variable ${`BOT_ADDRESS_${process.env.BOT_ENV}`} are not set.`
     );
     logger.error(err);
     throw err;
@@ -154,48 +161,20 @@ async function getReceipt(type) {
             logger.error(err);
             throw new BlockChainCallError(
                 `Get receipt of ${hash} from chain failed.`,
-                MESSAGE_TYPES[msgLabel],
-                hash
+                MESSAGE_TYPES[msgLabel]
             );
         });
-    const label = 'TX';
-    const msgObj = {
-        type: msgLabel,
-        timestamp: transactionInfo.createdTime,
-        message: `${type} transaction ${hash} has mined to chain.`,
-        description: `${label} ${
-            type.split('-')[0]
-        } action was minted to chain`,
-        urls: [
-            {
-                label,
-                type: 'tx',
-                value: hash,
-            },
-        ],
-        transactionHash: hash,
-    };
-
-    if (!transactionReceipt) {
-        msgObj.message = `${type} transaction: ${hash} is still pending.`;
-        logger.info(msgObj.message);
-        sendMessageToProtocolEventChannel(msgObj);
-    } else {
-        // remove type from pending transactions
+    if (transactionReceipt) {
         pendingTransactions.delete(type);
-
-        if (!transactionReceipt.status) {
-            msgObj.message = `${type} transaction ${hash} reverted.`;
-            msgObj.emojis = [MESSAGE_EMOJI.reverted];
-            msgObj.description = `${label} ${type} action has been reverted`;
-        }
-        sendMessageToProtocolEventChannel(msgObj);
     }
+
+    return { type, msgLabel, hash, transactionReceipt };
 }
 
 async function checkPendingTransactions(types) {
     logger.info(`pendingTransactions.size: ${pendingTransactions.size}`);
-    if (!pendingTransactions.size) return;
+    let result = [];
+    if (!pendingTransactions.size) return result;
     types = types || pendingTransactions.keys();
     const pendingCheckPromise = [];
     for (let i = 0; i < types.length; i += 1) {
@@ -206,45 +185,39 @@ async function checkPendingTransactions(types) {
             pendingCheckPromise.push(getReceipt(type));
         }
     }
-    await Promise.all(pendingCheckPromise).catch((error) => {
-        logger.error(error);
-        throw error;
-    });
+    result = Promise.all(pendingCheckPromise);
+    return result;
 }
 
 async function checkAccountBalance(botBalanceWarnVault) {
     const botAccount = process.env[`BOT_ADDRESS_${process.env.BOT_ENV}`];
     const botType = `${process.env.BOT_ENV.toLowerCase()}Bot`;
+    const accountLabel = shortAccount(botAccount);
     const balance = await nonceManager.getBalance().catch((error) => {
         logger.error(error);
         throw new BlockChainCallError(
             `Get ETH balance of bot:${botAccount} failed.`,
-            MESSAGE_TYPES[botType]
+            MESSAGE_TYPES[botType],
+            {
+                embedMessage: {
+                    type: MESSAGE_TYPES[botType],
+                    description: `**${botType}** get ${accountLabel}'s ETH balance failed`,
+                    urls: [
+                        {
+                            label: accountLabel,
+                            type: 'account',
+                            value: botAccount,
+                        },
+                    ],
+                },
+            }
         );
     });
     if (balance.lt(BigNumber.from(botBalanceWarnVault))) {
-        const accountLabel = shortAccount(botAccount);
-        sendMessageToLogChannel({
-            icon: ':warning:',
-            type: MESSAGE_TYPES[botType],
-            message: `Bot:${botAccount}'s balance is ${div(
-                balance,
-                ETH_DECIMAL,
-                4
-            )}, need full up some balance.`,
-            description: `${accountLabel} only has **${div(
-                balance,
-                ETH_DECIMAL,
-                4
-            )}** ETH balance, please recharge more`,
-            urls: [
-                {
-                    label: accountLabel,
-                    type: 'account',
-                    value: botAccount,
-                },
-            ],
-            params: botAccount,
+        botBalanceMessage({
+            botAccount,
+            botType,
+            balance,
         });
     }
 }

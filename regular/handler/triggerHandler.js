@@ -10,53 +10,51 @@ const {
     getVaultAndStrategyLabels,
 } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
-const {
-    sendMessageToProtocolEventChannel,
-    MESSAGE_TYPES,
-} = require('../../common/discord/discordService');
+const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
 const {
     PendingTransactionError,
     ContractCallError,
 } = require('../../common/error');
+const { investTriggerMessage } = require('../../discordMessage/investMessage');
+const { pnlTriggerMessage } = require('../../discordMessage/pnlMessage');
+const {
+    rebalaneTriggerMessage,
+} = require('../../discordMessage/rebalanceMessage');
+const {
+    harvestTriggerMessage,
+} = require('../../discordMessage/harvestMessage');
 const logger = require('../regularLogger');
 
 const NONEED_TRIGGER = { needCall: false };
 
 async function adapterInvestTrigger(vault) {
+    const vaultName = getVaultAndStrategyLabels()[vault.address].name;
     if (pendingTransactions.get(`invest-${vault.address}`)) {
-        const result = `Already has pending invest in adapter:${
+        const result = `Already has pending invest for ${vaultName}:${
             vault.address
-        } transaction: ${pendingTransactions.get('invest').hash}`;
+        } transaction: ${
+            pendingTransactions.get(`invest-${vault.address}`).hash
+        }`;
         logger.info(result);
         throw new PendingTransactionError(result, MESSAGE_TYPES.investTrigger);
     }
-    const vaultName = getVaultAndStrategyLabels()[vault.address].name;
     const investTriggerResult = await vault.investTrigger().catch((error) => {
         logger.error(error);
         throw new ContractCallError(
-            `Call investTrigger of ${vaultName} : ${vault.address} to check if the adapter need investment failed`
+            `Call investTrigger of ${vaultName} : ${vault.address} to check if the adapter need investment failed`,
+            MESSAGE_TYPES.investTrigger
         );
     });
-    const msgObj = {
-        type: MESSAGE_TYPES.investTrigger,
-        message: `${vaultName} : ${vault.address} doesn't need invest.`,
-        description: `${vaultName}'s investTrigger is false, doesn't need run invest`,
-    };
-    if (investTriggerResult) {
-        msgObj.message = `${vaultName} : ${vault.address} need invest.`;
-        msgObj.description = `${vaultName}'s investTrigger is true, need run invest`;
-    }
-    msgObj.urls = [];
-    msgObj.urls.push({
-        label: vaultName,
-        type: 'account',
-        value: vault.address,
-    });
+
     logger.info(
         `${vaultName} : ${vault.address} invest trigger: ${investTriggerResult}`
     );
-    sendMessageToProtocolEventChannel(msgObj);
+    investTriggerMessage({
+        vaultName,
+        vaultAddress: vault.address,
+        isInvested: investTriggerResult,
+    });
     return investTriggerResult;
 }
 
@@ -65,7 +63,7 @@ async function investTrigger() {
     if (vaults.length === 0) {
         logger.error('Not fund any vault.');
         throw new ContractCallError(
-            'Try to call investTrigger function but not found any vaults.',
+            'Not vaults found',
             MESSAGE_TYPES.investTrigger
         );
     }
@@ -164,8 +162,8 @@ async function harvestOneTrigger() {
     if (vaults.length === 0) {
         logger.info('Not fund any vault.');
         throw new ContractCallError(
-            'Try to call investTrigger function but not found any vaults.',
-            MESSAGE_TYPES.investTrigger
+            'Not found any vaults',
+            MESSAGE_TYPES.harvestTrigger
         );
     }
 
@@ -175,9 +173,11 @@ async function harvestOneTrigger() {
         const vaultName = getVaultAndStrategyLabels()[adapterAddress].name;
         const strategLabel = getVaultAndStrategyLabels()[adapterAddress]
             .strategies;
+        logger.info(`${strategLabel}: ${JSON.stringify(strategLabel)}`);
         logger.info(`${vaultName}: ${adapterAddress}`);
         const vault = vaults[i];
         const strategyLength = vaultsStrategyLength[i];
+        logger.info(`strategyLength: ${strategyLength}`);
         for (let j = 0; j < strategyLength; j += 1) {
             const key = `harvest-${vault.address}-${j}`;
 
@@ -187,7 +187,7 @@ async function harvestOneTrigger() {
                 }`;
                 logger.info(result);
                 throw new PendingTransactionError(
-                    result,
+                    'Already has pending harvest transaction',
                     MESSAGE_TYPES.investTrigger
                 );
             }
@@ -201,37 +201,26 @@ async function harvestOneTrigger() {
                 .strategyHarvestTrigger(j, callCost)
                 .catch((error) => {
                     logger.error(error);
+                    logger.error(
+                        `Call ${vaultName}:${vault.address}'s strategyHarvestTrigger function on ${strategLabel[j].name} with callCost: ${callCost} failed.`
+                    );
                     throw new ContractCallError(
-                        `Call ${vaultName}:${vault.address}'s strategyHarvestTrigger function on ${strategLabel[j].name} with callCost: ${callCost} failed.`,
+                        `${vaultName}'s harvestTrigger call failed.`,
                         MESSAGE_TYPES.investTrigger
                     );
                 });
             logger.info(
-                `${vaultName}:${i} ${strategLabel[j].name} strategyHarvestTrigger: ${result}`
+                `${vaultName}:${i} ${strategLabel[j].name} callCost: ${callCost} strategyHarvestTrigger: ${result}`
             );
             if (result) {
-                sendMessageToProtocolEventChannel({
-                    type: MESSAGE_TYPES.harvestTrigger,
-                    message: `${vaultName}:${vault.address}'s ${strategLabel[j].name} strategy need harvest.`,
-                    description: `${vaultName}'s harvestTrigger on ${strategLabel[j].name} is true, need run harvest`,
-                    urls: [
-                        {
-                            label: vaultName,
-                            type: 'account',
-                            value: vault.address,
-                        },
-                        {
-                            label: strategLabel[j].name,
-                            type: 'account',
-                            value: strategLabel[j].address,
-                        },
-                    ],
-                    params: {
-                        callCost: callCost.toString(),
-                        vault: vault.address,
-                        strategyIndex: j,
+                harvestTriggerMessage([
+                    {
+                        vaultName,
+                        vaultAddress: vault.address,
+                        strategyName: strategLabel[j].name,
+                        strategyAddress: strategLabel[j].address,
                     },
-                });
+                ]);
                 return {
                     needCall: true,
                     params: [
@@ -246,17 +235,13 @@ async function harvestOneTrigger() {
             }
         }
     }
-    sendMessageToProtocolEventChannel({
-        message: 'No any strategies need harvest.',
-        description: 'No any strategies need harvest',
-        type: MESSAGE_TYPES.harvestTrigger,
-    });
+    harvestTriggerMessage([]);
     return NONEED_TRIGGER;
 }
 
 async function pnlTrigger() {
     if (pendingTransactions.get('pnl')) {
-        const result = `Already has pending pnl transaction: ${
+        const result = `Already has pending Pnl transaction: ${
             pendingTransactions.get('pnl').hash
         }`;
         logger.info(result);
@@ -268,47 +253,37 @@ async function pnlTrigger() {
         .catch((error) => {
             logger.error(error);
             throw new ContractCallError(
-                'Call pnlTrigger to check if the system need execute pnl failed.',
+                'PnlTrigger call failed',
                 MESSAGE_TYPES.pnlTrigger
             );
         });
-    logger.info(`pnlTrigger. ${needPnlVault}`);
-    const msgObj = {
-        type: MESSAGE_TYPES.pnlTrigger,
-        message: 'No need run PnL.',
-        description:
-            "PnlTrigger and totalAssetsChangeTrigger are both false, doesn't need run Pnl",
-    };
+    logger.info(`pnlTrigger: ${needPnlVault}`);
     let pnlTriggerResult = NONEED_TRIGGER;
+    const messageContent = { pnlTrigger: needPnlVault, totalTrigger: false };
     if (!needPnlVault) {
         const needPnlAssets = await getPnl()
             .totalAssetsChangeTrigger()
             .catch((error) => {
                 logger.error(error);
                 throw new ContractCallError(
-                    'Call totalAssetsChangeTrigger to check if the system need execute pnl failed.',
+                    'TotalAssetsChangeTrigger call failed',
                     MESSAGE_TYPES.pnlTrigger
                 );
             });
-
-        logger.info(`totalAssetsChangeTrigger. ${needPnlAssets}`);
+        messageContent.totalTrigger = needPnlAssets;
+        logger.info(`totalAssetsChangeTrigger: ${needPnlAssets}`);
         if (needPnlAssets) {
             pnlTriggerResult = {
                 needCall: true,
             };
-            msgObj.message = 'TotalAssetsChangeTrigger is true, need run Pnl';
-            msgObj.description =
-                'TotalAssetsChangeTrigger is true, need run Pnl';
         }
     } else {
         pnlTriggerResult = {
             needCall: true,
         };
-        msgObj.message = 'PnlTrigger is true, need run Pnl';
-        msgObj.description = 'PnlTrigger is true, need run Pnl';
     }
 
-    sendMessageToProtocolEventChannel(msgObj);
+    pnlTriggerMessage(messageContent);
     return pnlTriggerResult;
 }
 
@@ -329,25 +304,18 @@ async function rebalanceTrigger() {
         .catch((error) => {
             logger.error(error);
             throw new ContractCallError(
-                'Call rebalanceTrigger function failed.',
+                'RebalanceTrigger call failed',
                 MESSAGE_TYPES.rebalanceTrigger
             );
         });
     logger.info(`rebalanceTrigger: ${needRebalance}`);
-    const msgObj = {
-        message: 'No need run rebalance.',
-        description: "RebalanceTrigger is false, doesn't need run rebalance",
-        type: MESSAGE_TYPES.rebalanceTrigger,
-    };
     let rebalanceTriggerResult = NONEED_TRIGGER;
     if (needRebalance) {
         rebalanceTriggerResult = {
             needCall: true,
         };
-        msgObj.message = 'Need run rebalance to adjust the system asset.';
-        msgObj.description = 'RebalanceTrigger is true, need run rebalance';
     }
-    sendMessageToProtocolEventChannel(msgObj);
+    rebalaneTriggerMessage({ isRebalance: needRebalance });
     return rebalanceTriggerResult;
 }
 
@@ -368,32 +336,38 @@ async function curveInvestTrigger() {
         .catch((error) => {
             logger.error(error);
             throw new ContractCallError(
-                'Call investToCurveVaultTrigger function failed.',
+                'InvestToCurveVaultTrigger call failed.',
                 MESSAGE_TYPES.curveInvestTrigger
             );
         });
     logger.info(`curveInvestTrigger : ${needInvest}`);
     const curveVaultAddress = getCurveVault().address;
     const vaultName = getVaultAndStrategyLabels()[curveVaultAddress].name;
-    const msgObj = {
-        type: MESSAGE_TYPES.curveInvestTrigger,
-        message: 'No need run curve invest.',
-        description: `${vaultName}'s curveInvestTrigger is false, doesn't need run curve invest`,
-    };
+    // const msgObj = {
+    //     type: MESSAGE_TYPES.curveInvestTrigger,
+    //     message: 'No need run curve invest.',
+    //     description: `${vaultName}'s curveInvestTrigger is false, doesn't need run curve invest`,
+    // };
 
     let investResult = NONEED_TRIGGER;
     if (needInvest) {
         investResult = { needCall: true };
-        msgObj.message = `${vaultName}'s curveInvestTrigger is true, need run invest`;
-        msgObj.description = `${vaultName}'s curveInvestTrigger is true, need run invest`;
+        // msgObj.message = `${vaultName}'s curveInvestTrigger is true, need run invest`;
+        // msgObj.description = `${vaultName}'s curveInvestTrigger is true, need run invest`;
     }
-    msgObj.urls = [];
-    msgObj.urls.push({
-        label: vaultName,
-        type: 'account',
-        value: curveVaultAddress,
+    // msgObj.urls = [];
+    // msgObj.urls.push({
+    //     label: vaultName,
+    //     type: 'account',
+    //     value: curveVaultAddress,
+    // });
+    // sendMessageToProtocolEventChannel(msgObj);
+
+    investTriggerMessage({
+        vaultName,
+        vaultAddress: curveVaultAddress,
+        isInvested: needInvest,
     });
-    sendMessageToProtocolEventChannel(msgObj);
     return investResult;
 }
 
