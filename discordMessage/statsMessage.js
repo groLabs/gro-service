@@ -1,6 +1,7 @@
 const { shortAccount } = require('../common/digitalUtil');
 const {
     MESSAGE_TYPES,
+    MESSAGE_EMOJI,
     sendMessageToLogChannel,
     sendMessageToProtocolAssetChannel,
 } = require('../common/discord/discordService');
@@ -23,19 +24,28 @@ function personalStatsMessage(content) {
 }
 
 function apyStatsMessage(content) {
-    const { vaultTVL, pwrdTVL, total } = content;
+    const { vaultTVL, vaultApy, pwrdTVL, pwrdApy, total, utilRatio } = content;
+    const msg = `${MESSAGE_EMOJI.Vault} Vault TVL: **$${formatNumber(
+        vaultTVL,
+        18,
+        2
+    )}** Vault APY (7d avg): **${formatNumber(vaultApy, 4, 2)}%**\n${
+        MESSAGE_EMOJI[MESSAGE_TYPES.stats]
+    } ${MESSAGE_EMOJI.PWRD} PWRD TVL: **$${formatNumber(
+        pwrdTVL,
+        18,
+        2
+    )} ** PWRD APY (7d avg): **${formatNumber(pwrdApy, 4, 2)}%**\n${
+        MESSAGE_EMOJI[MESSAGE_TYPES.stats]
+    } ${MESSAGE_EMOJI.company} Gro Protocol TVL: **$${formatNumber(
+        total,
+        18,
+        2
+    )} ** Utilization Ratio: **${formatNumber(utilRatio, 4, 2)}%**\n`;
     const discordMsg = {
         type: MESSAGE_TYPES.stats,
-        message: `PWRD Dollar:${pwrdTVL}\nVault Dollar:${vaultTVL}\nTotalAssets:${total}`,
-        description: `Vault TVL: **$${formatNumber(
-            vaultTVL,
-            0,
-            4
-        )}** PWRD TVL: **$${formatNumber(
-            pwrdTVL,
-            0,
-            4
-        )}** Total System TVL: **$${formatNumber(total, 0, 4)}**`,
+        message: `PWRD Dollar: ${pwrdTVL}\nPWRD APY: ${pwrdApy}\nVault: ${vaultTVL}\nVault PAY: ${vaultApy}\nTotalAssets:${total}`,
+        description: msg,
     };
 
     sendMessageToProtocolAssetChannel(discordMsg);

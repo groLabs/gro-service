@@ -117,9 +117,12 @@ async function generateGroStatsFile() {
         `Power Dollar:${stats.tvl.pwrd} Gro Vault:${stats.tvl.gvt} TotalAssets:${stats.tvl.total} Utilization Ratio:${stats.tvl.util_ratio}`
     );
     apyStatsMessage({
-        vaultTVL: stats.tvl.gvt,
-        pwrdTVL: stats.tvl.pwrd,
-        total: stats.tvl.total,
+        vaultTVL: tvl.gvt,
+        vaultApy: apy.last7d.gvt,
+        pwrdTVL: tvl.pwrd,
+        pwrdApy: apy.last7d.pwrd,
+        total: tvl.total,
+        utilRatio: tvl.util_ratio,
     });
     return statsFilename;
 }
