@@ -1,6 +1,8 @@
 const {
     MESSAGE_TYPES,
     MESSAGE_EMOJI,
+    DISCORD_CHANNELS,
+    sendMessage,
     sendMessageToProtocolEventChannel,
 } = require('../common/discord/discordService');
 const { getVaultAndStrategyLabels } = require('../contract/allContracts');
@@ -19,12 +21,8 @@ function harvestTriggerMessage(content) {
     };
 
     if (content.length > 0) {
-        const {
-            vaultName,
-            vaultAddress,
-            strategyName,
-            strategyAddress,
-        } = content[0];
+        const { vaultName, vaultAddress, strategyName, strategyAddress } =
+            content[0];
         discordMessage.message = `${vaultName}:${vaultAddress}'s ${strategyName} strategy need harvest.`;
         discordMessage.description = `${MESSAGE_EMOJI.company} ${vaultName}'s harvestTrigger on ${strategyName} return true, need run harvest`;
         discordMessage.urls = [
@@ -40,8 +38,8 @@ function harvestTriggerMessage(content) {
             },
         ];
     }
-
-    sendMessageToProtocolEventChannel(discordMessage);
+    sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
+    // sendMessageToProtocolEventChannel(discordMessage);
 }
 
 function harvestMessage(content) {
@@ -83,8 +81,9 @@ function harvestTransactionMessage(content) {
         const { type, msgLabel, hash, transactionReceipt } = content[i];
         const typeItems = type.split('-');
         const vaultName = getVaultAndStrategyLabels()[typeItems[1]].name;
-        const strategyName = getVaultAndStrategyLabels()[typeItems[1]]
-            .strategies[typeItems[2]].name;
+        const strategyName =
+            getVaultAndStrategyLabels()[typeItems[1]].strategies[typeItems[2]]
+                .name;
         const label = shortAccount(hash);
         const discordMessage = {
             type: msgLabel,

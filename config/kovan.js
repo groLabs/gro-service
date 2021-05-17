@@ -48,6 +48,7 @@ module.exports = {
         pnl: ':moneybag:',
         rebalanceTrigger: ':scales:',
         rebalance: ':scales:',
+        curveCheck: ':loudspeaker:',
     },
     keep_stats_file_number: 250,
     stats_folder: '../stats',

@@ -1,5 +1,7 @@
 const {
     MESSAGE_TYPES,
+    DISCORD_CHANNELS,
+    sendMessage,
     sendMessageToCriticalEventChannel,
 } = require('../common/discord/discordService');
 
@@ -14,7 +16,12 @@ function curvePriceMessage(content) {
         type: MESSAGE_TYPES.curveCheck,
         description: msg,
     };
-    sendMessageToCriticalEventChannel(discordMessage);
+
+    if (safetyCheck) {
+        sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
+    } else {
+        sendMessageToCriticalEventChannel(discordMessage);
+    }
 }
 
 function strategyCheckMessage(content) {
@@ -32,7 +39,11 @@ function strategyCheckMessage(content) {
         type: MESSAGE_TYPES.strategyCheck,
         description: msg,
     };
-    sendMessageToCriticalEventChannel(discordMessage);
+    if (strategyFailedTotal > 0) {
+        sendMessageToCriticalEventChannel(discordMessage);
+    } else {
+        sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
+    }
 }
 
 module.exports = {
