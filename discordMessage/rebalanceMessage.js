@@ -1,6 +1,8 @@
 const {
     MESSAGE_TYPES,
     MESSAGE_EMOJI,
+    DISCORD_CHANNELS,
+    sendMessage,
     sendMessageToProtocolEventChannel,
 } = require('../common/discord/discordService');
 
@@ -25,7 +27,8 @@ function rebalaneTriggerMessage(content) {
     }
 
     logger.info(discordMessage.message);
-    sendMessageToProtocolEventChannel(discordMessage);
+    sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
+    // sendMessageToProtocolEventChannel(discordMessage);
 }
 
 function rebalanceMessage(content) {

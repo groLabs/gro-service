@@ -1,6 +1,8 @@
 const {
     MESSAGE_TYPES,
     MESSAGE_EMOJI,
+    DISCORD_CHANNELS,
+    sendMessage,
     sendMessageToProtocolEventChannel,
 } = require('../common/discord/discordService');
 
@@ -27,7 +29,8 @@ function pnlTriggerMessage(content) {
         discordMessage.description = `${MESSAGE_EMOJI.company} TotalAssetsChangeTrigger true, ExecPnl required`;
     }
     logger.info(discordMessage.message);
-    sendMessageToProtocolEventChannel(discordMessage);
+    sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
+    // sendMessageToProtocolEventChannel(discordMessage);
 }
 
 function pnlMessage(content) {

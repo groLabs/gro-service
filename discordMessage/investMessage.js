@@ -1,6 +1,8 @@
 const {
     MESSAGE_TYPES,
     MESSAGE_EMOJI,
+    DISCORD_CHANNELS,
+    sendMessage,
     sendMessageToProtocolEventChannel,
 } = require('../common/discord/discordService');
 const { getVaultAndStrategyLabels } = require('../contract/allContracts');
@@ -29,7 +31,8 @@ function investTriggerMessage(content) {
             },
         ],
     };
-    sendMessageToProtocolEventChannel(discordMessage);
+    sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
+    // sendMessageToProtocolEventChannel(discordMessage);
 }
 
 function investMessage(content) {
