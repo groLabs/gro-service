@@ -5,6 +5,8 @@ const { BlockChainCallError } = require('./error');
 const {
     getPnlKeyData,
     getInvestKeyData,
+    getHarvestKeyData,
+    getRebalanceKeyData,
 } = require('./triggerEvent/actionDataFunder');
 const { MESSAGE_TYPES } = require('./discord/discordService');
 
@@ -29,6 +31,12 @@ async function parseAdditionalData(type, hash, transactionReceipt) {
                 vaultStabeCoins.tokens[typeSplit[1]],
                 transactionReceipt
             );
+            break;
+        case 'harvest':
+            result = await getHarvestKeyData(hash, transactionReceipt);
+            break;
+        case 'rebalance':
+            result = await getRebalanceKeyData(hash, transactionReceipt);
             break;
         default:
             logger.warn(`Not fund action: ${action}`);

@@ -79,8 +79,8 @@ function withdrawEventMessage(content) {
             urls: [
                 {
                     label: account,
-                    type: 'account',
-                    value: log.account,
+                    type: 'tx',
+                    value: log.transactionHash,
                 },
             ],
         });

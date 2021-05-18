@@ -171,9 +171,8 @@ async function harvestOneTrigger() {
     for (let i = 0; i < vaults.length; i += 1) {
         const adapterAddress = vaults[i].address;
         const vaultName = getVaultAndStrategyLabels()[adapterAddress].name;
-        const strategLabel = getVaultAndStrategyLabels()[adapterAddress]
-            .strategies;
-        logger.info(`${strategLabel}: ${JSON.stringify(strategLabel)}`);
+        const strategLabel =
+            getVaultAndStrategyLabels()[adapterAddress].strategies;
         logger.info(`${vaultName}: ${adapterAddress}`);
         const vault = vaults[i];
         const strategyLength = vaultsStrategyLength[i];

@@ -80,8 +80,9 @@ function pnlTransactionMessage(content) {
     }
 
     if (additionalData && additionalData.length > 0) {
-        const pnlAmount = formatNumber(additionalData[1], 18, 2);
+        let pnlAmount = formatNumber(additionalData[1], 18, 2);
         const profitOrLoss = pnlAmount.indexOf('-') === 0 ? 'loss' : 'profit';
+        pnlAmount = pnlAmount.replace('-', '');
         discordMessage.message = `${discordMessage.message} - $${pnlAmount} ${profitOrLoss} realized`;
         discordMessage.description = `${discordMessage.description} - $${pnlAmount} ${profitOrLoss} realized`;
     }
