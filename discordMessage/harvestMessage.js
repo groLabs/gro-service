@@ -83,10 +83,10 @@ function harvestMessage(content) {
 function formatHarvestAmount(decimal, data) {
     let harvestAmount = '0.00';
     const zero = BigNumber.from(0);
-    if (data[0] && data[0].gt(zero)) {
-        harvestAmount = formatNumber(data[0], decimal, 2);
-    } else if (data[1] && data[1].gt(zero)) {
-        harvestAmount = `-${formatNumber(data[1], decimal, 2)}`;
+    if (data[1] && data[1].gt(zero)) {
+        harvestAmount = formatNumber(data[1], decimal, 2);
+    } else if (data[2] && data[2].gt(zero)) {
+        harvestAmount = `-${formatNumber(data[2], decimal, 2)}`;
     }
     return harvestAmount;
 }
