@@ -6,7 +6,6 @@ const {
     sendMessageToProtocolEventChannel,
 } = require('../common/discord/discordService');
 const { getVaultAndStrategyLabels } = require('../contract/allContracts');
-
 const { shortAccount } = require('../common/digitalUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -60,14 +59,17 @@ function investMessage(content) {
 
 function investTransactionMessage(content) {
     for (let i = 0; i < content.length; i += 1) {
-        const { type, msgLabel, hash, transactionReceipt } = content[i];
+        const { type, msgLabel, hash, transactionReceipt, additionalData } =
+            content[i];
         const typeItems = type.split('-');
+        let action = typeItems[0];
+        action = action.replace(action[0], action[0].toUpperCase());
         const vaultName = getVaultAndStrategyLabels()[typeItems[1]].name;
         const label = shortAccount(hash);
         const discordMessage = {
             type: msgLabel,
-            message: `${type} transaction ${hash} has mined to chain`,
-            description: `${MESSAGE_EMOJI.company} ${label} ${typeItems[0]} action for ${vaultName} confirmed to chain`,
+            message: `${type} transaction ${hash} has mined to chain - $${additionalData} invested`,
+            description: `${MESSAGE_EMOJI.company} ${label} ${action} action for ${vaultName} confirmed to chain - $${additionalData} invested`,
             urls: [
                 {
                     label,
@@ -78,10 +80,10 @@ function investTransactionMessage(content) {
         };
         if (!transactionReceipt) {
             discordMessage.message = `${type} transaction: ${hash} is still pending.`;
-            discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${typeItems[0]} action for ${vaultName} still pending`;
+            discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${action} action for ${vaultName} still pending`;
         } else if (!transactionReceipt.status) {
             discordMessage.message = `${type} transaction ${hash} reverted.`;
-            discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${typeItems[0]} action is reverted`;
+            discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${action} action is reverted`;
         }
         logger.info(discordMessage.message);
         sendMessageToProtocolEventChannel(discordMessage);

@@ -3,7 +3,6 @@ const { ethers } = require('ethers');
 const { BigNumber } = require('ethers');
 const { NonceManager } = require('@ethersproject/experimental');
 const { SettingError, BlockChainCallError } = require('./error');
-const { pendingTransactions } = require('./storage');
 const { shortAccount } = require('./digitalUtil');
 const {
     sendMessageToLogChannel,
@@ -152,43 +151,6 @@ async function syncNounce() {
     }
 }
 
-async function getReceipt(type) {
-    const transactionInfo = pendingTransactions.get(type);
-    const { label: msgLabel, hash } = transactionInfo;
-    const transactionReceipt = await defaultProvider
-        .getTransactionReceipt(hash)
-        .catch((err) => {
-            logger.error(err);
-            throw new BlockChainCallError(
-                `Get receipt of ${hash} from chain failed.`,
-                MESSAGE_TYPES[msgLabel]
-            );
-        });
-    if (transactionReceipt) {
-        pendingTransactions.delete(type);
-    }
-
-    return { type, msgLabel, hash, transactionReceipt };
-}
-
-async function checkPendingTransactions(types) {
-    logger.info(`pendingTransactions.size: ${pendingTransactions.size}`);
-    let result = [];
-    if (!pendingTransactions.size) return result;
-    types = types || pendingTransactions.keys();
-    const pendingCheckPromise = [];
-    for (let i = 0; i < types.length; i += 1) {
-        const type = types[i];
-        logger.info(`pending keys: ${type}`);
-        const transactionInfo = pendingTransactions.get(type);
-        if (transactionInfo) {
-            pendingCheckPromise.push(getReceipt(type));
-        }
-    }
-    result = Promise.all(pendingCheckPromise);
-    return result;
-}
-
 async function checkAccountBalance(botBalanceWarnVault) {
     const botAccount = process.env[`BOT_ADDRESS_${process.env.BOT_ENV}`];
     const botType = `${process.env.BOT_ENV.toLowerCase()}Bot`;
@@ -240,7 +202,6 @@ module.exports = {
     getSocketProvider,
     getRpcProvider,
     syncNounce,
-    checkPendingTransactions,
     checkAccountBalance,
     getCurrentBlockNumber,
 };

@@ -3,10 +3,10 @@ const {
     getDefaultProvider,
     getNonceManager,
     syncNounce,
-    checkPendingTransactions,
     checkAccountBalance,
     getCurrentBlockNumber,
 } = require('../../common/chainUtil');
+const { checkPendingTransactions } = require('../../common/pendingTransaction');
 const { pendingTransactions } = require('../../common/storage');
 const {
     MESSAGE_EMOJI,

@@ -1,0 +1,78 @@
+const { pendingTransactions } = require('./storage');
+const { getVaultStabeCoins } = require('../contract/allContracts');
+const { getDefaultProvider } = require('./chainUtil');
+const { BlockChainCallError } = require('./error');
+const {
+    getPnlKeyData,
+    getInvestKeyData,
+} = require('./triggerEvent/actionDataFunder');
+const { MESSAGE_TYPES } = require('./discord/discordService');
+
+const botEnv = process.env.BOT_ENV.toLowerCase();
+// eslint-disable-next-line import/no-dynamic-require
+const logger = require(`../${botEnv}/${botEnv}Logger`);
+
+const vaultStabeCoins = getVaultStabeCoins();
+
+async function parseAdditionalData(type, hash, transactionReceipt) {
+    const typeSplit = type.split('-');
+    const action = typeSplit[0];
+    logger.info(`Action: ${action}`);
+    let result;
+    switch (action) {
+        case 'pnl':
+            result = await getPnlKeyData(hash, transactionReceipt);
+            break;
+        case 'invest':
+            result = await getInvestKeyData(
+                hash,
+                vaultStabeCoins.tokens[typeSplit[1]],
+                transactionReceipt
+            );
+            break;
+        default:
+            logger.warn(`Not fund action: ${action}`);
+    }
+    return result;
+}
+
+async function getReceipt(type) {
+    const transactionInfo = pendingTransactions.get(type);
+    const { label: msgLabel, hash } = transactionInfo;
+    const transactionReceipt = await getDefaultProvider()
+        .getTransactionReceipt(hash)
+        .catch((err) => {
+            logger.error(err);
+            throw new BlockChainCallError(
+                `Get receipt of ${hash} from chain failed.`,
+                MESSAGE_TYPES[msgLabel]
+            );
+        });
+    if (transactionReceipt) {
+        pendingTransactions.delete(type);
+    }
+    const result = await parseAdditionalData(type, hash, transactionReceipt);
+    return { type, msgLabel, hash, transactionReceipt, additionalData: result };
+}
+
+async function checkPendingTransactions(types) {
+    logger.info(`pendingTransactions.size: ${pendingTransactions.size}`);
+    let result = [];
+    if (!pendingTransactions.size) return result;
+    types = types || pendingTransactions.keys();
+    const pendingCheckPromise = [];
+    for (let i = 0; i < types.length; i += 1) {
+        const type = types[i];
+        logger.info(`pending keys: ${type}`);
+        const transactionInfo = pendingTransactions.get(type);
+        if (transactionInfo) {
+            pendingCheckPromise.push(getReceipt(type));
+        }
+    }
+    result = Promise.all(pendingCheckPromise);
+    return result;
+}
+
+module.exports = {
+    checkPendingTransactions,
+};
