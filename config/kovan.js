@@ -9,6 +9,8 @@ module.exports = {
         },
         start_block: 24774530,
         launch_timestamp: '1620682712',
+        keystore: process.env[`KEY_STORE_${process.env.BOT_ENV}`],
+        protect: process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
     },
     trigger_scheduler: {
         pending_transaction_check: '5 30 * * * *',

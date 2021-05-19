@@ -1,5 +1,6 @@
 const config = require('config');
 const { ethers } = require('ethers');
+const fs = require('fs');
 const { BigNumber } = require('ethers');
 const { NonceManager } = require('@ethersproject/experimental');
 const { SettingError, BlockChainCallError } = require('./error');
@@ -107,9 +108,25 @@ function getDefaultProvider() {
 
 function getBotWallet() {
     if (botWallet) return botWallet;
-    const provider = getRpcProvider();
-    botWallet = new ethers.Wallet(botPrivateKey, provider);
-    return botWallet;
+    try {
+        const provider = getRpcProvider();
+        if (config.get('blockchain.protect') === 'NO_PASSWORD') {
+            botWallet = new ethers.Wallet(botPrivateKey, provider);
+        } else {
+            const data = fs.readFileSync(config.get('blockchain.keystore'), {
+                flag: 'a+',
+            });
+            botWallet = ethers.Wallet.fromEncryptedJsonSync(
+                data,
+                config.get('blockchain.protect')
+            );
+            logger.info(`wallet address ${botWallet.address}`);
+            return botWallet.connect(provider);
+        }
+    } catch (e) {
+        logger.error(e);
+    }
+    return undefined;
 }
 
 function getNonceManager() {
