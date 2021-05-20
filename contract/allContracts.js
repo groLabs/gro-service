@@ -37,6 +37,7 @@ let chainPrice;
 const vaults = [];
 const strategyLength = [];
 const vaultAndStrategyLabels = {};
+const vaultStabeCoins = { tokens: {}, decimals: {} };
 
 function initController() {
     const controllerAddress = getConfig('contracts.controller');
@@ -234,6 +235,40 @@ async function initLifeguard() {
     logger.info(`chainPrice address: ${chainPriceAddress}`);
 }
 
+async function initVaultStabeCoins() {
+    const decimalABI = [
+        {
+            constant: true,
+            inputs: [],
+            name: 'decimals',
+            outputs: [
+                {
+                    internalType: 'uint8',
+                    name: '',
+                    type: 'uint8',
+                },
+            ],
+            payable: false,
+            stateMutability: 'view',
+            type: 'function',
+        },
+    ];
+    const lastIndex = vaults.length - 1;
+    if (lastIndex < 0) return;
+    vaultStabeCoins.tokens[vaults[lastIndex].address] = [];
+    for (let i = 0; i < lastIndex; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        const token = await vaults[i].token();
+        vaultStabeCoins.tokens[vaults[i].address] = [token];
+        vaultStabeCoins.tokens[vaults[lastIndex].address].push(token);
+        const stabeCoin = new ethers.Contract(token, decimalABI, nonceManager);
+        // eslint-disable-next-line no-await-in-loop
+        const decimals = await stabeCoin.decimals();
+        vaultStabeCoins.decimals[token] = decimals.toString();
+    }
+    logger.info(`Vault's stabe coins: ${JSON.stringify(vaultStabeCoins)}`);
+}
+
 async function initAllContracts() {
     initController();
     const promises = [];
@@ -254,6 +289,10 @@ async function initAllContracts() {
         `Vault and strategy label: ${JSON.stringify(vaultAndStrategyLabels)}`
     );
 
+    await initVaultStabeCoins().catch((error) => {
+        logger.error(error);
+        throw new ContractCallError("Initilize vaults' stabe coins failed");
+    });
     logger.info('Init contracts done!.');
 }
 
@@ -317,6 +356,10 @@ function getChainPrice() {
     return chainPrice;
 }
 
+function getVaultStabeCoins() {
+    return vaultStabeCoins;
+}
+
 module.exports = {
     initAllContracts,
     getController,
@@ -334,4 +377,5 @@ module.exports = {
     getBuoy,
     getVaultAndStrategyLabels,
     getChainPrice,
+    getVaultStabeCoins,
 };

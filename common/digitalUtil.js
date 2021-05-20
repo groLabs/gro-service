@@ -8,6 +8,18 @@ function div(mol, deno, decimal) {
     return BN(mol.toString()).div(deno).toFixed(decimal);
 }
 
+function adjustDecimal(mol, deno) {
+    return BN(mol.toString()).div(BN(10).pow(deno.toString()));
+}
+
+function toSum(datas) {
+    let total = BN(0);
+    for (let i = 0; i < datas.length; i += 1) {
+        total = total.plus(datas[i]);
+    }
+    return total.toFormat(2);
+}
+
 function calculateDelta(diff, total) {
     let result;
     if (total.eq(BigNumber.from(0))) {
@@ -33,6 +45,8 @@ module.exports = {
     ETH_DECIMAL,
     CONTRACT_ASSET_DECIMAL,
     div,
+    adjustDecimal,
+    toSum,
     formatNumber,
     shortAccount,
     calculateDelta,
