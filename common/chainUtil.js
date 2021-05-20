@@ -22,7 +22,10 @@ if (!config.has('blockchain.network')) {
     throw err;
 }
 
-if (!process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`]) {
+if (
+    !process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`] &&
+    process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`] === 'NO_PASSWORD'
+) {
     const err = new SettingError(
         `Environment variable ${`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`} are not set.`
     );
@@ -53,7 +56,7 @@ let botWallet;
 const network = config.get('blockchain.network');
 logger.info(`network: ${network}`);
 const botPrivateKey = process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`];
-logger.info(`bot private key : ${botPrivateKey}`);
+// logger.info(`bot private key : ${botPrivateKey}`);
 
 function getSocketProvider() {
     if (socketProvider) {
@@ -110,7 +113,9 @@ function getBotWallet() {
     if (botWallet) return botWallet;
     try {
         const provider = getRpcProvider();
-        if (config.get('blockchain.protect') === 'NO_PASSWORD') {
+        const keystorePassword = config.get('blockchain.keystore_password');
+
+        if (keystorePassword === 'NO_PASSWORD') {
             botWallet = new ethers.Wallet(botPrivateKey, provider);
         } else {
             const data = fs.readFileSync(config.get('blockchain.keystore'), {
@@ -118,15 +123,15 @@ function getBotWallet() {
             });
             botWallet = ethers.Wallet.fromEncryptedJsonSync(
                 data,
-                config.get('blockchain.protect')
+                keystorePassword
             );
-            logger.info(`wallet address ${botWallet.address}`);
-            return botWallet.connect(provider);
         }
+        logger.info(`wallet address ${botWallet.address}`);
+        return botWallet.connect(provider);
     } catch (e) {
         logger.error(e);
+        throw new SettingError('Init wallet failed.');
     }
-    return undefined;
 }
 
 function getNonceManager() {

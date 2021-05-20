@@ -7,6 +7,7 @@
         "dev": "nodemon ./bin/www",
         "regular": "node ./regular/index.js",
         "critical": "node ./critical/index.js",
+        "generate:keystore": "node ./scripts/generateKeystore.js",
         "start:develop:stats": "cross-env NODE_ENV=develop BOT_ENV=STATS node ./stats/bin/www",
         "start:develop:regular": "cross-env NODE_ENV=develop BOT_ENV=REGULAR node ./regular/index.js",
         "start:develop:critic": "cross-env NODE_ENV=develop BOT_ENV=CRITICAL node ./critical/index.js",

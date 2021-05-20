@@ -217,7 +217,7 @@ async function getSystemApy(latestBlock) {
         .subtract(7, 'day');
     let apyLast7d;
     if (startOf7DaysAgo.isBefore(launchDate)) {
-        apyLast24h = await calcApyOfInitDays(latestBlock);
+        apyLast7d = await calcApyOfInitDays(latestBlock);
     } else {
         apyLast7d = await calcApyByPeriod(
             startOf7DaysAgo,
@@ -265,7 +265,7 @@ async function getSystemApy(latestBlock) {
     // one day
     logger.info('----daily');
     const oneDayAgo = startOfUTCToday.subtract(1, 'day');
-    if (oneWeekAgo.isAfter(launchDate)) {
+    if (oneDayAgo.isAfter(launchDate)) {
         apyDaily = await calcApyByPeriod(
             oneDayAgo,
             gvtFactorUtcToday,
