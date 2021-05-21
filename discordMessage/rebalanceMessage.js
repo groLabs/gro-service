@@ -6,7 +6,7 @@ const {
     sendMessageToProtocolEventChannel,
 } = require('../common/discord/discordService');
 
-const { shortAccount } = require('../common/digitalUtil');
+const { shortAccount, formatNumber } = require('../common/digitalUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -51,13 +51,29 @@ function rebalanceMessage(content) {
 
 function rebalanceTransactionMessage(content) {
     if (content.length === 0) return;
-    const { type, msgLabel, hash, transactionReceipt } = content[0];
+    const { type, msgLabel, hash, transactionReceipt, additionalData } =
+        content[0];
     const typeItems = type.split('-');
+    let action = typeItems[0];
+    action = action.replace(action[0], action[0].toUpperCase());
     const label = shortAccount(hash);
+    const stableBalance = `New stablecoin balances are: ${formatNumber(
+        additionalData.stablecoinExposure[0] || 0,
+        4,
+        2
+    )} DAI, ${formatNumber(
+        additionalData.stablecoinExposure[1] || 0,
+        4,
+        2
+    )} USDC, ${formatNumber(
+        additionalData.stablecoinExposure[2] || 0,
+        4,
+        2
+    )} USDT`;
     const discordMessage = {
         type: msgLabel,
-        message: `${type} transaction ${hash} has mined to chain`,
-        description: `${MESSAGE_EMOJI.company} ${label} ${typeItems[0]} action confirmed to chain`,
+        message: `${type} transaction ${hash} has mined to chain. ${stableBalance}`,
+        description: `${MESSAGE_EMOJI.company} ${label} ${action} action confirmed to chain. ${stableBalance}`,
         urls: [
             {
                 label,
@@ -68,10 +84,10 @@ function rebalanceTransactionMessage(content) {
     };
     if (!transactionReceipt) {
         discordMessage.message = `${type} transaction: ${hash} is still pending.`;
-        discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${typeItems[0]} action still pending`;
+        discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${action} action still pending`;
     } else if (!transactionReceipt.status) {
         discordMessage.message = `${type} transaction ${hash} reverted.`;
-        discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${typeItems[0]} action is reverted`;
+        discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${action} action is reverted`;
     }
     logger.info(discordMessage.message);
     sendMessageToProtocolEventChannel(discordMessage);

@@ -2,9 +2,13 @@ const { ethers } = require('ethers');
 const { getRpcProvider } = require('../chainUtil');
 const { BlockChainCallError } = require('../error');
 const { MESSAGE_TYPES } = require('../discord/discordService');
-const { pnlABI, stableCoinABI } = require('./eventAbi');
+const { pnlABI, stableCoinABI, reportABI } = require('./eventAbi');
 const { adjustDecimal, toSum } = require('../digitalUtil');
-const { getVaultStabeCoins } = require('../../contract/allContracts');
+const {
+    getVaultStabeCoins,
+    getInsurance,
+    getExposure,
+} = require('../../contract/allContracts');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 /* eslint-disable import/no-dynamic-require */
@@ -52,7 +56,7 @@ async function getPnlKeyData(transactionHash, transactionReceipt) {
     if (transactionReceipt) {
         const { logs } = transactionReceipt;
         const topic = getEventTopic(pnlABI);
-        logger.info(`topic: ${topic}`);
+        logger.info(`Pnl topic: ${topic}`);
         for (let i = 0; i < logs.length; i += 1) {
             const { topics, data } = logs[i];
             if (topic === topics[0]) {
@@ -82,7 +86,7 @@ async function getInvestKeyData(
     if (transactionReceipt) {
         const { logs } = transactionReceipt;
         const topic = getEventTopic(stableCoinABI);
-        logger.info(`topic: ${topic}`);
+        logger.info(`Transfer topic: ${topic}`);
         for (let i = 0; i < logs.length; i += 1) {
             const { topics, address, data } = logs[i];
             if (topic === topics[0] && stabeCoins.includes(address)) {
@@ -103,7 +107,61 @@ async function getInvestKeyData(
     return toSum(eachItem);
 }
 
+async function getHarvestKeyData(transactionHash, transactionReceipt) {
+    transactionReceipt = await pretreatReceipt(
+        MESSAGE_TYPES.harvest,
+        transactionHash,
+        transactionReceipt
+    );
+    if (transactionReceipt) {
+        const { logs } = transactionReceipt;
+        const topic = getEventTopic(reportABI);
+        logger.info(`Report topic: ${topic}`);
+        for (let i = 0; i < logs.length; i += 1) {
+            const { topics, data } = logs[i];
+            if (topic === topics[0]) {
+                return parseData(reportABI.dataSignature, data);
+            }
+        }
+    }
+    return [];
+}
+
+async function getRebalanceKeyData(transactionHash, transactionReceipt) {
+    transactionReceipt = await pretreatReceipt(
+        MESSAGE_TYPES.harvest,
+        transactionHash,
+        transactionReceipt
+    );
+
+    if (transactionReceipt) {
+        const { blockNumber } = transactionReceipt;
+        const systemState = await getInsurance()
+            .prepareCalculation({ blockTag: blockNumber })
+            .catch((error) => {
+                logger.error(error);
+                throw new BlockChainCallError(
+                    "Get system's state failed",
+                    MESSAGE_TYPES.rebalance
+                );
+            });
+        const exposureState = await getExposure()
+            .calcRiskExposure(systemState, { blockTag: blockNumber })
+            .catch((error) => {
+                logger.error(error);
+                throw new BlockChainCallError(
+                    "Get system's exposure state failed",
+                    MESSAGE_TYPES.rebalance
+                );
+            });
+        return { stablecoinExposure: exposureState[0] };
+    }
+    return { stablecoinExposure: [] };
+}
+
 module.exports = {
     getPnlKeyData,
     getInvestKeyData,
+    getHarvestKeyData,
+    getRebalanceKeyData,
 };
