@@ -1,6 +1,6 @@
 # gro-service
 
-Gro bot service APIs and stats APIs
+Gro bots:  critical actions, harvest/rebalance and stats APIs
 
 ## Prepare local enviroment
 
