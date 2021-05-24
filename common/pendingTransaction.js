@@ -7,7 +7,7 @@ const {
     getInvestKeyData,
     getHarvestKeyData,
     getRebalanceKeyData,
-} = require('./triggerEvent/actionDataFunder');
+} = require('./actionDataFunder');
 const { MESSAGE_TYPES } = require('./discord/discordService');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -67,7 +67,7 @@ async function checkPendingTransactions(types) {
     logger.info(`pendingTransactions.size: ${pendingTransactions.size}`);
     let result = [];
     if (!pendingTransactions.size) return result;
-    types = types || pendingTransactions.keys();
+    types = types || Array.from(pendingTransactions.keys());
     const pendingCheckPromise = [];
     for (let i = 0; i < types.length; i += 1) {
         const type = types[i];

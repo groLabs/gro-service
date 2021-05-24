@@ -1,6 +1,5 @@
 const schedule = require('node-schedule');
 const {
-    getDefaultProvider,
     getNonceManager,
     syncNounce,
     checkAccountBalance,
@@ -9,9 +8,7 @@ const {
 const { checkPendingTransactions } = require('../../common/pendingTransaction');
 const { pendingTransactions } = require('../../common/storage');
 const {
-    MESSAGE_EMOJI,
     sendMessageToAlertChannel,
-    sendMessageToProtocolEventChannel,
 } = require('../../common/discord/discordService');
 const { SettingError, BlockChainCallError } = require('../../common/error');
 const {
@@ -50,7 +47,6 @@ const {
 } = require('../../discordMessage/harvestMessage');
 const logger = require('../regularLogger');
 
-const provider = getDefaultProvider();
 const nonceManager = getNonceManager();
 const pendingTransactionSchedulerSetting =
     getConfig('trigger_scheduler.pending_transaction_check', false) ||
@@ -85,8 +81,6 @@ if (!process.env[botAddressKey]) {
     throw err;
 }
 
-const botAccount = process.env[botAddressKey];
-
 function checkBotAccountBalance() {
     schedule.scheduleJob(botBalanceSchedulerSetting, async () => {
         logger.info(`checkBotAccountBalance running at ${Date.now()}`);
@@ -98,96 +92,94 @@ function checkBotAccountBalance() {
     });
 }
 
-async function checkPendingTransaction(type, oldTransaction) {
-    const { hash, label: msgLabel } = oldTransaction;
-    const transactionReceipt = await provider
-        .getTransactionReceipt(hash)
-        .catch((err) => {
-            logger.error(err);
+async function resendPendingTransaction(types) {
+    for (let i = 0; i < types.length; i += 1) {
+        const type = types[i];
+        const oldTransaction = pendingTransactions.get(type);
+        const { label: msgLabel, hash } = oldTransaction;
+        const timestamps = Date.now() - oldTransaction.createdTime;
+        // the transaction has arleady pending one hour
+        if (timestamps > 3600000) {
             throw new BlockChainCallError(
-                `Get receipt of ${hash} from chain failed.`,
-                msgLabel,
-                hash
+                `${type} transaction: ${hash} has pending than one hour, please check manually.`,
+                msgLabel
             );
-        });
-    const timestamps = Date.now() - oldTransaction.createdTime;
-    if (!transactionReceipt && timestamps > 3600000) {
-        // transactionReceipt == null, pending > 6s, resend
-        const signedTX = await nonceManager.signTransaction(
-            oldTransaction.transactionRequest
-        );
-        const transactionResponse = await nonceManager
-            .sendTransaction(signedTX)
-            .catch((error) => {
-                logger.error(error);
-                throw new BlockChainCallError(
-                    `Resend transaction: ${hash} failed.`,
-                    msgLabel,
-                    hash
-                );
-            });
-        pendingTransactions.set(type, {
-            blockNumber: oldTransaction.blockNumber,
-            reSendTimes: oldTransaction.reSendTimes + 1,
-            hash: transactionResponse.hash,
-            createdTime: Date.now(),
-            transactionRequest: {
-                nonce: transactionResponse.nonce,
-                gasPrice: transactionResponse.gasPrice.hex,
-                gasLimit: transactionResponse.gasPrice.hex,
-                to: transactionResponse.to,
-                value: transactionResponse.value.hex,
-                data: transactionResponse.data,
-                chainId: transactionResponse.chainId,
-                from: transactionResponse.from,
-            },
-        });
-        return;
-    }
-    const msgObj = {
-        type: msgLabel,
-        params: botAccount,
-    };
+            /// the logic for each behavior still not clear
+            /// TODO please change below after logic is confirmated
 
-    if (!transactionReceipt) {
-        msgObj.message = `${type} transaction: ${hash} is still pending.`;
-        logger.info(msgObj.message);
-        sendMessageToProtocolEventChannel(msgObj);
-    } else {
-        // remove hash from pending transactions
-        pendingTransactions.delete(type);
-        const label = 'TX';
-        if (transactionReceipt.status === 1) {
-            msgObj.message = `${type} transaction: ${hash} has mined to chain.`;
-            msgObj.description = `${label} ${type} action was minted to chain`;
-        } else {
-            msgObj.message = `${type} transaction: ${hash} has reverted.`;
-            msgObj.emojis = [MESSAGE_EMOJI.reverted];
-            msgObj.description = `${label} ${type} action has been reverted`;
+            // // eslint-disable-next-line no-await-in-loop
+            // const signedTX = await nonceManager.signTransaction(
+            //     oldTransaction.transactionRequest
+            // );
+            // // eslint-disable-next-line no-await-in-loop
+            // const transactionResponse = await nonceManager
+            //     .sendTransaction(signedTX)
+            //     .catch((error) => {
+            //         logger.error(error);
+            //         throw new BlockChainCallError(
+            //             `Resend transaction: ${hash} failed.`,
+            //             msgLabel
+            //         );
+            //     });
+            // pendingTransactions.set(type, {
+            //     blockNumber: oldTransaction.blockNumber,
+            //     reSendTimes: oldTransaction.reSendTimes + 1,
+            //     hash: transactionResponse.hash,
+            //     createdTime: Date.now(),
+            //     transactionRequest: {
+            //         nonce: transactionResponse.nonce,
+            //         gasPrice: transactionResponse.gasPrice.hex,
+            //         gasLimit: transactionResponse.gasPrice.hex,
+            //         to: transactionResponse.to,
+            //         value: transactionResponse.value.hex,
+            //         data: transactionResponse.data,
+            //         chainId: transactionResponse.chainId,
+            //         from: transactionResponse.from,
+            //     },
+            // });
         }
-        msgObj.urls = [];
-        msgObj.urls.push({
-            label,
-            type: 'tx',
-            value: hash,
-        });
-        logger.info(JSON.stringify(msgObj));
-        sendMessageToProtocolEventChannel(msgObj);
+    }
+}
+function sendMintedMessage(type, transactionResult) {
+    const typeSplit = type.split('-');
+    const action = typeSplit[0];
+    logger.info(`Transaction type : ${action}`);
+    switch (action) {
+        case 'pnl':
+            pnlTransactionMessage([transactionResult]);
+            break;
+        case 'invest':
+            investTransactionMessage([transactionResult]);
+            break;
+        case 'harvest':
+            harvestTransactionMessage([transactionResult]);
+            break;
+        case 'rebalance':
+            rebalanceTransactionMessage([transactionResult]);
+            break;
+        default:
+            logger.warn(`Transaction type : ${action}`);
     }
 }
 
 async function checkLongPendingTransactions() {
     if (!pendingTransactions.size) return;
-    const types = pendingTransactions.keys();
-    const pendingCheckPromises = [];
-    for (let i = 0; i < types.length; i += 1) {
-        const type = types[i];
-        const oldTransaction = pendingTransactions.get(type);
-        pendingCheckPromises.push(
-            checkPendingTransaction(type, oldTransaction)
-        );
+    const result = await checkPendingTransactions();
+
+    const longPendingTransactions = [];
+    for (let i = 0; i < result.length; i += 1) {
+        const transactionResult = result[i];
+        const { type, transactionReceipt } = transactionResult;
+        // eslint-disable-next-line no-await-in-loop
+        sendMintedMessage(type, transactionResult);
+        if (!transactionReceipt) {
+            longPendingTransactions.push(type);
+        }
     }
-    await Promise.all(pendingCheckPromises);
+    logger.info(
+        `Pending transaction : size ${longPendingTransactions.length}, transactions ${longPendingTransactions}`
+    );
+    await resendPendingTransaction(longPendingTransactions);
 }
 
 function longPendingTransactionsScheduler() {
