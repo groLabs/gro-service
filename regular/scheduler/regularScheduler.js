@@ -349,6 +349,7 @@ function EventSummaryScheduler() {
 function updateChainPrice() {
     schedule.scheduleJob(botUpdateChainPriceSchedulerSetting, async () => {
         try {
+            await syncNounce();
             const chainLinkPrice = await updateChainlinkPrice();
             logger.info(`chainLinkPrice: ${chainLinkPrice}`);
         } catch (error) {

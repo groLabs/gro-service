@@ -1,5 +1,5 @@
 class ContractCallError extends Error {
-    constructor(message, messageTag, option) {
+    constructor(message, messageTag, option = {}) {
         super(message);
         this.name = 'ContractCallError';
         this.messageTag = messageTag;
