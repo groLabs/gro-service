@@ -7,8 +7,8 @@ module.exports = {
             etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
             pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
         },
-        start_block: 24897349,
-        launch_timestamp: '1621279104',
+        start_block: 25059422,
+        launch_timestamp: '1621960061621960060',
         keystore: process.env[`KEY_STORE_${process.env.BOT_ENV}`],
         keystore_password: process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
     },
@@ -81,7 +81,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x6c888F49A5cc698ee3ad9baD45D9c864b6a47D0b',
+        controller: '0xe5db9725071F2d1369EA8A31C04e84295eCe6910',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
