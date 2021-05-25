@@ -27,6 +27,8 @@ const totalFailedPercentage = getConfig('fail_percentage_total', false) || 1000;
 const harvestStrategies = getConfig('harvest_strategy_dependency');
 const creamStrategies = getConfig('cream_strategy_dependency');
 const curvePoolStrategy = getConfig('curve_strategy_dependency');
+const ratioUpperBond = BigNumber.from(getConfig('ratioUpperBond'));
+const ratioLowerBond = BigNumber.from(getConfig('ratioLowerBond'));
 const nonceManager = getNonceManager();
 
 const logger = require('../criticalLogger');
@@ -105,22 +107,47 @@ async function checkPriceUpdateInChainPrice(stabeCoins) {
     }
 }
 
+function outOfRange(value, decimal) {
+    const lowerBond = decimal.mul(ratioUpperBond).div(BigNumber.from(10000));
+    const upperBond = decimal.mul(ratioLowerBond).div(BigNumber.from(10000));
+    return value.lt(lowerBond) || value.gt(upperBond);
+}
+
+function findBrokenToken(price01, price02, price12) {
+    if (outOfRange(price01[0], price01[1])) {
+        // one of 0,1 has issue
+        if (outOfRange(price02[0], price02[1])) {
+            // one of 0,2 has issue
+            return 0;
+        }
+        // 0,2 are close, 1 has issue
+        return 1;
+    }
+
+    if (outOfRange(price02[0], price02[1])) {
+        // 0,1 are close and 0,2 has issue => 2 has issue
+        return 2;
+    }
+
+    if (outOfRange(price12[0], price12[1])) {
+        // 0,1 are close and 1,2 has issue => 2 has issue
+        return 2;
+    }
+    return 4;
+}
+
 async function curvePriceCheck() {
-    const stabeCoins = await getStabeCoins();
-    await checkPriceUpdateInChainPrice(stabeCoins);
-    const safetyCheck = await getBuoy()
-        .safetyCheck()
-        .catch((error) => {
-            handleError(error, {
-                curveCheck: {
-                    message: "Call Buoy's safetyCheck failed",
-                },
-            });
-        });
-    logger.info(`safetyCheck ${safetyCheck}`);
-    if (!safetyCheck) {
+    const price01 = await getBuoy().getRatio(0, 1);
+    const price02 = await getBuoy().getRatio(0, 2);
+    const price12 = await getBuoy().getRatio(1, 2);
+    logger.info(`price01 ${price01}`);
+    logger.info(`price02 ${price02}`);
+    logger.info(`price12 ${price12}`);
+    const coinIndex = findBrokenToken(price01, price02, price12);
+    logger.info(`coinIndex ${coinIndex}`);
+    if (coinIndex > 100) {
         await getController()
-            .stop()
+            .emergency(coinIndex)
             .catch((error) => {
                 handleError(error, {
                     curveCheck: {
@@ -129,7 +156,8 @@ async function curvePriceCheck() {
                 });
             });
     }
-    curvePriceMessage({ isSafety: safetyCheck });
+    curvePriceMessage({ needStop: coinIndex < 4, abnormalIndex: coinIndex });
+    const safetyCheck = true;
     return safetyCheck;
 }
 
