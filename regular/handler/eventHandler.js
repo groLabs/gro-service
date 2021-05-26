@@ -11,7 +11,8 @@ const { ContractCallError } = require('../../common/error');
 const {
     MESSAGE_TYPES,
     MESSAGE_EMOJI,
-    sendMessageToTradeChannel,
+    DISCORD_CHANNELS,
+    sendMessageToChannel,
 } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
 const { getDefaultProvider } = require('../../common/chainUtil');
@@ -266,14 +267,10 @@ async function generateSummaryReport(fromBlock, toBlock) {
         fromBlock,
         toBlock
     );
-    const {
-        originValue: originVaultValue,
-        value: vaultTVL,
-    } = await getGTokenAsset(getGvt(), toBlock);
-    const {
-        originValue: originPwrdValue,
-        value: pwrdTVL,
-    } = await getGTokenAsset(getPwrd(), toBlock);
+    const { originValue: originVaultValue, value: vaultTVL } =
+        await getGTokenAsset(getGvt(), toBlock);
+    const { originValue: originPwrdValue, value: pwrdTVL } =
+        await getGTokenAsset(getPwrd(), toBlock);
     const tvl = getTVLDelta(
         depositEventResult.total,
         withdrawEventResult.total,
@@ -335,7 +332,7 @@ async function generateGvtTransfer(fromBlock, toBlock) {
         const label = 'TX';
         const sender = shortAccount(log.sender);
         const recipient = shortAccount(log.recipient);
-        sendMessageToTradeChannel({
+        sendMessageToChannel(DISCORD_CHANNELS.trades, {
             message: msg,
             type: MESSAGE_TYPES.transferEvent,
             emojis: [MESSAGE_EMOJI[log.gToken]],
@@ -403,7 +400,7 @@ async function generatePwrdTransfer(fromBlock, toBlock) {
         const label = 'TX';
         const sender = shortAccount(log.sender);
         const recipient = shortAccount(log.recipient);
-        sendMessageToTradeChannel({
+        sendMessageToChannel(DISCORD_CHANNELS.trades, {
             message: msg,
             type: MESSAGE_TYPES.transferEvent,
             emojis: [MESSAGE_EMOJI[log.gToken]],

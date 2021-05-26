@@ -9,7 +9,7 @@ const { pendingTransactions } = require('../../common/storage');
 const {
     sendMessageToAlertChannel,
 } = require('../../common/discord/discordService');
-const { BlockChainCallError } = require('../../common/error');
+const { pendingTransactionResend } = require('../../gasPrice/transaction');
 const {
     investTrigger,
     pnlTrigger,
@@ -67,6 +67,7 @@ const eventSummarySchedulerSetting =
 const botUpdateChainPriceSchedulerSetting =
     getConfig('trigger_scheduler.bot_chainlink_check', false) ||
     '00 20 * * * *';
+const longPendingTransactionSetting = getConfig('transaction_long_pending');
 
 const botBalanceWarnVault =
     getConfig('bot_balance_warn', false) || '2000000000000000000';
@@ -86,47 +87,19 @@ async function resendPendingTransaction(types) {
     for (let i = 0; i < types.length; i += 1) {
         const type = types[i];
         const oldTransaction = pendingTransactions.get(type);
-        const { label: msgLabel, hash } = oldTransaction;
-        const timestamps = Date.now() - oldTransaction.createdTime;
-        // the transaction has arleady pending one hour
-        if (timestamps > 3600000) {
-            throw new BlockChainCallError(
-                `${type} transaction: ${hash} has pending than one hour, please check manually.`,
-                msgLabel
+        const { timestamp, methodName, hash } = oldTransaction;
+        const pendingTimes = Date.now() - timestamp;
+        const pendingTimeSetting = longPendingTransactionSetting[methodName];
+        if (pendingTimes > pendingTimeSetting) {
+            logger.info(
+                `Transaction[${type}] ${hash} already pending ${
+                    pendingTimes / 1000
+                } seconds, more than setting ${
+                    pendingTimeSetting / 1000
+                } seconds, will resend this transaction`
             );
-            /// the logic for each behavior still not clear
-            /// TODO please change below after logic is confirmated
-
-            // // eslint-disable-next-line no-await-in-loop
-            // const signedTX = await nonceManager.signTransaction(
-            //     oldTransaction.transactionRequest
-            // );
-            // // eslint-disable-next-line no-await-in-loop
-            // const transactionResponse = await nonceManager
-            //     .sendTransaction(signedTX)
-            //     .catch((error) => {
-            //         logger.error(error);
-            //         throw new BlockChainCallError(
-            //             `Resend transaction: ${hash} failed.`,
-            //             msgLabel
-            //         );
-            //     });
-            // pendingTransactions.set(type, {
-            //     blockNumber: oldTransaction.blockNumber,
-            //     reSendTimes: oldTransaction.reSendTimes + 1,
-            //     hash: transactionResponse.hash,
-            //     createdTime: Date.now(),
-            //     transactionRequest: {
-            //         nonce: transactionResponse.nonce,
-            //         gasPrice: transactionResponse.gasPrice.hex,
-            //         gasLimit: transactionResponse.gasPrice.hex,
-            //         to: transactionResponse.to,
-            //         value: transactionResponse.value.hex,
-            //         data: transactionResponse.data,
-            //         chainId: transactionResponse.chainId,
-            //         from: transactionResponse.from,
-            //     },
-            // });
+            // eslint-disable-next-line no-await-in-loop
+            await pendingTransactionResend(type, oldTransaction);
         }
     }
 }

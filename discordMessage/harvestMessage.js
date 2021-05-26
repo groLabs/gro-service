@@ -4,7 +4,7 @@ const {
     MESSAGE_EMOJI,
     DISCORD_CHANNELS,
     sendMessage,
-    sendMessageToProtocolEventChannel,
+    sendMessageToChannel,
 } = require('../common/discord/discordService');
 const {
     getVaultAndStrategyLabels,
@@ -43,7 +43,6 @@ function harvestTriggerMessage(content) {
         ];
     }
     sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
-    // sendMessageToProtocolEventChannel(discordMessage);
 }
 
 function harvestMessage(content) {
@@ -77,7 +76,7 @@ function harvestMessage(content) {
             },
         ],
     };
-    sendMessageToProtocolEventChannel(discordMessage);
+    sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
 }
 
 function formatHarvestAmount(decimal, data) {
@@ -123,13 +122,13 @@ function harvestTransactionMessage(content) {
         };
         if (!transactionReceipt) {
             discordMessage.message = `${type} transaction: ${hash} is still pending.`;
-            discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${action} action for ${vaultName}'s ${strategyName} still pending`;
+            discordMessage.description = undefined;
         } else if (!transactionReceipt.status) {
             discordMessage.message = `${type} transaction ${hash} reverted.`;
             discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${action} action for ${vaultName}'s ${strategyName} is reverted`;
         }
         logger.info(discordMessage.message);
-        sendMessageToProtocolEventChannel(discordMessage);
+        sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
     }
 }
 

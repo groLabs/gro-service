@@ -3,7 +3,8 @@ const { formatNumber, shortAccount } = require('../common/digitalUtil');
 const {
     MESSAGE_TYPES,
     MESSAGE_EMOJI,
-    sendMessageToTradeChannel,
+    DISCORD_CHANNELS,
+    sendMessageToChannel,
 } = require('../common/discord/discordService');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -15,7 +16,7 @@ function depositEventMessage(content) {
         const msg = `\nGToken: ${log.gtoken}\nAccount: ${log.account}\nBlockNumer: ${log.blockNumber}\nTransactionHash: ${log.transactionHash}\nReferral: ${log.referral}\nUsdAmount: ${log.usdAmount}\nDAI: ${log.tokens[0]}\nUSDC: ${log.tokens[1]}\nUSDT: ${log.tokens[2]}`;
         const account = shortAccount(log.account);
         const toAccount = log.gtoken === 'Vault' ? 'into Vault' : log.gtoken;
-        sendMessageToTradeChannel({
+        sendMessageToChannel(DISCORD_CHANNELS.trades, {
             message: msg,
             type: MESSAGE_TYPES.depositEvent,
             emojis: [MESSAGE_EMOJI[log.gtoken]],
@@ -59,7 +60,7 @@ function withdrawEventMessage(content) {
         }\nUSDC: ${log.tokens[1]}\nUSDT: ${log.tokens[2]}`;
         const account = shortAccount(log.account);
         const toAccount = log.gtoken === 'Vault' ? 'from Vault' : log.gtoken;
-        sendMessageToTradeChannel({
+        sendMessageToChannel(DISCORD_CHANNELS.trades, {
             message: msg,
             type: MESSAGE_TYPES.withdrawEvent,
             emojis: [MESSAGE_EMOJI[log.gtoken]],
@@ -143,7 +144,7 @@ function summaryMessage(content) {
     };
 
     logger.info(discordMsg);
-    sendMessageToTradeChannel(discordMsg);
+    sendMessageToChannel(DISCORD_CHANNELS.trades, discordMsg);
 }
 
 module.exports = {

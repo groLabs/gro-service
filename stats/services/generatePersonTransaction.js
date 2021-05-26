@@ -51,6 +51,7 @@ function getTransactions(data) {
     const groWithdrawEvents = data.groVault.withdraw;
     const pwrdDepositEvents = data.powerD.deposit;
     const pwrdWithdrawEvents = data.powerD.withdraw;
+    const approvalEvents = data.approval;
 
     const groDepositTransactions = parseData(
         groDepositEvents,
@@ -84,6 +85,7 @@ function getTransactions(data) {
         ...groWithdrawTransactions,
         ...pwrdDepositTransactions,
         ...pwrdWithdrawTransactions,
+        ...approvalEvents,
     ];
 }
 

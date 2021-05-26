@@ -52,6 +52,13 @@ module.exports = {
         rebalance: ':scales:',
         curveCheck: ':loudspeaker:',
     },
+    transaction_long_pending: {
+        invest: 1800000,
+        investToCurveVault: 1800000,
+        strategyHarvest: 900000,
+        execPnL: 300000,
+        rebalance: 120000,
+    },
     keep_stats_file_number: 80,
     stats_folder: '../stats',
     log_folder: './logs',
@@ -83,7 +90,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x4EE6eCAD1c2Dae9f525404De8555724e3c35d07B',
+        controller: '0x7969c5eD335650692Bc04293B07F5BF2e7A673C0',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

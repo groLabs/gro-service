@@ -6,8 +6,9 @@ const { NonceManager } = require('@ethersproject/experimental');
 const { SettingError, BlockChainCallError } = require('./error');
 const { shortAccount } = require('./digitalUtil');
 const {
-    sendMessageToLogChannel,
+    sendMessageToChannel,
     MESSAGE_TYPES,
+    DISCORD_CHANNELS,
 } = require('./discord/discordService');
 const { botBalanceMessage } = require('../discordMessage/botBalanceMessage');
 
@@ -158,7 +159,7 @@ async function syncNounce() {
     // Adjust local nonce
     if (transactionCountInChain > transactionCountInLocal) {
         nonceManager.setTransactionCount(transactionCountInChain);
-        sendMessageToLogChannel({
+        sendMessageToChannel(DISCORD_CHANNELS.botLogs, {
             message: `Set bot Nonce to ${transactionCountInChain}`,
             type: MESSAGE_TYPES.adjustNonce,
         });
