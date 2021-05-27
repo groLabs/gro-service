@@ -77,7 +77,7 @@ module.exports = {
         yearn: '0x1B5eb1173D2Bf770e50F10410C9a96F7a8eB6e75',
         curve: '0x7Eb40E450b9655f4B3cC4259BCC731c63ff55ae6',
     },
-    ratioUpperBond: 13000,
+    ratioUpperBond: 14000,
     ratioLowerBond: 7000,
     lifeguard_name: '3CRV',
     before_block: 30,

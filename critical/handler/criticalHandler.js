@@ -108,8 +108,9 @@ async function checkPriceUpdateInChainPrice(stabeCoins) {
 }
 
 function outOfRange(value, decimal) {
-    const lowerBond = decimal.mul(ratioUpperBond).div(BigNumber.from(10000));
-    const upperBond = decimal.mul(ratioLowerBond).div(BigNumber.from(10000));
+    const upperBond = decimal.mul(ratioUpperBond).div(BigNumber.from(10000));
+    const lowerBond = decimal.mul(ratioLowerBond).div(BigNumber.from(10000));
+    logger.info(`uppder ${upperBond} lower ${lowerBond}`);
     return value.lt(lowerBond) || value.gt(upperBond);
 }
 
@@ -137,6 +138,8 @@ function findBrokenToken(price01, price02, price12) {
 }
 
 async function curvePriceCheck() {
+    const stabeCoins = await getStabeCoins();
+    await checkPriceUpdateInChainPrice(stabeCoins);
     const price01 = await getBuoy().getRatio(0, 1);
     const price02 = await getBuoy().getRatio(0, 2);
     const price12 = await getBuoy().getRatio(1, 2);
@@ -145,7 +148,7 @@ async function curvePriceCheck() {
     logger.info(`price12 ${price12}`);
     const coinIndex = findBrokenToken(price01, price02, price12);
     logger.info(`coinIndex ${coinIndex}`);
-    if (coinIndex > 100) {
+    if (coinIndex > 3) {
         await getController()
             .emergency(coinIndex)
             .catch((error) => {

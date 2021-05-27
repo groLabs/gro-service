@@ -12,7 +12,8 @@ const { pendingTransactions } = require('../../common/storage');
 const { ContractSendError } = require('../../common/error');
 const {
     MESSAGE_TYPES,
-    sendMessageToProtocolEventChannel,
+    DISCORD_CHANNELS,
+    sendMessage,
 } = require('../../common/discord/discordService');
 const { investMessage } = require('../../discordMessage/investMessage');
 const { rebalanceMessage } = require('../../discordMessage/rebalanceMessage');
@@ -68,10 +69,12 @@ async function invest(blockNumber, investParams) {
 
 async function harvestStrategy(blockNumber, strategyInfo) {
     const key = `harvest-${strategyInfo.vault.address}-${strategyInfo.strategyIndex}`;
-    const vaultName = getVaultAndStrategyLabels()[strategyInfo.vault.address]
-        .name;
-    const strategyName = getVaultAndStrategyLabels()[strategyInfo.vault.address]
-        .strategies[strategyInfo.strategyIndex].name;
+    const vaultName =
+        getVaultAndStrategyLabels()[strategyInfo.vault.address].name;
+    const strategyName =
+        getVaultAndStrategyLabels()[strategyInfo.vault.address].strategies[
+            strategyInfo.strategyIndex
+        ].name;
     const harvestResult = await strategyInfo.vault
         .strategyHarvest(strategyInfo.strategyIndex, strategyInfo.callCost)
         .catch((error) => {
@@ -109,8 +112,10 @@ async function harvestStrategy(blockNumber, strategyInfo) {
         strategyName,
         vaultAddress: strategyInfo.vault.address,
         transactionHash: harvestResult.hash,
-        strategyAddress: getVaultAndStrategyLabels()[strategyInfo.vault.address]
-            .strategies[strategyInfo.strategyIndex].address,
+        strategyAddress:
+            getVaultAndStrategyLabels()[strategyInfo.vault.address].strategies[
+                strategyInfo.strategyIndex
+            ].address,
     });
 }
 
@@ -218,7 +223,7 @@ async function curveInvest(blockNumber) {
 }
 
 async function updateChainlinkPrice() {
-    const stabeCoins = await getController()
+    const stableCoins = await getController()
         .stablecoins()
         .catch((error) => {
             logger.error(error);
@@ -228,22 +233,33 @@ async function updateChainlinkPrice() {
             );
         });
     const prices = [];
-    for (let i = 0; i < stabeCoins.length; i += 1) {
+    for (let i = 0; i < stableCoins.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await getChainPrice()
-            .getSafePriceFeed(stabeCoins[i])
-            .catch((error) => {
-                logger.error(error);
-                throw new ContractSendError(
-                    `GetSafePriceFeed call for stablecoin: ${stabeCoins[i]} failed`,
-                    MESSAGE_TYPES.chainPrice
-                );
+        const needUpdate = await getChainPrice().priceUpdateTrigger(
+            stableCoins[i]
+        );
+        logger.info(`needUpdate ${needUpdate}, ${stableCoins[i]}`);
+        if (needUpdate) {
+            // eslint-disable-next-line no-await-in-loop
+            prices[i] = await getChainPrice()
+                .getSafePriceFeed(stableCoins[i])
+                .catch((error) => {
+                    logger.error(error);
+                    throw new ContractSendError(
+                        `GetSafePriceFeed call for stablecoin: ${stableCoins[i]} failed`,
+                        MESSAGE_TYPES.chainPrice
+                    );
+                });
+            updateChainlinkPriceMessage({
+                stableCoinAddress: stableCoins[i],
+                stableCoinIndex: i,
             });
-        updateChainlinkPriceMessage({
-            stableCoinAddress: stabeCoins[i],
-            stableCoinIndex: i,
-        });
-        logger.info(`getSafePriceFeed ${i}, ${stabeCoins[i]}}`);
+            logger.info(`getSafePriceFeed ${i}, ${stableCoins[i]}}`);
+        } else {
+            sendMessage(DISCORD_CHANNELS.botLogs, {
+                message: `Call priceUpdateTrigger ${needUpdate}, ${stableCoins[i]}`,
+            });
+        }
     }
     return prices;
 }
