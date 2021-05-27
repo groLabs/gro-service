@@ -43,7 +43,7 @@ async function findBlockByDate(scanDate) {
             logger.error(error);
             logger.error(`Could not get block ${scanDate}`);
         });
-    logger.info(`scanDate ${scanDate.toDate()} block ${blockFound.block}`);
+    logger.info(`scanDate ${scanDate} block ${blockFound.block}`);
     return blockFound;
 }
 

@@ -17,9 +17,9 @@ function checkCurveHealth() {
         logger.info(`Run critical check on : ${new Date()}`);
         try {
             await curvePriceCheck();
-            if (process.env.NODE_ENV === 'mainnet') {
-                await strategyCheck();
-            }
+            // if (process.env.NODE_ENV === 'mainnet') {
+            //     await strategyCheck();
+            // }
         } catch (error) {
             sendMessageToAlertChannel(error);
         }

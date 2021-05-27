@@ -6,10 +6,10 @@ const {
 } = require('../common/discord/discordService');
 
 function curvePriceMessage(content) {
-    const safetyCheck = content.isSafety;
-    let msg = `Curve price check is ${safetyCheck}`;
-    if (!safetyCheck) {
-        msg = `Curve price check is ${safetyCheck}, set system to **Stop** status`;
+    const { needStop, abnormalIndex } = content;
+    let msg = `Curve price check is ${needStop}, no need stop`;
+    if (needStop) {
+        msg = `Curve price check is ${needStop}, abnormalIndex ${abnormalIndex} set system to **Stop** status`;
     }
     const discordMessage = {
         message: msg,
@@ -17,7 +17,7 @@ function curvePriceMessage(content) {
         description: msg,
     };
 
-    if (safetyCheck) {
+    if (!needStop) {
         sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
     } else {
         sendMessageToCriticalEventChannel(discordMessage);
