@@ -14,7 +14,7 @@ const provider = getDefaultProvider();
 const scanner = new BlocksScanner(provider);
 
 const FACTOR_DECIMAL = BigNumber.from(10).pow(BigNumber.from(18));
-const GVT_INIT_FACTOR = BigNumber.from('3333333333333333');
+const GVT_INIT_FACTOR = BigNumber.from('5000000000000000');
 const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
 const SECONDS_IN_YEAR = BigNumber.from(31536000);
 const DAYS_IN_YEAR = BigNumber.from(365);
