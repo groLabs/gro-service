@@ -32,7 +32,7 @@ function depositEventMessage(content) {
                 log.tokens[2],
                 6,
                 2
-            )} USDT)`,
+            )} USDT -> ${formatNumber(log.gtokenAmount, 18, 2)} ${log.gtoken})`,
             urls: [
                 {
                     label: account,
@@ -76,7 +76,7 @@ function withdrawEventMessage(content) {
                 log.tokens[2],
                 6,
                 2
-            )} USDT)`,
+            )} USDT -> ${formatNumber(log.gtokenAmount, 18, 2)} ${log.gtoken})`,
             urls: [
                 {
                     label: account,

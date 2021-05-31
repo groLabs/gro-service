@@ -19,7 +19,7 @@ const { getDefaultProvider } = require('../../common/chainUtil');
 const { formatNumber, shortAccount } = require('../../common/digitalUtil');
 const { getGvt, getPwrd } = require('../../contract/allContracts');
 const { calculateDelta } = require('../../common/digitalUtil');
-
+const { getMintOrBurnGToken } = require('../../common/actionDataFunder');
 const {
     depositEventMessage,
     withdrawEventMessage,
@@ -55,6 +55,19 @@ async function updateLastBlockNumber(blockNumber, type) {
     fs.writeFileSync(blockNumberFile, JSON.stringify(blockObj));
 }
 
+async function AppendGTokenMintOrBurnAmountToLog(logs) {
+    const parsePromises = [];
+    logs.forEach((log) => {
+        parsePromises.push(
+            getMintOrBurnGToken(log.args[2], log.transactionHash, null)
+        );
+    });
+    const result = await Promise.all(parsePromises);
+    for (let i = 0; i < logs.length; i += 1) {
+        logs[i].gtokenAmount = result[i];
+    }
+}
+
 async function generateDepositReport(fromBlock, toBlock) {
     const logs = await getEvents(EVENT_TYPE.deposit, fromBlock, toBlock).catch(
         (error) => {
@@ -65,6 +78,10 @@ async function generateDepositReport(fromBlock, toBlock) {
             );
         }
     );
+
+    // handle gtoken mint amount
+    await AppendGTokenMintOrBurnAmountToLog(logs);
+
     const result = [];
     const total = {
         gvt: {
@@ -111,6 +128,7 @@ async function generateDepositReport(fromBlock, toBlock) {
             log.args[4][1].toString(),
             log.args[4][2].toString(),
         ];
+        item.gtokenAmount = log.gtokenAmount;
         result.push(item);
     });
     logger.info(
@@ -132,6 +150,10 @@ async function generateWithdrawReport(fromBlock, toBlock) {
             );
         }
     );
+
+    // parse burn gtoken amount
+    await AppendGTokenMintOrBurnAmountToLog(logs);
+
     const result = [];
     const total = {
         gvt: {
@@ -187,6 +209,7 @@ async function generateWithdrawReport(fromBlock, toBlock) {
             log.args[8][1].toString(),
             log.args[8][2].toString(),
         ];
+        item.gtokenAmount = log.gtokenAmount;
         result.push(item);
     });
     logger.info(

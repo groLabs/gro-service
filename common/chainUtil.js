@@ -167,29 +167,31 @@ async function syncNounce() {
 }
 
 async function checkAccountBalance(botBalanceWarnVault) {
-    const botAccount = getNonceManager().address;
+    const botAccount = getNonceManager().signer.address;
     const botType = `${process.env.BOT_ENV.toLowerCase()}Bot`;
     const accountLabel = shortAccount(botAccount);
-    const balance = await nonceManager.getBalance().catch((error) => {
-        logger.error(error);
-        throw new BlockChainCallError(
-            `Get ETH balance of bot:${botAccount} failed.`,
-            MESSAGE_TYPES[botType],
-            {
-                embedMessage: {
-                    type: MESSAGE_TYPES[botType],
-                    description: `**${botType}** get ${accountLabel}'s ETH balance failed`,
-                    urls: [
-                        {
-                            label: accountLabel,
-                            type: 'account',
-                            value: botAccount,
-                        },
-                    ],
-                },
-            }
-        );
-    });
+    const balance = await getNonceManager()
+        .getBalance()
+        .catch((error) => {
+            logger.error(error);
+            throw new BlockChainCallError(
+                `Get ETH balance of bot:${botAccount} failed.`,
+                MESSAGE_TYPES[botType],
+                {
+                    embedMessage: {
+                        type: MESSAGE_TYPES[botType],
+                        description: `**${botType}** get ${accountLabel}'s ETH balance failed`,
+                        urls: [
+                            {
+                                label: accountLabel,
+                                type: 'account',
+                                value: botAccount,
+                            },
+                        ],
+                    },
+                }
+            );
+        });
     if (balance.lt(BigNumber.from(botBalanceWarnVault))) {
         botBalanceMessage({
             botAccount,

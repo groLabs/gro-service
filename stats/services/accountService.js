@@ -186,7 +186,9 @@ async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
                 transaction: 'approval',
                 token: stableCoinInfo.symbols[address],
                 hash: transactionHash,
+                spender: args[1],
                 amount: div(args[2], BN(10).pow(decimal), 2),
+                usd_amount: div(args[2], BN(10).pow(decimal), 2),
                 block_number: blockNumber,
             });
         }
