@@ -4,17 +4,17 @@ module.exports = {
         vault_0: {
             strategy_0: '10000000000',
             strategy_1: '10000000000',
-            strategy_2: '10000000000',
         },
         vault_1: {
             strategy_0: '100000',
             strategy_1: '100000',
-            strategy_2: '100000',
         },
         vault_2: {
             strategy_0: '100000',
             strategy_1: '100000',
-            strategy_2: '100000',
+        },
+        vault_3: {
+            strategy_0: '10000000000',
         },
     },
     harvest_strategies: ['harvest', 'curveXpool', 'genericLender'],

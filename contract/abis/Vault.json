@@ -1625,8 +1625,7 @@
             }
         ],
         "stateMutability": "view",
-        "type": "function",
-        "gas": 11484
+        "type": "function"
     },
     {
         "name": "withdrawalQueue",
