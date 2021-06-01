@@ -1,4 +1,3 @@
-const config = require('config');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const { BigNumber } = require('ethers');
@@ -7,14 +6,17 @@ dayjs.extend(utc);
 const { getGvt, getPwrd } = require('../../contract/allContracts');
 const BlocksScanner = require('../common/blockscanner');
 const logger = require('../statsLogger');
-const { getDefaultProvider } = require('../../common/chainUtil');
+const {
+    getDefaultProvider,
+    getTimestampByBlockNumber,
+} = require('../../common/chainUtil');
 const { BlockChainCallError } = require('../../common/error');
+const { getConfig } = require('../../common/configUtil');
 
 const provider = getDefaultProvider();
 const scanner = new BlocksScanner(provider);
 
 const FACTOR_DECIMAL = BigNumber.from(10).pow(BigNumber.from(18));
-const GVT_INIT_FACTOR = BigNumber.from('3333333333333333');
 const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
 const SECONDS_IN_YEAR = BigNumber.from(31536000);
 const DAYS_IN_YEAR = BigNumber.from(365);
@@ -22,8 +24,7 @@ const WEEKS_IN_YEAR = BigNumber.from(52);
 const MONTHS_IN_YEAR = BigNumber.from(12);
 
 // config
-const launchTimestamp = config.get('blockchain.launch_timestamp');
-const launchDate = dayjs.unix(launchTimestamp);
+const launchBlock = getConfig('blockchain.start_block');
 
 function calculatePriceDiff(factorStart, factorEnd) {
     const startPrice = FACTOR_DECIMAL.mul(PERCENT_DECIMAL).div(factorStart);
@@ -34,6 +35,19 @@ function calculatePriceDiff(factorStart, factorEnd) {
         );
     }
     return endPrice.sub(startPrice).mul(PERCENT_DECIMAL).div(startPrice);
+}
+
+async function getGTokenBaseFactor(isPWRD) {
+    const token = isPWRD ? getPwrd() : getGvt();
+    const factor = await token
+        .factor({ blockTag: launchBlock })
+        .catch((error) => {
+            logger.error(error);
+            throw new BlockChainCallError(
+                `Get base factor for ${isPWRD ? 'PWRD' : 'Vault'} failed`
+            );
+        });
+    return BigNumber.from(factor.toString());
 }
 
 async function findBlockByDate(scanDate) {
@@ -80,7 +94,7 @@ async function calcApyByPeriod(
 
 // In effect if start timestamp of "the period"  < launch_timestamp then just use all time apy.
 // Where "the_period" is 24h/daily/weekly/monthly
-async function calcApyOfInitDays(latestBlock) {
+async function calcApyOfInitDays(latestBlock, launchTimestamp) {
     logger.info(
         `calculate apy of init days ${latestBlock.timestamp} ${launchTimestamp}`
     );
@@ -96,11 +110,13 @@ async function calcApyOfInitDays(latestBlock) {
 
     const gvtFactorNow = await getGvt().factor(latestBlockTag);
     const pwrdFactorNow = await getPwrd().factor(latestBlockTag);
-    const gvtApy = calculatePriceDiff(GVT_INIT_FACTOR, gvtFactorNow)
+    const gvtFactor = await getGTokenBaseFactor(false);
+    const pwrdFactor = await getGTokenBaseFactor(true);
+    const gvtApy = calculatePriceDiff(gvtFactor, gvtFactorNow)
         .mul(SECONDS_IN_YEAR)
         .div(duration);
 
-    const pwrdApy = calculatePriceDiff(FACTOR_DECIMAL, pwrdFactorNow)
+    const pwrdApy = calculatePriceDiff(pwrdFactor, pwrdFactorNow)
         .mul(SECONDS_IN_YEAR)
         .div(duration);
 
@@ -109,12 +125,12 @@ async function calcApyOfInitDays(latestBlock) {
         gvt: gvtApy,
     };
     logger.info(
-        `calcApyOfInitDays block ${latestBlock.number} now factor: ${gvtFactorNow} ${pwrdFactorNow} factor gvt ${GVT_INIT_FACTOR} ${gvtApy} pwrd ${FACTOR_DECIMAL} ${pwrdApy}`
+        `calcApyOfInitDays block ${latestBlock.number} now factor: ${gvtFactorNow} ${pwrdFactorNow} factor gvt ${gvtFactor} ${gvtApy} pwrd ${pwrdFactor} ${pwrdApy}`
     );
     return apyInitDays;
 }
 
-async function calcAlltimeApy(startOfToday) {
+async function calcAlltimeApy(startOfToday, launchTimestamp) {
     logger.info(`calculate alltime apy ${startOfToday}`);
 
     const gvt = getGvt();
@@ -135,12 +151,13 @@ async function calcAlltimeApy(startOfToday) {
 
     const gvtFactorEnd = await gvt.factor(blockTagUtcToday);
     const pwrdFactorEnd = await pwrd.factor(blockTagUtcToday);
-
-    const gvtApy = calculatePriceDiff(GVT_INIT_FACTOR, gvtFactorEnd)
+    const gvtFactor = await getGTokenBaseFactor(false);
+    const pwrdFactor = await getGTokenBaseFactor(true);
+    const gvtApy = calculatePriceDiff(gvtFactor, gvtFactorEnd)
         .mul(SECONDS_IN_YEAR)
         .div(duration);
 
-    const pwrdApy = calculatePriceDiff(FACTOR_DECIMAL, pwrdFactorEnd)
+    const pwrdApy = calculatePriceDiff(pwrdFactor, pwrdFactorEnd)
         .mul(SECONDS_IN_YEAR)
         .div(duration);
 
@@ -150,7 +167,7 @@ async function calcAlltimeApy(startOfToday) {
     };
 
     logger.info(
-        `alltime block ${blockUtcToday.block} ${gvtFactorEnd} ${pwrdFactorEnd} factor gvt ${GVT_INIT_FACTOR} ${gvtApy} pwrd ${FACTOR_DECIMAL} ${pwrdApy}`
+        `alltime block ${blockUtcToday.block} ${gvtFactorEnd} ${pwrdFactorEnd} factor gvt ${gvtFactor} ${gvtApy} pwrd ${pwrdFactor} ${pwrdApy}`
     );
 
     return allTimeApy;
@@ -167,12 +184,17 @@ async function getSystemApy(latestBlock) {
         .startOf('day');
     logger.info(`startOfUTCToday ${startOfUTCToday}`);
 
+    const launchTimestamp = await getTimestampByBlockNumber(launchBlock);
+    const launchDate = dayjs.unix(launchTimestamp);
     // In first day, all the apy is the same as all_time
     if (startOfUTCToday.isBefore(launchDate)) {
         logger.info(
             `calculate first day apy ${startOfUTCToday} is before ${launchDate}`
         );
-        const apyInFirstDay = await calcApyOfInitDays(latestBlock);
+        const apyInFirstDay = await calcApyOfInitDays(
+            latestBlock,
+            launchTimestamp
+        );
         return {
             last24h: apyInFirstDay,
             last7d: apyInFirstDay,
@@ -184,7 +206,7 @@ async function getSystemApy(latestBlock) {
     }
 
     // in the beginning time, the apy are the same as allTimeApy
-    const allTimeApy = await calcAlltimeApy(startOfUTCToday);
+    const allTimeApy = await calcAlltimeApy(startOfUTCToday, launchTimestamp);
     let apyMonthly = allTimeApy;
     let apyWeekly = allTimeApy;
     let apyDaily = allTimeApy;
@@ -200,7 +222,7 @@ async function getSystemApy(latestBlock) {
     const last24hAgo = dayjs.unix(latestBlock.timestamp).subtract(1, 'day');
     let apyLast24h;
     if (last24hAgo.isBefore(launchDate)) {
-        apyLast24h = await calcApyOfInitDays(latestBlock);
+        apyLast24h = await calcApyOfInitDays(latestBlock, launchTimestamp);
     } else {
         apyLast24h = await calcApyByPeriod(
             last24hAgo,
@@ -217,7 +239,7 @@ async function getSystemApy(latestBlock) {
         .subtract(7, 'day');
     let apyLast7d;
     if (startOf7DaysAgo.isBefore(launchDate)) {
-        apyLast7d = await calcApyOfInitDays(latestBlock);
+        apyLast7d = await calcApyOfInitDays(latestBlock, launchTimestamp);
     } else {
         apyLast7d = await calcApyByPeriod(
             startOf7DaysAgo,

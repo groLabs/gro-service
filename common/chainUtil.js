@@ -32,14 +32,6 @@ if (
     throw err;
 }
 
-if (!process.env[`BOT_ADDRESS_${process.env.BOT_ENV}`]) {
-    const err = new SettingError(
-        `Environment variable ${`BOT_ADDRESS_${process.env.BOT_ENV}`} are not set.`
-    );
-    logger.error(err);
-    throw err;
-}
-
 if (!config.has('blockchain.network')) {
     const err = new SettingError('Config: blockchain.network not setted.');
     logger.error(err);
@@ -174,7 +166,7 @@ async function syncNounce() {
 }
 
 async function checkAccountBalance(botBalanceWarnVault) {
-    const botAccount = process.env[`BOT_ADDRESS_${process.env.BOT_ENV}`];
+    const botAccount = getNonceManager().address;
     const botType = `${process.env.BOT_ENV.toLowerCase()}Bot`;
     const accountLabel = shortAccount(botAccount);
     const balance = await nonceManager.getBalance().catch((error) => {
@@ -218,6 +210,18 @@ async function getCurrentBlockNumber() {
     return block;
 }
 
+async function getTimestampByBlockNumber(blockNumber) {
+    const block = await getRpcProvider()
+        .getBlock(blockNumber)
+        .catch((error) => {
+            logger.error(error);
+            throw new BlockChainCallError(
+                `Get block by number ${blockNumber} failed`
+            );
+        });
+    return block.timestamp.toString();
+}
+
 module.exports = {
     getDefaultProvider,
     getNonceManager,
@@ -226,4 +230,5 @@ module.exports = {
     syncNounce,
     checkAccountBalance,
     getCurrentBlockNumber,
+    getTimestampByBlockNumber,
 };

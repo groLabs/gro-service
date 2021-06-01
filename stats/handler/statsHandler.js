@@ -1,13 +1,16 @@
 const { BigNumber: BN } = require('bignumber.js');
-const config = require('config');
 const mapObject = require('map-obj');
 const fs = require('fs');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
+const { getConfig } = require('../../common/configUtil');
 
 dayjs.extend(utc);
 
-const { getDefaultProvider } = require('../../common/chainUtil');
+const {
+    getDefaultProvider,
+    getTimestampByBlockNumber,
+} = require('../../common/chainUtil');
 const { getSystemApy } = require('./apyHandler');
 const {
     getTvlStats,
@@ -26,9 +29,9 @@ const USD_DECIAML = BN(10).pow(BN(18));
 const PERCENT_DECIAML = BN(10).pow(BN(6));
 
 // config
-const launchTimestamp = config.get('blockchain.launch_timestamp');
-const statsDir = config.get('stats_folder');
-const statsLatest = config.get('stats_latest');
+const launchBlock = getConfig('blockchain.start_block');
+const statsDir = getConfig('stats_folder');
+const statsLatest = getConfig('stats_latest');
 
 function printPercent(value) {
     return BN(value.toString())
@@ -76,6 +79,8 @@ async function generateGroStatsFile() {
     const latestBlockTag = {
         blockTag: latestBlock.number,
     };
+
+    const launchTimestamp = await getTimestampByBlockNumber(launchBlock);
 
     const stats = {
         current_timestamp: latestBlock.timestamp.toString(),
