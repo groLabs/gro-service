@@ -9,7 +9,10 @@ const {
     getEvents,
     getTransferEvents,
 } = require('../../common/logFilter');
-const { getDefaultProvider } = require('../../common/chainUtil');
+const {
+    getDefaultProvider,
+    getTimestampByBlockNumber,
+} = require('../../common/chainUtil');
 const { ContractCallError } = require('../../common/error');
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
 const { MESSAGE_TYPES } = require('../../common/discord/discordService');
@@ -18,7 +21,6 @@ const { getTransactionsWithTimestamp } = require('./generatePersonTransaction');
 const { shortAccount } = require('../../common/digitalUtil');
 
 const fromBlock = getConfig('blockchain.start_block');
-const launchTime = getConfig('blockchain.launch_timestamp', false) || 0;
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 
@@ -190,6 +192,7 @@ async function generateReport(account) {
 
     logger.info(`${account} historical: ${JSON.stringify(data)}`);
     const transactions = await getTransactionsWithTimestamp(data);
+    const launchTime = await getTimestampByBlockNumber(fromBlock);
 
     const result = {
         transactions,

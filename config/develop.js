@@ -9,7 +9,6 @@ module.exports = {
             pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
         },
         start_block: 12404379,
-        launch_timestamp: '1620625849',
         keystore: process.env[`KEY_STORE_${process.env.BOT_ENV}`],
         keystore_password: process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
     },

@@ -1,6 +1,5 @@
 const schedule = require('node-schedule');
 const {
-    getNonceManager,
     syncNounce,
     checkAccountBalance,
     getCurrentBlockNumber,
@@ -10,7 +9,7 @@ const { pendingTransactions } = require('../../common/storage');
 const {
     sendMessageToAlertChannel,
 } = require('../../common/discord/discordService');
-const { SettingError, BlockChainCallError } = require('../../common/error');
+const { BlockChainCallError } = require('../../common/error');
 const {
     investTrigger,
     pnlTrigger,
@@ -47,7 +46,6 @@ const {
 } = require('../../discordMessage/harvestMessage');
 const logger = require('../regularLogger');
 
-const nonceManager = getNonceManager();
 const pendingTransactionSchedulerSetting =
     getConfig('trigger_scheduler.pending_transaction_check', false) ||
     '30 * * * *';
@@ -72,14 +70,6 @@ const botUpdateChainPriceSchedulerSetting =
 
 const botBalanceWarnVault =
     getConfig('bot_balance_warn', false) || '2000000000000000000';
-const botAddressKey = `BOT_ADDRESS_${process.env.BOT_ENV}`;
-if (!process.env[botAddressKey]) {
-    const err = new SettingError(
-        `Environment variable ${botAddressKey} are not set.`
-    );
-    logger.error(err);
-    throw err;
-}
 
 function checkBotAccountBalance() {
     schedule.scheduleJob(botBalanceSchedulerSetting, async () => {
