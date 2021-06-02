@@ -2,8 +2,8 @@ const { shortAccount } = require('../common/digitalUtil');
 const {
     MESSAGE_TYPES,
     MESSAGE_EMOJI,
-    sendMessageToLogChannel,
-    sendMessageToProtocolAssetChannel,
+    DISCORD_CHANNELS,
+    sendMessageToChannel,
 } = require('../common/discord/discordService');
 const { formatNumber } = require('../common/digitalUtil');
 
@@ -20,7 +20,7 @@ function personalStatsMessage(content) {
             },
         ],
     };
-    sendMessageToLogChannel(discordMsg);
+    sendMessageToChannel(DISCORD_CHANNELS.botLogs, discordMsg);
 }
 
 function apyStatsMessage(content) {
@@ -48,7 +48,7 @@ function apyStatsMessage(content) {
         description: msg,
     };
 
-    sendMessageToProtocolAssetChannel(discordMsg);
+    sendMessageToChannel(DISCORD_CHANNELS.protocolAssets, discordMsg);
 }
 
 module.exports = {

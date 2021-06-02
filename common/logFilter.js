@@ -4,6 +4,7 @@ const {
     getWithdrawHandler,
     getGvt: getGroVault,
     getPwrd: getPowerD,
+    getUnderlyTokens,
 } = require('../contract/allContracts');
 const { getDefaultProvider } = require('./chainUtil');
 const { ContractCallError } = require('./error');
@@ -13,6 +14,7 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 const EVENT_TYPE = {
+    stabeCoinApprove: 'coin-approve',
     deposit: 'deposit',
     withdraw: 'withdraw',
     gvtTransfer: 'gvtTransfer',
@@ -48,6 +50,19 @@ EVENT_FRAGMENT[EVENT_TYPE.inPwrdTransfer] = [
 EVENT_FRAGMENT[EVENT_TYPE.outPwrdTransfer] = [
     'event LogTransfer(address indexed sender, address indexed recipient, uint256 indexed amount)',
 ];
+EVENT_FRAGMENT[EVENT_TYPE.stabeCoinApprove] = [
+    'event Approval(address indexed owner, address indexed spender, uint256 value)',
+];
+
+async function getStabeCoinApprovalFilters(account) {
+    const stablecoins = getUnderlyTokens();
+    const spender = getDepositHandler().address;
+    const approvalFilters = [];
+    for (let i = 0; i < stablecoins.length; i += 1) {
+        approvalFilters.push(stablecoins[i].filters.Approval(account, spender));
+    }
+    return approvalFilters;
+}
 
 function getFilter(account, type) {
     const depositHandler = getDepositHandler();
@@ -86,26 +101,11 @@ function getFilter(account, type) {
     return filter;
 }
 
-async function getEvents(
-    eventType,
-    fromBlock,
-    toBlock = 'latest',
-    account = null
-) {
+async function getEventsByFilter(filter, eventType) {
     const provider = getDefaultProvider();
-    const filter = getFilter(account, eventType);
-    if (!filter) {
-        throw new ContractCallError(
-            `Get ${eventType} filter for account:${account || 'All'} failed.`
-        );
-    }
-    filter.fromBlock = fromBlock;
-    filter.toBlock = toBlock;
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
-        throw new ContractCallError(
-            `Get ${eventType} logs of ${account || 'all users'} failed.`
-        );
+        throw new ContractCallError(`Get ${eventType} logs failed.`);
     });
     const controllerInstance = new ethers.utils.Interface(
         EVENT_FRAGMENT[eventType]
@@ -113,6 +113,7 @@ async function getEvents(
     const logs = [];
     filterLogs.forEach((log) => {
         const eventInfo = {
+            address: log.address,
             blockNumber: log.blockNumber,
             transactionHash: log.transactionHash,
         };
@@ -124,6 +125,43 @@ async function getEvents(
         logs.push(eventInfo);
     });
 
+    return logs;
+}
+
+async function getApprovalEvents(account, fromBlock, toBlock = 'latest') {
+    const filters = await getStabeCoinApprovalFilters(account);
+    const logs = [];
+    const approvalLogsPromise = [];
+    for (let i = 0; i < filters.length; i += 1) {
+        const filter = filters[i];
+        filter.fromBlock = fromBlock;
+        filter.toBlock = toBlock;
+        approvalLogsPromise.push(
+            getEventsByFilter(filter, EVENT_TYPE.stabeCoinApprove)
+        );
+    }
+    const promiseResult = await Promise.all(approvalLogsPromise);
+    for (let i = 0; i < promiseResult.length; i += 1) {
+        logs.push(...promiseResult[i]);
+    }
+    return logs;
+}
+
+async function getEvents(
+    eventType,
+    fromBlock,
+    toBlock = 'latest',
+    account = null
+) {
+    const filter = getFilter(account, eventType);
+    if (!filter) {
+        throw new ContractCallError(
+            `Get ${eventType} filter for account:${account || 'All'} failed.`
+        );
+    }
+    filter.fromBlock = fromBlock;
+    filter.toBlock = toBlock;
+    const logs = await getEventsByFilter(filter, eventType);
     return logs;
 }
 
@@ -172,4 +210,5 @@ module.exports = {
     EVENT_TYPE,
     getEvents,
     getTransferEvents,
+    getApprovalEvents,
 };

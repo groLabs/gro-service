@@ -8,7 +8,7 @@ const {
     getCurveVault,
     getChainPrice,
 } = require('../../contract/allContracts');
-const { pendingTransactions } = require('../../common/storage');
+const { addPendingTransaction } = require('../../common/storage');
 const { ContractSendError } = require('../../common/error');
 const {
     MESSAGE_TYPES,
@@ -22,36 +22,35 @@ const { harvestMessage } = require('../../discordMessage/harvestMessage');
 const {
     updateChainlinkPriceMessage,
 } = require('../../discordMessage/otherMessage');
+const { wrapSendTransaction } = require('../../gasPrice/transaction');
 const logger = require('../regularLogger');
 
 async function adapterInvest(blockNumber, isInvested, vault) {
     // This is to skip curve invest
     if (!isInvested) return;
     const vaultName = getVaultAndStrategyLabels()[vault.address].name;
-    const investResponse = await vault.invest().catch((error) => {
-        logger.error(error);
-        throw new ContractSendError(
-            `${vaultName}:${vault.address}'s invest call failed`,
-            MESSAGE_TYPES.invest
-        );
-    });
-    pendingTransactions.set(`invest-${vault.address}`, {
-        blockNumber,
-        reSendTimes: 0,
-        hash: investResponse.hash,
-        label: MESSAGE_TYPES.invest,
-        createdTime: new Date(),
-        transactionRequest: {
-            nonce: investResponse.nonce,
-            gasPrice: investResponse.gasPrice.hex,
-            gasLimit: investResponse.gasLimit.hex,
-            to: investResponse.to,
-            value: investResponse.value.hex,
-            data: investResponse.data,
-            chainId: investResponse.chainId,
-            from: investResponse.from,
+    const investResponse = await wrapSendTransaction(vault, 'invest').catch(
+        (error) => {
+            logger.error(error);
+            throw new ContractSendError(
+                `${vaultName}:${vault.address}'s invest call failed`,
+                MESSAGE_TYPES.invest
+            );
+        }
+    );
+    logger.info(`investResponse: ${JSON.stringify(investResponse)}`);
+
+    addPendingTransaction(
+        `invest-${vault.address}`,
+        {
+            blockNumber,
+            reSendTimes: 0,
+            methodName: 'invest',
+            label: MESSAGE_TYPES.invest,
         },
-    });
+        investResponse
+    );
+
     investMessage({
         vaultName,
         vaultAddress: vault.address,
@@ -75,38 +74,34 @@ async function harvestStrategy(blockNumber, strategyInfo) {
         getVaultAndStrategyLabels()[strategyInfo.vault.address].strategies[
             strategyInfo.strategyIndex
         ].name;
-    const harvestResult = await strategyInfo.vault
-        .strategyHarvest(strategyInfo.strategyIndex, strategyInfo.callCost)
-        .catch((error) => {
-            logger.error(error);
-            throw new ContractSendError(
-                `${vaultName}'s ${strategyName} harvest call failed.`,
-                MESSAGE_TYPES.harvest,
-                {
-                    vault: strategyInfo.vault.address,
-                    strategyIndex: strategyInfo.strategyIndex,
-                    callCost: strategyInfo.callCost.toString(),
-                }
-            );
-        });
-
-    pendingTransactions.set(key, {
-        blockNumber,
-        reSendTimes: 0,
-        hash: harvestResult.hash,
-        createdTime: new Date(),
-        label: MESSAGE_TYPES.harvest,
-        transactionRequest: {
-            nonce: harvestResult.nonce,
-            gasPrice: harvestResult.gasPrice.hex,
-            gasLimit: harvestResult.gasLimit.hex,
-            to: harvestResult.to,
-            value: harvestResult.value.hex,
-            data: harvestResult.data,
-            chainId: harvestResult.chainId,
-            from: harvestResult.from,
-        },
+    const harvestResult = await wrapSendTransaction(
+        strategyInfo.vault,
+        'strategyHarvest',
+        [strategyInfo.strategyIndex, strategyInfo.callCost]
+    ).catch((error) => {
+        logger.error(error);
+        throw new ContractSendError(
+            `${vaultName}'s ${strategyName} harvest call failed.`,
+            MESSAGE_TYPES.harvest,
+            {
+                vault: strategyInfo.vault.address,
+                strategyIndex: strategyInfo.strategyIndex,
+                callCost: strategyInfo.callCost.toString(),
+            }
+        );
     });
+
+    addPendingTransaction(
+        key,
+        {
+            blockNumber,
+            reSendTimes: 0,
+            methodName: 'strategyHarvest',
+            label: MESSAGE_TYPES.harvest,
+        },
+        harvestResult
+    );
+
     harvestMessage({
         vaultName,
         strategyName,
@@ -129,92 +124,80 @@ async function harvest(blockNumber, harvestStrategies) {
 
 async function execPnl(blockNumber) {
     const pnl = getPnl();
-    const pnlResponse = await pnl.execPnL(0).catch((error) => {
-        logger.error(error);
-        throw new ContractSendError('ExecPnL call failed.', MESSAGE_TYPES.pnl);
-    });
+    const pnlResponse = await wrapSendTransaction(pnl, 'execPnL', [0]).catch(
+        (error) => {
+            logger.error(error);
+            throw new ContractSendError(
+                'ExecPnL call failed.',
+                MESSAGE_TYPES.pnl
+            );
+        }
+    );
 
-    pendingTransactions.set('pnl', {
-        blockNumber,
-        reSendTimes: 0,
-        hash: pnlResponse.hash,
-        createdTime: new Date(),
-        label: MESSAGE_TYPES.pnl,
-        transactionRequest: {
-            nonce: pnlResponse.nonce,
-            gasPrice: pnlResponse.gasPrice.hex,
-            gasLimit: pnlResponse.gasLimit.hex,
-            to: pnlResponse.to,
-            value: pnlResponse.value.hex,
-            data: pnlResponse.data,
-            chainId: pnlResponse.chainId,
-            from: pnlResponse.from,
+    addPendingTransaction(
+        'pnl',
+        {
+            blockNumber,
+            reSendTimes: 0,
+            methodName: 'execPnL',
+            label: MESSAGE_TYPES.pnl,
         },
-    });
+        pnlResponse
+    );
     pnlMessage({ transactionHash: pnlResponse.hash });
 }
 
 async function rebalance(blockNumber) {
-    const rebalanceReponse = await getInsurance()
-        .rebalance()
-        .catch((error) => {
-            logger.error(error);
-            throw new ContractSendError(
-                'Rebalance call failed.',
-                MESSAGE_TYPES.rebalance
-            );
-        });
-
-    pendingTransactions.set('rebalance', {
-        blockNumber,
-        reSendTimes: 0,
-        hash: rebalanceReponse.hash,
-        createdTime: new Date(),
-        label: MESSAGE_TYPES.rebalance,
-        transactionRequest: {
-            nonce: rebalanceReponse.nonce,
-            gasPrice: rebalanceReponse.gasPrice.hex,
-            gasLimit: rebalanceReponse.gasLimit.hex,
-            to: rebalanceReponse.to,
-            value: rebalanceReponse.value.hex,
-            data: rebalanceReponse.data,
-            chainId: rebalanceReponse.chainId,
-            from: rebalanceReponse.from,
-        },
+    const rebalanceReponse = await wrapSendTransaction(
+        getInsurance(),
+        'rebalance'
+    ).catch((error) => {
+        logger.error(error);
+        throw new ContractSendError(
+            'Rebalance call failed.',
+            MESSAGE_TYPES.rebalance
+        );
     });
+
+    addPendingTransaction(
+        'rebalance',
+        {
+            blockNumber,
+            reSendTimes: 0,
+            methodName: 'rebalance',
+            label: MESSAGE_TYPES.rebalance,
+        },
+        rebalanceReponse
+    );
+
     rebalanceMessage({ transactionHash: rebalanceReponse.hash });
 }
 
 async function curveInvest(blockNumber) {
     const curveVaultAddress = getCurveVault().address;
     const vaultName = getVaultAndStrategyLabels()[curveVaultAddress].name;
-    const investResponse = await getLifeguard()
-        .investToCurveVault()
-        .catch((error) => {
-            logger.error(error);
-            throw new ContractSendError(
-                `Call ${vaultName}'s investToCurveVault to invest lifeguard assets failed.`,
-                MESSAGE_TYPES.curveInvest
-            );
-        });
-
-    pendingTransactions.set(`invest-${curveVaultAddress}`, {
-        blockNumber,
-        reSendTimes: 0,
-        hash: investResponse.hash,
-        createdTime: new Date(),
-        label: MESSAGE_TYPES.curveInvest,
-        transactionRequest: {
-            nonce: investResponse.nonce,
-            gasPrice: investResponse.gasPrice.hex,
-            gasLimit: investResponse.gasLimit.hex,
-            to: investResponse.to,
-            value: investResponse.value.hex,
-            data: investResponse.data,
-            chainId: investResponse.chainId,
-            from: investResponse.from,
-        },
+    const investResponse = await wrapSendTransaction(
+        getLifeguard(),
+        'investToCurveVault'
+    ).catch((error) => {
+        logger.error(error);
+        throw new ContractSendError(
+            `Call ${vaultName}'s investToCurveVault to invest lifeguard assets failed.`,
+            MESSAGE_TYPES.curveInvest
+        );
     });
+
+    addPendingTransaction(
+        `invest-${curveVaultAddress}`,
+        {
+            blockNumber,
+            reSendTimes: 0,
+            methodName: 'investToCurveVault',
+            label: MESSAGE_TYPES.curveInvest,
+        },
+        investResponse
+    );
+
     investMessage({
         vaultName,
         vaultAddress: curveVaultAddress,

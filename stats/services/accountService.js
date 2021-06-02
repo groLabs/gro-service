@@ -8,6 +8,7 @@ const {
     EVENT_TYPE,
     getEvents,
     getTransferEvents,
+    getApprovalEvents,
 } = require('../../common/logFilter');
 const {
     getDefaultProvider,
@@ -19,6 +20,7 @@ const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
 const { getTransactionsWithTimestamp } = require('./generatePersonTransaction');
 const { shortAccount } = require('../../common/digitalUtil');
+const { getVaultStabeCoins } = require('../../contract/allContracts');
 
 const fromBlock = getConfig('blockchain.start_block');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
@@ -160,6 +162,40 @@ async function getPowerDTransferHistories(account, toBlock) {
     return logs;
 }
 
+async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
+    const approvalEventResult = await getApprovalEvents(
+        account,
+        fromBlock,
+        toBlock
+    ).catch((error) => {
+        handleError(
+            error,
+            `Get approval filter for account:${account} failed.`,
+            account
+        );
+    });
+
+    const stableCoinInfo = getVaultStabeCoins();
+    const result = [];
+    for (let i = 0; i < approvalEventResult.length; i += 1) {
+        const { address, transactionHash, blockNumber, args } =
+            approvalEventResult[i];
+        const decimal = stableCoinInfo.decimals[address];
+        if (!depositEventHashs.includes(transactionHash)) {
+            result.push({
+                transaction: 'approval',
+                token: stableCoinInfo.symbols[address],
+                hash: transactionHash,
+                spender: args[1],
+                amount: div(args[2], BN(10).pow(decimal), 2),
+                usd_amount: div(args[2], BN(10).pow(decimal), 2),
+                block_number: blockNumber,
+            });
+        }
+    }
+    return result;
+}
+
 async function getTransactionHistories(account, toBlock) {
     const promises = [];
     promises.push(getGroVaultTransferHistories(account, toBlock));
@@ -176,7 +212,22 @@ async function getTransactionHistories(account, toBlock) {
 
     groVault.withdraw.push(...withdrawLogs.groVault);
     powerD.withdraw.push(...withdrawLogs.powerD);
-    return { groVault, powerD };
+
+    const { groVault: vaultDepositLogs, powerD: pwrdDepositLogs } = depositLogs;
+    const depositEventHashs = [];
+    for (let i = 0; i < vaultDepositLogs.length; i += 1) {
+        depositEventHashs.push(vaultDepositLogs[i].transactionHash);
+    }
+    for (let i = 0; i < pwrdDepositLogs.length; i += 1) {
+        depositEventHashs.push(pwrdDepositLogs[i].transactionHash);
+    }
+
+    const approval = await getApprovalHistoryies(
+        account,
+        toBlock,
+        depositEventHashs
+    );
+    return { groVault, powerD, approval };
 }
 
 async function generateReport(account) {

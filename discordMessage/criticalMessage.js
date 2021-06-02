@@ -2,7 +2,7 @@ const {
     MESSAGE_TYPES,
     DISCORD_CHANNELS,
     sendMessage,
-    sendMessageToCriticalEventChannel,
+    sendMessageToChannel,
 } = require('../common/discord/discordService');
 
 function curvePriceMessage(content) {
@@ -20,7 +20,7 @@ function curvePriceMessage(content) {
     if (!needStop) {
         sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
     } else {
-        sendMessageToCriticalEventChannel(discordMessage);
+        sendMessageToChannel(DISCORD_CHANNELS.critActionEvents, discordMessage);
     }
 }
 
@@ -40,7 +40,7 @@ function strategyCheckMessage(content) {
         description: msg,
     };
     if (strategyFailedTotal > 0) {
-        sendMessageToCriticalEventChannel(discordMessage);
+        sendMessageToChannel(DISCORD_CHANNELS.critActionEvents, discordMessage);
     } else {
         sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
     }

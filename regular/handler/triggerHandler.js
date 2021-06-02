@@ -342,25 +342,11 @@ async function curveInvestTrigger() {
     logger.info(`curveInvestTrigger : ${needInvest}`);
     const curveVaultAddress = getCurveVault().address;
     const vaultName = getVaultAndStrategyLabels()[curveVaultAddress].name;
-    // const msgObj = {
-    //     type: MESSAGE_TYPES.curveInvestTrigger,
-    //     message: 'No need run curve invest.',
-    //     description: `${vaultName}'s curveInvestTrigger is false, doesn't need run curve invest`,
-    // };
 
     let investResult = NONEED_TRIGGER;
     if (needInvest) {
         investResult = { needCall: true };
-        // msgObj.message = `${vaultName}'s curveInvestTrigger is true, need run invest`;
-        // msgObj.description = `${vaultName}'s curveInvestTrigger is true, need run invest`;
     }
-    // msgObj.urls = [];
-    // msgObj.urls.push({
-    //     label: vaultName,
-    //     type: 'account',
-    //     value: curveVaultAddress,
-    // });
-    // sendMessageToProtocolEventChannel(msgObj);
 
     investTriggerMessage({
         vaultName,

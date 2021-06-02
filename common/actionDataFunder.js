@@ -7,6 +7,8 @@ const {
     getVaultStabeCoins,
     getInsurance,
     getExposure,
+    getPwrd,
+    getGvt,
 } = require('../contract/allContracts');
 const pnlABI = require('../contract/abis/PnL.json');
 const vaultABI = require('../contract/abis/Vault.json');
@@ -193,9 +195,45 @@ async function getRebalanceKeyData(transactionHash, transactionReceipt) {
     return { stablecoinExposure: [] };
 }
 
+async function getMintOrBurnGToken(
+    isPWRD,
+    transactionHash,
+    transactionReceipt
+) {
+    transactionReceipt = await pretreatReceipt(
+        MESSAGE_TYPES.miniStatsPersonal,
+        transactionHash,
+        transactionReceipt
+    );
+    if (transactionReceipt) {
+        const { logs } = transactionReceipt;
+        let gtoken = getPwrd().address;
+        const eventFragment = getEventFragment(erc20ABI, 'Transfer');
+        if (eventFragment) {
+            logger.info(`Transfer topic: ${eventFragment.topic}`);
+            if (!isPWRD) {
+                gtoken = getGvt().address;
+            }
+            for (let i = 0; i < logs.length; i += 1) {
+                const { topics, address, data } = logs[i];
+                if (eventFragment.topic === topics[0] && gtoken === address) {
+                    const logData = parseData(
+                        erc20ABI,
+                        eventFragment.eventFragment,
+                        data
+                    );
+                    return logData[2].toString();
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 module.exports = {
     getPnlKeyData,
     getInvestKeyData,
     getHarvestKeyData,
     getRebalanceKeyData,
+    getMintOrBurnGToken,
 };

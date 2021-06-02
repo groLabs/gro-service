@@ -199,48 +199,12 @@ async function sendMessage(channelId, msgObj, retry = 0) {
     }
 }
 
-function sendMessageToLogChannel(msgObj) {
+function sendMessageToChannel(channel, msgObj) {
     if (!msgObj.emojis) {
         msgObj.emojis = [];
     }
     msgObj.emojis.unshift(MESSAGE_EMOJI[msgObj.type]);
-    sendEmbedMessage(DISCORD_CHANNELS.botLogs, msgObj);
-    sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
-}
-
-function sendMessageToProtocolEventChannel(msgObj) {
-    if (!msgObj.emojis) {
-        msgObj.emojis = [];
-    }
-    msgObj.emojis.unshift(MESSAGE_EMOJI[msgObj.type]);
-    sendEmbedMessage(DISCORD_CHANNELS.protocolEvents, msgObj);
-    sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
-}
-
-function sendMessageToCriticalEventChannel(msgObj) {
-    if (!msgObj.emojis) {
-        msgObj.emojis = [];
-    }
-    msgObj.emojis.unshift(MESSAGE_EMOJI[msgObj.type]);
-    sendEmbedMessage(DISCORD_CHANNELS.critActionEvents, msgObj);
-    sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
-}
-
-function sendMessageToTradeChannel(msgObj) {
-    if (!msgObj.emojis) {
-        msgObj.emojis = [];
-    }
-    msgObj.emojis.unshift(MESSAGE_EMOJI[msgObj.type]);
-    sendEmbedMessage(DISCORD_CHANNELS.trades, msgObj);
-    sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
-}
-
-function sendMessageToProtocolAssetChannel(msgObj) {
-    if (!msgObj.emojis) {
-        msgObj.emojis = [];
-    }
-    msgObj.emojis.unshift(MESSAGE_EMOJI[msgObj.type]);
-    sendEmbedMessage(DISCORD_CHANNELS.protocolAssets, msgObj);
+    sendEmbedMessage(channel, msgObj);
     sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
 }
 
@@ -264,10 +228,6 @@ module.exports = {
     MESSAGE_EMOJI,
     sendMessage,
     sendEmbedMessage,
-    sendMessageToLogChannel,
-    sendMessageToProtocolEventChannel,
-    sendMessageToCriticalEventChannel,
+    sendMessageToChannel,
     sendMessageToAlertChannel,
-    sendMessageToTradeChannel,
-    sendMessageToProtocolAssetChannel,
 };

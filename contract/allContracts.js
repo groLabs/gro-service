@@ -19,6 +19,7 @@ const lifeguardABI = require('./abis/LifeGuard3Pool.json');
 const buoyABI = require('./abis/Buoy3Pool.json');
 const VaultABI = require('./abis/Vault.json');
 const chainPriceABI = require('./abis/ChainPrice.json');
+const erc20ABI = require('./abis/ERC20.json');
 
 const nonceManager = getNonceManager();
 
@@ -35,9 +36,10 @@ let buoy;
 let curveVault;
 let chainPrice;
 const vaults = [];
+const underlyTokens = [];
 const strategyLength = [];
 const vaultAndStrategyLabels = {};
-const vaultStabeCoins = { tokens: {}, decimals: {} };
+const vaultStabeCoins = { tokens: {}, decimals: {}, symbols: {} };
 
 function initController() {
     const controllerAddress = getConfig('contracts.controller');
@@ -236,23 +238,6 @@ async function initLifeguard() {
 }
 
 async function initVaultStabeCoins() {
-    const decimalABI = [
-        {
-            constant: true,
-            inputs: [],
-            name: 'decimals',
-            outputs: [
-                {
-                    internalType: 'uint8',
-                    name: '',
-                    type: 'uint8',
-                },
-            ],
-            payable: false,
-            stateMutability: 'view',
-            type: 'function',
-        },
-    ];
     const lastIndex = vaults.length - 1;
     if (lastIndex < 0) return;
     vaultStabeCoins.tokens[vaults[lastIndex].address] = [];
@@ -261,10 +246,14 @@ async function initVaultStabeCoins() {
         const token = await vaults[i].token();
         vaultStabeCoins.tokens[vaults[i].address] = [token];
         vaultStabeCoins.tokens[vaults[lastIndex].address].push(token);
-        const stabeCoin = new ethers.Contract(token, decimalABI, nonceManager);
+        const stabeCoin = new ethers.Contract(token, erc20ABI, nonceManager);
+        underlyTokens.push(stabeCoin);
         // eslint-disable-next-line no-await-in-loop
         const decimals = await stabeCoin.decimals();
+        // eslint-disable-next-line no-await-in-loop
+        const symbio = await stabeCoin.symbol();
         vaultStabeCoins.decimals[token] = decimals.toString();
+        vaultStabeCoins.symbols[token] = symbio;
     }
     logger.info(`Vault's stabe coins: ${JSON.stringify(vaultStabeCoins)}`);
 }
@@ -360,6 +349,10 @@ function getVaultStabeCoins() {
     return vaultStabeCoins;
 }
 
+function getUnderlyTokens() {
+    return underlyTokens;
+}
+
 module.exports = {
     initAllContracts,
     getController,
@@ -378,4 +371,5 @@ module.exports = {
     getVaultAndStrategyLabels,
     getChainPrice,
     getVaultStabeCoins,
+    getUnderlyTokens,
 };

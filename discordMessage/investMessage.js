@@ -3,7 +3,7 @@ const {
     MESSAGE_EMOJI,
     DISCORD_CHANNELS,
     sendMessage,
-    sendMessageToProtocolEventChannel,
+    sendMessageToChannel,
 } = require('../common/discord/discordService');
 const { getVaultAndStrategyLabels } = require('../contract/allContracts');
 const { shortAccount } = require('../common/digitalUtil');
@@ -31,7 +31,6 @@ function investTriggerMessage(content) {
         ],
     };
     sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
-    // sendMessageToProtocolEventChannel(discordMessage);
 }
 
 function investMessage(content) {
@@ -54,7 +53,7 @@ function investMessage(content) {
             },
         ],
     };
-    sendMessageToProtocolEventChannel(discordMessage);
+    sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
 }
 
 function investTransactionMessage(content) {
@@ -80,13 +79,13 @@ function investTransactionMessage(content) {
         };
         if (!transactionReceipt) {
             discordMessage.message = `${type} transaction: ${hash} is still pending.`;
-            discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${action} action for ${vaultName} still pending`;
+            discordMessage.description = undefined;
         } else if (!transactionReceipt.status) {
             discordMessage.message = `${type} transaction ${hash} reverted.`;
             discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${action} action is reverted`;
         }
         logger.info(discordMessage.message);
-        sendMessageToProtocolEventChannel(discordMessage);
+        sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
     }
 }
 

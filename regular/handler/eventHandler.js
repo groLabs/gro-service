@@ -11,14 +11,15 @@ const { ContractCallError } = require('../../common/error');
 const {
     MESSAGE_TYPES,
     MESSAGE_EMOJI,
-    sendMessageToTradeChannel,
+    DISCORD_CHANNELS,
+    sendMessageToChannel,
 } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
 const { getDefaultProvider } = require('../../common/chainUtil');
 const { formatNumber, shortAccount } = require('../../common/digitalUtil');
 const { getGvt, getPwrd } = require('../../contract/allContracts');
 const { calculateDelta } = require('../../common/digitalUtil');
-
+const { getMintOrBurnGToken } = require('../../common/actionDataFunder');
 const {
     depositEventMessage,
     withdrawEventMessage,
@@ -54,6 +55,19 @@ async function updateLastBlockNumber(blockNumber, type) {
     fs.writeFileSync(blockNumberFile, JSON.stringify(blockObj));
 }
 
+async function AppendGTokenMintOrBurnAmountToLog(logs) {
+    const parsePromises = [];
+    logs.forEach((log) => {
+        parsePromises.push(
+            getMintOrBurnGToken(log.args[2], log.transactionHash, null)
+        );
+    });
+    const result = await Promise.all(parsePromises);
+    for (let i = 0; i < logs.length; i += 1) {
+        logs[i].gtokenAmount = result[i];
+    }
+}
+
 async function generateDepositReport(fromBlock, toBlock) {
     const logs = await getEvents(EVENT_TYPE.deposit, fromBlock, toBlock).catch(
         (error) => {
@@ -64,6 +78,10 @@ async function generateDepositReport(fromBlock, toBlock) {
             );
         }
     );
+
+    // handle gtoken mint amount
+    await AppendGTokenMintOrBurnAmountToLog(logs);
+
     const result = [];
     const total = {
         gvt: {
@@ -110,6 +128,7 @@ async function generateDepositReport(fromBlock, toBlock) {
             log.args[4][1].toString(),
             log.args[4][2].toString(),
         ];
+        item.gtokenAmount = log.gtokenAmount;
         result.push(item);
     });
     logger.info(
@@ -131,6 +150,10 @@ async function generateWithdrawReport(fromBlock, toBlock) {
             );
         }
     );
+
+    // parse burn gtoken amount
+    await AppendGTokenMintOrBurnAmountToLog(logs);
+
     const result = [];
     const total = {
         gvt: {
@@ -186,6 +209,7 @@ async function generateWithdrawReport(fromBlock, toBlock) {
             log.args[8][1].toString(),
             log.args[8][2].toString(),
         ];
+        item.gtokenAmount = log.gtokenAmount;
         result.push(item);
     });
     logger.info(
@@ -266,14 +290,10 @@ async function generateSummaryReport(fromBlock, toBlock) {
         fromBlock,
         toBlock
     );
-    const {
-        originValue: originVaultValue,
-        value: vaultTVL,
-    } = await getGTokenAsset(getGvt(), toBlock);
-    const {
-        originValue: originPwrdValue,
-        value: pwrdTVL,
-    } = await getGTokenAsset(getPwrd(), toBlock);
+    const { originValue: originVaultValue, value: vaultTVL } =
+        await getGTokenAsset(getGvt(), toBlock);
+    const { originValue: originPwrdValue, value: pwrdTVL } =
+        await getGTokenAsset(getPwrd(), toBlock);
     const tvl = getTVLDelta(
         depositEventResult.total,
         withdrawEventResult.total,
@@ -335,7 +355,7 @@ async function generateGvtTransfer(fromBlock, toBlock) {
         const label = 'TX';
         const sender = shortAccount(log.sender);
         const recipient = shortAccount(log.recipient);
-        sendMessageToTradeChannel({
+        sendMessageToChannel(DISCORD_CHANNELS.trades, {
             message: msg,
             type: MESSAGE_TYPES.transferEvent,
             emojis: [MESSAGE_EMOJI[log.gToken]],
@@ -403,7 +423,7 @@ async function generatePwrdTransfer(fromBlock, toBlock) {
         const label = 'TX';
         const sender = shortAccount(log.sender);
         const recipient = shortAccount(log.recipient);
-        sendMessageToTradeChannel({
+        sendMessageToChannel(DISCORD_CHANNELS.trades, {
             message: msg,
             type: MESSAGE_TYPES.transferEvent,
             emojis: [MESSAGE_EMOJI[log.gToken]],

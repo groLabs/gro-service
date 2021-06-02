@@ -1,7 +1,8 @@
 const {
     MESSAGE_TYPES,
     MESSAGE_EMOJI,
-    sendMessageToCriticalEventChannel,
+    DISCORD_CHANNELS,
+    sendMessageToChannel,
 } = require('../common/discord/discordService');
 const { getConfig } = require('../common/configUtil');
 
@@ -18,7 +19,7 @@ function updateChainlinkPriceMessage(content) {
         type: MESSAGE_TYPES.chainPrice,
         description: `${MESSAGE_EMOJI.company} Update chainlink price for ${stableCoinName}`,
     };
-    sendMessageToCriticalEventChannel(discordMessage);
+    sendMessageToChannel(DISCORD_CHANNELS.critActionEvents, discordMessage);
 }
 
 module.exports = {

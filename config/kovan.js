@@ -51,6 +51,13 @@ module.exports = {
         rebalance: ':scales:',
         curveCheck: ':loudspeaker:',
     },
+    transaction_long_pending: {
+        invest: 120000,
+        investToCurveVault: 120000,
+        strategyHarvest: 120000,
+        execPnL: 60000,
+        rebalance: 60000,
+    },
     keep_stats_file_number: 250,
     stats_folder: '../stats',
     log_folder: '../logs',
