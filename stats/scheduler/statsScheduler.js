@@ -30,35 +30,50 @@ async function generateStatsFile() {
     });
 }
 
+function removeFile(fileNameList, removedFilePrefix) {
+    const fileSize = fileNameList.length;
+    logger.info(`Currect file size: ${fileSize}`);
+    if (fileSize <= keepStatsFileNumber) {
+        logger.info(`No need remove files, currect file size: ${fileSize}`);
+        return;
+    }
+    fileNameList.sort(
+        (a, b) =>
+            fs.statSync(path.join(statsDir, b)).ctime.getTime() -
+            fs.statSync(path.join(statsDir, a)).ctime.getTime()
+    );
+    const removedFileNames = fileNameList.slice(keepStatsFileNumber);
+    let removedFilesCount = 0;
+    removedFileNames.forEach((item) => {
+        if (item.indexOf(removedFilePrefix) > -1) {
+            fs.unlinkSync(path.join(statsDir, item));
+            removedFilesCount += 1;
+        }
+    });
+
+    logger.info(`Removed ${removedFilesCount} stats files.`);
+}
+
 async function removeStatsFile() {
     schedule.scheduleJob(removeStatsFileSchedulerSetting, async () => {
         try {
             logger.info('Start remove stats file.');
             if (fs.existsSync(statsDir)) {
                 const statsFiles = fs.readdirSync(statsDir);
-                const fileSize = statsFiles.length;
-                logger.info(`Currect stats files size: ${fileSize}`);
-                if (fileSize <= keepStatsFileNumber) {
-                    logger.info(
-                        `No need remove files, currect stats files size: ${fileSize}`
-                    );
-                    return;
-                }
-                statsFiles.sort(
-                    (a, b) =>
-                        fs.statSync(path.join(statsDir, b)).ctime.getTime() -
-                        fs.statSync(path.join(statsDir, a)).ctime.getTime()
-                );
-                const removedFileNames = statsFiles.slice(keepStatsFileNumber);
-                let removedFilesCount = 0;
-                removedFileNames.forEach((item) => {
-                    if (item.indexOf('gro-stats') > -1) {
-                        fs.unlinkSync(path.join(statsDir, item));
-                        removedFilesCount += 1;
+                const groApyFiles = [];
+                const argentApyFiles = [];
+                statsFiles.forEach((item) => {
+                    if (item.indexOf('gro') > -1) {
+                        groApyFiles.push(item);
+                    } else if (item.indexOf('argent') > -1) {
+                        argentApyFiles.push(item);
                     }
                 });
+                // remove gro apy files
+                removeFile(groApyFiles, 'gro-stats');
 
-                logger.info(`Removed ${removedFilesCount} stats files.`);
+                // remove argent files
+                removeFile(argentApyFiles, 'argent');
             } else {
                 logger.error(`${statsDir} folder doesn't exist.`);
             }
