@@ -16,6 +16,9 @@ module.exports = {
             strategy_1: '100000',
             strategy_2: '100000',
         },
+        vault_3: {
+            strategy_0: '100000',
+        },
     },
     harvest_strategies: ['harvest', 'curveXpool', 'genericLender'],
     stats: {
