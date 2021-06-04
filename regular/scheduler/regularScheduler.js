@@ -26,12 +26,6 @@ const {
 } = require('../handler/actionHandler');
 
 const { getVaults, getStrategyLength } = require('../../contract/allContracts');
-const {
-    getLastBlockNumber,
-    updateLastBlockNumber,
-    generateDepositAndWithdrawReport,
-    generateSummaryReport,
-} = require('../handler/eventHandler');
 const { getConfig } = require('../../common/configUtil');
 const {
     investTransactionMessage,
@@ -58,11 +52,6 @@ const pnlTriggerSchedulerSetting =
     getConfig('trigger_scheduler.pnl', false) || '30 * * * *';
 const rebalanceTriggerSchedulerSetting =
     getConfig('trigger_scheduler.rebalance', false) || '45 * * * *';
-const depositWithdrawEventSchedulerSetting =
-    getConfig('trigger_scheduler.deposit_withdraw_event', false) ||
-    '*/5 * * * *';
-const eventSummarySchedulerSetting =
-    getConfig('trigger_scheduler.event_summary', false) || '00 * * * *';
 const botUpdateChainPriceSchedulerSetting =
     getConfig('trigger_scheduler.bot_chainlink_check', false) ||
     '00 20 * * * *';
@@ -264,48 +253,6 @@ function harvestTriggerScheduler() {
     });
 }
 
-function depositWithdrawEventScheduler() {
-    schedule.scheduleJob(depositWithdrawEventSchedulerSetting, async () => {
-        try {
-            const lastBlockNumber = getLastBlockNumber(
-                'lastDepositAndWithdrawBlockNumber'
-            );
-            const currectBlockNumber = await getCurrentBlockNumber();
-            if (!currectBlockNumber) return;
-            await Promise.all([
-                generateDepositAndWithdrawReport(
-                    lastBlockNumber,
-                    currectBlockNumber
-                ),
-            ]);
-            updateLastBlockNumber(
-                currectBlockNumber,
-                'lastDepositAndWithdrawBlockNumber'
-            );
-        } catch (error) {
-            sendMessageToAlertChannel(error);
-        }
-    });
-}
-
-function EventSummaryScheduler() {
-    schedule.scheduleJob(eventSummarySchedulerSetting, async () => {
-        try {
-            const lastBlockNumber = getLastBlockNumber(
-                'lastSummaryBlockNumber'
-            );
-            const currectBlockNumber = await getCurrentBlockNumber();
-            if (!currectBlockNumber) return;
-            await Promise.all([
-                generateSummaryReport(lastBlockNumber, currectBlockNumber),
-            ]);
-            updateLastBlockNumber(currectBlockNumber, 'lastSummaryBlockNumber');
-        } catch (error) {
-            sendMessageToAlertChannel(error);
-        }
-    });
-}
-
 function updateChainPrice() {
     schedule.scheduleJob(botUpdateChainPriceSchedulerSetting, async () => {
         try {
@@ -325,8 +272,6 @@ function startRegularJobs() {
     pnlTriggerScheduler();
     rebalanceTriggerScheduler();
     longPendingTransactionsScheduler();
-    depositWithdrawEventScheduler();
-    EventSummaryScheduler();
     updateChainPrice();
 }
 

@@ -26,7 +26,7 @@ const {
     summaryMessage,
 } = require('../../discordMessage/eventMessage');
 
-const logger = require('../regularLogger');
+const logger = require('../statsLogger');
 
 let blockNumberFile = '../lastBlockNumber.json';
 
