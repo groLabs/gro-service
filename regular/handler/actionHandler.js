@@ -58,16 +58,14 @@ async function adapterInvest(blockNumber, isInvested, vault) {
     });
 }
 
-async function invest(blockNumber, investParams) {
+async function invest(blockNumber, vaultIndex) {
     const vaults = getVaults();
-    for (let i = 0; i < vaults.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await adapterInvest(blockNumber, investParams[i], vaults[i]);
-    }
+    await adapterInvest(blockNumber, true, vaults[vaultIndex]);
 }
 
-async function harvestStrategy(blockNumber, strategyInfo) {
+async function harvest(blockNumber, strategyInfo) {
     const key = `harvest-${strategyInfo.vault.address}-${strategyInfo.strategyIndex}`;
+    logger.info(`harvest ${key}`);
     const vaultName =
         getVaultAndStrategyLabels()[strategyInfo.vault.address].name;
     const strategyName =
@@ -112,14 +110,6 @@ async function harvestStrategy(blockNumber, strategyInfo) {
                 strategyInfo.strategyIndex
             ].address,
     });
-}
-
-async function harvest(blockNumber, harvestStrategies) {
-    for (let i = 0; i < harvestStrategies.length; i += 1) {
-        const strategyInfo = harvestStrategies[i];
-        // eslint-disable-next-line no-await-in-loop
-        await harvestStrategy(blockNumber, strategyInfo);
-    }
 }
 
 async function execPnl(blockNumber) {

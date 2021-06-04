@@ -15,7 +15,6 @@ const {
     pnlTrigger,
     rebalanceTrigger,
     harvestOneTrigger,
-    curveInvestTrigger,
 } = require('../handler/triggerHandler');
 const {
     invest,
@@ -169,24 +168,23 @@ function investTriggerScheduler() {
 
             const result = await checkPendingTransactions(keys);
             investTransactionMessage(result);
-            const investTriggers = await Promise.all([
-                investTrigger(),
-                curveInvestTrigger(),
-            ]);
-
-            if (!investTriggers[0].needCall && !investTriggers[1].needCall) {
+            const investTriggers = await investTrigger();
+            logger.info(
+                `investTriggers needCall ${investTriggers.needCall} params ${investTriggers.params}`
+            );
+            if (!investTriggers.needCall) {
                 return;
             }
 
             const currectBlockNumber = await getCurrentBlockNumber();
             if (!currectBlockNumber) return;
-
             await syncNounce();
-            if (investTriggers[0].needCall) {
-                await invest(currectBlockNumber, investTriggers[0].params);
+
+            if (investTriggers.needCall && investTriggers.params < 3) {
+                await invest(currectBlockNumber, investTriggers.params);
             }
 
-            if (investTriggers[1].needCall) {
+            if (investTriggers.needCall && investTriggers.params === 3) {
                 await curveInvest(currectBlockNumber);
             }
         } catch (error) {
@@ -253,7 +251,6 @@ function harvestTriggerScheduler() {
             harvestTransactionMessage(result);
 
             const triggerResult = await harvestOneTrigger();
-
             if (!triggerResult.needCall) return;
 
             const currectBlockNumber = await getCurrentBlockNumber();

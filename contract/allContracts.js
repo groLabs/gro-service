@@ -40,6 +40,7 @@ const underlyTokens = [];
 const strategyLength = [];
 const vaultAndStrategyLabels = {};
 const vaultStabeCoins = { tokens: {}, decimals: {}, symbols: {} };
+const yearnVaults = [];
 
 function initController() {
     const controllerAddress = getConfig('contracts.controller');
@@ -94,6 +95,7 @@ async function initVaultStrategyLabel(
         VaultABI,
         nonceManager
     );
+    yearnVaults.push(yearnVault);
     const strategiesAddressesPromise = [];
     for (let i = 0; i < strategyLength; i += 1) {
         strategiesAddressesPromise.push(yearnVault.withdrawalQueue(i));
@@ -353,6 +355,10 @@ function getUnderlyTokens() {
     return underlyTokens;
 }
 
+function getYearnVaults() {
+    return yearnVaults;
+}
+
 module.exports = {
     initAllContracts,
     getController,
@@ -372,4 +378,5 @@ module.exports = {
     getChainPrice,
     getVaultStabeCoins,
     getUnderlyTokens,
+    getYearnVaults,
 };
