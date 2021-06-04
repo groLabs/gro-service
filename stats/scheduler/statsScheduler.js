@@ -6,6 +6,13 @@ const { getConfig } = require('../../common/configUtil');
 const {
     sendMessageToAlertChannel,
 } = require('../../common/discord/discordService');
+const {
+    getLastBlockNumber,
+    generateDepositAndWithdrawReport,
+    updateLastBlockNumber,
+    generateSummaryReport,
+} = require('../handler/eventHandler');
+const { getCurrentBlockNumber } = require('../../common/chainUtil');
 const logger = require('../statsLogger.js');
 
 const statsDir = getConfig('stats_folder');
@@ -14,9 +21,11 @@ const generateStatsSchedulerSetting =
 const removeStatsFileSchedulerSetting =
     getConfig('trigger_scheduler.remove_stats_file', false) || '00 * * * * *';
 const keepStatsFileNumber = getConfig('keep_stats_file_number', false) || 25;
-logger.info(
-    `removeStatsFileSchedulerSetting : ${removeStatsFileSchedulerSetting}`
-);
+const depositWithdrawEventSchedulerSetting =
+    getConfig('trigger_scheduler.deposit_withdraw_event', false) ||
+    '*/5 * * * *';
+const eventSummarySchedulerSetting =
+    getConfig('trigger_scheduler.event_summary', false) || '00 * * * *';
 
 async function generateStatsFile() {
     schedule.scheduleJob(generateStatsSchedulerSetting, async () => {
@@ -68,9 +77,53 @@ async function removeStatsFile() {
     });
 }
 
+function depositWithdrawEventScheduler() {
+    schedule.scheduleJob(depositWithdrawEventSchedulerSetting, async () => {
+        try {
+            const lastBlockNumber = getLastBlockNumber(
+                'lastDepositAndWithdrawBlockNumber'
+            );
+            const currectBlockNumber = await getCurrentBlockNumber();
+            if (!currectBlockNumber) return;
+            await Promise.all([
+                generateDepositAndWithdrawReport(
+                    lastBlockNumber,
+                    currectBlockNumber
+                ),
+            ]);
+            updateLastBlockNumber(
+                currectBlockNumber,
+                'lastDepositAndWithdrawBlockNumber'
+            );
+        } catch (error) {
+            sendMessageToAlertChannel(error);
+        }
+    });
+}
+
+function EventSummaryScheduler() {
+    schedule.scheduleJob(eventSummarySchedulerSetting, async () => {
+        try {
+            const lastBlockNumber = getLastBlockNumber(
+                'lastSummaryBlockNumber'
+            );
+            const currectBlockNumber = await getCurrentBlockNumber();
+            if (!currectBlockNumber) return;
+            await Promise.all([
+                generateSummaryReport(lastBlockNumber, currectBlockNumber),
+            ]);
+            updateLastBlockNumber(currectBlockNumber, 'lastSummaryBlockNumber');
+        } catch (error) {
+            sendMessageToAlertChannel(error);
+        }
+    });
+}
+
 function starStatsJobs() {
     generateStatsFile();
     removeStatsFile();
+    depositWithdrawEventScheduler();
+    EventSummaryScheduler();
 }
 
 module.exports = {

@@ -25,7 +25,7 @@ const {
     summaryMessage,
 } = require('../../discordMessage/eventMessage');
 
-const logger = require('../regularLogger');
+const logger = require('../statsLogger');
 
 let blockNumberFile = '../lastBlockNumber.json';
 
@@ -266,14 +266,10 @@ async function generateSummaryReport(fromBlock, toBlock) {
         fromBlock,
         toBlock
     );
-    const {
-        originValue: originVaultValue,
-        value: vaultTVL,
-    } = await getGTokenAsset(getGvt(), toBlock);
-    const {
-        originValue: originPwrdValue,
-        value: pwrdTVL,
-    } = await getGTokenAsset(getPwrd(), toBlock);
+    const { originValue: originVaultValue, value: vaultTVL } =
+        await getGTokenAsset(getGvt(), toBlock);
+    const { originValue: originPwrdValue, value: pwrdTVL } =
+        await getGTokenAsset(getPwrd(), toBlock);
     const tvl = getTVLDelta(
         depositEventResult.total,
         withdrawEventResult.total,
