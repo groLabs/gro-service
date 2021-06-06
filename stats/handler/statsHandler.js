@@ -12,6 +12,7 @@ const {
     getTimestampByBlockNumber,
 } = require('../../common/chainUtil');
 const { getSystemApy } = require('./apyHandler');
+const { getGtokenApy, getHodlBonusApy } = require('./currentApyHandler');
 const {
     getTvlStats,
     getSystemStats,
@@ -67,6 +68,7 @@ function formatArgentResponse(stats) {
     argentStats.network = stats.network;
     argentStats.apy = {};
     argentStats.apy.last7d = stats.apy.last7d;
+    argentStats.apy.current = stats.apy.current;
     argentStats.tvl = {};
     argentStats.tvl.pwrd = stats.tvl.pwrd;
     argentStats.tvl.gvt = stats.tvl.gvt;
@@ -94,19 +96,30 @@ async function generateGroStatsFile() {
     stats.apy = mapper(apy, ['pwrd', 'gvt'], []);
 
     const tvl = await getTvlStats(latestBlockTag);
+
+    const system = await getSystemStats(tvl.total, latestBlockTag);
+
+    const exposure = await getExposureStats(latestBlockTag);
+
+    apy.hodl_bonus = await getHodlBonusApy();
+
+    apy.current = await getGtokenApy(
+        system.last3d_apy,
+        tvl.util_ratio,
+        apy.hodl_bonus
+    );
+
+    stats.apy = mapper(apy, ['pwrd', 'gvt', 'hodl_bonus'], []);
     stats.tvl = mapper(
         tvl,
         ['util_ratio', 'util_ratio_limit_PD', 'util_ratio_limit_GW'],
         ['pwrd', 'gvt', 'total']
     );
-
-    const system = await getSystemStats(tvl.total, latestBlockTag);
     stats.system = mapper(
         system,
-        ['total_share', 'share'],
+        ['total_share', 'share', 'last3d_apy'],
         ['total_amount', 'amount']
     );
-    const exposure = await getExposureStats(latestBlockTag);
     stats.exposure = mapper(exposure, ['concentration'], []);
 
     const statsFilename = `${statsDir}/gro-stats-${latestBlock.timestamp}.json`;

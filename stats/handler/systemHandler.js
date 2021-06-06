@@ -16,6 +16,8 @@ const {
 } = require('../../contract/allContracts');
 const logger = require('../statsLogger');
 
+const { getCurrentApy } = require('./currentApyHandler');
+
 // constant
 const SHARE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
 const THRESHOLD_DECIMAL = BigNumber.from(10).pow(BigNumber.from(4));
@@ -217,21 +219,51 @@ async function getTvlStats(blockTag) {
 
 async function getSystemStats(totalAssetsUsd, blockTag) {
     logger.info('SystemStats');
+    const vaults = getVaults();
     const lifeGuardStats = await getLifeguardStats(blockTag);
     lifeGuardStats.share = calculateSharePercent(
         lifeGuardStats.amount,
         totalAssetsUsd
     );
+    lifeGuardStats.last3d_apy = BigNumber.from(0);
 
     let systemTotal = lifeGuardStats.amount;
     let systemShare = lifeGuardStats.share;
+    let systemApy = BigNumber.from(0);
     const vaultAssets = await getVaultStats(blockTag);
-    const vaultStats = vaultAssets.map((vaultAsset) => {
-        const strategies = vaultAsset.strategies.map((strategy) => ({
-            name: strategy.name,
-            amount: strategy.amount,
-            share: calculateSharePercent(strategy.amount, totalAssetsUsd),
-        }));
+    const currentApy = await getCurrentApy();
+    const vaultStats = vaultAssets.map((vaultAsset, vaultIndex) => {
+        const vaultStrategyApy = currentApy[vaults[vaultIndex].address];
+        let vaultApy = BigNumber.from(0);
+        let vaultPercent = BigNumber.from(0);
+        const strategies = vaultAsset.strategies.map(
+            (strategy, strategyIndex) => {
+                const strat = vaultStrategyApy.strategies[strategyIndex];
+                let stratApy = BigNumber.from(0);
+                if (strat !== undefined) {
+                    logger.info(`strat apy ${strat.address} ${strat.apy}`);
+                    stratApy = strat.apy;
+                }
+                const strategyPercent = calculateSharePercent(
+                    strategy.amount,
+                    totalAssetsUsd
+                );
+                logger.info(
+                    `strat address ${strategyIndex} ${stratApy} ${strategyPercent}`
+                );
+                vaultApy = vaultApy.add(stratApy.mul(strategyPercent));
+                vaultPercent = vaultPercent.add(strategyPercent);
+                return {
+                    name: strategy.name,
+                    amount: strategy.amount,
+                    last3d_apy: stratApy,
+                    share: strategyPercent,
+                };
+            }
+        );
+        systemApy = systemApy.add(vaultApy);
+        const estimatedVaultApy = vaultApy.div(vaultPercent);
+        logger.info(`estimatedVaultApy ${vaultIndex} ${estimatedVaultApy}`);
         const share = calculateSharePercent(vaultAsset.amount, totalAssetsUsd);
         systemShare = systemShare.add(share);
         systemTotal = systemTotal.add(vaultAsset.amount);
@@ -239,12 +271,14 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
             name: vaultAsset.name,
             amount: vaultAsset.amount,
             share,
+            last3d_apy: estimatedVaultApy,
             strategies,
         };
     });
     const systemStats = {
         total_share: systemShare,
         total_amount: systemTotal,
+        last3d_apy: systemApy.div(SHARE_DECIMAL),
         lifeguard: lifeGuardStats,
         vaults: vaultStats,
     };
