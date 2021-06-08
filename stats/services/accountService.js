@@ -12,7 +12,7 @@ const {
     getApprovalEvents,
 } = require('../../common/logFilter');
 const {
-    getDefaultProvider,
+    getAlchemyRpcProvider,
     getTimestampByBlockNumber,
 } = require('../../common/chainUtil');
 const { ContractCallError, ParameterError } = require('../../common/error');
@@ -29,6 +29,9 @@ const { getVaultStabeCoins } = require('../../contract/allContracts');
 const fromBlock = getConfig('blockchain.start_block');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
+
+const providerKey = 'stats_personal';
+const provider = getAlchemyRpcProvider(providerKey);
 
 function getFailedEmbedMessage(account) {
     const label = shortAccount(account);
@@ -57,7 +60,8 @@ async function getDepositHistories(account, toBlock) {
         EVENT_TYPE.deposit,
         fromBlock,
         toBlock,
-        account
+        account,
+        providerKey
     ).catch((error) => {
         handleError(error, `Get deposit logs of ${account} failed.`, account);
     });
@@ -79,7 +83,8 @@ async function getWithdrawHistories(account, toBlock) {
         EVENT_TYPE.withdraw,
         fromBlock,
         toBlock,
-        account
+        account,
+        providerKey
     ).catch((error) => {
         handleError(
             error,
@@ -105,7 +110,8 @@ async function getTransferHistories(account, filters, toBlock) {
         filters[0],
         fromBlock,
         toBlock,
-        account
+        account,
+        providerKey
     ).catch((error) => {
         handleError(
             error,
@@ -118,7 +124,8 @@ async function getTransferHistories(account, filters, toBlock) {
         filters[1],
         fromBlock,
         toBlock,
-        account
+        account,
+        providerKey
     ).catch((error) => {
         handleError(
             error,
@@ -183,7 +190,8 @@ async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
     const approvalEventResult = await getApprovalEvents(
         account,
         fromBlock,
-        toBlock
+        toBlock,
+        providerKey
     ).catch((error) => {
         handleError(
             error,
@@ -192,7 +200,7 @@ async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
         );
     });
 
-    const stableCoinInfo = getVaultStabeCoins();
+    const stableCoinInfo = getVaultStabeCoins(providerKey);
     const result = [];
     const usdAmoutPromise = [];
     for (let i = 0; i < approvalEventResult.length; i += 1) {
@@ -268,11 +276,11 @@ async function getTransactionHistories(account, toBlock) {
 }
 
 async function generateReport(account) {
-    const latestBlock = await getDefaultProvider().getBlock();
+    const latestBlock = await provider.getBlock();
     const promises = [];
     promises.push(getTransactionHistories(account, latestBlock.number));
-    promises.push(getPowerD().getAssets(account));
-    promises.push(getGroVault().getAssets(account));
+    promises.push(getPowerD(providerKey).getAssets(account));
+    promises.push(getGroVault(providerKey).getAssets(account));
     const results = await Promise.all(promises);
     const data = results[0];
     const pwrdBalance = new BN(results[1].toString());
@@ -280,9 +288,9 @@ async function generateReport(account) {
 
     logger.info(`${account} historical: ${JSON.stringify(data)}`);
     const { groVault, powerD, approval } = data;
-    const transactions = await getTransactions(groVault, powerD);
-    const transaction = await getTransaction(transactions, approval);
-    const launchTime = await getTimestampByBlockNumber(fromBlock);
+    const transactions = await getTransactions(groVault, powerD, provider);
+    const transaction = await getTransaction(transactions, approval, provider);
+    const launchTime = await getTimestampByBlockNumber(fromBlock, provider);
 
     const result = {
         transactions,

@@ -1,5 +1,10 @@
 const { ethers } = require('ethers');
-const { getNonceManager } = require('../common/chainUtil');
+const {
+    getNonceManager,
+    getRpcProvider,
+    getAlchemyRpcProvider,
+    getWallet,
+} = require('../common/chainUtil');
 const { ContractCallError } = require('../common/error');
 const { getConfig } = require('../common/configUtil');
 
@@ -41,6 +46,8 @@ const strategyLength = [];
 const vaultAndStrategyLabels = {};
 const vaultStabeCoins = { tokens: {}, decimals: {}, symbols: {} };
 const yearnVaults = [];
+const providerConnectedContracts = {};
+const managerConnectedContracts = {};
 
 function initController() {
     const controllerAddress = getConfig('contracts.controller');
@@ -287,76 +294,213 @@ async function initAllContracts() {
     logger.info('Init contracts done!.');
 }
 
-function getController() {
-    return controller;
+function connectProviderOrSigner(contractInstance, providerOrSigner) {
+    providerOrSigner = providerOrSigner || getRpcProvider();
+    return contractInstance.connect(providerOrSigner);
 }
 
-function getInsurance() {
-    return insurance;
+function getOrCreateContract(
+    contractInsurance,
+    contractKey,
+    providerKey,
+    signerKey
+) {
+    let contract;
+    if (signerKey) {
+        if (!managerConnectedContracts[providerKey]) {
+            managerConnectedContracts[providerKey] = {};
+        }
+        const providerContracts = managerConnectedContracts[providerKey];
+        if (!providerContracts[signerKey]) {
+            providerContracts[signerKey] = {};
+        }
+        contract = providerContracts[signerKey][contractKey];
+        if (!contract) {
+            const wallet = getWallet(providerKey, signerKey);
+            contract = contractInsurance.connect(wallet);
+            providerContracts[signerKey][contractKey] = contract;
+        }
+    } else {
+        if (!providerConnectedContracts[providerKey]) {
+            providerConnectedContracts[providerKey] = {};
+        }
+        const contracts = providerConnectedContracts[providerKey];
+        contract = contracts[contractKey];
+        if (!contract) {
+            const provider = getAlchemyRpcProvider(providerKey);
+            contract = contractInsurance.connect(provider);
+            contracts[contractKey] = contract;
+        }
+    }
+    return contract;
 }
 
-function getExposure() {
-    return exposure;
+function getOrCreateContracts(
+    contractsInstance,
+    contractKey,
+    providerKey,
+    signerKey
+) {
+    let distContracts;
+    if (signerKey) {
+        if (!managerConnectedContracts[providerKey]) {
+            managerConnectedContracts[providerKey] = {};
+        }
+        const providerContracts = managerConnectedContracts[providerKey];
+        if (!providerContracts[signerKey]) {
+            providerContracts[signerKey] = {};
+        }
+        distContracts = providerContracts[signerKey][contractKey];
+        if (!distContracts) {
+            distContracts = [];
+            const wallet = getWallet(providerKey, signerKey);
+            for (let i = 0; i < contractsInstance.length; i += 1) {
+                distContracts.push(
+                    connectProviderOrSigner(contractsInstance[i], wallet)
+                );
+            }
+            providerContracts[signerKey][contractKey] = distContracts;
+        }
+    } else {
+        if (!providerConnectedContracts[providerKey]) {
+            providerConnectedContracts[providerKey] = {};
+        }
+        const contracts = providerConnectedContracts[providerKey];
+        distContracts = contracts[contractKey];
+        if (!distContracts) {
+            distContracts = [];
+            const provider = getAlchemyRpcProvider(providerKey);
+            for (let i = 0; i < contractsInstance.length; i += 1) {
+                distContracts.push(
+                    connectProviderOrSigner(contractsInstance[i], provider)
+                );
+            }
+            contracts[contractKey] = distContracts;
+        }
+    }
+    return distContracts;
 }
 
-function getVaults() {
-    return vaults;
+function getController(providerKey, signerKey) {
+    if (!providerKey) return controller;
+    return getOrCreateContract(
+        controller,
+        'controller',
+        providerKey,
+        signerKey
+    );
 }
 
-function getCurveVault() {
-    return curveVault;
+function getInsurance(providerKey, signerKey) {
+    if (!providerKey) return insurance;
+    return getOrCreateContract(insurance, 'insurance', providerKey, signerKey);
 }
 
-function getPnl() {
-    return pnl;
+function getExposure(providerKey, signerKey) {
+    if (!providerKey) return exposure;
+    return getOrCreateContract(exposure, 'exposure', providerKey, signerKey);
 }
 
-function getGvt() {
-    return gvt;
+function getVaults(providerKey, signerKey) {
+    if (!providerKey) return vaults;
+    return getOrCreateContracts(vaults, 'vaults', providerKey, signerKey);
 }
 
-function getPwrd() {
-    return pwrd;
+function getCurveVault(providerKey, signerKey) {
+    if (!providerKey) return curveVault;
+    return getOrCreateContract(
+        curveVault,
+        'curveVault',
+        providerKey,
+        signerKey
+    );
 }
 
-function getLifeguard() {
-    return lifeguard;
+function getPnl(providerKey, signerKey) {
+    if (!providerKey) return pnl;
+    return getOrCreateContract(pnl, 'pnl', providerKey, signerKey);
+}
+
+function getGvt(providerKey, signerKey) {
+    if (!providerKey) return gvt;
+    return getOrCreateContract(gvt, 'gvt', providerKey, signerKey);
+}
+
+function getPwrd(providerKey, signerKey) {
+    if (!providerKey) return pwrd;
+    return getOrCreateContract(pwrd, 'pwrd', providerKey, signerKey);
+}
+
+function getLifeguard(providerKey, signerKey) {
+    if (!providerKey) return lifeguard;
+    return getOrCreateContract(lifeguard, 'lifeguard', providerKey, signerKey);
 }
 
 function getStrategyLength() {
     return strategyLength;
 }
 
-function getDepositHandler() {
-    return depositHandler;
+function getDepositHandler(providerKey, signerKey) {
+    if (!providerKey) return depositHandler;
+    return getOrCreateContract(
+        depositHandler,
+        'depositHandler',
+        providerKey,
+        signerKey
+    );
 }
 
-function getWithdrawHandler() {
-    return withdrawHandler;
+function getWithdrawHandler(providerKey, signerKey) {
+    if (!providerKey) return withdrawHandler;
+    return getOrCreateContract(
+        withdrawHandler,
+        'withdrawHandler',
+        providerKey,
+        signerKey
+    );
 }
 
-function getBuoy() {
-    return buoy;
+function getBuoy(providerKey, signerKey) {
+    if (!providerKey) return buoy;
+    return getOrCreateContract(buoy, 'buoy', providerKey, signerKey);
 }
 
 function getVaultAndStrategyLabels() {
     return vaultAndStrategyLabels;
 }
 
-function getChainPrice() {
-    return chainPrice;
+function getChainPrice(providerKey, signerKey) {
+    if (!providerKey) return chainPrice;
+    return getOrCreateContract(
+        chainPrice,
+        'chainPrice',
+        providerKey,
+        signerKey
+    );
 }
 
 function getVaultStabeCoins() {
     return vaultStabeCoins;
 }
 
-function getUnderlyTokens() {
-    return underlyTokens;
+function getUnderlyTokens(providerKey, signerKey) {
+    if (!providerKey) return underlyTokens;
+    return getOrCreateContracts(
+        underlyTokens,
+        'underlyTokens',
+        providerKey,
+        signerKey
+    );
 }
 
-function getYearnVaults() {
-    return yearnVaults;
+function getYearnVaults(providerKey, signerKey) {
+    if (!providerKey) return yearnVaults;
+    return getOrCreateContracts(
+        yearnVaults,
+        'yearnVaults',
+        providerKey,
+        signerKey
+    );
 }
 
 module.exports = {

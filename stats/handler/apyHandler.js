@@ -6,15 +6,9 @@ dayjs.extend(utc);
 const { getGvt, getPwrd } = require('../../contract/allContracts');
 const BlocksScanner = require('../common/blockscanner');
 const logger = require('../statsLogger');
-const {
-    getDefaultProvider,
-    getTimestampByBlockNumber,
-} = require('../../common/chainUtil');
+const { getTimestampByBlockNumber } = require('../../common/chainUtil');
 const { BlockChainCallError } = require('../../common/error');
 const { getConfig } = require('../../common/configUtil');
-
-const provider = getDefaultProvider();
-const scanner = new BlocksScanner(provider);
 
 const FACTOR_DECIMAL = BigNumber.from(10).pow(BigNumber.from(18));
 const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
@@ -23,8 +17,15 @@ const DAYS_IN_YEAR = BigNumber.from(365);
 const WEEKS_IN_YEAR = BigNumber.from(52);
 const MONTHS_IN_YEAR = BigNumber.from(12);
 
+const providerKey = 'stats_gro';
 // config
 const launchBlock = getConfig('blockchain.start_block');
+
+let scanner;
+
+function updateBlocksScanner(newProvider) {
+    scanner = new BlocksScanner(newProvider);
+}
 
 function calculatePriceDiff(factorStart, factorEnd) {
     const startPrice = FACTOR_DECIMAL.mul(PERCENT_DECIMAL).div(factorStart);
@@ -38,7 +39,7 @@ function calculatePriceDiff(factorStart, factorEnd) {
 }
 
 async function getGTokenBaseFactor(isPWRD) {
-    const token = isPWRD ? getPwrd() : getGvt();
+    const token = isPWRD ? getPwrd(providerKey) : getGvt(providerKey);
     const factor = await token
         .factor({ blockTag: launchBlock })
         .catch((error) => {
@@ -72,8 +73,8 @@ async function calcApyByPeriod(
     const startBlockTag = {
         blockTag: startBlock.block,
     };
-    const startGvtFactor = await getGvt().factor(startBlockTag);
-    const startPwrdFactor = await getPwrd().factor(startBlockTag);
+    const startGvtFactor = await getGvt(providerKey).factor(startBlockTag);
+    const startPwrdFactor = await getPwrd(providerKey).factor(startBlockTag);
 
     const gvtApy = calculatePriceDiff(startGvtFactor, currentGvtFactor).mul(
         multiplier
@@ -108,8 +109,8 @@ async function calcApyOfInitDays(latestBlock, launchTimestamp) {
         blockTag: latestBlock.number,
     };
 
-    const gvtFactorNow = await getGvt().factor(latestBlockTag);
-    const pwrdFactorNow = await getPwrd().factor(latestBlockTag);
+    const gvtFactorNow = await getGvt(providerKey).factor(latestBlockTag);
+    const pwrdFactorNow = await getPwrd(providerKey).factor(latestBlockTag);
     const gvtFactor = await getGTokenBaseFactor(false);
     const pwrdFactor = await getGTokenBaseFactor(true);
     const gvtApy = calculatePriceDiff(gvtFactor, gvtFactorNow)
@@ -133,8 +134,8 @@ async function calcApyOfInitDays(latestBlock, launchTimestamp) {
 async function calcAlltimeApy(startOfToday, launchTimestamp) {
     logger.info(`calculate alltime apy ${startOfToday}`);
 
-    const gvt = getGvt();
-    const pwrd = getPwrd();
+    const gvt = getGvt(providerKey);
+    const pwrd = getPwrd(providerKey);
 
     const blockUtcToday = await findBlockByDate(startOfToday);
     const blockTagUtcToday = {
@@ -173,10 +174,11 @@ async function calcAlltimeApy(startOfToday, launchTimestamp) {
     return allTimeApy;
 }
 
-async function getSystemApy(latestBlock) {
+async function getSystemApy(latestBlock, provider) {
+    updateBlocksScanner(provider);
     logger.info('SystemApy');
-    const gvt = getGvt();
-    const pwrd = getPwrd();
+    const gvt = getGvt(providerKey);
+    const pwrd = getPwrd(providerKey);
 
     const startOfUTCToday = dayjs
         .unix(latestBlock.timestamp)
@@ -184,7 +186,10 @@ async function getSystemApy(latestBlock) {
         .startOf('day');
     logger.info(`startOfUTCToday ${startOfUTCToday}`);
 
-    const launchTimestamp = await getTimestampByBlockNumber(launchBlock);
+    const launchTimestamp = await getTimestampByBlockNumber(
+        launchBlock,
+        provider
+    );
     const launchDate = dayjs.unix(launchTimestamp);
     // In first day, all the apy is the same as all_time
     if (startOfUTCToday.isBefore(launchDate)) {

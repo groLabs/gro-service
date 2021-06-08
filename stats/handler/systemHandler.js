@@ -28,13 +28,19 @@ const protocolNames = config.get('protocol');
 const strategyNames = config.get('strategy_name');
 const lifeguardNames = config.get('lifeguard_name');
 
+const providerKey = 'stats_gro';
+
 async function getUsdValue(i, amount, blockTag) {
-    const usdValue = await getBuoy().singleStableToUsd(amount, i, blockTag);
+    const usdValue = await getBuoy(providerKey).singleStableToUsd(
+        amount,
+        i,
+        blockTag
+    );
     return usdValue;
 }
 
 async function getUsdValueForLP(amount, blockTag) {
-    const usdValue = await getBuoy().lpToUsd(amount, blockTag);
+    const usdValue = await getBuoy(providerKey).lpToUsd(amount, blockTag);
     return usdValue;
 }
 
@@ -70,7 +76,7 @@ async function getCurveStrategyStats(vault, vaultTotalAsset, blockTag) {
 }
 
 async function getCurveVaultStats(blockTag) {
-    const curveVault = getCurveVault();
+    const curveVault = getCurveVault(providerKey);
     const vaultTotalAsset = await curveVault.totalAssets(blockTag);
     const assetUsd = await getUsdValueForLP(vaultTotalAsset, blockTag);
     const strategyStats = await getCurveStrategyStats(
@@ -119,7 +125,7 @@ async function getStrategiesStats(
 }
 
 async function getVaultStats(blockTag) {
-    const vaults = getVaults();
+    const vaults = getVaults(providerKey);
     const strategyLength = getStrategyLength();
     const vaultAssets = [];
     //
@@ -151,7 +157,7 @@ async function getVaultStats(blockTag) {
 }
 
 async function getLifeguardStats(blockTag) {
-    const lifeGuard = getLifeguard();
+    const lifeGuard = getLifeguard(providerKey);
     const lifeGuardStats = {
         name: lifeguardNames,
         amount: await lifeGuard.totalAssetsUsd(blockTag),
@@ -160,9 +166,9 @@ async function getLifeguardStats(blockTag) {
 }
 
 async function getExposureStats(blockTag) {
-    const exposure = getExposure();
+    const exposure = getExposure(providerKey);
     logger.info(`blockTag : ${JSON.stringify(blockTag)}`);
-    const preCal = await getInsurance().prepareCalculation(blockTag);
+    const preCal = await getInsurance(providerKey).prepareCalculation(blockTag);
     const riskResult = await exposure.calcRiskExposure(preCal, blockTag);
     const exposureStableCoin = riskResult[0].map((concentration, i) => ({
         name: stabeCoinNames[i],
@@ -187,14 +193,16 @@ async function getExposureStats(blockTag) {
 
 async function getTvlStats(blockTag) {
     logger.info('TvlStats');
-    const gvtAssets = await getGvt().totalAssets(blockTag);
-    const prwdAssets = await getPwrd().totalSupply(blockTag);
+    const gvtAssets = await getGvt(providerKey).totalAssets(blockTag);
+    const prwdAssets = await getPwrd(providerKey).totalSupply(blockTag);
     const totalAssetsUsd = gvtAssets.add(prwdAssets);
     const utilRatio = calculateSharePercent(prwdAssets, gvtAssets);
-    const utilRatioLimitPD =
-        await getDepositHandler().utilisationRatioLimitPwrd(blockTag);
-    const utilRatioLimitGW =
-        await getWithdrawHandler().utilisationRatioLimitGvt(blockTag);
+    const utilRatioLimitPD = await getDepositHandler(
+        providerKey
+    ).utilisationRatioLimitPwrd(blockTag);
+    const utilRatioLimitGW = await getWithdrawHandler(
+        providerKey
+    ).utilisationRatioLimitGvt(blockTag);
 
     const tvl = {
         pwrd: prwdAssets,

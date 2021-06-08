@@ -8,9 +8,25 @@ module.exports = {
             etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
             pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
         },
-        start_block: 12404379,
+        start_block: 12584881,
         keystore: process.env[`KEY_STORE_${process.env.BOT_ENV}`],
         keystore_password: process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
+        alchemy_api_keys: {
+            stats: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
+            stats_personal:
+                process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}_PERSONAL`],
+            stats_gro: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}_GRO`],
+        },
+        keystores: {
+            stats: {
+                default_file_path:
+                    process.env[`KEY_STORE_${process.env.BOT_ENV}`],
+                default_password:
+                    process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
+                default_private_key:
+                    process.env[`KEY_PRIVATE_KEY_${process.env.BOT_ENV}`],
+            },
+        },
     },
     trigger_scheduler: {
         pending_transaction_check: '5 * * * * *',
@@ -19,7 +35,7 @@ module.exports = {
         harvest: '*/1 * * * *',
         pnl: '23 * * * * *',
         rebalance: '33 * * * * *',
-        generate_stats: '10 * * * * *',
+        generate_stats: '10 * * * *',
         remove_stats_file: '*/2 * * * *',
         bot_curve_check: '00,30 * * * * *',
         deposit_withdraw_event: '*/2 * * * *',
@@ -90,7 +106,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x7969c5eD335650692Bc04293B07F5BF2e7A673C0',
+        controller: '0x4c5859f0F772848b2D91F1D83E2Fe57935348029',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

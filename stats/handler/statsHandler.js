@@ -8,7 +8,7 @@ const { getConfig } = require('../../common/configUtil');
 dayjs.extend(utc);
 
 const {
-    getDefaultProvider,
+    getAlchemyRpcProvider,
     getTimestampByBlockNumber,
 } = require('../../common/chainUtil');
 const { getSystemApy } = require('./apyHandler');
@@ -21,7 +21,7 @@ const {
 const { apyStatsMessage } = require('../../discordMessage/statsMessage');
 const logger = require('../statsLogger');
 
-const provider = getDefaultProvider();
+const provider = getAlchemyRpcProvider('stats_gro');
 
 const FIXED_PERCENT = 6;
 const FIXED_USD = 7;
@@ -80,14 +80,17 @@ async function generateGroStatsFile() {
         blockTag: latestBlock.number,
     };
 
-    const launchTimestamp = await getTimestampByBlockNumber(launchBlock);
+    const launchTimestamp = await getTimestampByBlockNumber(
+        launchBlock,
+        provider
+    );
 
     const stats = {
         current_timestamp: latestBlock.timestamp.toString(),
         launch_timestamp: launchTimestamp,
         network: process.env.NODE_ENV.toLowerCase(),
     };
-    const apy = await getSystemApy(latestBlock);
+    const apy = await getSystemApy(latestBlock, provider);
     stats.apy = mapper(apy, ['pwrd', 'gvt'], []);
 
     const tvl = await getTvlStats(latestBlockTag);

@@ -7,10 +7,13 @@ module.exports = {
             etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
             pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
         },
-        start_block: 12503421,
-        launch_timestamp: '1621944774',
+        start_block: 12522788,
         keystore: process.env[`KEY_STORE_${process.env.BOT_ENV}`],
         keystore_password: process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
+        alchemy_api_keys: {
+            stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
+            stats_gro: process.env.ALCHEMY_KEY_STATS_GRO,
+        },
     },
     trigger_scheduler: {
         pending_transaction_check: '5 30 * * * *',

@@ -15,7 +15,7 @@ const {
     sendMessageToChannel,
 } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
-const { getDefaultProvider } = require('../../common/chainUtil');
+const { getAlchemyRpcProvider } = require('../../common/chainUtil');
 const { formatNumber, shortAccount } = require('../../common/digitalUtil');
 const { getGvt, getPwrd } = require('../../contract/allContracts');
 const { calculateDelta } = require('../../common/digitalUtil');
@@ -29,6 +29,8 @@ const {
 const logger = require('../regularLogger');
 
 let blockNumberFile = '../lastBlockNumber.json';
+
+const providerKey = 'stats_gro';
 
 if (config.has('blockNumberFile')) {
     blockNumberFile = config.get('blockNumberFile');
@@ -69,15 +71,19 @@ async function AppendGTokenMintOrBurnAmountToLog(logs) {
 }
 
 async function generateDepositReport(fromBlock, toBlock) {
-    const logs = await getEvents(EVENT_TYPE.deposit, fromBlock, toBlock).catch(
-        (error) => {
-            logger.error(error);
-            throw new ContractCallError(
-                `Get deposit events from block ${fromBlock} to ${toBlock} failed.`,
-                MESSAGE_TYPES.depositEvent
-            );
-        }
-    );
+    const logs = await getEvents(
+        EVENT_TYPE.deposit,
+        fromBlock,
+        toBlock,
+        null,
+        providerKey
+    ).catch((error) => {
+        logger.error(error);
+        throw new ContractCallError(
+            `Get deposit events from block ${fromBlock} to ${toBlock} failed.`,
+            MESSAGE_TYPES.depositEvent
+        );
+    });
 
     // handle gtoken mint amount
     await AppendGTokenMintOrBurnAmountToLog(logs);
@@ -141,15 +147,19 @@ async function generateDepositReport(fromBlock, toBlock) {
 }
 
 async function generateWithdrawReport(fromBlock, toBlock) {
-    const logs = await getEvents(EVENT_TYPE.withdraw, fromBlock, toBlock).catch(
-        (error) => {
-            logger.error(error);
-            throw new ContractCallError(
-                `Get withdraw events from block ${fromBlock} to ${toBlock} failed.`,
-                MESSAGE_TYPES.withdrawEvent
-            );
-        }
-    );
+    const logs = await getEvents(
+        EVENT_TYPE.withdraw,
+        fromBlock,
+        toBlock,
+        null,
+        providerKey
+    ).catch((error) => {
+        logger.error(error);
+        throw new ContractCallError(
+            `Get withdraw events from block ${fromBlock} to ${toBlock} failed.`,
+            MESSAGE_TYPES.withdrawEvent
+        );
+    });
 
     // parse burn gtoken amount
     await AppendGTokenMintOrBurnAmountToLog(logs);
@@ -274,8 +284,9 @@ function getTVLDelta(deposintTotalContent, withdrawTotalContent, currentTVL) {
 
 async function generateSummaryReport(fromBlock, toBlock) {
     logger.info(`Start to get event from block:${fromBlock} to ${toBlock}`);
-    const startBlock = await getDefaultProvider().getBlock(fromBlock);
-    const endBlock = await getDefaultProvider().getBlock(toBlock);
+    const provider = getAlchemyRpcProvider(providerKey);
+    const startBlock = await provider.getBlock(fromBlock);
+    const endBlock = await provider.getBlock(toBlock);
     const startTime = dayjs.unix(startBlock.timestamp);
     let startTimeDisplay = startTime.format('h');
     const endTime = dayjs.unix(endBlock.timestamp);
@@ -291,9 +302,9 @@ async function generateSummaryReport(fromBlock, toBlock) {
         toBlock
     );
     const { originValue: originVaultValue, value: vaultTVL } =
-        await getGTokenAsset(getGvt(), toBlock);
+        await getGTokenAsset(getGvt(providerKey), toBlock);
     const { originValue: originPwrdValue, value: pwrdTVL } =
-        await getGTokenAsset(getPwrd(), toBlock);
+        await getGTokenAsset(getPwrd(providerKey), toBlock);
     const tvl = getTVLDelta(
         depositEventResult.total,
         withdrawEventResult.total,
@@ -323,7 +334,9 @@ async function generateGvtTransfer(fromBlock, toBlock) {
     const logs = await getTransferEvents(
         EVENT_TYPE.gvtTransfer,
         fromBlock,
-        toBlock
+        toBlock,
+        null,
+        providerKey
     ).catch((error) => {
         logger.error(error);
         throw new ContractCallError(
@@ -392,7 +405,9 @@ async function generatePwrdTransfer(fromBlock, toBlock) {
     const logs = await getTransferEvents(
         EVENT_TYPE.pwrdTransfer,
         fromBlock,
-        toBlock
+        toBlock,
+        null,
+        providerKey
     ).catch((error) => {
         logger.error(error);
         throw new ContractCallError(

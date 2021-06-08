@@ -1,6 +1,6 @@
 const { pendingTransactions } = require('./storage');
 const { getVaultStabeCoins } = require('../contract/allContracts');
-const { getDefaultProvider } = require('./chainUtil');
+const { getDefaultProvider, getRpcProvider } = require('./chainUtil');
 const { BlockChainCallError } = require('./error');
 const {
     getPnlKeyData,
@@ -47,7 +47,13 @@ async function parseAdditionalData(type, hash, transactionReceipt) {
 async function getReceipt(type) {
     const transactionInfo = pendingTransactions.get(type);
     const { label: msgLabel, hash } = transactionInfo;
-    const transactionReceipt = await getDefaultProvider()
+    let provider;
+    if (process.env.NODE_ENV === 'develop') {
+        provider = getDefaultProvider();
+    } else {
+        provider = getRpcProvider();
+    }
+    const transactionReceipt = await provider
         .getTransactionReceipt(hash)
         .catch((err) => {
             logger.error(err);
