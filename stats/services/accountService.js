@@ -3,6 +3,7 @@ const logger = require('../statsLogger');
 const {
     getGvt: getGroVault,
     getPwrd: getPowerD,
+    getBuoy,
 } = require('../../contract/allContracts');
 const {
     EVENT_TYPE,
@@ -14,11 +15,14 @@ const {
     getDefaultProvider,
     getTimestampByBlockNumber,
 } = require('../../common/chainUtil');
-const { ContractCallError } = require('../../common/error');
+const { ContractCallError, ParameterError } = require('../../common/error');
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
 const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
-const { getTransactionsWithTimestamp } = require('./generatePersonTransaction');
+const {
+    getTransactions,
+    getTransaction,
+} = require('./generatePersonTransaction');
 const { shortAccount } = require('../../common/digitalUtil');
 const { getVaultStabeCoins } = require('../../contract/allContracts');
 
@@ -162,6 +166,19 @@ async function getPowerDTransferHistories(account, toBlock) {
     return logs;
 }
 
+function getStableCoinIndex(tokenSymbio) {
+    switch (tokenSymbio) {
+        case 'DAI':
+            return 0;
+        case 'USDC':
+            return 1;
+        case 'USDT':
+            return 2;
+        default:
+            throw new ParameterError(`Not found token symbo: ${tokenSymbio}`);
+    }
+}
+
 async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
     const approvalEventResult = await getApprovalEvents(
         account,
@@ -177,21 +194,41 @@ async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
 
     const stableCoinInfo = getVaultStabeCoins();
     const result = [];
+    const usdAmoutPromise = [];
     for (let i = 0; i < approvalEventResult.length; i += 1) {
         const { address, transactionHash, blockNumber, args } =
             approvalEventResult[i];
         const decimal = stableCoinInfo.decimals[address];
         if (!depositEventHashs.includes(transactionHash)) {
+            const tokenSymbio = stableCoinInfo.symbols[address];
             result.push({
                 transaction: 'approval',
-                token: stableCoinInfo.symbols[address],
+                token: tokenSymbio,
                 hash: transactionHash,
                 spender: args[1],
-                amount: div(args[2], BN(10).pow(decimal), 2),
-                usd_amount: div(args[2], BN(10).pow(decimal), 2),
+                coin_amount: div(args[2], BN(10).pow(decimal), 2),
                 block_number: blockNumber,
             });
+            usdAmoutPromise.push(
+                getBuoy().singleStableToUsd(
+                    args[2],
+                    getStableCoinIndex(tokenSymbio),
+                    {
+                        blockTag: blockNumber,
+                    }
+                )
+            );
         }
+    }
+
+    const usdAmoutResult = await Promise.all(usdAmoutPromise).catch((error) => {
+        logger.error(error);
+        throw new ContractCallError(
+            `Get approval usd amount for ${account} failed.`
+        );
+    });
+    for (let i = 0; i < result.length; i += 1) {
+        result[i].usd_amount = div(usdAmoutResult[i], BN(10).pow(18), 2);
     }
     return result;
 }
@@ -242,11 +279,14 @@ async function generateReport(account) {
     const gvtBalance = new BN(results[2].toString());
 
     logger.info(`${account} historical: ${JSON.stringify(data)}`);
-    const transactions = await getTransactionsWithTimestamp(data);
+    const { groVault, powerD, approval } = data;
+    const transactions = await getTransactions(groVault, powerD);
+    const transaction = await getTransaction(transactions, approval);
     const launchTime = await getTimestampByBlockNumber(fromBlock);
 
     const result = {
         transactions,
+        transaction,
         current_timestamp: latestBlock.timestamp.toString(),
         launch_timestamp: launchTime,
         network: process.env.NODE_ENV,

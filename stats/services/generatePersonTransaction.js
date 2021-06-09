@@ -19,7 +19,6 @@ async function fetchTimestamp(transaction) {
     const blocknumber = transaction.block_number;
     transaction.timestamp = await getBlockNumberTimestamp(blocknumber);
     transaction.block_number = `${blocknumber}`;
-    logger.info(`transaction: ${JSON.stringify(transaction)}`);
     return transaction;
 }
 
@@ -46,12 +45,11 @@ function parseData(events, token, type, transferType) {
     return transactions;
 }
 
-function getTransactions(data) {
-    const groDepositEvents = data.groVault.deposit;
-    const groWithdrawEvents = data.groVault.withdraw;
-    const pwrdDepositEvents = data.powerD.deposit;
-    const pwrdWithdrawEvents = data.powerD.withdraw;
-    const approvalEvents = data.approval;
+function getDepositWithdrawTransfer(groVault, powerD) {
+    const groDepositEvents = groVault.deposit;
+    const groWithdrawEvents = groVault.withdraw;
+    const pwrdDepositEvents = powerD.deposit;
+    const pwrdWithdrawEvents = powerD.withdraw;
 
     const groDepositTransactions = parseData(
         groDepositEvents,
@@ -85,21 +83,110 @@ function getTransactions(data) {
         ...groWithdrawTransactions,
         ...pwrdDepositTransactions,
         ...pwrdWithdrawTransactions,
-        ...approvalEvents,
     ];
 }
 
-async function getTransactionsWithTimestamp(data) {
-    const transactions = getTransactions(data);
+async function appendEventTimestamp(transactions) {
     const promise = [];
     for (let i = 0; i < transactions.length; i += 1) {
         promise.push(fetchTimestamp(transactions[i]));
     }
     await Promise.all(promise);
-    return transactions;
 }
 
+async function getTransactions(groVault, powerD) {
+    const depositWithdrawTransferEvents = getDepositWithdrawTransfer(
+        groVault,
+        powerD
+    );
+    await appendEventTimestamp(depositWithdrawTransferEvents);
+    return depositWithdrawTransferEvents;
+}
+
+async function getTransaction(depositWithdrawTransferEvents, approvalEvents) {
+    await appendEventTimestamp(approvalEvents);
+    const transactionItems = {
+        deposits: [],
+        withdrawals: [],
+        transfers_in: [],
+        transfers_out: [],
+        approvals: [],
+    };
+    for (let i = 0; i < depositWithdrawTransferEvents.length; i += 1) {
+        const event = depositWithdrawTransferEvents[i];
+        const {
+            token,
+            transaction,
+            hash,
+            usd_amount: usdAmount,
+            block_number: blockNumber,
+            timestamp,
+        } = event;
+        switch (transaction) {
+            case 'deposit':
+                transactionItems.deposits.push({
+                    token,
+                    hash,
+                    timestamp,
+                    usd_amount: usdAmount,
+                    block_number: blockNumber,
+                });
+                break;
+            case 'withdrawal':
+                transactionItems.withdrawals.push({
+                    token,
+                    hash,
+                    timestamp,
+                    usd_amount: usdAmount,
+                    block_number: blockNumber,
+                });
+                break;
+            case 'transfer_in':
+                transactionItems.transfers_in.push({
+                    token,
+                    hash,
+                    timestamp,
+                    usd_amount: usdAmount,
+                    block_number: blockNumber,
+                });
+                break;
+            case 'transfer_out':
+                transactionItems.transfers_out.push({
+                    token,
+                    hash,
+                    timestamp,
+                    usd_amount: usdAmount,
+                    block_number: blockNumber,
+                });
+                break;
+            default:
+                logger.warn(`${transaction} doesn't have any matched.`);
+        }
+    }
+
+    for (let i = 0; i < approvalEvents.length; i += 1) {
+        const {
+            token,
+            hash,
+            spender,
+            coin_amount: coinAmount,
+            usd_amount: usdAmount,
+            block_number: blockNumber,
+            timestamp,
+        } = approvalEvents[i];
+        transactionItems.approvals.push({
+            token,
+            hash,
+            spender,
+            timestamp,
+            coin_amount: coinAmount,
+            usd_amount: usdAmount,
+            block_number: blockNumber,
+        });
+    }
+    return transactionItems;
+}
 module.exports = {
     getTransactions,
-    getTransactionsWithTimestamp,
+    getTransaction,
 };
