@@ -83,7 +83,8 @@ module.exports = {
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
     protocol: ['Harvest', 'Cream', 'Curve'],
-    strategy_name: ['Harvest', 'Cream'],
+    strategy_name: ['Harvest', 'Cream', 'Harvest', 'Cream', 'Harvest', 'Cream'],
+    strategy_default_apy: [0, 0, 0, 0, 0, 0, 0],
     harvest_strategy_dependency: [
         '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
         '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE',

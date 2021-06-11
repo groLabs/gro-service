@@ -112,7 +112,7 @@ async function initVaultStrategyLabel(
 
     for (let j = 0; j < strategyLength; j += 1) {
         vaultAndStrategyLabels[vaultAdapter.address].strategies.push({
-            name: strategyName[j],
+            name: strategyName[adapterIndex * 2 + j],
             address: strategyAddresses[j],
             strategy: new ethers.Contract(
                 strategyAddresses[j],

@@ -69,8 +69,16 @@ module.exports = {
     stats_latest: '../stats/gro-latest.json',
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
-    protocol: ['Harvest', 'Cream', 'Curve'],
-    strategy_name: ['Harvest', 'Cream'],
+    protocol: ['GenericLevComp', 'Cream', 'Curve'],
+    strategy_name: [
+        'GenericLevComp',
+        'Cream',
+        'GenericLevComp',
+        'Cream',
+        'Idle',
+        'Cream',
+    ],
+    strategy_default_apy: [0, 0, 0, 0, 0, 0, 0],
     curve_strategy_name: ['XPool'],
     harvest_strategy_dependency: [
         '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',

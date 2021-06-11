@@ -33,6 +33,7 @@ const CURRENT_APY_SCALE = BigNumber.from(122);
 
 // config
 const launchBlock = getConfig('blockchain.start_block');
+const defaultApy = getConfig('strategy_default_apy');
 
 async function findBlockByDate(scanDate) {
     const blockFound = await scanner
@@ -148,13 +149,16 @@ async function calcCurrentStrategyAPY(startBlock, endBlock) {
             // eslint-disable-next-line no-await-in-loop
             const expected = await strategy.expectedReturn();
             logger.info(`get expected ${strategy.address}, ${expected}`);
-            // eslint-disable-next-line no-await-in-loop
-            const apy = await calcStrategyAPY(
-                yearnVaults[i],
-                strategy,
-                startBlock,
-                endBlock
-            );
+            const apy =
+                defaultApy[i * 2 + j] > 0
+                    ? BigNumber.from(defaultApy[i * 2 + j])
+                    : // eslint-disable-next-line no-await-in-loop
+                      await calcStrategyAPY(
+                          yearnVaults[i],
+                          strategy,
+                          startBlock,
+                          endBlock
+                      );
             strategies[j].apy = apy;
         }
     }

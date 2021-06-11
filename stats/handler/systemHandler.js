@@ -112,7 +112,7 @@ async function getStrategiesStats(
             blockTag
         );
         strategies.push({
-            name: strategyNames[j],
+            name: strategyNames[index * 2 + j],
             amount: strategyAssetsUsd,
             assets: strategyAssets,
         });
