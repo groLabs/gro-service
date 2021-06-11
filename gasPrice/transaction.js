@@ -1,6 +1,6 @@
 const { BigNumber } = require('ethers');
 const { getPriceObject } = require('./priceManager');
-const { getNonceManager } = require('../common/chainUtil');
+const { getWalletNonceManager } = require('../common/chainUtil');
 const { addPendingTransaction } = require('../common/storage');
 const { BlockChainCallError } = require('../common/error');
 
@@ -21,8 +21,6 @@ const methodGasMap = {
     rebalance: 'rapid',
     getSafePriceFeed: 'standard',
 };
-
-const nonceManager = getNonceManager();
 
 async function getGasPrice(methodName) {
     const priceObject = await getPriceObject();
@@ -60,6 +58,8 @@ async function pendingTransactionResend(type, oldTransaction) {
         label: msgLabel,
         blockNumber,
         hash,
+        providerKey,
+        walletKey,
         reSendTimes,
         methodName,
         transactionRequest,
@@ -84,7 +84,10 @@ async function pendingTransactionResend(type, oldTransaction) {
     logger.info(
         `New TransactionRequest: ${JSON.stringify(newTransactionRequest)}`
     );
-    const transactionResponse = await nonceManager
+    const transactionResponse = await getWalletNonceManager(
+        providerKey,
+        walletKey
+    )
         .sendTransaction(newTransactionRequest)
         .catch((error) => {
             logger.error(error);

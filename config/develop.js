@@ -1,30 +1,36 @@
 module.exports = {
-    bot_balance_warn: '20000000000000000000',
+    bot_balance_warn: '200000000000000000000000',
     blockchain: {
         network: 'http://localhost:8545',
-        api_keys: {
-            alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
-            infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
-            etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
-            pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
-        },
         start_block: 12584881,
-        keystore: process.env[`KEY_STORE_${process.env.BOT_ENV}`],
-        keystore_password: process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
         alchemy_api_keys: {
-            stats: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
-            stats_personal:
-                process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}_PERSONAL`],
-            stats_gro: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}_GRO`],
+            default: 'http://localhost:8545', // process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
+            stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
+            stats_gro: process.env.ALCHEMY_KEY_STATS_GRO,
         },
         keystores: {
-            stats: {
-                default_file_path:
-                    process.env[`KEY_STORE_${process.env.BOT_ENV}`],
-                default_password:
-                    process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
-                default_private_key:
-                    process.env[`KEY_PRIVATE_KEY_${process.env.BOT_ENV}`],
+            default: {
+                file_path: process.env[`KEY_STORE_${process.env.BOT_ENV}`],
+                password: process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
+                private_key:
+                    process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`],
+            },
+            regular: {
+                low_file_path: process.env.KEY_STORE_REGULAR_LOW_GAS,
+                low_password: process.env.KEY_PASSWORD_REGULAR_LOW_GAS,
+                low_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_LOW_GAS,
+                standard_file_path: process.env.KEY_STORE_REGULAR_STANDARD_GAS,
+                standard_password:
+                    process.env.KEY_PASSWORD_REGULAR_STANDARD_GAS,
+                standard_private_key:
+                    process.env.BOT_PRIVATE_KEY_REGULAR_STANDARD_GAS,
+                fast_file_path: process.env.KEY_STORE_REGULAR_FAST_GAS,
+                fast_password: process.env.KEY_PASSWORD_REGULAR_FAST_GAS,
+                fast_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_FAST_GAS,
+                rapid_file_path: process.env.KEY_STORE_REGULAR_RAPID_GAS,
+                rapid_password: process.env.KEY_PASSWORD_REGULAR_RAPID_GAS,
+                rapid_private_key:
+                    process.env.BOT_PRIVATE_KEY_REGULAR_RAPID_GAS,
             },
         },
     },
@@ -37,7 +43,7 @@ module.exports = {
         rebalance: '33 * * * * *',
         generate_stats: '10 * * * *',
         remove_stats_file: '*/2 * * * *',
-        bot_curve_check: '00,30 * * * * *',
+        bot_curve_check: '*/1 * * * *',
         deposit_withdraw_event: '*/2 * * * *',
         event_summary: '*/2 * * * *',
         bot_chainlink_check: '25,55 * * * * *',

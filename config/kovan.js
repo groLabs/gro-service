@@ -1,18 +1,42 @@
 module.exports = {
     blockchain: {
         network: 'kovan',
-        api_keys: {
-            alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
-            infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
-            etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
-            pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
-        },
         start_block: 25082399,
-        keystore: process.env[`KEY_STORE_${process.env.BOT_ENV}`],
-        keystore_password: process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
         alchemy_api_keys: {
+            default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
             stats_gro: process.env.ALCHEMY_KEY_STATS_GRO,
+        },
+        keystores: {
+            default: {
+                file_path: process.env[`KEY_STORE_${process.env.BOT_ENV}`],
+                password: process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
+                private_key:
+                    process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`],
+            },
+            regular: {
+                low_file_path: process.env.KEY_STORE_REGULAR_LOW_GAS,
+                low_password: process.env.KEY_PASSWORD_REGULAR_LOW_GAS,
+                low_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_LOW_GAS,
+                standard_file_path: process.env.KEY_STORE_REGULAR_STANDARD_GAS,
+                standard_password:
+                    process.env.KEY_PASSWORD_REGULAR_STANDARD_GAS,
+                standard_private_key:
+                    process.env.BOT_PRIVATE_KEY_REGULAR_STANDARD_GAS,
+                fast_file_path: process.env.KEY_STORE_REGULAR_FAST_GAS,
+                fast_password: process.env.KEY_PASSWORD_REGULAR_FAST_GAS,
+                fast_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_FAST_GAS,
+                rapid_file_path: process.env.KEY_STORE_REGULAR_RAPID_GAS,
+                rapid_password: process.env.KEY_PASSWORD_REGULAR_RAPID_GAS,
+                rapid_private_key:
+                    process.env.BOT_PRIVATE_KEY_REGULAR_RAPID_GAS,
+            },
+            critical: {
+                rapid_file_path: process.env.KEY_STORE_CRITICAL_RAPID_GAS,
+                rapid_password: process.env.KEY_PASSWORD_CRITICAL_RAPID_GAS,
+                rapid_private_key:
+                    process.env.BOT_PRIVATE_KEY_REGULAR_CRITICAL_GAS,
+            },
         },
     },
     trigger_scheduler: {

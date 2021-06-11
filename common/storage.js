@@ -20,9 +20,18 @@ function getPendingSmallest() {
 }
 
 function addPendingTransaction(typeKey, basicInfo, transactionResponse) {
-    const { blockNumber, reSendTimes, methodName, label } = basicInfo;
+    const {
+        blockNumber,
+        providerKey,
+        walletKey,
+        reSendTimes,
+        methodName,
+        label,
+    } = basicInfo;
     pendingTransactions.set(typeKey, {
         blockNumber,
+        providerKey,
+        walletKey,
         reSendTimes,
         methodName,
         label,

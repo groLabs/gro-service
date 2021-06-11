@@ -61,7 +61,12 @@ async function AppendGTokenMintOrBurnAmountToLog(logs) {
     const parsePromises = [];
     logs.forEach((log) => {
         parsePromises.push(
-            getMintOrBurnGToken(log.args[2], log.transactionHash, null)
+            getMintOrBurnGToken(
+                log.args[2],
+                log.transactionHash,
+                null,
+                providerKey
+            )
         );
     });
     const result = await Promise.all(parsePromises);

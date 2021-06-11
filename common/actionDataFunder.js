@@ -1,5 +1,5 @@
 const { ethers } = require('ethers');
-const { getRpcProvider, getDefaultProvider } = require('./chainUtil');
+const { getAlchemyRpcProvider } = require('./chainUtil');
 const { BlockChainCallError } = require('./error');
 const { MESSAGE_TYPES } = require('./discord/discordService');
 const { adjustDecimal, toSum } = require('./digitalUtil');
@@ -43,15 +43,11 @@ function getEventFragment(abi, eventName) {
 async function pretreatReceipt(
     messageType,
     transactionHash,
-    transactionReceipt
+    transactionReceipt,
+    providerKey
 ) {
     if (!transactionReceipt) {
-        let provider;
-        if (process.env.NODE_ENV === 'develop') {
-            provider = getDefaultProvider();
-        } else {
-            provider = getRpcProvider();
-        }
+        const provider = getAlchemyRpcProvider(providerKey);
         transactionReceipt = await provider
             .getTransactionReceipt(transactionHash)
             .catch((error) => {
@@ -65,11 +61,12 @@ async function pretreatReceipt(
     return transactionReceipt;
 }
 
-async function getPnlKeyData(transactionHash, transactionReceipt) {
+async function getPnlKeyData(transactionHash, transactionReceipt, providerKey) {
     transactionReceipt = await pretreatReceipt(
         MESSAGE_TYPES.pnl,
         transactionHash,
-        transactionReceipt
+        transactionReceipt,
+        providerKey
     );
     let result = [];
     if (transactionReceipt) {
@@ -100,14 +97,16 @@ function handleCoinAmount(address, value) {
 async function getInvestKeyData(
     transactionHash,
     stabeCoins,
-    transactionReceipt
+    transactionReceipt,
+    providerKey
 ) {
     logger.info(`stabe coins: ${JSON.stringify(stabeCoins)}`);
     const tempResult = {};
     transactionReceipt = await pretreatReceipt(
         MESSAGE_TYPES.invest,
         transactionHash,
-        transactionReceipt
+        transactionReceipt,
+        providerKey
     );
     if (transactionReceipt) {
         const { logs } = transactionReceipt;
@@ -141,11 +140,16 @@ async function getInvestKeyData(
     return toSum(eachItem);
 }
 
-async function getHarvestKeyData(transactionHash, transactionReceipt) {
+async function getHarvestKeyData(
+    transactionHash,
+    transactionReceipt,
+    providerKey
+) {
     transactionReceipt = await pretreatReceipt(
         MESSAGE_TYPES.harvest,
         transactionHash,
-        transactionReceipt
+        transactionReceipt,
+        providerKey
     );
     let result = [];
     if (transactionReceipt) {
@@ -169,16 +173,21 @@ async function getHarvestKeyData(transactionHash, transactionReceipt) {
     return result;
 }
 
-async function getRebalanceKeyData(transactionHash, transactionReceipt) {
+async function getRebalanceKeyData(
+    transactionHash,
+    transactionReceipt,
+    providerKey
+) {
     transactionReceipt = await pretreatReceipt(
         MESSAGE_TYPES.harvest,
         transactionHash,
-        transactionReceipt
+        transactionReceipt,
+        providerKey
     );
 
     if (transactionReceipt) {
         const { blockNumber } = transactionReceipt;
-        const systemState = await getInsurance()
+        const systemState = await getInsurance(providerKey)
             .prepareCalculation({ blockTag: blockNumber })
             .catch((error) => {
                 logger.error(error);
@@ -187,7 +196,7 @@ async function getRebalanceKeyData(transactionHash, transactionReceipt) {
                     MESSAGE_TYPES.rebalance
                 );
             });
-        const exposureState = await getExposure()
+        const exposureState = await getExposure(providerKey)
             .calcRiskExposure(systemState, { blockTag: blockNumber })
             .catch((error) => {
                 logger.error(error);
@@ -204,21 +213,23 @@ async function getRebalanceKeyData(transactionHash, transactionReceipt) {
 async function getMintOrBurnGToken(
     isPWRD,
     transactionHash,
-    transactionReceipt
+    transactionReceipt,
+    providerKey
 ) {
     transactionReceipt = await pretreatReceipt(
         MESSAGE_TYPES.miniStatsPersonal,
         transactionHash,
-        transactionReceipt
+        transactionReceipt,
+        providerKey
     );
     if (transactionReceipt) {
         const { logs } = transactionReceipt;
-        let gtoken = getPwrd().address;
+        let gtoken = getPwrd(providerKey).address;
         const eventFragment = getEventFragment(erc20ABI, 'Transfer');
         if (eventFragment) {
             logger.info(`Transfer topic: ${eventFragment.topic}`);
             if (!isPWRD) {
-                gtoken = getGvt().address;
+                gtoken = getGvt(providerKey).address;
             }
             for (let i = 0; i < logs.length; i += 1) {
                 const { topics, address, data } = logs[i];
