@@ -23,6 +23,7 @@ const EVENT_TYPE = {
     pwrdTransfer: 'pwrdTransfer',
     inPwrdTransfer: 'transfer-pwrd-in',
     outPwrdTransfer: 'transfer-pwrd-out',
+    pnl: 'pnl',
 };
 
 const EVENT_FRAGMENT = {};
@@ -52,6 +53,15 @@ EVENT_FRAGMENT[EVENT_TYPE.outPwrdTransfer] = [
 ];
 EVENT_FRAGMENT[EVENT_TYPE.stabeCoinApprove] = [
     'event Approval(address indexed owner, address indexed spender, uint256 value)',
+];
+EVENT_FRAGMENT[EVENT_TYPE.strategyHarvest] = [
+    'event Harvested(uint256 profit, uint256 loss, uint256 debtPayment, uint256 debtOutstanding);',
+];
+EVENT_FRAGMENT[EVENT_TYPE.vaultTransfer] = [
+    'event Transfer(address indexed sender, address indexed recipient, uint256 value)',
+];
+EVENT_FRAGMENT[EVENT_TYPE.pnl] = [
+    'event LogPnLExecution(uint256 deductedAssets,int256 totalPnL,int256 investPnL,int256 pricePnL,uint256 withdrawalBonus,uint256 performanceBonus,uint256 beforeGvtAssets,uint256 beforePwrdAssets,uint256 afterGvtAssets,uint256 afterPwrdAssets)',
 ];
 
 async function getStabeCoinApprovalFilters(account, providerKey) {
@@ -213,9 +223,102 @@ async function getTransferEvents(
     return logs;
 }
 
+async function getStrategyHavestEvents(
+    strategy,
+    fromBlock,
+    toBlock = 'latest',
+    providerKey
+) {
+    logger.info(`from ${fromBlock} to ${toBlock}`);
+    const filter = await strategy.filters.Harvested();
+    filter.fromBlock = fromBlock;
+    filter.toBlock = toBlock;
+    const provider = getAlchemyRpcProvider(providerKey);
+    const filterLogs = await provider.getLogs(filter).catch((error) => {
+        logger.error(error);
+        throw new ContractCallError(`Get StrategyHavest logs failed.`);
+    });
+    const logs = [];
+    filterLogs.forEach((log) => {
+        logger.info(
+            `getStrategyHavestEvents ${log.address} ${log.blockNumber}`
+        );
+        const eventInfo = {
+            address: log.address,
+            blockNumber: log.blockNumber,
+            transactionHash: log.transactionHash,
+        };
+        logs.push(eventInfo);
+    });
+    return logs;
+}
+
+async function getVaultTransferEvents(
+    vault,
+    fromBlock,
+    toBlock = 'latest',
+    providerKey
+) {
+    const filter = await vault.filters.Transfer(
+        null,
+        '0x0000000000000000000000000000000000000000'
+    );
+    filter.fromBlock = fromBlock;
+    filter.toBlock = toBlock;
+    const provider = getAlchemyRpcProvider(providerKey);
+    const filterLogs = await provider.getLogs(filter).catch((error) => {
+        logger.error(error);
+        throw new ContractCallError(`Get VaultTransfer logs failed.`);
+    });
+    const logs = [];
+    filterLogs.forEach((log) => {
+        logger.info(`getVaultTransferEvents ${log.address} ${log.blockNumber}`);
+        const eventInfo = {
+            address: log.address,
+            blockNumber: log.blockNumber,
+            transactionHash: log.transactionHash,
+        };
+        logs.push(eventInfo);
+    });
+    return logs;
+}
+
+async function getPnLEvents(pnl, fromBlock, toBlock = 'latest', providerKey) {
+    const filter = await pnl.filters.LogPnLExecution();
+    filter.fromBlock = fromBlock;
+    filter.toBlock = toBlock;
+    const provider = getAlchemyRpcProvider(providerKey);
+    const filterLogs = await provider.getLogs(filter).catch((error) => {
+        logger.error(error);
+        throw new ContractCallError(`Get getPnLEvents logs failed.`);
+    });
+    const pnlInterface = new ethers.utils.Interface(
+        EVENT_FRAGMENT[EVENT_TYPE.pnl]
+    );
+    const logs = [];
+    filterLogs.forEach((log) => {
+        logger.info(`getPnLEvents ${log.address} ${log.blockNumber}`);
+        const eventInfo = {
+            address: log.address,
+            blockNumber: log.blockNumber,
+            transactionHash: log.transactionHash,
+        };
+        const parseResult = pnlInterface.parseLog(log);
+        eventInfo.name = parseResult.name;
+        eventInfo.signature = parseResult.signature;
+        eventInfo.topic = parseResult.topic;
+        eventInfo.args = parseResult.args;
+        logs.push(eventInfo);
+    });
+    return logs;
+}
+
 module.exports = {
     EVENT_TYPE,
     getEvents,
     getTransferEvents,
     getApprovalEvents,
+    getStrategyHavestEvents,
+    getVaultTransferEvents,
+    getPnLEvents,
 };

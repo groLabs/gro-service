@@ -25,6 +25,7 @@ const buoyABI = require('./abis/Buoy3Pool.json');
 const VaultABI = require('./abis/Vault.json');
 const chainPriceABI = require('./abis/ChainPrice.json');
 const erc20ABI = require('./abis/ERC20.json');
+const strategyABI = require('./abis/Strategy.json');
 
 const nonceManager = getNonceManager();
 
@@ -108,10 +109,16 @@ async function initVaultStrategyLabel(
         strategiesAddressesPromise.push(yearnVault.withdrawalQueue(i));
     }
     const strategyAddresses = await Promise.all(strategiesAddressesPromise);
+
     for (let j = 0; j < strategyLength; j += 1) {
         vaultAndStrategyLabels[vaultAdapter.address].strategies.push({
             name: strategyName[j],
             address: strategyAddresses[j],
+            strategy: new ethers.Contract(
+                strategyAddresses[j],
+                strategyABI,
+                nonceManager
+            ),
         });
     }
 }
@@ -283,9 +290,9 @@ async function initAllContracts() {
         logger.error(error);
         throw new ContractCallError('Initilize all used contracts failed');
     });
-    logger.info(
-        `Vault and strategy label: ${JSON.stringify(vaultAndStrategyLabels)}`
-    );
+    // logger.info(
+    //     `Vault and strategy label: ${JSON.stringify(vaultAndStrategyLabels)}`
+    // );
 
     await initVaultStabeCoins().catch((error) => {
         logger.error(error);
