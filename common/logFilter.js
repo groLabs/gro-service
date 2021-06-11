@@ -6,8 +6,8 @@ const {
     getPwrd: getPowerD,
     getUnderlyTokens,
 } = require('../contract/allContracts');
-const { getDefaultProvider } = require('./chainUtil');
 const { ContractCallError } = require('./error');
+const { getAlchemyRpcProvider } = require('./chainUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -54,9 +54,9 @@ EVENT_FRAGMENT[EVENT_TYPE.stabeCoinApprove] = [
     'event Approval(address indexed owner, address indexed spender, uint256 value)',
 ];
 
-async function getStabeCoinApprovalFilters(account) {
-    const stablecoins = getUnderlyTokens();
-    const spender = getDepositHandler().address;
+async function getStabeCoinApprovalFilters(account, providerKey) {
+    const stablecoins = getUnderlyTokens(providerKey);
+    const spender = getDepositHandler(providerKey).address;
     const approvalFilters = [];
     for (let i = 0; i < stablecoins.length; i += 1) {
         approvalFilters.push(stablecoins[i].filters.Approval(account, spender));
@@ -64,11 +64,11 @@ async function getStabeCoinApprovalFilters(account) {
     return approvalFilters;
 }
 
-function getFilter(account, type) {
-    const depositHandler = getDepositHandler();
-    const withdrawHandler = getWithdrawHandler();
-    const groVault = getGroVault();
-    const powerD = getPowerD();
+function getFilter(account, type, providerKey) {
+    const depositHandler = getDepositHandler(providerKey);
+    const withdrawHandler = getWithdrawHandler(providerKey);
+    const groVault = getGroVault(providerKey);
+    const powerD = getPowerD(providerKey);
     let filter;
     switch (type) {
         case EVENT_TYPE.deposit:
@@ -101,8 +101,8 @@ function getFilter(account, type) {
     return filter;
 }
 
-async function getEventsByFilter(filter, eventType) {
-    const provider = getDefaultProvider();
+async function getEventsByFilter(filter, eventType, providerKey) {
+    const provider = getAlchemyRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(`Get ${eventType} logs failed.`);
@@ -128,8 +128,13 @@ async function getEventsByFilter(filter, eventType) {
     return logs;
 }
 
-async function getApprovalEvents(account, fromBlock, toBlock = 'latest') {
-    const filters = await getStabeCoinApprovalFilters(account);
+async function getApprovalEvents(
+    account,
+    fromBlock,
+    toBlock = 'latest',
+    providerKey
+) {
+    const filters = await getStabeCoinApprovalFilters(account, providerKey);
     const logs = [];
     const approvalLogsPromise = [];
     for (let i = 0; i < filters.length; i += 1) {
@@ -137,7 +142,7 @@ async function getApprovalEvents(account, fromBlock, toBlock = 'latest') {
         filter.fromBlock = fromBlock;
         filter.toBlock = toBlock;
         approvalLogsPromise.push(
-            getEventsByFilter(filter, EVENT_TYPE.stabeCoinApprove)
+            getEventsByFilter(filter, EVENT_TYPE.stabeCoinApprove, providerKey)
         );
     }
     const promiseResult = await Promise.all(approvalLogsPromise);
@@ -151,9 +156,10 @@ async function getEvents(
     eventType,
     fromBlock,
     toBlock = 'latest',
-    account = null
+    account = null,
+    providerKey
 ) {
-    const filter = getFilter(account, eventType);
+    const filter = getFilter(account, eventType, providerKey);
     if (!filter) {
         throw new ContractCallError(
             `Get ${eventType} filter for account:${account || 'All'} failed.`
@@ -161,7 +167,7 @@ async function getEvents(
     }
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const logs = await getEventsByFilter(filter, eventType);
+    const logs = await getEventsByFilter(filter, eventType, providerKey);
     return logs;
 }
 
@@ -169,10 +175,10 @@ async function getTransferEvents(
     eventType,
     fromBlock,
     toBlock = 'latest',
-    account = null
+    account = null,
+    providerKey
 ) {
-    const provider = getDefaultProvider();
-    const filter = getFilter(account, eventType);
+    const filter = getFilter(account, eventType, providerKey);
     if (!filter) {
         throw new ContractCallError(
             `Get ${eventType} event logs of account:${account || 'All'} failed.`
@@ -180,6 +186,7 @@ async function getTransferEvents(
     }
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
+    const provider = getAlchemyRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(

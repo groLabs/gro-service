@@ -10,6 +10,10 @@ module.exports = {
         start_block: 25082399,
         keystore: process.env[`KEY_STORE_${process.env.BOT_ENV}`],
         keystore_password: process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
+        alchemy_api_keys: {
+            stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
+            stats_gro: process.env.ALCHEMY_KEY_STATS_GRO,
+        },
     },
     trigger_scheduler: {
         pending_transaction_check: '5 30 * * * *',

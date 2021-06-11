@@ -1,5 +1,5 @@
 const { ethers } = require('ethers');
-const { getRpcProvider } = require('./chainUtil');
+const { getRpcProvider, getDefaultProvider } = require('./chainUtil');
 const { BlockChainCallError } = require('./error');
 const { MESSAGE_TYPES } = require('./discord/discordService');
 const { adjustDecimal, toSum } = require('./digitalUtil');
@@ -46,7 +46,13 @@ async function pretreatReceipt(
     transactionReceipt
 ) {
     if (!transactionReceipt) {
-        transactionReceipt = await getRpcProvider()
+        let provider;
+        if (process.env.NODE_ENV === 'develop') {
+            provider = getDefaultProvider();
+        } else {
+            provider = getRpcProvider();
+        }
+        transactionReceipt = await provider
             .getTransactionReceipt(transactionHash)
             .catch((error) => {
                 logger.error(error);

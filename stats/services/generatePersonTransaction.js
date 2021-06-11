@@ -1,23 +1,25 @@
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
 const { getConfig } = require('../../common/configUtil');
 const { blockNumberTimestamp } = require('../../common/storage');
-const { getDefaultProvider } = require('../../common/chainUtil');
 const logger = require('../statsLogger');
 
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 
-async function getBlockNumberTimestamp(blockNumber) {
+async function getBlockNumberTimestamp(blockNumber, provider) {
     if (!blockNumberTimestamp[blockNumber]) {
-        logger.info(`Not found timestamp for blockNumber ${blockNumber}`);
-        const blockObject = await getDefaultProvider().getBlock(blockNumber);
+        logger.info(`Append timestamp for blockNumber ${blockNumber}`);
+        const blockObject = await provider.getBlock(blockNumber);
         blockNumberTimestamp[blockNumber] = `${blockObject.timestamp}`;
     }
     return blockNumberTimestamp[blockNumber];
 }
 
-async function fetchTimestamp(transaction) {
+async function fetchTimestamp(transaction, provider) {
     const blocknumber = transaction.block_number;
-    transaction.timestamp = await getBlockNumberTimestamp(blocknumber);
+    transaction.timestamp = await getBlockNumberTimestamp(
+        blocknumber,
+        provider
+    );
     transaction.block_number = `${blocknumber}`;
     return transaction;
 }
@@ -86,25 +88,29 @@ function getDepositWithdrawTransfer(groVault, powerD) {
     ];
 }
 
-async function appendEventTimestamp(transactions) {
+async function appendEventTimestamp(transactions, provider) {
     const promise = [];
     for (let i = 0; i < transactions.length; i += 1) {
-        promise.push(fetchTimestamp(transactions[i]));
+        promise.push(fetchTimestamp(transactions[i], provider));
     }
     await Promise.all(promise);
 }
 
-async function getTransactions(groVault, powerD) {
+async function getTransactions(groVault, powerD, provider) {
     const depositWithdrawTransferEvents = getDepositWithdrawTransfer(
         groVault,
         powerD
     );
-    await appendEventTimestamp(depositWithdrawTransferEvents);
+    await appendEventTimestamp(depositWithdrawTransferEvents, provider);
     return depositWithdrawTransferEvents;
 }
 
-async function getTransaction(depositWithdrawTransferEvents, approvalEvents) {
-    await appendEventTimestamp(approvalEvents);
+async function getTransaction(
+    depositWithdrawTransferEvents,
+    approvalEvents,
+    provider
+) {
+    await appendEventTimestamp(approvalEvents, provider);
     const transactionItems = {
         deposits: [],
         withdrawals: [],

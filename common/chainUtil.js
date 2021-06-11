@@ -11,6 +11,7 @@ const {
     DISCORD_CHANNELS,
 } = require('./discord/discordService');
 const { botBalanceMessage } = require('../discordMessage/botBalanceMessage');
+const { getConfig } = require('./configUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -44,6 +45,8 @@ let socketProvider;
 let rpcProvider;
 let nonceManager;
 let botWallet;
+const rpcProviders = {};
+const botWallets = {};
 
 const network = config.get('blockchain.network');
 logger.info(`network: ${network}`);
@@ -101,10 +104,33 @@ function getDefaultProvider() {
     return defaultProvider;
 }
 
+function getAlchemyRpcProvider(apiKey) {
+    let result = rpcProviders[apiKey];
+    if (!result) {
+        const key = `blockchain.alchemy_api_keys.${apiKey}`;
+        const apiKeyValue = getConfig(key);
+        if (process.env.NODE_ENV === 'develop') {
+            const options = getConfig('blockchain.api_keys');
+            result = ethers.providers.getDefaultProvider(network, options);
+        } else {
+            result = new ethers.providers.AlchemyProvider(network, apiKeyValue);
+        }
+
+        logger.info(`Create a new ${apiKey} Rpc provider.`);
+        rpcProviders[apiKey] = result;
+    }
+    return result;
+}
+
 function getBotWallet() {
     if (botWallet) return botWallet;
     try {
-        const provider = getRpcProvider();
+        let provider;
+        if (process.env.NODE_ENV === 'develop') {
+            provider = getDefaultProvider();
+        } else {
+            provider = getRpcProvider();
+        }
         const keystorePassword = config.get('blockchain.keystore_password');
 
         if (keystorePassword === 'NO_PASSWORD') {
@@ -124,6 +150,49 @@ function getBotWallet() {
         logger.error(e);
         throw new SettingError('Init wallet failed.');
     }
+}
+
+function createWallet(providerKey, botType, walletKey) {
+    if (!walletKey) walletKey = 'default';
+    let wallet;
+    const provider = getAlchemyRpcProvider(providerKey);
+    const keystorePassword = getConfig(
+        `blockchain.keystores.${botType}.${walletKey}_password`
+    );
+    if (keystorePassword === 'NO_PASSWORD') {
+        const privateKey = getConfig(
+            `blockchain.keystores.${botType}.${walletKey}_private_key`
+        );
+        wallet = new ethers.Wallet(privateKey, provider);
+    } else {
+        const keystore = getConfig(
+            `blockchain.keystores.${botType}.${walletKey}_file_path`
+        );
+        const data = fs.readFileSync(keystore, {
+            flag: 'a+',
+        });
+        wallet = ethers.Wallet.fromEncryptedJsonSync(data, keystorePassword);
+        wallet.connect(provider);
+    }
+    logger.info(
+        `create new wallet address ${wallet.address}, and connect to ${providerKey} provider`
+    );
+    return wallet;
+}
+
+function getWalletNonceManager(providerKey, accountKey) {
+    let walletNonceManager;
+    if (!botWallets[providerKey]) {
+        botWallets[providerKey] = {};
+    }
+    const providerAccounts = botWallets[providerKey];
+    walletNonceManager = providerAccounts[accountKey];
+    if (!walletNonceManager) {
+        const wallet = createWallet(providerKey, accountKey);
+        walletNonceManager = new NonceManager(wallet);
+        providerAccounts[accountKey] = walletNonceManager;
+    }
+    return walletNonceManager;
 }
 
 function getNonceManager() {
@@ -213,15 +282,14 @@ async function getCurrentBlockNumber() {
     return block;
 }
 
-async function getTimestampByBlockNumber(blockNumber) {
-    const block = await getRpcProvider()
-        .getBlock(blockNumber)
-        .catch((error) => {
-            logger.error(error);
-            throw new BlockChainCallError(
-                `Get block by number ${blockNumber} failed`
-            );
-        });
+async function getTimestampByBlockNumber(blockNumber, providerOrSigner) {
+    const provider = providerOrSigner || getRpcProvider();
+    const block = await provider.getBlock(blockNumber).catch((error) => {
+        logger.error(error);
+        throw new BlockChainCallError(
+            `Get block by number ${blockNumber} failed`
+        );
+    });
     return block.timestamp.toString();
 }
 
@@ -230,6 +298,8 @@ module.exports = {
     getNonceManager,
     getSocketProvider,
     getRpcProvider,
+    getAlchemyRpcProvider,
+    getWalletNonceManager,
     syncNounce,
     checkAccountBalance,
     getCurrentBlockNumber,
