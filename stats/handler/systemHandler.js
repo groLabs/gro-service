@@ -167,9 +167,9 @@ async function getLifeguardStats(blockTag) {
     return lifeGuardStats;
 }
 
-async function getExposureStats(blockTag) {
+async function getExposureStats(blockTag, systemStats) {
     const exposure = getExposure(providerKey);
-    logger.info(`blockTag : ${JSON.stringify(blockTag)}`);
+    logger.info(`getExposureStats blockTag : ${JSON.stringify(blockTag)}`);
     const preCal = await getInsurance(providerKey).prepareCalculation(blockTag);
     const riskResult = await exposure.calcRiskExposure(preCal, blockTag);
     const exposureStableCoin = riskResult[0].map((concentration, i) => ({
@@ -190,6 +190,18 @@ async function getExposureStats(blockTag) {
         stablecoins: exposureStableCoin,
         protocols: exposureProtocol,
     };
+    // This is hard code to show harvest exposure
+    // Harvest strategy is in vault 2, strategy 0
+    const harvestExposure = systemStats.vaults[2].strategies[0].share;
+    exposureProtocol.push({
+        name: 'Harvest',
+        concentration: harvestExposure,
+    });
+    logger.info(
+        `calculate harvest exposure all:${exposureProtocol[0].concentration} harvest:${harvestExposure}`
+    );
+    exposureProtocol[0].concentration =
+        exposureProtocol[0].concentration.sub(harvestExposure);
     return exposureStats;
 }
 

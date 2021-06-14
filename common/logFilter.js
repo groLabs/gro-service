@@ -7,7 +7,7 @@ const {
     getUnderlyTokens,
 } = require('../contract/allContracts');
 const { ContractCallError } = require('./error');
-const { getAlchemyRpcProvider } = require('./chainUtil');
+const { getDefaultProvider } = require('./chainUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -112,7 +112,8 @@ function getFilter(account, type, providerKey) {
 }
 
 async function getEventsByFilter(filter, eventType, providerKey) {
-    const provider = getAlchemyRpcProvider(providerKey);
+    const provider = getDefaultProvider();
+    // const provider = getAlchemyRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(`Get ${eventType} logs failed.`);
@@ -196,7 +197,7 @@ async function getTransferEvents(
     }
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = getAlchemyRpcProvider(providerKey);
+    const provider = getDefaultProvider();
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(
@@ -226,14 +227,14 @@ async function getTransferEvents(
 async function getStrategyHavestEvents(
     strategy,
     fromBlock,
-    toBlock = 'latest',
+    toBlock,
     providerKey
 ) {
     logger.info(`from ${fromBlock} to ${toBlock}`);
     const filter = await strategy.filters.Harvested();
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = getAlchemyRpcProvider(providerKey);
+    const provider = getDefaultProvider();
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(`Get StrategyHavest logs failed.`);
@@ -265,7 +266,7 @@ async function getVaultTransferEvents(
     );
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = getAlchemyRpcProvider(providerKey);
+    const provider = getDefaultProvider();
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(`Get VaultTransfer logs failed.`);
@@ -287,7 +288,7 @@ async function getPnLEvents(pnl, fromBlock, toBlock = 'latest', providerKey) {
     const filter = await pnl.filters.LogPnLExecution();
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = getAlchemyRpcProvider(providerKey);
+    const provider = getDefaultProvider();
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(`Get getPnLEvents logs failed.`);

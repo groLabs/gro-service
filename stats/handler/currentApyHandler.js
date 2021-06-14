@@ -46,7 +46,13 @@ async function findBlockByDate(scanDate) {
     return blockFound;
 }
 
-async function calcStrategyAPY(vault, strategy, startBlock, endBlock) {
+async function calcStrategyAPY(
+    vault,
+    strategy,
+    startBlock,
+    endBlock,
+    defaultApy
+) {
     const assetChangedBlock = [startBlock, endBlock];
     const harvestedLogs = await getStrategyHavestEvents(
         strategy,
@@ -101,9 +107,21 @@ async function calcStrategyAPY(vault, strategy, startBlock, endBlock) {
             totalAssets = totalAssets.add(b.totalAssets.mul(duration));
         }
     }
-    const totalDuration = BigNumber.from(
-        endBlock.timestamp - startBlock.timestamp
-    );
+    let starTimestamp = startBlock.timestamp;
+    let firstHarvest = false;
+    // has harvest between start and end time, but at the start time the apy is zero
+    if (sortedBlocks.length > 2 && sortedBlocks[0].totalAssets.isZero()) {
+        starTimestamp = sortedBlocks[1].timestamp;
+        logger.info(
+            `adjust start time to first harvest ${starTimestamp} ${
+                sortedBlocks[0].totalAssets
+            },${sortedBlocks[0].totalAssets.isZero()},${sortedBlocks[0].totalAssets.eq(
+                BigNumber.from(0)
+            )}`
+        );
+        firstHarvest = true;
+    }
+    const totalDuration = BigNumber.from(endBlock.timestamp - starTimestamp);
     const timeWeightedTotalAssets = totalAssets.div(totalDuration);
 
     logger.info(
@@ -111,9 +129,12 @@ async function calcStrategyAPY(vault, strategy, startBlock, endBlock) {
     );
     const latestBlock = sortedBlocks[sortedBlocks.length - 1];
     const expectedReturn = await strategy.expectedReturn();
-    const startExpectedReturn = await strategy.expectedReturn({
-        blockTag: startBlock.blockNumber,
-    });
+    let startExpectedReturn = BigNumber.from(0);
+    if (!sortedBlocks[0].totalAssets.isZero()) {
+        startExpectedReturn = await strategy.expectedReturn({
+            blockTag: startBlock.blockNumber,
+        });
+    }
     const totalGain = latestBlock.totalGain
         .add(expectedReturn)
         .sub(sortedBlocks[0].totalGain)
@@ -121,10 +142,15 @@ async function calcStrategyAPY(vault, strategy, startBlock, endBlock) {
     logger.info(
         `timeWeightedTotalAssets ${timeWeightedTotalAssets} totalGain ${totalGain} expectedReturn ${expectedReturn} start ${sortedBlocks[0].totalGain} startExpedted ${startExpectedReturn} end ${latestBlock.totalGain}`
     );
-    const apy = totalGain
+    let apy = totalGain
         .mul(PERCENT_DECIMAL)
         .div(timeWeightedTotalAssets)
         .mul(CURRENT_APY_SCALE);
+    // If first harvest is within 3 days, then use default apy if apy is zero
+    if (firstHarvest && totalGain.isZero()) {
+        logger.info(`firstHarvest ${firstHarvest} and totalGain ${totalGain}`);
+        apy = BigNumber.from(defaultApy);
+    }
     logger.info(`apy ${apy}`);
     return apy;
 }
@@ -149,16 +175,24 @@ async function calcCurrentStrategyAPY(startBlock, endBlock) {
             // eslint-disable-next-line no-await-in-loop
             const expected = await strategy.expectedReturn();
             logger.info(`get expected ${strategy.address}, ${expected}`);
-            const apy =
-                defaultApy[i * 2 + j] > 0
-                    ? BigNumber.from(defaultApy[i * 2 + j])
-                    : // eslint-disable-next-line no-await-in-loop
-                      await calcStrategyAPY(
-                          yearnVaults[i],
-                          strategy,
-                          startBlock,
-                          endBlock
-                      );
+            // const apy =
+            //     defaultApy[i * 2 + j] > 0
+            //         ? BigNumber.from(defaultApy[i * 2 + j])
+            //         : // eslint-disable-next-line no-await-in-loop
+            //           await calcStrategyAPY(
+            //               yearnVaults[i],
+            //               strategy,
+            //               startBlock,
+            //               endBlock
+            //           );
+            // eslint-disable-next-line no-await-in-loop
+            const apy = await calcStrategyAPY(
+                yearnVaults[i],
+                strategy,
+                startBlock,
+                endBlock,
+                defaultApy[i * 2 + j]
+            );
             strategies[j].apy = apy;
         }
     }
