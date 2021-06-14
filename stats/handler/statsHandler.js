@@ -99,7 +99,7 @@ async function generateGroStatsFile() {
 
     const system = await getSystemStats(tvl.total, latestBlockTag);
 
-    const exposure = await getExposureStats(latestBlockTag);
+    const exposure = await getExposureStats(latestBlockTag, system);
 
     apy.hodl_bonus = await getHodlBonusApy();
 

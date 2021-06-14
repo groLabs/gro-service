@@ -203,6 +203,7 @@ async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
     const stableCoinInfo = getVaultStabeCoins(providerKey);
     const result = [];
     const usdAmoutPromise = [];
+    const buoy = getBuoy(providerKey);
     for (let i = 0; i < approvalEventResult.length; i += 1) {
         const { address, transactionHash, blockNumber, args } =
             approvalEventResult[i];
@@ -218,13 +219,7 @@ async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
                 block_number: blockNumber,
             });
             usdAmoutPromise.push(
-                getBuoy().singleStableToUsd(
-                    args[2],
-                    getStableCoinIndex(tokenSymbio),
-                    {
-                        blockTag: blockNumber,
-                    }
-                )
+                buoy.singleStableToUsd(args[2], getStableCoinIndex(tokenSymbio))
             );
         }
     }
