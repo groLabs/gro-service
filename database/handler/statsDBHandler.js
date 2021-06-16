@@ -12,19 +12,26 @@ const {
     EVENT_TYPE,
     getEvents,
 } = require('../../common/logFilter');
-const { getDefaultProvider, } = require('../../common/chainUtil');
+const {
+    getDefaultProvider,
+    getAlchemyRpcProvider
+} = require('../../common/chainUtil');
 const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
+const BlocksScanner = require('../../stats/common/blockscanner');
+
 
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 
 /*
-TODO: create multiple DBHandlers.js to avoid a single file with too much code. E.g.:
+TODO: 
+1) create multiple DBHandlers.js to avoid a single file with too much code. E.g.:
     - statsDBHandlerUser.js
     - statsDBHandlerSystem.js
     - statsDBHandlerGovernance.js
+2) function to launch queries including 'const q = fs.readFileSync(path.join(..)' and 'const result = await q='
 */
 
 
@@ -300,39 +307,120 @@ const loadUserTransfers = async () => {
     }
 }
 
-const loadUserBalances = async () => {
+/// @notice Generates a collection of dates from a given start date to an end date
+/// @param _fromDate Start date
+/// @param _toDdate End date
+/// @returns An array with all dates from the start to the end date
+const generateDateRange = (_fromDate, _toDate) => {
     try {
-        // Get all users with any deposit
+        // Check format date
+        if (_fromDate.length !== 10 || _toDate.length !== 10) {
+            console.log('*** DB: Date format is incorrect: should be "DD/MM/YYYY');
+            return;
+        }
+
+        // Build array of dates
+        const fromDate = moment(_fromDate, "DD/MM/YYYY");
+        const toDate = moment(_toDate, "DD/MM/YYYY");
+        const days = toDate.diff(fromDate, 'days');
+        let dates = [];
+        let day;
+        if (days >= 0) {
+            for (let i = 0; i <= days; i++) {
+                day = fromDate.clone().add(i, 'days');
+                dates.push(day);
+            }
+        }
+        return dates;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+// TODO: account as perameter. If null, do all accounts from USER_TRANSFERS.
+// TODO: fromDate as parameter. If null, do current date. Otherwise, fromDate until current D-1
+const loadUserBalances = async (fromDate, toDate, account) => {
+    try {
+
+        const dates = generateDateRange(fromDate, toDate);
+        console.log('dates:', dates);
+
+        // Get all users with any transfer
         const q = fs.readFileSync(path.join(__dirname, `/../queries/select/select_distinct_users_transfers.sql`), 'utf8');
         const rows = await query(q, 'select', []);
 
-        if (rows.rowCount > 0) {
-            console.log(`*** DB: Processing ${rows.rowCount} user balances...`);
-            let rowCount = 0;
-            for (const item of rows.rows) {
-                const account = item.user_address;
-                const gvtValue = parseAmount(await getGvt().getAssets(account), 'USD');
-                const pwrdValue = parseAmount(await getPwrd().getAssets(account), 'USD');
-                const totalValue = gvtValue + pwrdValue;
-                const params = [
-                    moment(),
-                    42,
-                    account,
-                    totalValue,
-                    gvtValue,
-                    pwrdValue,
-                    moment()
-                ];
-                const q = fs.readFileSync(path.join(__dirname, `/../queries/insert/insert_user_balances.sql`), 'utf8');
-                rowCount += (await query(q, 'insert', params)).rowCount;
+        for (const date of dates) {
+
+            // For each user, check gvt & pwrd balance and insert data into USER_BALANCES
+            if (rows.rowCount > 0) {
+                console.log(`*** DB: Processing ${rows.rowCount} user balances...`);
+
+                const day = moment(date, "DD/MM/YYYY")
+                    .add(23, 'hours')
+                    .add(59, 'seconds')
+                    .add(59, 'minutes')
+                    .utc(true);
+
+                const blockTag = {
+                    blockTag: (await findBlockByDate(day)).block
+                }
+
+                let rowCount = 0;
+                for (const item of rows.rows) {
+                    const account = item.user_address;
+                    const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
+                    const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
+                    const totalValue = gvtValue + pwrdValue;
+                    const params = [
+                        day,
+                        42,
+                        account,
+                        totalValue,
+                        gvtValue,
+                        pwrdValue,
+                        moment()
+                    ];
+                    const q = fs.readFileSync(path.join(__dirname, `/../queries/insert/insert_user_balances.sql`), 'utf8');
+                    rowCount += (await query(q, 'insert', params)).rowCount;
+                }
+                console.log(`*** DB: ${rowCount} record/s added into USER_BALANCES for date ${day}`);
+            } else {
+                console.log('*** DB: No users with transfers found - No balance calculation needed.')
             }
-            console.log(`*** DB: ${rowCount} records added into USER_BALANCES`);
         }
     } catch (err) {
         console.log(err);
     }
+}
+
+// TODO: to be moved to /common. 
+// Files currently using findBlockByDate: statsDBHandler.js, apyHandler.js and currentApyHandler.js
+let scanner;
+function updateBlocksScanner(newProvider) {
+    scanner = new BlocksScanner(newProvider);
+}
+async function findBlockByDate(scanDate) {
+    console.log('date:', scanDate);
+    try {
+        const blockFound = await scanner
+            .getDate(scanDate.toDate())
+            .catch((error) => {
+                logger.error(error);
+                logger.error(`Could not get block ${scanDate}`);
+            });
+        //logger.info(`scanDate ${scanDate} block ${blockFound.block}`);
+        console.log(`scanDate ${scanDate} block ${blockFound.block}`);
+        return blockFound;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+
+const reload = async (from) => {
 
 }
+
 
 
 const loadGroStatsDB = async () => {
@@ -354,20 +442,28 @@ const loadGroStatsDB = async () => {
             // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null);
             // // Case 2: One account
             // // TODO: *** if temporary deposits or withdrawals failed, do not execute loadUserTransfers()
-            await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
-            await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
-            await loadUserTransfers();
+            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
+            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
+            // await loadUserTransfers();
+            // await loadUserBalances(null, null);
 
-            // await loadUserBalances();
+            const provider = getAlchemyRpcProvider('stats_gro');
+            scanner = new BlocksScanner(provider);
+            // const block1 = await findBlockByDate(moment());
+            // const block2 = await findBlockByDate(moment("04/06/2021 10:09:00", "DD/MM/YYYY HH:mm:ss"));
+            // console.log('block: ', block1, block2);
+            //await dailyLoad("07/06/2021", null);
+            await loadUserBalances("04/06/2021", "05/06/2021", null);
+            //await loadUserBalances(null, null);
+
             process.exit();
         });
 
-        //setTest2();
-        // console.log('hello2?')
-        // const q = fs.readFileSync(path.join(__dirname, `/../queries/insert/test.sql`), 'utf8');
-        // const results = await query(q, 'insert', []);
-        // console.log(results);
-        // process.exit();
+        // const a = generateDateRange("01/06/2021", "15/06/2021");
+        // console.log(a);
+
+
+
     } catch (err) {
         console.log(err);
     }
