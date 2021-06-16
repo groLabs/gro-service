@@ -3,8 +3,8 @@ INSERT INTO gro."USER_BALANCES" (
         "network_id",
         "user_address",
         "usd_value",
-        "pwrd_value",
         "gvt_value",
+        "pwrd_value",
         "creation_date"
     )
 VALUES (
