@@ -37,6 +37,11 @@ function parseData(events, token, type, transferType) {
                 CONTRACT_ASSET_DECIMAL,
                 amountDecimal
             ),
+            coin_amount: div(
+                event.coin_amount,
+                CONTRACT_ASSET_DECIMAL,
+                amountDecimal
+            ),
             block_number: event.blockNumber,
         };
         if (event.name === 'LogTransfer') {
@@ -126,6 +131,7 @@ async function getTransaction(
             hash,
             usd_amount: usdAmount,
             block_number: blockNumber,
+            coin_amount: coinAmount,
             timestamp,
         } = event;
         switch (transaction) {
@@ -135,6 +141,7 @@ async function getTransaction(
                     hash,
                     timestamp,
                     usd_amount: usdAmount,
+                    coin_amount: coinAmount,
                     block_number: blockNumber,
                 });
                 break;
@@ -144,6 +151,7 @@ async function getTransaction(
                     hash,
                     timestamp,
                     usd_amount: usdAmount,
+                    coin_amount: coinAmount,
                     block_number: blockNumber,
                 });
                 break;
@@ -153,6 +161,7 @@ async function getTransaction(
                     hash,
                     timestamp,
                     usd_amount: usdAmount,
+                    coin_amount: coinAmount,
                     block_number: blockNumber,
                 });
                 break;
@@ -162,6 +171,7 @@ async function getTransaction(
                     hash,
                     timestamp,
                     usd_amount: usdAmount,
+                    coin_amount: coinAmount,
                     block_number: blockNumber,
                 });
                 break;

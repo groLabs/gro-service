@@ -7,7 +7,7 @@ const {
     getUnderlyTokens,
 } = require('../contract/allContracts');
 const { ContractCallError } = require('./error');
-const { getDefaultProvider } = require('./chainUtil');
+const { getDefaultProvider, getAlchemyRpcProvider } = require('./chainUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -112,8 +112,8 @@ function getFilter(account, type, providerKey) {
 }
 
 async function getEventsByFilter(filter, eventType, providerKey) {
-    const provider = getDefaultProvider();
-    // const provider = getAlchemyRpcProvider(providerKey);
+    // const provider = getDefaultProvider();
+    const provider = getAlchemyRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(`Get ${eventType} logs failed.`);
