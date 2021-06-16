@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const { BigNumber } = require('ethers');
@@ -11,7 +12,10 @@ const {
 } = require('../../contract/allContracts');
 const BlocksScanner = require('../common/blockscanner');
 const logger = require('../statsLogger');
-const { getAlchemyRpcProvider } = require('../../common/chainUtil');
+const {
+    getAlchemyRpcProvider,
+    getTimestampByBlockNumber,
+} = require('../../common/chainUtil');
 const {
     getStrategyHavestEvents,
     getVaultTransferEvents,
@@ -29,7 +33,7 @@ const SECONDS_IN_YEAR = BigNumber.from(31536000);
 const DAYS_IN_YEAR = BigNumber.from(365);
 const WEEKS_IN_YEAR = BigNumber.from(52);
 const MONTHS_IN_YEAR = BigNumber.from(12);
-const CURRENT_APY_SCALE = BigNumber.from(122);
+const ZERO = BigNumber.from(0);
 
 // config
 const launchBlock = getConfig('blockchain.start_block');
@@ -46,36 +50,63 @@ async function findBlockByDate(scanDate) {
     return blockFound;
 }
 
-async function calcStrategyAPY(
-    vault,
-    strategy,
-    startBlock,
-    endBlock,
-    defaultApy
-) {
-    const assetChangedBlock = [startBlock, endBlock];
+async function searchBlockDaysAgo(timestamp, days) {
+    const daysAgo = dayjs.unix(timestamp).subtract(days, 'day');
+    const blockDaysAgo = await findBlockByDate(daysAgo);
+    return blockDaysAgo;
+}
+
+async function getAssetsChangedEvents(vault, strategy, startBlock, endBlock) {
+    const assetChangedBlock = [];
     const harvestedLogs = await getStrategyHavestEvents(
         strategy,
         startBlock.blockNumber,
         endBlock.blockNumber,
         providerKey
     );
-    harvestedLogs.forEach((log) => {
-        assetChangedBlock.push({
-            blockNumber: log.blockNumber,
-        });
-    });
+    if (harvestedLogs.length < 2) {
+        logger.info(`no enough harvest. only have ${harvestedLogs.length}`);
+        return assetChangedBlock;
+    }
 
+    const reverseHarvestedEvents = harvestedLogs.sort(
+        (a, b) => b.blockNumber - a.blockNumber
+    );
+    const endHarvest = reverseHarvestedEvents[0];
+    const blockInfo = await provider.getBlock(endHarvest.blockNumber);
+    const block3DaysAgo = await searchBlockDaysAgo(blockInfo.timestamp, 3);
+    let startHarvestIndex = -1;
+    for (let i = 0; i < reverseHarvestedEvents.length; i += 1) {
+        if (reverseHarvestedEvents[i].blockNumber <= block3DaysAgo.block) {
+            startHarvestIndex = i;
+            break;
+        }
+    }
+    if (startHarvestIndex < 0) {
+        logger.info('could find harvest before 3days ago');
+        return assetChangedBlock;
+    }
+
+    reverseHarvestedEvents.forEach((log, index) => {
+        if (index <= startHarvestIndex) {
+            assetChangedBlock.push({
+                blockNumber: log.blockNumber,
+                eventType: 'Harvested',
+            });
+        }
+    });
+    const startHarvest = reverseHarvestedEvents[startHarvestIndex];
     const vaultTransferLogs = await getVaultTransferEvents(
         vault,
-        startBlock.blockNumber,
-        endBlock.blockNumber,
+        startHarvest.blockNumber,
+        endHarvest.blockNumber,
         providerKey
     );
 
     vaultTransferLogs.forEach((log) => {
         assetChangedBlock.push({
             blockNumber: log.blockNumber,
+            eventType: 'Withdrawal',
         });
     });
     for (let i = 0; i < assetChangedBlock.length; i += 1) {
@@ -94,6 +125,25 @@ async function calcStrategyAPY(
     const sortedBlocks = assetChangedBlock.sort(
         (a, b) => a.blockNumber - b.blockNumber
     );
+    return sortedBlocks;
+}
+
+async function calcStrategyAPY(
+    vault,
+    strategy,
+    startBlock,
+    endBlock,
+    defaultApy
+) {
+    const sortedBlocks = await getAssetsChangedEvents(
+        vault,
+        strategy,
+        startBlock,
+        endBlock
+    );
+    if (sortedBlocks.length === 0) {
+        return defaultApy;
+    }
     let totalAssets = BigNumber.from(0);
     for (let i = 0; i < sortedBlocks.length; i += 1) {
         const b = sortedBlocks[i];
@@ -107,50 +157,36 @@ async function calcStrategyAPY(
             totalAssets = totalAssets.add(b.totalAssets.mul(duration));
         }
     }
-    let starTimestamp = startBlock.timestamp;
-    let firstHarvest = false;
-    // has harvest between start and end time, but at the start time the apy is zero
-    if (sortedBlocks.length > 2 && sortedBlocks[0].totalAssets.isZero()) {
-        starTimestamp = sortedBlocks[1].timestamp;
-        logger.info(
-            `adjust start time to first harvest ${starTimestamp} ${
-                sortedBlocks[0].totalAssets
-            },${sortedBlocks[0].totalAssets.isZero()},${sortedBlocks[0].totalAssets.eq(
-                BigNumber.from(0)
-            )}`
-        );
-        firstHarvest = true;
-    }
-    const totalDuration = BigNumber.from(endBlock.timestamp - starTimestamp);
+    const totalDuration = BigNumber.from(
+        sortedBlocks[sortedBlocks.length - 1].timestamp -
+            sortedBlocks[0].timestamp
+    );
     const timeWeightedTotalAssets = totalAssets.div(totalDuration);
 
     logger.info(
         `TotalAssets ${totalAssets} duration ${totalDuration} timeWeightedTotalAssets ${timeWeightedTotalAssets} `
     );
-    const latestBlock = sortedBlocks[sortedBlocks.length - 1];
-    const expectedReturn = await strategy.expectedReturn();
-    let startExpectedReturn = BigNumber.from(0);
-    if (!sortedBlocks[0].totalAssets.isZero()) {
-        startExpectedReturn = await strategy.expectedReturn({
-            blockTag: startBlock.blockNumber,
-        });
-    }
-    const totalGain = latestBlock.totalGain
-        .add(expectedReturn)
+
+    const totalGain = sortedBlocks[sortedBlocks.length - 1].totalGain
         .sub(sortedBlocks[0].totalGain)
-        .sub(startExpectedReturn);
+        .sub(
+            sortedBlocks[sortedBlocks.length - 1].totalLoss.sub(
+                sortedBlocks[0].totalLoss
+            )
+        );
+
+    // .sub(startExpectedReturn);
     logger.info(
-        `timeWeightedTotalAssets ${timeWeightedTotalAssets} totalGain ${totalGain} expectedReturn ${expectedReturn} start ${sortedBlocks[0].totalGain} startExpedted ${startExpectedReturn} end ${latestBlock.totalGain}`
+        `timeWeightedTotalAssets ${timeWeightedTotalAssets} totalGain ${totalGain} start ${
+            sortedBlocks[0].totalGain
+        }  end ${sortedBlocks[sortedBlocks.length - 1].totalGain}`
     );
-    let apy = totalGain
+    const apy = totalGain
         .mul(PERCENT_DECIMAL)
         .div(timeWeightedTotalAssets)
-        .mul(CURRENT_APY_SCALE);
-    // If first harvest is within 3 days, then use default apy if apy is zero
-    if (firstHarvest && totalGain.isZero()) {
-        logger.info(`firstHarvest ${firstHarvest} and totalGain ${totalGain}`);
-        apy = BigNumber.from(defaultApy);
-    }
+        .mul(SECONDS_IN_YEAR)
+        .div(totalDuration);
+
     logger.info(`apy ${apy}`);
     return apy;
 }
@@ -173,27 +209,18 @@ async function calcCurrentStrategyAPY(startBlock, endBlock) {
             logger.info(`strategy ${j}`);
             const { strategy } = strategies[j];
             // eslint-disable-next-line no-await-in-loop
-            const expected = await strategy.expectedReturn();
-            logger.info(`get expected ${strategy.address}, ${expected}`);
-            // const apy =
-            //     defaultApy[i * 2 + j] > 0
-            //         ? BigNumber.from(defaultApy[i * 2 + j])
-            //         : // eslint-disable-next-line no-await-in-loop
-            //           await calcStrategyAPY(
-            //               yearnVaults[i],
-            //               strategy,
-            //               startBlock,
-            //               endBlock
-            //           );
-            // eslint-disable-next-line no-await-in-loop
             const apy = await calcStrategyAPY(
                 yearnVaults[i],
                 strategy,
                 startBlock,
                 endBlock,
-                defaultApy[i * 2 + j]
+                BigNumber.from(defaultApy[i * 2 + j])
             );
             strategies[j].apy = apy;
+            // TODO: hard code to use default apy for cream
+            if ((i === 1 && j === 1) || (i === 2 && j === 1)) {
+                strategies[j].apy = BigNumber.from(defaultApy[i * 2 + j]);
+            }
         }
     }
     for (let i = 0; i < vaults.length; i += 1) {
@@ -264,25 +291,24 @@ async function getHodlBonusApy() {
 
 async function getCurrentApy() {
     const latestBlock = await provider.getBlock();
-    logger.info('SystemApy');
+    logger.info('Current apy');
     const startOfUTCToday = dayjs
         .unix(latestBlock.timestamp)
         .utc()
         .startOf('day');
     logger.info(`startOfUTCToday ${startOfUTCToday}`);
 
-    const startOf3DaysAgo = dayjs
-        .unix(latestBlock.timestamp)
-        .subtract(3, 'day');
-
-    const block3DaysAgo = await findBlockByDate(startOf3DaysAgo);
-
-    logger.info(`block3DaysAgo ${block3DaysAgo.block}`);
+    const blockStart = await searchBlockDaysAgo(latestBlock.timestamp, 10);
+    if (blockStart.block < launchBlock) {
+        blockStart.number = launchBlock;
+        blockStart.timestamp = await getTimestampByBlockNumber(launchBlock);
+    }
+    logger.info(`blockStart ${blockStart.block}`);
     // last 3d
-    logger.info('----last 3d');
+    logger.info('----scan for last 10d');
     const startBlock = {
-        blockNumber: block3DaysAgo.block,
-        timestamp: block3DaysAgo.timestamp,
+        blockNumber: blockStart.block,
+        timestamp: blockStart.timestamp,
     };
     const endBlock = {
         blockNumber: latestBlock.number,
