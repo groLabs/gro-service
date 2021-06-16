@@ -7,7 +7,7 @@ const {
     getUnderlyTokens,
 } = require('../contract/allContracts');
 const { ContractCallError } = require('./error');
-const { getDefaultProvider, getAlchemyRpcProvider } = require('./chainUtil');
+const { getDefaultProvider } = require('./chainUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -74,6 +74,15 @@ async function getStabeCoinApprovalFilters(account, providerKey) {
     return approvalFilters;
 }
 
+async function getGTokenApprovalFilters(account, providerKey) {
+    const groVault = getGroVault(providerKey);
+    const pwrd = getPowerD(providerKey);
+    const approvalFilters = [];
+    approvalFilters.push(groVault.filters.Approval(account, null));
+    approvalFilters.push(pwrd.filters.Approval(account, null));
+    return approvalFilters;
+}
+
 function getFilter(account, type, providerKey) {
     const depositHandler = getDepositHandler(providerKey);
     const withdrawHandler = getWithdrawHandler(providerKey);
@@ -112,8 +121,7 @@ function getFilter(account, type, providerKey) {
 }
 
 async function getEventsByFilter(filter, eventType, providerKey) {
-    // const provider = getDefaultProvider();
-    const provider = getAlchemyRpcProvider(providerKey);
+    const provider = getDefaultProvider();
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(`Get ${eventType} logs failed.`);
@@ -145,7 +153,12 @@ async function getApprovalEvents(
     toBlock = 'latest',
     providerKey
 ) {
-    const filters = await getStabeCoinApprovalFilters(account, providerKey);
+    const stabeCoinFilters = await getStabeCoinApprovalFilters(
+        account,
+        providerKey
+    );
+    const gtokenFilters = await getGTokenApprovalFilters(account, providerKey);
+    const filters = [...stabeCoinFilters, ...gtokenFilters];
     const logs = [];
     const approvalLogsPromise = [];
     for (let i = 0; i < filters.length; i += 1) {

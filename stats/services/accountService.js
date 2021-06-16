@@ -200,6 +200,29 @@ function getStableCoinIndex(tokenSymbio) {
     }
 }
 
+function isGToken(tokenSymbio) {
+    if (['DAI', 'USDC', 'USDT'].includes(tokenSymbio)) return false;
+    return true;
+}
+
+async function getGTokenUSDAmount(tokenAddress, share, providerKey) {
+    const groVault = getGroVault(providerKey);
+    const powerD = getPowerD(providerKey);
+    let usdAmount = 0;
+    if (groVault.address === tokenAddress) {
+        usdAmount = await groVault.getShareAssets(share).catch((error) => {
+            logger.error(error);
+            return 0;
+        });
+    } else {
+        usdAmount = await powerD.getShareAssets(share).catch((error) => {
+            logger.error(error);
+            return 0;
+        });
+    }
+    return usdAmount;
+}
+
 async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
     const approvalEventResult = await getApprovalEvents(
         account,
@@ -232,9 +255,18 @@ async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
                 coin_amount: div(args[2], BN(10).pow(decimal), 2),
                 block_number: blockNumber,
             });
-            usdAmoutPromise.push(
-                buoy.singleStableToUsd(args[2], getStableCoinIndex(tokenSymbio))
-            );
+            if (isGToken(tokenSymbio)) {
+                usdAmoutPromise.push(
+                    getGTokenUSDAmount(address, args[2], providerKey)
+                );
+            } else {
+                usdAmoutPromise.push(
+                    buoy.singleStableToUsd(
+                        args[2],
+                        getStableCoinIndex(tokenSymbio)
+                    )
+                );
+            }
         }
     }
 
