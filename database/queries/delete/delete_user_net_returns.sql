@@ -1,0 +1,2 @@
+DELETE FROM gro."USER_NET_RESULTS"
+WHERE TO_CHAR(balance_date, 'DD/MM/YYYY') = $1;

@@ -20,10 +20,10 @@ const query = async (q, op, args) => {
         const client = await pool.connect();
         try {
             const result = await client.query(q, args);
-            if ((op === 'insert') || (op == 'update')) { await client.query('COMMIT') }
+            if ((op === 'insert') || (op == 'update') || (op == 'delete')) { await client.query('COMMIT') }
             return result;
         } catch (err) {
-            if ((op === 'insert') || (op == 'update')) { await client.query('ROLLBACK') }
+            if ((op === 'insert') || (op == 'update') || (op == 'delete')) { await client.query('ROLLBACK') }
             console.log('Error at queries.js -> query(): ', err, q);
             return 400;
         } finally {

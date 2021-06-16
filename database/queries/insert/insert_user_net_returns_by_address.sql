@@ -32,4 +32,5 @@ FROM (
         FROM gro."USER_BALANCES" b
         WHERE TO_CHAR(b.balance_date, 'DD/MM/YYYY') = $1
     ) ub
-WHERE ut.user_address = ub.user_address;
+WHERE ut.user_address = ub.user_address
+    AND ut.user_address = $2;
