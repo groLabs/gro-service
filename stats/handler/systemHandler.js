@@ -194,7 +194,7 @@ async function getExposureStats(blockTag, systemStats) {
     // Harvest strategy is in vault 2, strategy 0
     const harvestExposure = systemStats.vaults[2].strategies[0].share;
     exposureProtocol.push({
-        name: 'Harvest',
+        name: protocolNames[3],
         concentration: harvestExposure,
     });
     logger.info(
