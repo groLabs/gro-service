@@ -25,7 +25,13 @@ const {
 const { wrapSendTransaction } = require('../../gasPrice/transaction');
 const logger = require('../regularLogger');
 
-async function adapterInvest(blockNumber, isInvested, vault) {
+async function adapterInvest(
+    blockNumber,
+    isInvested,
+    vault,
+    providerKey,
+    walletKey
+) {
     // This is to skip curve invest
     if (!isInvested) return;
     const vaultName = getVaultAndStrategyLabels()[vault.address].name;
@@ -44,6 +50,8 @@ async function adapterInvest(blockNumber, isInvested, vault) {
         `invest-${vault.address}`,
         {
             blockNumber,
+            providerKey,
+            walletKey,
             reSendTimes: 0,
             methodName: 'invest',
             label: MESSAGE_TYPES.invest,
@@ -58,12 +66,18 @@ async function adapterInvest(blockNumber, isInvested, vault) {
     });
 }
 
-async function invest(blockNumber, vaultIndex) {
-    const vaults = getVaults();
-    await adapterInvest(blockNumber, true, vaults[vaultIndex]);
+async function invest(blockNumber, vaultIndex, providerKey, walletKey) {
+    const vaults = getVaults(providerKey, walletKey);
+    await adapterInvest(
+        blockNumber,
+        true,
+        vaults[vaultIndex],
+        providerKey,
+        walletKey
+    );
 }
 
-async function harvest(blockNumber, strategyInfo) {
+async function harvest(blockNumber, strategyInfo, providerKey, walletKey) {
     const key = `harvest-${strategyInfo.vault.address}-${strategyInfo.strategyIndex}`;
     logger.info(`harvest ${key}`);
     const vaultName =
@@ -93,6 +107,8 @@ async function harvest(blockNumber, strategyInfo) {
         key,
         {
             blockNumber,
+            providerKey,
+            walletKey,
             reSendTimes: 0,
             methodName: 'strategyHarvest',
             label: MESSAGE_TYPES.harvest,
@@ -112,8 +128,8 @@ async function harvest(blockNumber, strategyInfo) {
     });
 }
 
-async function execPnl(blockNumber) {
-    const pnl = getPnl();
+async function execPnl(blockNumber, providerKey, walletKey) {
+    const pnl = getPnl(providerKey, walletKey);
     const pnlResponse = await wrapSendTransaction(pnl, 'execPnL', [0]).catch(
         (error) => {
             logger.error(error);
@@ -128,6 +144,8 @@ async function execPnl(blockNumber) {
         'pnl',
         {
             blockNumber,
+            providerKey,
+            walletKey,
             reSendTimes: 0,
             methodName: 'execPnL',
             label: MESSAGE_TYPES.pnl,
@@ -137,9 +155,9 @@ async function execPnl(blockNumber) {
     pnlMessage({ transactionHash: pnlResponse.hash });
 }
 
-async function rebalance(blockNumber) {
+async function rebalance(blockNumber, providerKey, walletKey) {
     const rebalanceReponse = await wrapSendTransaction(
-        getInsurance(),
+        getInsurance(providerKey, walletKey),
         'rebalance'
     ).catch((error) => {
         logger.error(error);
@@ -153,6 +171,8 @@ async function rebalance(blockNumber) {
         'rebalance',
         {
             blockNumber,
+            providerKey,
+            walletKey,
             reSendTimes: 0,
             methodName: 'rebalance',
             label: MESSAGE_TYPES.rebalance,
@@ -163,11 +183,11 @@ async function rebalance(blockNumber) {
     rebalanceMessage({ transactionHash: rebalanceReponse.hash });
 }
 
-async function curveInvest(blockNumber) {
-    const curveVaultAddress = getCurveVault().address;
+async function curveInvest(blockNumber, providerKey, walletKey) {
+    const curveVaultAddress = getCurveVault(providerKey, walletKey).address;
     const vaultName = getVaultAndStrategyLabels()[curveVaultAddress].name;
     const investResponse = await wrapSendTransaction(
-        getLifeguard(),
+        getLifeguard(providerKey, walletKey),
         'investToCurveVault'
     ).catch((error) => {
         logger.error(error);
@@ -181,6 +201,8 @@ async function curveInvest(blockNumber) {
         `invest-${curveVaultAddress}`,
         {
             blockNumber,
+            providerKey,
+            walletKey,
             reSendTimes: 0,
             methodName: 'investToCurveVault',
             label: MESSAGE_TYPES.curveInvest,
@@ -195,8 +217,9 @@ async function curveInvest(blockNumber) {
     });
 }
 
-async function updateChainlinkPrice() {
-    const stableCoins = await getController()
+async function updateChainlinkPrice(blockNumber, providerKey, walletKey) {
+    logger.info(`providerKey: ${providerKey}, walletKey: ${walletKey}`);
+    const stableCoins = await getController(providerKey, walletKey)
         .stablecoins()
         .catch((error) => {
             logger.error(error);
@@ -205,24 +228,39 @@ async function updateChainlinkPrice() {
                 MESSAGE_TYPES.chainPrice
             );
         });
-    const prices = [];
+    let chainPriceInstance;
     for (let i = 0; i < stableCoins.length; i += 1) {
+        chainPriceInstance = getChainPrice(providerKey, walletKey);
         // eslint-disable-next-line no-await-in-loop
-        const needUpdate = await getChainPrice().priceUpdateTrigger(
+        const needUpdate = await chainPriceInstance.priceUpdateTrigger(
             stableCoins[i]
         );
         logger.info(`needUpdate ${needUpdate}, ${stableCoins[i]}`);
         if (needUpdate) {
             // eslint-disable-next-line no-await-in-loop
-            prices[i] = await getChainPrice()
-                .getSafePriceFeed(stableCoins[i])
-                .catch((error) => {
-                    logger.error(error);
-                    throw new ContractSendError(
-                        `GetSafePriceFeed call for stablecoin: ${stableCoins[i]} failed`,
-                        MESSAGE_TYPES.chainPrice
-                    );
-                });
+            const pricesResponse = await wrapSendTransaction(
+                chainPriceInstance,
+                'getSafePriceFeed',
+                [stableCoins[i]]
+            ).catch((error) => {
+                logger.error(error);
+                throw new ContractSendError(
+                    `GetSafePriceFeed call for stablecoin: ${stableCoins[i]} failed`,
+                    MESSAGE_TYPES.chainPrice
+                );
+            });
+            addPendingTransaction(
+                `chainPrice-${i}`,
+                {
+                    blockNumber,
+                    providerKey,
+                    walletKey,
+                    reSendTimes: 0,
+                    methodName: 'getSafePriceFeed',
+                    label: MESSAGE_TYPES.chainPrice,
+                },
+                pricesResponse
+            );
             updateChainlinkPriceMessage({
                 stableCoinAddress: stableCoins[i],
                 stableCoinIndex: i,
@@ -234,7 +272,6 @@ async function updateChainlinkPrice() {
             });
         }
     }
-    return prices;
 }
 
 async function execActions(blockNumber, triggerResult) {

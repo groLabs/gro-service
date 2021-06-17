@@ -25,6 +25,7 @@ const {
 } = require('./generatePersonTransaction');
 const { shortAccount } = require('../../common/digitalUtil');
 const { getVaultStabeCoins } = require('../../contract/allContracts');
+const { AppendGTokenMintOrBurnAmountToLog } = require('../common/tool');
 
 const fromBlock = getConfig('blockchain.start_block');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
@@ -65,10 +66,15 @@ async function getDepositHistories(account, toBlock) {
     ).catch((error) => {
         handleError(error, `Get deposit logs of ${account} failed.`, account);
     });
+
+    // handle gtoken mint amount
+    await AppendGTokenMintOrBurnAmountToLog(logs);
+
     const result = { groVault: [], powerD: [] };
     if (!logs.length) return result;
     logs.forEach((log) => {
         log.amount = new BN(log.args[3].toString());
+        log.coin_amount = log.gtokenAmount;
         if (log.args[2]) {
             result.powerD.push(log);
         } else {
@@ -92,10 +98,14 @@ async function getWithdrawHistories(account, toBlock) {
             account
         );
     });
+    // handle gtoken burn amount
+    await AppendGTokenMintOrBurnAmountToLog(logs);
+
     const result = { groVault: [], powerD: [] };
     if (!logs.length) return result;
     logs.forEach((log) => {
         log.amount = new BN(log.args[6].toString());
+        log.coin_amount = log.gtokenAmount;
         if (log.args[2]) {
             result.powerD.push(log);
         } else {
@@ -149,11 +159,13 @@ async function getGroVaultTransferHistories(account, toBlock) {
         log.amount = new BN(log.args[2].toString())
             .multipliedBy(CONTRACT_ASSET_DECIMAL)
             .div(new BN(log.args[3].toString()));
+        log.coin_amount = log.args[2].toString();
     });
     logs.withdraw.forEach((log) => {
         log.amount = new BN(log.args[2].toString())
             .multipliedBy(CONTRACT_ASSET_DECIMAL)
             .div(new BN(log.args[3].toString()));
+        log.coin_amount = log.args[2].toString();
     });
     return logs;
 }
@@ -166,9 +178,11 @@ async function getPowerDTransferHistories(account, toBlock) {
     );
     logs.deposit.forEach((log) => {
         log.amount = new BN(log.args[2].toString());
+        log.coin_amount = log.args[2].toString();
     });
     logs.withdraw.forEach((log) => {
         log.amount = new BN(log.args[2].toString());
+        log.coin_amount = log.args[2].toString();
     });
     return logs;
 }
@@ -184,6 +198,29 @@ function getStableCoinIndex(tokenSymbio) {
         default:
             throw new ParameterError(`Not found token symbo: ${tokenSymbio}`);
     }
+}
+
+function isGToken(tokenSymbio) {
+    if (['DAI', 'USDC', 'USDT'].includes(tokenSymbio)) return false;
+    return true;
+}
+
+async function getGTokenUSDAmount(tokenAddress, share, providerKey) {
+    const groVault = getGroVault(providerKey);
+    const powerD = getPowerD(providerKey);
+    let usdAmount = 0;
+    if (groVault.address === tokenAddress) {
+        usdAmount = await groVault.getShareAssets(share).catch((error) => {
+            logger.error(error);
+            return 0;
+        });
+    } else {
+        usdAmount = await powerD.getShareAssets(share).catch((error) => {
+            logger.error(error);
+            return 0;
+        });
+    }
+    return usdAmount;
 }
 
 async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
@@ -218,9 +255,18 @@ async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
                 coin_amount: div(args[2], BN(10).pow(decimal), 2),
                 block_number: blockNumber,
             });
-            usdAmoutPromise.push(
-                buoy.singleStableToUsd(args[2], getStableCoinIndex(tokenSymbio))
-            );
+            if (isGToken(tokenSymbio)) {
+                usdAmoutPromise.push(
+                    getGTokenUSDAmount(address, args[2], providerKey)
+                );
+            } else {
+                usdAmoutPromise.push(
+                    buoy.singleStableToUsd(
+                        args[2],
+                        getStableCoinIndex(tokenSymbio)
+                    )
+                );
+            }
         }
     }
 
