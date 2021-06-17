@@ -197,6 +197,10 @@ async function initGvt() {
         renameDuplicatedFactorEntry(gvtABI),
         nonceManager
     );
+    const symbio = await gvt.symbol();
+    const decimals = await gvt.decimals();
+    vaultStabeCoins.decimals[gvtAddresses] = decimals.toString();
+    vaultStabeCoins.symbols[gvtAddresses] = symbio;
 }
 
 async function initPwrd() {
@@ -207,6 +211,10 @@ async function initPwrd() {
         renameDuplicatedFactorEntry(pwrdABI),
         nonceManager
     );
+    const symbio = await pwrd.symbol();
+    const decimals = await pwrd.decimals();
+    vaultStabeCoins.decimals[pwrdAddresses] = decimals.toString();
+    vaultStabeCoins.symbols[pwrdAddresses] = symbio;
 }
 
 async function initDepositHandler() {

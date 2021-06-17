@@ -19,12 +19,12 @@ const { getAlchemyRpcProvider } = require('../../common/chainUtil');
 const { formatNumber, shortAccount } = require('../../common/digitalUtil');
 const { getGvt, getPwrd } = require('../../contract/allContracts');
 const { calculateDelta } = require('../../common/digitalUtil');
-const { getMintOrBurnGToken } = require('../../common/actionDataFunder');
 const {
     depositEventMessage,
     withdrawEventMessage,
     summaryMessage,
 } = require('../../discordMessage/eventMessage');
+const { AppendGTokenMintOrBurnAmountToLog } = require('../common/tool');
 
 const logger = require('../statsLogger');
 
@@ -55,24 +55,6 @@ async function updateLastBlockNumber(blockNumber, type) {
     const blockObj = JSON.parse(content);
     blockObj[type] = blockNumber + 1;
     fs.writeFileSync(blockNumberFile, JSON.stringify(blockObj));
-}
-
-async function AppendGTokenMintOrBurnAmountToLog(logs) {
-    const parsePromises = [];
-    logs.forEach((log) => {
-        parsePromises.push(
-            getMintOrBurnGToken(
-                log.args[2],
-                log.transactionHash,
-                null,
-                providerKey
-            )
-        );
-    });
-    const result = await Promise.all(parsePromises);
-    for (let i = 0; i < logs.length; i += 1) {
-        logs[i].gtokenAmount = result[i];
-    }
 }
 
 async function generateDepositReport(fromBlock, toBlock) {
