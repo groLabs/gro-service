@@ -113,6 +113,7 @@ async function getTransactions(groVault, powerD, provider) {
 async function getTransaction(
     depositWithdrawTransferEvents,
     approvalEvents,
+    failTransactions,
     provider
 ) {
     await appendEventTimestamp(approvalEvents, provider);
@@ -122,6 +123,7 @@ async function getTransaction(
         transfers_in: [],
         transfers_out: [],
         approvals: [],
+        failures: [],
     };
     for (let i = 0; i < depositWithdrawTransferEvents.length; i += 1) {
         const event = depositWithdrawTransferEvents[i];
@@ -197,6 +199,18 @@ async function getTransaction(
             timestamp,
             coin_amount: coinAmount,
             usd_amount: usdAmount,
+            block_number: blockNumber,
+        });
+    }
+
+    for (let i = 0; i < failTransactions.length; i += 1) {
+        const { contractName, hash, blockNumber, timeStamp, to } =
+            failTransactions[i];
+        transactionItems.failures.push({
+            hash,
+            contract_name: contractName,
+            contract_address: to,
+            timestamp: timeStamp,
             block_number: blockNumber,
         });
     }
