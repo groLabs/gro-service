@@ -50,6 +50,19 @@ const parseAmount = (amount, coin) => {
 //     })
 // }
 
+// TODO: to be included in /commmon
+const getNetworkId = () => {
+    try {
+        switch (process.env.NODE_ENV) {
+            case 'mainnet': return 1;
+            case 'kovan': return 42;
+            case 'develop': return 42;
+        }
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 const getLastBlock = async (table) => {
     const q = fs.readFileSync(path.join(__dirname, `/../queries/select/select_last_blocknumber.sql`), 'utf8');
     const result = await query(q, 'select', [table]);
@@ -75,7 +88,7 @@ const loadEthBlocks = async (blocks) => {
                 block.number,
                 block.timestamp,
                 moment.unix(block.timestamp),
-                42, //TODO: get it dynamically
+                getNetworkId(),
                 moment().utc(true)]);
         }
         console.log(`*** DB: ${blocks.length} block/s added into ETH_BLOCKS`);
@@ -110,8 +123,8 @@ const updateLastTableLoad = async (table, last_block, last_date) => {
         await query(q, 'update', [
             table,
             last_block,
-            last_date, //moment.unix(last_timestamp),
-            42, //TODO: get it dynamically
+            last_date,
+            getNetworkId(),
             moment().utc(true)]
         );
     } catch (err) {
@@ -192,7 +205,7 @@ const parseDataFromEvent = async (logs, side) => {
             result.push({
                 block_number: log.blockNumber,
                 tx_hash: log.transactionHash,
-                network_id: 42, // TODO: retrieve from .env
+                network_id: getNetworkId(),
                 user_address: log.args[0],
                 referral_address: log.args[1],
                 usd_value: usd_value,
@@ -392,7 +405,7 @@ const loadUserBalances = async (fromDate, toDate, account) => {
                     const totalValue = gvtValue + pwrdValue;
                     const params = [
                         day,
-                        42,
+                        getNetworkId(),
                         account,
                         totalValue,
                         gvtValue,
@@ -431,7 +444,6 @@ const loadUserNetResults = async (fromDate, toDate, account) => {
 
         let rowCount = 0;
         for (const date of dates) {
-            // TODO: conditional query (with or without account)
             const q = (account) 
                 ? fs.readFileSync(path.join(__dirname, `/../queries/insert/insert_user_net_returns_by_address.sql`), 'utf8')
                 : fs.readFileSync(path.join(__dirname, `/../queries/insert/insert_user_net_returns.sql`), 'utf8')
