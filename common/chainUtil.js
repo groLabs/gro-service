@@ -67,9 +67,14 @@ function getDefaultProvider() {
     if (defaultProvider) {
         return defaultProvider;
     }
-    logger.info('Create default provider.');
-    const apiKey = getConfig('blockchain.alchemy_api_keys.default');
-    defaultProvider = ethers.providers.getDefaultProvider(apiKey);
+    const options = getConfig('blockchain.default_api_keys') || {};
+    logger.info('Create a new default provider.');
+    if (process.env.NODE_ENV === 'develop') {
+        defaultProvider = ethers.providers.getDefaultProvider(network);
+    } else {
+        defaultProvider = ethers.providers.getDefaultProvider(network, options);
+    }
+    defaultProvider = ethers.providers.getDefaultProvider(network, options);
     return defaultProvider;
 }
 

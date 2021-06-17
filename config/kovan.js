@@ -2,6 +2,12 @@ module.exports = {
     blockchain: {
         network: 'kovan',
         start_block: 25082399,
+        default_api_keys: {
+            alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
+            infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
+            etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
+            pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
+        },
         alchemy_api_keys: {
             default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
