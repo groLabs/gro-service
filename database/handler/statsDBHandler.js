@@ -1,5 +1,5 @@
 const ethers = require('ethers');
-const { query, batchQuery } = require('./queryDBHandler');
+const { query } = require('./queryDBHandler');
 const BN = require('bignumber.js');
 const {
     initAllContracts,
@@ -71,13 +71,13 @@ const loadEthBlocks = async (blocks) => {
         console.log(`*** DB: Processing ${blocks.length} blocks...`);
         for (const item of blocks) {
             const block = await getBlockData(item.block_number);
-            const q = fs.readFileSync(path.join(__dirname, `/../queries/insert/insert_eth_blocks.sql`), 'utf8');
-            await query(q, 'insert', [
+            const params = [
                 block.number,
                 block.timestamp,
                 moment.unix(block.timestamp),
                 getNetworkId(),
-                moment.utc()]);
+                moment.utc()];
+            await query('insert_eth_blocks.sql', params);
         }
         console.log(`*** DB: ${blocks.length} block/s added into ETH_BLOCKS`);
     } catch (err) {
@@ -107,14 +107,14 @@ async function findBlockByDate(scanDate) {
 
 const updateLastTableLoad = async (table, last_block, last_date) => {
     try {
-        const q = fs.readFileSync(path.join(__dirname, `/../queries/update/update_sys_table_loads.sql`), 'utf8');
-        await query(q, 'update', [
+        const params = [
             table,
             last_block,
             last_date,
             getNetworkId(),
-            moment.utc()]
-        );
+            moment.utc()];
+        //TODO: check result?
+        await query('update_sys_table_loads.sql', params);
     } catch (err) {
         console.log(err);
     }
@@ -128,7 +128,7 @@ const updateLastTableLoad = async (table, last_block, last_date) => {
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
 const ERC20_TRANSFER_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 const Transfer = Object.freeze({ "DEPOSIT": 1, "WITHDRAWAL": 2 });
-const QUERY_ERROR = 400;
+
 
 const getGTokenFromTx = async (result, transfer) => {
     try {
@@ -255,19 +255,14 @@ const loadTmpUserTransfers = async (
             finalResult = await getGTokenFromTx(preResult, side);
 
             // Truncate table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
-            let q = (side === Transfer.DEPOSIT)
-                ? fs.readFileSync(path.join(__dirname, `/../queries/truncate/truncate_tmp_user_deposits.sql`), 'utf8')
-                : fs.readFileSync(path.join(__dirname, `/../queries/truncate/truncate_tmp_user_withdrawals.sql`), 'utf8');
-            await query(q, 'truncate', []);
+            await query((side === Transfer.DEPOSIT) ? 'truncate_tmp_user_deposits.sql' : 'truncate_tmp_user_withdrawals.sql', []);
 
             // Store data into table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
-            q = (side === Transfer.DEPOSIT)
-                ? fs.readFileSync(path.join(__dirname, `/../queries/insert/insert_tmp_user_deposits.sql`), 'utf8')
-                : fs.readFileSync(path.join(__dirname, `/../queries/insert/insert_tmp_user_withdrawals.sql`), 'utf8');
             let params = [];
             for (const item of finalResult)
                 params.push(Object.values(item));
-            const rows = await batchQuery(q, 'insert', params);
+            const rows = await query((side === Transfer.DEPOSIT) ? 'insert_tmp_user_deposits.sql' : 'insert_tmp_user_withdrawals.sql', params);
+
             console.log(`*** DB: ${rows} record/s added into ${(side === Transfer.DEPOSIT) ? 'TMP_USER_DEPOSITS' : 'TMP_USER_WITHDRAWALS'}`);
         } else {
             console.log(`*** DB: No moar ${(side === Transfer.DEPOSIT) ? 'deposits' : 'withdrawals'} to be processed.`);
@@ -294,21 +289,18 @@ const loadTmpUserTransfers = async (
 const loadUserTransfers = async () => {
     try {
         // Get block numbers to be processed from temporary tables on deposits & withdrawals
-        let q = fs.readFileSync(path.join(__dirname, `/../queries/select/select_distinct_blocks_transfers.sql`), 'utf8');
-        const blocks = await query(q, 'select', []);
+        const blocks = await query('select_distinct_blocks_transfers.sql', []);
 
         if (blocks.rows.length > 0) {
             // Add block numbers into ETH_BLOCKS (incl. block timestamp)
             await loadEthBlocks(blocks.rows);
 
             // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
-            q = fs.readFileSync(path.join(__dirname, `/../queries/insert/insert_user_transfers.sql`), 'utf8');
-            const rows = await query(q, 'insert', []);
+            const rows = await query('insert_user_transfers.sql', []);
             console.log(`*** DB: ${rows.rowCount} records added into USER_TRANSFERS`);
 
             // Store latest block processed into table SYS_TABLE_LOADS
-            q = fs.readFileSync(path.join(__dirname, `/../queries/select/select_max_block_transfers.sql`), 'utf8');
-            const result = await query(q, 'select', []);
+            const result = await query('select_max_block_transfers.sql', []);
             const lastBlock = result.rows[0].max_block_number;
             if (result.rows) {
                 await updateLastTableLoad(
@@ -365,13 +357,12 @@ const loadUserBalances = async (
         const dates = generateDateRange(fromDate, toDate);
 
         // Get users with any transfer
-        const q = fs.readFileSync(path.join(__dirname, `/../queries/select/select_distinct_users_transfers.sql`), 'utf8');
         const rows = (account)
             ? {
                 rowCount: 1,
                 rows: [{ user_address: account }]
             }
-            : await query(q, 'select', []);
+            : await query('select_distinct_users_transfers.sql', []);
 
         for (const date of dates) {
 
@@ -402,14 +393,8 @@ const loadUserBalances = async (
                         pwrdValue,
                         moment.utc()
                     ];
-                    const q = fs.readFileSync(path.join(__dirname, `/../queries/insert/insert_user_balances.sql`), 'utf8');
-                    const result = await query(q, 'insert', params);
-                    if (result === QUERY_ERROR) {
-                        return;
-                    } else {
-                        rowCount += result.rowCount;
-                    }
-                    //rowCount += (await query(q, 'insert', params)).rowCount;
+                    const result = await query('insert_user_balances.sql', params);
+                    rowCount += result.rowCount;
                 }
                 console.log(`*** DB: ${rowCount} record/s added into USER_BALANCES for date ${day}`);
 
@@ -442,13 +427,9 @@ const loadUserNetResults = async (
         let rowCount = 0;
         console.log(`*** DB: Processing user net result/s...`);
         for (const date of dates) {
-            const q = (account)
-                ? fs.readFileSync(path.join(__dirname, `/../queries/insert/insert_user_net_returns_by_address.sql`), 'utf8')
-                : fs.readFileSync(path.join(__dirname, `/../queries/insert/insert_user_net_returns.sql`), 'utf8')
-            const params = (account)
-                ? [moment(date).format('DD/MM/YYYY'), account]
-                : [moment(date).format('DD/MM/YYYY')];
-            rowCount = (await query(q, 'insert', params)).rowCount;
+            const q = (account) ? 'insert_user_net_returns_by_address.sql' : 'insert_user_net_returns.sql';
+            const params = (account) ? [moment(date).format('DD/MM/YYYY'), account] : [moment(date).format('DD/MM/YYYY')];
+            rowCount = (await query(q, params)).rowCount;
             console.log(`*** DB: ${rowCount} record/s added into USER_NET_RESULTS for date ${date}`);
         }
     } catch (err) {
@@ -492,12 +473,12 @@ const reload = async (
         await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account);
 
         // Delete previous blocks from ETH_BLOCKS
-        let q = fs.readFileSync(path.join(__dirname, `/../queries/select/select_distinct_blocks_transfers.sql`), 'utf8');
-        const previousBlocks = (await query(q, 'select', [])).rows;
+        const previousBlocks = (await query('select_distinct_blocks_transfers.sql', [])).rows;
+
         let rowCount = 0;
         for (const block of previousBlocks) {
-            q = fs.readFileSync(path.join(__dirname, `/../queries/delete/delete_eth_blocks.sql`), 'utf8');
-            rowCount += (await query(q, 'delete', [block.block_number])).rowCount; // TODO: how to delete in a single call with list of block numbers
+            // TODO: how to delete in a single call with list of block numbers
+            rowCount += (await query('delete_eth_blocks.sql', [block.block_number])).rowCount;
         }
         console.log(`*** DB: ${rowCount} record/s deleted from ETH_BLOCKS`);
 
@@ -510,20 +491,11 @@ const reload = async (
                 ? [moment(day).format('DD/MM/YYYY'), account]
                 : [moment(day).format('DD/MM/YYYY')];
             // Delete previous transfers from USER_TRANSFERS
-            q = (account)
-                ? fs.readFileSync(path.join(__dirname, `/../queries/delete/delete_user_transfers_by_address.sql`), 'utf8')
-                : fs.readFileSync(path.join(__dirname, `/../queries/delete/delete_user_transfers.sql`), 'utf8');
-            rowCountTramsfers += (await query(q, 'delete', params)).rowCount;
+            rowCountTramsfers += (await query((account) ? 'delete_user_transfers_by_address.sql' : 'delete_user_transfers.sql', params)).rowCount;
             // Delete previous balances from USER_BALANCES
-            q = (account)
-                ? fs.readFileSync(path.join(__dirname, `/../queries/delete/delete_user_balances_by_address.sql`), 'utf8')
-                : fs.readFileSync(path.join(__dirname, `/../queries/delete/delete_user_balances.sql`), 'utf8');
-            rowCountBalances += (await query(q, 'delete', params)).rowCount;
+            rowCountBalances += (await query((account) ? 'delete_user_balances_by_address.sql' : 'delete_user_balances.sql', params)).rowCount;
             // Delete previous net results from USER_NET_RESULTS
-            q = (account)
-                ? fs.readFileSync(path.join(__dirname, `/../queries/delete/delete_user_net_returns_by_address.sql`), 'utf8')
-                : fs.readFileSync(path.join(__dirname, `/../queries/delete/delete_user_net_returns.sql`), 'utf8');
-            rowCountNetReturns += (await query(q, 'delete', params)).rowCount;
+            rowCountNetReturns += (await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params)).rowCount;
         }
         console.log(`*** DB: ${rowCountTramsfers} record/s deleted from USER_TRANSFERS`);
         console.log(`*** DB: ${rowCountBalances} record/s deleted from USER_BALANCES`);
@@ -555,7 +527,6 @@ const load = async (
     await loadUserNetResults(fromDate, toDate, account);
 }
 
-
 const loadGroStatsDB = async () => {
     try {
         const provider = getAlchemyRpcProvider('stats_gro');
@@ -570,12 +541,6 @@ const loadGroStatsDB = async () => {
 
             process.exit();
         });
-
-
-
-        // const a = generateDateRange("01/06/2021", "15/06/2021");
-        // console.log(a);
-
 
 
     } catch (err) {
