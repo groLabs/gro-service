@@ -12,7 +12,7 @@ const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
 const {
     getCurrentBlockNumber,
-    getNonceManager,
+    getWalletNonceManager,
 } = require('../../common/chainUtil');
 const {
     curvePriceMessage,
@@ -29,7 +29,6 @@ const creamStrategies = getConfig('cream_strategy_dependency');
 const curvePoolStrategy = getConfig('curve_strategy_dependency');
 const ratioUpperBond = BigNumber.from(getConfig('ratioUpperBond'));
 const ratioLowerBond = BigNumber.from(getConfig('ratioLowerBond'));
-const nonceManager = getNonceManager();
 
 const logger = require('../criticalLogger');
 
@@ -68,8 +67,8 @@ function handleError(error, content) {
     }
 }
 
-async function getStabeCoins() {
-    const stabeCoins = await getController()
+async function getStabeCoins(providerKey, walletKey) {
+    const stabeCoins = await getController(providerKey, walletKey)
         .stablecoins()
         .catch((error) => {
             handleError(error, {
@@ -79,10 +78,15 @@ async function getStabeCoins() {
     return stabeCoins;
 }
 
-async function checkPriceUpdateInChainPrice(stabeCoins) {
+async function checkPriceUpdateInChainPrice(
+    stabeCoins,
+    providerKey,
+    walletKey
+) {
+    const chainPriceInstance = getChainPrice(providerKey, walletKey);
     for (let i = 0; i < stabeCoins.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        const checkResult = await getChainPrice()
+        const checkResult = await chainPriceInstance
             .priceUpdateCheck(stabeCoins[i])
             .catch((error) => {
                 handleError(error, {
@@ -94,7 +98,7 @@ async function checkPriceUpdateInChainPrice(stabeCoins) {
         logger.info(`stabeCoins ${i}, ${checkResult}`);
         if (checkResult) {
             // eslint-disable-next-line no-await-in-loop
-            await getChainPrice()
+            await chainPriceInstance
                 .updateTokenRatios(stabeCoins[i])
                 .catch((error) => {
                     handleError(error, {
@@ -137,19 +141,20 @@ function findBrokenToken(price01, price02, price12) {
     return 4;
 }
 
-async function curvePriceCheck() {
-    const stabeCoins = await getStabeCoins();
-    await checkPriceUpdateInChainPrice(stabeCoins);
-    const price01 = await getBuoy().getRatio(0, 1);
-    const price02 = await getBuoy().getRatio(0, 2);
-    const price12 = await getBuoy().getRatio(1, 2);
+async function curvePriceCheck(providerKey, walletKey) {
+    const stabeCoins = await getStabeCoins(providerKey, walletKey);
+    await checkPriceUpdateInChainPrice(stabeCoins, providerKey, walletKey);
+    const buoyInstance = getBuoy(providerKey, walletKey);
+    const price01 = await buoyInstance.getRatio(0, 1);
+    const price02 = await buoyInstance.getRatio(0, 2);
+    const price12 = await buoyInstance.getRatio(1, 2);
     logger.info(`price01 ${price01}`);
     logger.info(`price02 ${price02}`);
     logger.info(`price12 ${price12}`);
     const coinIndex = findBrokenToken(price01, price02, price12);
     logger.info(`coinIndex ${coinIndex}`);
     if (coinIndex > 3) {
-        await getController()
+        await getController(providerKey, walletKey)
             .emergency(coinIndex)
             .catch((error) => {
                 handleError(error, {
@@ -168,7 +173,8 @@ async function checkSingleStrategy(
     strategyAddress,
     method,
     failedPercentage,
-    beforeBlockNumber
+    beforeBlockNumber,
+    nonceManager
 ) {
     let failed = 0;
     const strategy = new ethers.Contract(
@@ -212,15 +218,18 @@ async function checkSingleStrategy(
     return failed;
 }
 
-async function strategyCheck() {
+async function strategyCheck(providerKey, walletKey) {
+    const nonceManager = getWalletNonceManager(providerKey, walletKey);
     // Harvest strategy check
-    const currentBlockNumber = await getCurrentBlockNumber().catch((error) => {
-        handleError(error, {
-            strategyCheck: {
-                message: 'Get current block number failed',
-            },
-        });
-    });
+    const currentBlockNumber = await getCurrentBlockNumber(providerKey).catch(
+        (error) => {
+            handleError(error, {
+                strategyCheck: {
+                    message: 'Get current block number failed',
+                },
+            });
+        }
+    );
     const beforeBlockNumber = currentBlockNumber - beforeBlock;
     let strategyFailedTotal = 0;
     const msgLabel = [];
@@ -230,7 +239,8 @@ async function strategyCheck() {
             harvestStrategies[i],
             'getPricePerFullShare',
             perPriceFailedPercentage,
-            beforeBlockNumber
+            beforeBlockNumber,
+            nonceManager
         );
         strategyFailedTotal += harvestStrategyResult;
         if (harvestStrategyResult) {
@@ -245,14 +255,15 @@ async function strategyCheck() {
     }
 
     // Cream strategy check
-    if (strategyFailedTotal < 2) {
+    if (strategyFailedTotal < 1) {
         for (let i = 0; i < creamStrategies.length; i += 1) {
             // eslint-disable-next-line no-await-in-loop
             const creamStrategyResult = await checkSingleStrategy(
                 creamStrategies[i],
                 'totalReserves',
                 totalFailedPercentage,
-                beforeBlockNumber
+                beforeBlockNumber,
+                nonceManager
             );
             strategyFailedTotal += creamStrategyResult;
             if (creamStrategyResult) {
@@ -267,13 +278,14 @@ async function strategyCheck() {
         }
     }
 
-    if (strategyFailedTotal < 2) {
+    if (strategyFailedTotal < 1) {
         // XPool strategy check
         const xPoolStrategyResult = await checkSingleStrategy(
             curvePoolStrategy.yearn,
             'getPricePerFullShare',
             perPriceFailedPercentage,
-            beforeBlockNumber
+            beforeBlockNumber,
+            nonceManager
         );
 
         strategyFailedTotal += xPoolStrategyResult;
@@ -285,24 +297,13 @@ async function strategyCheck() {
         }
     }
 
-    if (strategyFailedTotal === 1) {
-        await getController()
+    if (strategyFailedTotal > 0) {
+        await getController(providerKey, walletKey)
             .pause()
             .catch((error) => {
                 handleError(error, {
                     strategyCheck: {
                         message: 'Call pause function to pause system failed',
-                    },
-                });
-            });
-    } else if (strategyFailedTotal > 1) {
-        await getController()
-            .handbreakUp()
-            .catch((error) => {
-                handleError(error, {
-                    strategyCheck: {
-                        message:
-                            'Call handbreakUp function to full stop system failed',
                     },
                 });
             });

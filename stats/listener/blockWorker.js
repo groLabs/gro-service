@@ -1,13 +1,13 @@
 const logger = require('../statsLogger');
 const {
     getDefaultProvider,
-    getNonceManager,
+    getWalletNonceManager,
 } = require('../../common/chainUtil');
 const { pendingTransactions } = require('../../common/storage');
 const { execActions } = require('../../regular/handler/actionHandler');
 const { callTriggers } = require('../../regular/handler/triggerHandler');
 
-const nonceManager = getNonceManager();
+const nonceManager = getWalletNonceManager();
 
 class BlockWorker {
     constructor() {

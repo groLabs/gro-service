@@ -1,4 +1,3 @@
-const config = require('config');
 const { ethers } = require('ethers');
 const fs = require('fs');
 const { BigNumber } = require('ethers');
@@ -17,11 +16,8 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
-if (!config.has('blockchain.network')) {
-    const err = new SettingError('Config:blockchain.network not set.');
-    logger.error(err);
-    throw err;
-}
+const DEFAULT_PROVIDER_KEY = 'default';
+const DEFAULT_WALLET_KEY = 'default';
 
 if (
     !process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`] &&
@@ -34,38 +30,22 @@ if (
     throw err;
 }
 
-if (!config.has('blockchain.network')) {
-    const err = new SettingError('Config: blockchain.network not setted.');
-    logger.error(err);
-    throw err;
-}
-
 let defaultProvider;
 let socketProvider;
 let rpcProvider;
-let nonceManager;
-let botWallet;
+let defaultWalletManager;
 const rpcProviders = {};
 const botWallets = {};
 
-const network = config.get('blockchain.network');
+const network = getConfig('blockchain.network');
 logger.info(`network: ${network}`);
-const botPrivateKey = process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`];
-// logger.info(`bot private key : ${botPrivateKey}`);
 
 function getSocketProvider() {
     if (socketProvider) {
         return socketProvider;
     }
-    if (!config.has('blockchain.alchemy.api_key')) {
-        const err = new SettingError(
-            'Config:blockchain.alchemy.api_key not setted.'
-        );
-        logger.error(err);
-        throw err;
-    }
     logger.info('Create new socket provider.');
-    const apiKey = config.get('blockchain.alchemy.api_key');
+    const apiKey = getConfig('blockchain.alchemy_api_keys.default');
     socketProvider = new ethers.providers.AlchemyWebSocketProvider(
         network,
         apiKey
@@ -77,15 +57,8 @@ function getRpcProvider() {
     if (rpcProvider) {
         return rpcProvider;
     }
-    if (!config.has('blockchain.api_keys.alchemy')) {
-        const err = new SettingError(
-            'Config:blockchain.api_keys.alchemy not setted.'
-        );
-        logger.error(err);
-        throw err;
-    }
-    logger.info('Create a new Rpc provider.');
-    const apiKey = config.get('blockchain.api_keys.alchemy');
+    logger.info('Create default Rpc provider.');
+    const apiKey = getConfig('blockchain.alchemy_api_keys.default');
     rpcProvider = new ethers.providers.AlchemyProvider(network, apiKey);
     return rpcProvider;
 }
@@ -94,68 +67,83 @@ function getDefaultProvider() {
     if (defaultProvider) {
         return defaultProvider;
     }
-    logger.info('Create new default provider.');
-    let options = {};
-    if (config.has('blockchain.api_keys')) {
-        options = config.get('blockchain.api_keys');
-    }
-    logger.info('Create a new default provider.');
-    defaultProvider = ethers.providers.getDefaultProvider(network, options);
+    logger.info('Create default provider.');
+    const apiKey = getConfig('blockchain.alchemy_api_keys.default');
+    defaultProvider = ethers.providers.getDefaultProvider(apiKey);
     return defaultProvider;
 }
 
-function getAlchemyRpcProvider(apiKey) {
-    let result = rpcProviders[apiKey];
-    if (!result) {
-        const key = `blockchain.alchemy_api_keys.${apiKey}`;
-        const apiKeyValue = getConfig(key);
+function getAlchemyRpcProvider(providerKey) {
+    // only for test
+    const providerKeys = Object.keys(rpcProviders);
+    logger.info(`providerKeys: ${JSON.stringify(providerKeys)}`);
+    // =====================
+    let result;
+    providerKey = providerKey || DEFAULT_PROVIDER_KEY;
+    if (providerKey === DEFAULT_PROVIDER_KEY) {
         if (process.env.NODE_ENV === 'develop') {
-            const options = getConfig('blockchain.api_keys');
-            result = ethers.providers.getDefaultProvider(network, options);
+            result = getDefaultProvider();
         } else {
-            result = new ethers.providers.AlchemyProvider(network, apiKeyValue);
+            result = getRpcProvider();
         }
+    } else {
+        result = rpcProviders[providerKey];
+        if (!result) {
+            const key = `blockchain.alchemy_api_keys.${providerKey}`;
+            const apiKeyValue = getConfig(key);
+            if (process.env.NODE_ENV === 'develop') {
+                result = ethers.providers.getDefaultProvider(apiKeyValue);
+            } else {
+                result = new ethers.providers.AlchemyProvider(
+                    network,
+                    apiKeyValue
+                );
+            }
 
-        logger.info(`Create a new ${apiKey} Rpc provider.`);
-        rpcProviders[apiKey] = result;
+            logger.info(`Create a new ${providerKey} Rpc provider.`);
+            rpcProviders[providerKey] = result;
+        }
     }
     return result;
 }
 
-function getBotWallet() {
-    if (botWallet) return botWallet;
-    try {
-        let provider;
-        if (process.env.NODE_ENV === 'develop') {
-            provider = getDefaultProvider();
-        } else {
-            provider = getRpcProvider();
-        }
-        const keystorePassword = config.get('blockchain.keystore_password');
-
-        if (keystorePassword === 'NO_PASSWORD') {
-            botWallet = new ethers.Wallet(botPrivateKey, provider);
-        } else {
-            const data = fs.readFileSync(config.get('blockchain.keystore'), {
-                flag: 'a+',
-            });
-            botWallet = ethers.Wallet.fromEncryptedJsonSync(
-                data,
-                keystorePassword
-            );
-        }
-        logger.info(`wallet address ${botWallet.address}`);
-        return botWallet.connect(provider);
-    } catch (e) {
-        logger.error(e);
-        throw new SettingError('Init wallet failed.');
+function getNonceManager() {
+    if (defaultWalletManager) {
+        return defaultWalletManager;
     }
+
+    const provider = getAlchemyRpcProvider(DEFAULT_PROVIDER_KEY);
+    const keystorePassword = getConfig('blockchain.keystores.default.password');
+    let botWallet;
+    if (keystorePassword === 'NO_PASSWORD') {
+        botWallet = new ethers.Wallet(
+            getConfig('blockchain.keystores.default.private_key'),
+            provider
+        );
+    } else {
+        const data = fs.readFileSync(
+            getConfig('blockchain.keystores.default.file_path'),
+            {
+                flag: 'a+',
+            }
+        );
+        botWallet = ethers.Wallet.fromEncryptedJsonSync(data, keystorePassword);
+    }
+    botWallet.connect(provider);
+
+    defaultWalletManager = new NonceManager(botWallet);
+    botWallets.default = { default: defaultWalletManager };
+
+    logger.info(`Created default wallet manager : ${botWallet.address}`);
+    return defaultWalletManager;
 }
 
-function createWallet(providerKey, botType, walletKey) {
-    if (!walletKey) walletKey = 'default';
+function createWallet(providerKey, walletKey) {
+    providerKey = providerKey || DEFAULT_PROVIDER_KEY;
+    walletKey = walletKey || DEFAULT_WALLET_KEY;
     let wallet;
     const provider = getAlchemyRpcProvider(providerKey);
+    const botType = process.env.BOT_ENV.toLowerCase();
     const keystorePassword = getConfig(
         `blockchain.keystores.${botType}.${walletKey}_password`
     );
@@ -175,12 +163,33 @@ function createWallet(providerKey, botType, walletKey) {
         wallet.connect(provider);
     }
     logger.info(
-        `create new wallet address ${wallet.address}, and connect to ${providerKey} provider`
+        `Create new wallet[${walletKey}] ${wallet.address}, and connect to ${providerKey} provider`
     );
     return wallet;
 }
 
 function getWalletNonceManager(providerKey, accountKey) {
+    // only for test
+    const providerKeys = Object.keys(botWallets);
+    for (let i = 0; i < providerKeys.length; i += 1) {
+        const key = providerKeys[i];
+        const walletKeys = Object.keys(botWallets[key]);
+        logger.info(
+            `provider key [${key}]: wallets ${JSON.stringify(walletKeys)}`
+        );
+    }
+    // =====================
+
+    providerKey = providerKey || DEFAULT_PROVIDER_KEY;
+    accountKey = accountKey || DEFAULT_WALLET_KEY;
+
+    if (
+        providerKey === DEFAULT_PROVIDER_KEY &&
+        accountKey === DEFAULT_WALLET_KEY
+    ) {
+        return getNonceManager();
+    }
+
     let walletNonceManager;
     if (!botWallets[providerKey]) {
         botWallets[providerKey] = {};
@@ -195,72 +204,62 @@ function getWalletNonceManager(providerKey, accountKey) {
     return walletNonceManager;
 }
 
-function getNonceManager() {
-    if (nonceManager) {
-        return nonceManager;
-    }
-    const wallet = getBotWallet();
-    nonceManager = new NonceManager(wallet);
-    return nonceManager;
-}
-
-async function syncNounce() {
+async function syncManagerNonce(providerkey, walletKey) {
+    const walletManager = getWalletNonceManager(providerkey, walletKey);
     // Get nonce from chain
-    const transactionCountInChain = await nonceManager
+    const transactionCountInChain = await walletManager
         .getTransactionCount()
         .catch((error) => {
             logger.error(error);
             throw new BlockChainCallError(
-                'Get bot nonce from chain failed.',
+                `${providerkey} : ${walletKey} Get bot nonce from chain failed.`,
                 MESSAGE_TYPES.adjustNonce
             );
         });
     // Get local nonce
-    const transactionCountInLocal = await nonceManager
+    const transactionCountInLocal = await walletManager
         .getTransactionCount('pending')
         .catch((error) => {
             logger.error(error);
             throw new BlockChainCallError(
-                'Get bot nonce from local failed.',
+                `${providerkey} : ${walletKey} Get bot nonce from local failed.`,
                 MESSAGE_TYPES.adjustNonce
             );
         });
     // Adjust local nonce
     if (transactionCountInChain > transactionCountInLocal) {
-        nonceManager.setTransactionCount(transactionCountInChain);
+        walletManager.setTransactionCount(transactionCountInChain);
         sendMessageToChannel(DISCORD_CHANNELS.botLogs, {
-            message: `Set bot Nonce to ${transactionCountInChain}`,
+            message: `Set bot[${providerkey} : ${walletKey}] Nonce to ${transactionCountInChain}`,
             type: MESSAGE_TYPES.adjustNonce,
         });
     }
 }
 
-async function checkAccountBalance(botBalanceWarnVault) {
-    const botAccount = getNonceManager().signer.address;
+async function checkAccountBalance(walletManager, botBalanceWarnVault) {
+    const botAccount = walletManager.signer.address;
     const botType = `${process.env.BOT_ENV.toLowerCase()}Bot`;
     const accountLabel = shortAccount(botAccount);
-    const balance = await getNonceManager()
-        .getBalance()
-        .catch((error) => {
-            logger.error(error);
-            throw new BlockChainCallError(
-                `Get ETH balance of bot:${botAccount} failed.`,
-                MESSAGE_TYPES[botType],
-                {
-                    embedMessage: {
-                        type: MESSAGE_TYPES[botType],
-                        description: `**${botType}** get ${accountLabel}'s ETH balance failed`,
-                        urls: [
-                            {
-                                label: accountLabel,
-                                type: 'account',
-                                value: botAccount,
-                            },
-                        ],
-                    },
-                }
-            );
-        });
+    const balance = await walletManager.getBalance().catch((error) => {
+        logger.error(error);
+        throw new BlockChainCallError(
+            `Get ETH balance of bot:${botAccount} failed.`,
+            MESSAGE_TYPES[botType],
+            {
+                embedMessage: {
+                    type: MESSAGE_TYPES[botType],
+                    description: `**${botType}** get ${accountLabel}'s ETH balance failed`,
+                    urls: [
+                        {
+                            label: accountLabel,
+                            type: 'account',
+                            value: botAccount,
+                        },
+                    ],
+                },
+            }
+        );
+    });
     if (balance.lt(BigNumber.from(botBalanceWarnVault))) {
         botBalanceMessage({
             botAccount,
@@ -270,8 +269,25 @@ async function checkAccountBalance(botBalanceWarnVault) {
     }
 }
 
-async function getCurrentBlockNumber() {
-    const block = await getDefaultProvider()
+async function checkAccountsBalance(botBalanceWarnVault) {
+    const providerskey = Object.keys(botWallets);
+    const checkPromise = [];
+    for (let i = 0; i < providerskey.length; i += 1) {
+        const walletsKey = Object.keys(botWallets[providerskey[i]]);
+        for (let j = 0; j < walletsKey.length; j += 1) {
+            checkPromise.push(
+                checkAccountBalance(
+                    botWallets[providerskey[i]][walletsKey[j]],
+                    botBalanceWarnVault
+                )
+            );
+        }
+    }
+    await Promise.all(checkPromise);
+}
+
+async function getCurrentBlockNumber(providerKey) {
+    const block = await getAlchemyRpcProvider(providerKey)
         .getBlockNumber()
         .catch((error) => {
             logger.error(error);
@@ -282,8 +298,8 @@ async function getCurrentBlockNumber() {
     return block;
 }
 
-async function getTimestampByBlockNumber(blockNumber, providerOrSigner) {
-    const provider = providerOrSigner || getRpcProvider();
+async function getTimestampByBlockNumber(blockNumber, provider) {
+    provider = provider || getAlchemyRpcProvider();
     const block = await provider.getBlock(blockNumber).catch((error) => {
         logger.error(error);
         throw new BlockChainCallError(
@@ -295,13 +311,12 @@ async function getTimestampByBlockNumber(blockNumber, providerOrSigner) {
 
 module.exports = {
     getDefaultProvider,
-    getNonceManager,
     getSocketProvider,
     getRpcProvider,
     getAlchemyRpcProvider,
     getWalletNonceManager,
-    syncNounce,
-    checkAccountBalance,
+    syncManagerNonce,
+    checkAccountsBalance,
     getCurrentBlockNumber,
     getTimestampByBlockNumber,
 };

@@ -1,11 +1,9 @@
 const { BigNumber } = require('ethers');
-const config = require('config');
 const {
     getInsurance,
     getPnl,
     getLifeguard,
     getVaults,
-    getCurveVault,
     getStrategyLength,
     getVaultAndStrategyLabels,
     getYearnVaults,
@@ -59,8 +57,7 @@ async function adapterInvestTrigger(vault) {
     return investTriggerResult;
 }
 
-async function sortStrategyByLastHarvested() {
-    const vaults = getVaults();
+async function sortStrategyByLastHarvested(vaults) {
     if (vaults.length === 0) {
         logger.info('Not fund any vault.');
         throw new ContractCallError(
@@ -116,15 +113,17 @@ async function sortStrategyByLastHarvested() {
     return sorted;
 }
 
-async function investTrigger() {
-    const vaults = getVaults();
+async function investTrigger(providerKey, walletKey) {
+    const vaults = getVaults(providerKey, walletKey);
     const triggerPromises = [];
     for (let i = 0; i < vaults.length - 1; i += 1) {
         triggerPromises.push(adapterInvestTrigger(vaults[i]));
     }
-    triggerPromises.push(getLifeguard().investToCurveVaultTrigger());
+    triggerPromises.push(
+        getLifeguard(providerKey, walletKey).investToCurveVaultTrigger()
+    );
     const result = await Promise.all(triggerPromises);
-    const strategies = await sortStrategyByLastHarvested();
+    const strategies = await sortStrategyByLastHarvested(vaults);
     let needInvestIndex = -1;
     const orderedVaults = [];
     for (let i = 0; i < strategies.length; i += 1) {
@@ -160,43 +159,43 @@ async function investTrigger() {
     return investTriggerResult;
 }
 
-function checkVaultStrategyHarvest(vault, vaultIndex, strategyLength) {
-    const promises = [];
-    for (let i = 0; i < strategyLength; i += 1) {
-        const key = `harvest-${vault.address}-${i}`;
+// function checkVaultStrategyHarvest(vault, vaultIndex, strategyLength) {
+//     const promises = [];
+//     for (let i = 0; i < strategyLength; i += 1) {
+//         const key = `harvest-${vault.address}-${i}`;
 
-        if (pendingTransactions.get(key)) {
-            const msg = `Already has pending harvest:${key} transaction: ${
-                pendingTransactions.get(key).hash
-            }`;
-            logger.info(msg);
-        } else {
-            // Get harvest callCost
-            let callCost = BigNumber.from(0);
-            const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${i}`;
-            if (config.has(callCostKey)) {
-                callCost = BigNumber.from(config.get(callCostKey));
-            }
+//         if (pendingTransactions.get(key)) {
+//             const msg = `Already has pending harvest:${key} transaction: ${
+//                 pendingTransactions.get(key).hash
+//             }`;
+//             logger.info(msg);
+//         } else {
+//             // Get harvest callCost
+//             let callCost = BigNumber.from(0);
+//             const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${i}`;
+//             if (config.has(callCostKey)) {
+//                 callCost = BigNumber.from(config.get(callCostKey));
+//             }
 
-            promises.push(
-                vault.strategyHarvestTrigger(i, callCost).then((resolve) => {
-                    logger.info(`success ${vault.address} ${i} ${resolve}`);
-                    return {
-                        vault,
-                        strategyIndex: i,
-                        callCost,
-                        triggerResponse: resolve,
-                    };
-                })
-            );
-        }
-    }
-    return promises;
-}
+//             promises.push(
+//                 vault.strategyHarvestTrigger(i, callCost).then((resolve) => {
+//                     logger.info(`success ${vault.address} ${i} ${resolve}`);
+//                     return {
+//                         vault,
+//                         strategyIndex: i,
+//                         callCost,
+//                         triggerResponse: resolve,
+//                     };
+//                 })
+//             );
+//         }
+//     }
+//     return promises;
+// }
 
-async function harvestOneTrigger() {
-    const strategies = await sortStrategyByLastHarvested();
-    const vaults = getVaults();
+async function harvestOneTrigger(providerkey, walletKey) {
+    const vaults = getVaults(providerkey, walletKey);
+    const strategies = await sortStrategyByLastHarvested(vaults);
     for (let i = 0; i < strategies.length; i += 1) {
         const { vaultIndex, strategyIndex, trigger } = strategies[i];
         logger.info(
@@ -222,7 +221,7 @@ async function harvestOneTrigger() {
     return NONEED_TRIGGER;
 }
 
-async function pnlTrigger() {
+async function pnlTrigger(providerkey, walletKey) {
     if (pendingTransactions.get('pnl')) {
         const result = `Already has pending Pnl transaction: ${
             pendingTransactions.get('pnl').hash
@@ -231,20 +230,20 @@ async function pnlTrigger() {
         throw new PendingTransactionError(result, MESSAGE_TYPES.pnlTrigger);
     }
 
-    const needPnlVault = await getPnl()
-        .pnlTrigger()
-        .catch((error) => {
-            logger.error(error);
-            throw new ContractCallError(
-                'PnlTrigger call failed',
-                MESSAGE_TYPES.pnlTrigger
-            );
-        });
+    const pnlInstance = getPnl(providerkey, walletKey);
+
+    const needPnlVault = await pnlInstance.pnlTrigger().catch((error) => {
+        logger.error(error);
+        throw new ContractCallError(
+            'PnlTrigger call failed',
+            MESSAGE_TYPES.pnlTrigger
+        );
+    });
     logger.info(`pnlTrigger: ${needPnlVault}`);
     let pnlTriggerResult = NONEED_TRIGGER;
     const messageContent = { pnlTrigger: needPnlVault, totalTrigger: false };
     if (!needPnlVault) {
-        const needPnlAssets = await getPnl()
+        const needPnlAssets = await pnlInstance
             .totalAssetsChangeTrigger()
             .catch((error) => {
                 logger.error(error);
@@ -270,7 +269,7 @@ async function pnlTrigger() {
     return pnlTriggerResult;
 }
 
-async function rebalanceTrigger() {
+async function rebalanceTrigger(providerkey, walletKey) {
     if (pendingTransactions.get('rebalance')) {
         const result = `Already has pending rebalance transaction: ${
             pendingTransactions.get('rebalance').hash
@@ -282,7 +281,7 @@ async function rebalanceTrigger() {
         );
     }
 
-    const needRebalance = await getInsurance()
+    const needRebalance = await getInsurance(providerkey, walletKey)
         .rebalanceTrigger()
         .catch((error) => {
             logger.error(error);

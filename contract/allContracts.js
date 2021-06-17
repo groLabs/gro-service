@@ -1,9 +1,7 @@
 const { ethers } = require('ethers');
 const {
-    getNonceManager,
-    getRpcProvider,
     getAlchemyRpcProvider,
-    getWallet,
+    getWalletNonceManager,
 } = require('../common/chainUtil');
 const { ContractCallError } = require('../common/error');
 const { getConfig } = require('../common/configUtil');
@@ -27,7 +25,7 @@ const chainPriceABI = require('./abis/ChainPrice.json');
 const erc20ABI = require('./abis/ERC20.json');
 const strategyABI = require('./abis/Strategy.json');
 
-const nonceManager = getNonceManager();
+const nonceManager = getWalletNonceManager();
 
 let controller;
 let insurance;
@@ -301,11 +299,6 @@ async function initAllContracts() {
     logger.info('Init contracts done!.');
 }
 
-function connectProviderOrSigner(contractInstance, providerOrSigner) {
-    providerOrSigner = providerOrSigner || getRpcProvider();
-    return contractInstance.connect(providerOrSigner);
-}
-
 function getOrCreateContract(
     contractInsurance,
     contractKey,
@@ -323,7 +316,7 @@ function getOrCreateContract(
         }
         contract = providerContracts[signerKey][contractKey];
         if (!contract) {
-            const wallet = getWallet(providerKey, signerKey);
+            const wallet = getWalletNonceManager(providerKey, signerKey);
             contract = contractInsurance.connect(wallet);
             providerContracts[signerKey][contractKey] = contract;
         }
@@ -360,11 +353,9 @@ function getOrCreateContracts(
         distContracts = providerContracts[signerKey][contractKey];
         if (!distContracts) {
             distContracts = [];
-            const wallet = getWallet(providerKey, signerKey);
+            const wallet = getWalletNonceManager(providerKey, signerKey);
             for (let i = 0; i < contractsInstance.length; i += 1) {
-                distContracts.push(
-                    connectProviderOrSigner(contractsInstance[i], wallet)
-                );
+                distContracts.push(contractsInstance[i].connect(wallet));
             }
             providerContracts[signerKey][contractKey] = distContracts;
         }
@@ -378,9 +369,7 @@ function getOrCreateContracts(
             distContracts = [];
             const provider = getAlchemyRpcProvider(providerKey);
             for (let i = 0; i < contractsInstance.length; i += 1) {
-                distContracts.push(
-                    connectProviderOrSigner(contractsInstance[i], provider)
-                );
+                distContracts.push(contractsInstance[i].connect(provider));
             }
             contracts[contractKey] = distContracts;
         }
