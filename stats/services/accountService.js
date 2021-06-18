@@ -7,9 +7,9 @@ const {
 } = require('../../contract/allContracts');
 const {
     EVENT_TYPE,
-    getEvents,
     getTransferEvents,
     getApprovalEvents,
+    getDepositWithdrawEvents,
 } = require('../../common/logFilter');
 const {
     getAlchemyRpcProvider,
@@ -30,6 +30,13 @@ const { AppendGTokenMintOrBurnAmountToLog } = require('../common/tool');
 const fromBlock = getConfig('blockchain.start_block');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
+const depositHandlerHistoryConfig =
+    getConfig('deposit_handler_history', false) || {};
+const withdrawHandlerHistoryConfig =
+    getConfig('withdraw_handler_history', false) || {};
+
+const depositHandlerHistory = Object.keys(depositHandlerHistoryConfig);
+const withdrawHandlerHistory = Object.keys(withdrawHandlerHistoryConfig);
 
 const providerKey = 'stats_personal';
 const provider = getAlchemyRpcProvider(providerKey);
@@ -57,12 +64,13 @@ function handleError(error, message, account) {
 }
 
 async function getDepositHistories(account, toBlock) {
-    const logs = await getEvents(
+    const logs = await getDepositWithdrawEvents(
         EVENT_TYPE.deposit,
         fromBlock,
         toBlock,
         account,
-        providerKey
+        providerKey,
+        depositHandlerHistory
     ).catch((error) => {
         handleError(error, `Get deposit logs of ${account} failed.`, account);
     });
@@ -85,12 +93,13 @@ async function getDepositHistories(account, toBlock) {
 }
 
 async function getWithdrawHistories(account, toBlock) {
-    const logs = await getEvents(
+    const logs = await getDepositWithdrawEvents(
         EVENT_TYPE.withdraw,
         fromBlock,
         toBlock,
         account,
-        providerKey
+        providerKey,
+        withdrawHandlerHistory
     ).catch((error) => {
         handleError(
             error,

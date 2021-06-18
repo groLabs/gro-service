@@ -1,4 +1,6 @@
 module.exports = {
+    deposit_handler_history: {},
+    withdraw_handler_history: {},
     blockchain: {
         network: 'kovan',
         start_block: 25082399,

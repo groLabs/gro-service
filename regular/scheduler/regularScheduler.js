@@ -22,7 +22,6 @@ const {
     rebalance,
     harvest,
     curveInvest,
-    updateChainlinkPrice,
 } = require('../handler/actionHandler');
 
 const { getVaults, getStrategyLength } = require('../../contract/allContracts');
@@ -55,9 +54,6 @@ const pnlTriggerSchedulerSetting =
     getConfig('trigger_scheduler.pnl', false) || '30 * * * *';
 const rebalanceTriggerSchedulerSetting =
     getConfig('trigger_scheduler.rebalance', false) || '45 * * * *';
-const botUpdateChainPriceSchedulerSetting =
-    getConfig('trigger_scheduler.bot_chainlink_check', false) ||
-    '00 20 * * * *';
 const longPendingTransactionSetting = getConfig('transaction_long_pending');
 
 const botBalanceWarnVault =
@@ -284,32 +280,6 @@ function harvestTriggerScheduler() {
     });
 }
 
-function updateChainPrice() {
-    const providerKey = 'default';
-    const walletKey = 'standard';
-    schedule.scheduleJob(botUpdateChainPriceSchedulerSetting, async () => {
-        try {
-            const result = await checkPendingTransactions([
-                'chainPrice-0',
-                'chainPrice-1',
-                'chainPrice-2',
-            ]);
-            updatePriceTransactionMessage(result);
-
-            const currectBlockNumber = await getCurrentBlockNumber();
-            if (!currectBlockNumber) return;
-            await syncManagerNonce(providerKey, walletKey);
-            await updateChainlinkPrice(
-                currectBlockNumber,
-                providerKey,
-                walletKey
-            );
-        } catch (error) {
-            sendMessageToAlertChannel(error);
-        }
-    });
-}
-
 function startRegularJobs() {
     checkBotAccountBalance();
     investTriggerScheduler();
@@ -317,7 +287,6 @@ function startRegularJobs() {
     pnlTriggerScheduler();
     rebalanceTriggerScheduler();
     longPendingTransactionsScheduler();
-    updateChainPrice();
 }
 
 module.exports = {

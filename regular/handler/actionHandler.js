@@ -1,27 +1,18 @@
 const {
-    getController,
     getInsurance,
     getPnl,
     getLifeguard,
     getVaults,
     getVaultAndStrategyLabels,
     getCurveVault,
-    getChainPrice,
 } = require('../../contract/allContracts');
 const { addPendingTransaction } = require('../../common/storage');
 const { ContractSendError } = require('../../common/error');
-const {
-    MESSAGE_TYPES,
-    DISCORD_CHANNELS,
-    sendMessage,
-} = require('../../common/discord/discordService');
+const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { investMessage } = require('../../discordMessage/investMessage');
 const { rebalanceMessage } = require('../../discordMessage/rebalanceMessage');
 const { pnlMessage } = require('../../discordMessage/pnlMessage');
 const { harvestMessage } = require('../../discordMessage/harvestMessage');
-const {
-    updateChainlinkPriceMessage,
-} = require('../../discordMessage/otherMessage');
 const { wrapSendTransaction } = require('../../gasPrice/transaction');
 const logger = require('../regularLogger');
 
@@ -217,63 +208,6 @@ async function curveInvest(blockNumber, providerKey, walletKey) {
     });
 }
 
-async function updateChainlinkPrice(blockNumber, providerKey, walletKey) {
-    logger.info(`providerKey: ${providerKey}, walletKey: ${walletKey}`);
-    const stableCoins = await getController(providerKey, walletKey)
-        .stablecoins()
-        .catch((error) => {
-            logger.error(error);
-            throw new ContractSendError(
-                'Get stable coins failed.',
-                MESSAGE_TYPES.chainPrice
-            );
-        });
-    let chainPriceInstance;
-    for (let i = 0; i < stableCoins.length; i += 1) {
-        chainPriceInstance = getChainPrice(providerKey, walletKey);
-        // eslint-disable-next-line no-await-in-loop
-        const needUpdate = await chainPriceInstance.priceUpdateTrigger(
-            stableCoins[i]
-        );
-        logger.info(`needUpdate ${needUpdate}, ${stableCoins[i]}`);
-        if (needUpdate) {
-            // eslint-disable-next-line no-await-in-loop
-            const pricesResponse = await wrapSendTransaction(
-                chainPriceInstance,
-                'getSafePriceFeed',
-                [stableCoins[i]]
-            ).catch((error) => {
-                logger.error(error);
-                throw new ContractSendError(
-                    `GetSafePriceFeed call for stablecoin: ${stableCoins[i]} failed`,
-                    MESSAGE_TYPES.chainPrice
-                );
-            });
-            addPendingTransaction(
-                `chainPrice-${i}`,
-                {
-                    blockNumber,
-                    providerKey,
-                    walletKey,
-                    reSendTimes: 0,
-                    methodName: 'getSafePriceFeed',
-                    label: MESSAGE_TYPES.chainPrice,
-                },
-                pricesResponse
-            );
-            updateChainlinkPriceMessage({
-                stableCoinAddress: stableCoins[i],
-                stableCoinIndex: i,
-            });
-            logger.info(`getSafePriceFeed ${i}, ${stableCoins[i]}}`);
-        } else {
-            sendMessage(DISCORD_CHANNELS.botLogs, {
-                message: `Call priceUpdateTrigger ${needUpdate}, ${stableCoins[i]}`,
-            });
-        }
-    }
-}
-
 async function execActions(blockNumber, triggerResult) {
     // Handle invest
     if (triggerResult[0].needCall) {
@@ -313,5 +247,4 @@ module.exports = {
     execPnl,
     rebalance,
     execActions,
-    updateChainlinkPrice,
 };

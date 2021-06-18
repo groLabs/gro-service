@@ -1,5 +1,31 @@
 [
     {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "pwrd",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "gvt",
+                "type": "address"
+            },
+            {
+                "internalType": "address[3]",
+                "name": "_tokens",
+                "type": "address[3]"
+            },
+            {
+                "internalType": "uint256[3]",
+                "name": "_decimals",
+                "type": "uint256[3]"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
         "anonymous": false,
         "inputs": [
             {
@@ -74,25 +100,6 @@
         "anonymous": false,
         "inputs": [
             {
-                "indexed": true,
-                "internalType": "bool",
-                "name": "pwrd",
-                "type": "bool"
-            },
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "gToken",
-                "type": "address"
-            }
-        ],
-        "name": "LogNewGToken",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
                 "indexed": false,
                 "internalType": "address",
                 "name": "insurance",
@@ -152,19 +159,6 @@
             }
         ],
         "name": "LogNewSafeAddress",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address[]",
-                "name": "tokens",
-                "type": "address[]"
-            }
-        ],
-        "name": "LogNewUnderlyingtokens",
         "type": "event"
     },
     {
@@ -285,6 +279,58 @@
     },
     {
         "inputs": [],
+        "name": "CURVE_RATIO_DECIMALS",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "CURVE_RATIO_DECIMALS_FACTOR",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "DAI",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "DAI_DECIMALS",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "DEFAULT_DECIMALS",
         "outputs": [
             {
@@ -311,6 +357,19 @@
     },
     {
         "inputs": [],
+        "name": "N_COINS",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "PERCENTAGE_DECIMALS",
         "outputs": [
             {
@@ -325,6 +384,58 @@
     {
         "inputs": [],
         "name": "PERCENTAGE_DECIMAL_FACTOR",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "USDC",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "USDC_DECIMALS",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "USDT",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "USDT_DECIMALS",
         "outputs": [
             {
                 "internalType": "uint256",
@@ -443,6 +554,37 @@
         "inputs": [
             {
                 "internalType": "uint256",
+                "name": "bonus",
+                "type": "uint256"
+            }
+        ],
+        "name": "distributeHodlerBonus",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "gain",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "loss",
+                "type": "uint256"
+            }
+        ],
+        "name": "distributeStrategyGainLoss",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
                 "name": "coin",
                 "type": "uint256"
             }
@@ -528,7 +670,7 @@
         "name": "gvt",
         "outputs": [
             {
-                "internalType": "address",
+                "internalType": "contract IToken",
                 "name": "",
                 "type": "address"
             }
@@ -555,11 +697,6 @@
                 "internalType": "uint256",
                 "name": "amount",
                 "type": "uint256"
-            },
-            {
-                "internalType": "bool",
-                "name": "isPwrd",
-                "type": "bool"
             }
         ],
         "name": "isBigFish",
@@ -650,7 +787,7 @@
         "name": "pwrd",
         "outputs": [
             {
-                "internalType": "address",
+                "internalType": "contract IToken",
                 "name": "",
                 "type": "address"
             }
@@ -771,19 +908,6 @@
         "inputs": [
             {
                 "internalType": "address",
-                "name": "token",
-                "type": "address"
-            }
-        ],
-        "name": "setGvtToken",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
                 "name": "_insurance",
                 "type": "address"
             }
@@ -823,37 +947,11 @@
         "inputs": [
             {
                 "internalType": "address",
-                "name": "token",
-                "type": "address"
-            }
-        ],
-        "name": "setPwrdToken",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
                 "name": "_reward",
                 "type": "address"
             }
         ],
         "name": "setReward",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address[]",
-                "name": "tokens",
-                "type": "address[]"
-            }
-        ],
-        "name": "setUnderlyingTokens",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -894,22 +992,9 @@
         "name": "stablecoins",
         "outputs": [
             {
-                "internalType": "address[]",
+                "internalType": "address[3]",
                 "name": "",
-                "type": "address[]"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "stablecoinsCount",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
+                "type": "address[3]"
             }
         ],
         "stateMutability": "view",
@@ -962,25 +1047,6 @@
                 "type": "uint256"
             }
         ],
-        "name": "underlyingTokens",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
         "name": "underlyingVaults",
         "outputs": [
             {
@@ -1000,13 +1066,32 @@
         "type": "function"
     },
     {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "vaultIndexes",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [],
         "name": "vaults",
         "outputs": [
             {
-                "internalType": "address[]",
+                "internalType": "address[3]",
                 "name": "",
-                "type": "address[]"
+                "type": "address[3]"
             }
         ],
         "stateMutability": "view",

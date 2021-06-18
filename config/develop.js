@@ -1,10 +1,28 @@
 module.exports = {
     bot_balance_warn: '200000000000000000000000',
+    deposit_handler_history: {
+        '0x5081a39b8A5f0E35a8D959395a630b68B74Dd30f': {
+            abi: 'old',
+            event_fragment: [
+                'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)',
+            ],
+        },
+        '0x2A590C461Db46bca129E8dBe5C3998A8fF402e76': {},
+    },
+    withdraw_handler_history: {
+        '0x1fA02b2d6A771842690194Cf62D91bdd92BfE28d': {
+            abi: 'old',
+            event_fragment: [
+                'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
+            ],
+        },
+        '0x2F54D1563963fC04770E85AF819c89Dc807f6a06': {},
+    },
     blockchain: {
         network: 'http://localhost:8545',
-        start_block: 12584881,
+        start_block: 12657976,
         alchemy_api_keys: {
-            default: 'http://localhost:8545', // process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
+            default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
             stats_gro: process.env.ALCHEMY_KEY_STATS_GRO,
         },
@@ -41,11 +59,11 @@ module.exports = {
         harvest: '*/1 * * * *',
         pnl: '23 * * * * *',
         rebalance: '33 * * * * *',
-        generate_stats: '10 * * * *',
+        generate_stats: '10 * * *',
         remove_stats_file: '*/2 * * * *',
         bot_curve_check: '*/1 * * * *',
         deposit_withdraw_event: '*/2 * * * *',
-        event_summary: '*/2 * * * *',
+        event_summary: '*/3 * * * *',
         bot_chainlink_check: '25,55 * * * * *',
     },
     emoji: {
@@ -113,7 +131,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x4c5859f0F772848b2D91F1D83E2Fe57935348029',
+        controller: '0x975Ab64F4901Af5f0C96636deA0b9de3419D0c2F',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

@@ -1,4 +1,6 @@
 module.exports = {
+    deposit_handler_history: {},
+    withdraw_handler_history: {},
     blockchain: {
         network: 'mainnet',
         start_block: 12522788,
