@@ -307,6 +307,20 @@ async function initAllContracts() {
     logger.info('Init contracts done!.');
 }
 
+async function initDatabaseContracts() {
+    initController();
+    const promises = [];
+    promises.push(initGvt());
+    promises.push(initPwrd());
+    promises.push(initDepositHandler());
+    promises.push(initWithdrawHandler());
+    await Promise.all(promises).catch((error) => {
+        logger.error(error);
+        throw new ContractCallError('Initilize all used contracts failed');
+    });
+    logger.info('Init contracts done!.');
+}
+
 function getOrCreateContract(
     contractInsurance,
     contractKey,
@@ -509,6 +523,7 @@ function getYearnVaults(providerKey, signerKey) {
 
 module.exports = {
     initAllContracts,
+    initDatabaseContracts,
     getController,
     getInsurance,
     getExposure,
