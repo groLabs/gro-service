@@ -133,8 +133,8 @@ function getNonceManager() {
             }
         );
         botWallet = ethers.Wallet.fromEncryptedJsonSync(data, keystorePassword);
+        botWallet = botWallet.connect(provider);
     }
-    botWallet.connect(provider);
 
     defaultWalletManager = new NonceManager(botWallet);
     botWallets.default = { default: defaultWalletManager };
