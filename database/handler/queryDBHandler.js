@@ -12,10 +12,46 @@ const dbConnection = {
 }
 
 const pool = new pg.Pool(dbConnection);
+const QUERY_ERROR = 400;
+
+const query = async (file, params) => {
+    let option;
+    switch (file.slice(0, 1)) {
+        case 'i':
+            option = 'insert';
+            break;
+        case 's':
+            option = 'select';
+            break;
+        case 't':
+            option = 'truncate';
+            break;
+        case 'd':
+            option = 'delete';
+            break;
+        default: return;
+    }
+
+    const q = fs.readFileSync(path.join(__dirname, `/../queries/${option}/${file}`), 'utf8');
+// console.log('q: ', q);
+// console.log('option: ', option);
+// console.log('params: ', params);
+    const result = (file === 'insert_tmp_user_deposits.sql' || file === 'insert_tmp_user_withdrawals.sql') 
+        ? await batchQuery(q, option, params)
+        : await singleQuery(q, option, params)
+
+    if (result === QUERY_ERROR) {
+        console.log('errorin');
+        return;
+    } else {
+        //console.log(result);
+        return result;
+    }
+}
 
 
 // Use of 'pool.connect' to be able to rollback same pool of transactions in case of failure
-const query = async (q, op, args) => {
+const singleQuery = async (q, op, args) => {
     try {
         const client = await pool.connect();
         try {
@@ -39,7 +75,7 @@ const batchQuery = async (q, op, args) => {
         const client = await pool.connect();
         try {
             let rows = 0
-            for (let i=0; i<args.length; i++) {
+            for (let i = 0; i < args.length; i++) {
                 const result = await client.query(q, args[i]);
                 rows += result.rowCount;
             }
@@ -61,6 +97,5 @@ const batchQuery = async (q, op, args) => {
 // TODO: create query for bulk operations reusing the client?
 
 module.exports = {
-    query,
-    batchQuery,
+    query
 };

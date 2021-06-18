@@ -68,15 +68,13 @@ function withdrawEventMessage(content) {
                 log.returnUsd,
                 18,
                 2
-            )} ${toAccount}** (${formatNumber(
-                log.tokens[0],
-                18,
-                2
-            )} DAI ${formatNumber(log.tokens[1], 6, 2)} USDC ${formatNumber(
-                log.tokens[2],
+            )} ${toAccount}** (${formatNumber(log.gtokenAmount, 18, 2)} ${
+                log.gtoken
+            } -> ${formatNumber(log.tokens[0], 18, 2)} DAI ${formatNumber(
+                log.tokens[1],
                 6,
                 2
-            )} USDT -> ${formatNumber(log.gtokenAmount, 18, 2)} ${log.gtoken})`,
+            )} USDC ${formatNumber(log.tokens[2], 6, 2)} USDT)`,
             urls: [
                 {
                     label: account,

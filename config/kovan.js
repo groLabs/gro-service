@@ -108,7 +108,7 @@ module.exports = {
         'Harvest',
         'Cream',
     ],
-    strategy_default_apy: [132800, 99000, 90000, 65000, 0, 0, 200000],
+    strategy_default_apy: [132800, 99000, 90000, 65000, 90000, 90278, 200000],
     curve_strategy_name: ['XPool'],
     harvest_strategy_dependency: [
         '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
