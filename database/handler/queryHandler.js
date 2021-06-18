@@ -3,6 +3,11 @@ const pg = require('pg');
 const fs = require('fs');
 const path = require('path');
 
+const { DatabaseCallError } = require('../../common/error');
+const botEnv = process.env.BOT_ENV.toLowerCase();
+// eslint-disable-next-line import/no-dynamic-require
+const logger = require(`../../${botEnv}/${botEnv}Logger`);
+
 const dbConnection = {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
@@ -29,72 +34,69 @@ const query = async (file, params) => {
         case 'd':
             option = 'delete';
             break;
+        case 'u':
+            option = 'update';
+            break;
         default: return;
     }
 
     const q = fs.readFileSync(path.join(__dirname, `/../queries/${option}/${file}`), 'utf8');
-// console.log('q: ', q);
-// console.log('option: ', option);
-// console.log('params: ', params);
+
     const result = (file === 'insert_tmp_user_deposits.sql' || file === 'insert_tmp_user_withdrawals.sql') 
-        ? await batchQuery(q, option, params)
-        : await singleQuery(q, option, params)
+        ? await batchQuery(q, file, option, params)
+        : await singleQuery(q, file, option, params);
 
     if (result === QUERY_ERROR) {
-        console.log('errorin');
-        return;
+        return 400;
     } else {
-        //console.log(result);
         return result;
     }
 }
 
-
-// Use of 'pool.connect' to be able to rollback same pool of transactions in case of failure
-const singleQuery = async (q, op, args) => {
+const singleQuery = async (q, file, op, params) => {
     try {
+        //TODO: test when DB is down
         const client = await pool.connect();
         try {
-            const result = await client.query(q, args);
+            const result = await client.query(q, params);
             if ((op === 'insert') || (op == 'update') || (op == 'delete')) { await client.query('COMMIT') }
             return result;
         } catch (err) {
             if ((op === 'insert') || (op == 'update') || (op == 'delete')) { await client.query('ROLLBACK') }
-            console.log('Error at queries.js -> query(): ', err, q);
+            logger.error(`**DB: queryHandler.js->singleQuery() \n Message: ${err} \n Query: ${file} \n Params: ${params}`);
             return 400;
         } finally {
             client.release();
         }
     } catch (err) {
-        console.log('Error at dbHandler.js -> query() with pool.connect(): ', err);
+        logger.error(`**DB: queryHandler.js->singleQuery() \n Message: ${err}`);
+        return 400;
     }
 };
 
-const batchQuery = async (q, op, args) => {
+const batchQuery = async (q, file, op, params) => {
     try {
         const client = await pool.connect();
         try {
             let rows = 0
-            for (let i = 0; i < args.length; i++) {
-                const result = await client.query(q, args[i]);
+            for (let i = 0; i < params.length; i++) {
+                const result = await client.query(q, params[i]);
                 rows += result.rowCount;
             }
             if ((op === 'insert') || (op == 'update')) { await client.query('COMMIT') }
             return rows;
         } catch (err) {
             if ((op === 'insert') || (op == 'update')) { await client.query('ROLLBACK') }
-            console.log('Error at queries.js -> query(): ', err, q);
+            logger.error(`**DB: queryHandler.js->batchQuery() \n Message: ${err} \n Query: ${file} \n Params: ${params}`);
             return 400;
         } finally {
             client.release();
         }
     } catch (err) {
-        console.log('Error at dbHandler.js -> query() with pool.connect(): ', err);
+        console.log('**DB: queryHandler.js->batchQuery() \n Message: ', err);
+        return 400;
     }
 };
-
-
-// TODO: create query for bulk operations reusing the client?
 
 module.exports = {
     query

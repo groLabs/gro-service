@@ -1,4 +1,4 @@
-const { loadGroStatsDB } = require('./handler/statsDBHandler');
+const { loadGroStatsDB } = require('./handler/personalHandler');
 
 loadGroStatsDB();
 

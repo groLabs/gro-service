@@ -1,8 +1,8 @@
 const ethers = require('ethers');
-const { query } = require('./queryDBHandler');
+const { query } = require('./queryHandler');
 const BN = require('bignumber.js');
 const {
-    initAllContracts,
+    initDatabaseContracts,
     getGvt,
     getPwrd
 } = require('../../contract/allContracts');
@@ -16,24 +16,24 @@ const {
     getDefaultProvider,
     getAlchemyRpcProvider
 } = require('../../common/chainUtil');
+const botEnv = process.env.BOT_ENV.toLowerCase();
+// eslint-disable-next-line import/no-dynamic-require
+const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
 const BlocksScanner = require('../../stats/common/blockscanner');
 
-
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 
-/*
-TODO: 
-1) create multiple DBHandlers.js to avoid a single file with too much code. E.g.:
-    - statsDBHandlerUser.js
-    - statsDBHandlerSystem.js
-    - statsDBHandlerGovernance.js
-2) function to launch queries including 'const q = fs.readFileSync(path.join(..)' and 'const result = await q='
-*/
-
+// TODO: replace hardcoded strings by CONSTANTS
+// TODO: parse float function
+// TODO: all CONSTANTS in one file: /common/constants.js
+const QUERY_ERROR = 400;
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
+const ERC20_TRANSFER_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const Transfer = Object.freeze({ "DEPOSIT": 1, "WITHDRAWAL": 2 });
 
 
 const parseAmount = (amount, coin) => {
@@ -44,31 +44,36 @@ const parseAmount = (amount, coin) => {
     ));
 }
 
-// TODO: to be included in /commmon
+// TODO start: to be included in /commmon/chainUtil.js
 const getNetworkId = () => {
     try {
         switch (process.env.NODE_ENV) {
             case 'mainnet': return 1;
             case 'kovan': return 42;
-            case 'develop': return 42;
+            //case 'develop': return TBC;
         }
     } catch (err) {
-        console.log(err);
+        logger.error(err);
     }
 }
+// TODO end
 
 const getBlockData = async (blockNumber) => {
     const block = await getDefaultProvider()
         .getBlock(blockNumber)
-        .catch((error) => {
-            console.log(error);
+        .catch((err) => {
+            logger.error(err);
         });
     return block;
 }
 
+const handleErr = async (func, err) => {
+    logger.error(`**DB: ${func} \n Message: ${err}`);
+}
+
 const loadEthBlocks = async (blocks) => {
     try {
-        console.log(`*** DB: Processing ${blocks.length} blocks...`);
+        logger.info(`**DB: Processing ${blocks.length} blocks...`);
         for (const item of blocks) {
             const block = await getBlockData(item.block_number);
             const params = [
@@ -77,16 +82,19 @@ const loadEthBlocks = async (blocks) => {
                 moment.unix(block.timestamp),
                 getNetworkId(),
                 moment.utc()];
-            await query('insert_eth_blocks.sql', params);
+            const result = await query('insert_eth_blocks.sql', params);
+            if (result === QUERY_ERROR)
+                return false;
         }
-        console.log(`*** DB: ${blocks.length} block/s added into ETH_BLOCKS`);
+        logger.info(`**DB: ${blocks.length} block/s added into ETH_BLOCKS`);
+        return true;
     } catch (err) {
-        console.log(err);
+        handleErr('personalHandler->loadEthBlocks()', err);
     }
 }
 
-// TODO: to be moved to /common. 
-// Files currently using findBlockByDate: statsDBHandler.js, apyHandler.js and currentApyHandler.js
+// TODO start: to be moved to /common. 
+// Files currently using findBlockByDate(): statsDBHandler.js, apyHandler.js and currentApyHandler.js
 let scanner;
 function updateBlocksScanner(newProvider) {
     scanner = new BlocksScanner(newProvider);
@@ -95,8 +103,8 @@ async function findBlockByDate(scanDate) {
     try {
         const blockFound = await scanner
             .getDate(scanDate.toDate())
-            .catch((error) => {
-                logger.error(error);
+            .catch((err) => {
+                logger.error(err);
                 logger.error(`Could not get block ${scanDate}`);
             });
         return blockFound;
@@ -104,6 +112,7 @@ async function findBlockByDate(scanDate) {
         console.log(err);
     }
 }
+// TODO end: to be moved to /common. 
 
 const updateLastTableLoad = async (table, last_block, last_date) => {
     try {
@@ -113,26 +122,17 @@ const updateLastTableLoad = async (table, last_block, last_date) => {
             last_date,
             getNetworkId(),
             moment.utc()];
-        //TODO: check result?
-        await query('update_sys_table_loads.sql', params);
+        const result = await query('update_sys_table_loads.sql', params);
+        return (result !== 400) ? true : false;
     } catch (err) {
-        console.log(err);
+        handleErr(`personalHandler->updateLastTableLoad() [table: ${table}, last_block: ${last_block}, last_date: ${last_date}]`, err);
+        return false;
     }
 }
 
-
-// TODO: replace hardcoded strings by CONSTANTS
-// TODO: parse float function
-// TODO: all interfaces in one file
-// TODO: what if any fields from events are missing?
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
-const ERC20_TRANSFER_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-const Transfer = Object.freeze({ "DEPOSIT": 1, "WITHDRAWAL": 2 });
-
-
 const getGTokenFromTx = async (result, transfer) => {
     try {
-        console.log(`*** DB: Processing ${result.length} ${(transfer === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'} transaction/s...`);
+        logger.info(`**DB: Processing ${result.length} ${(transfer === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'} transaction/s...`);
         // Interface for ERC20 token transfer
         const iface = new ethers.utils.Interface([
             "event Transfer(address indexed from, address indexed to, uint256 amount)",
@@ -166,12 +166,13 @@ const getGTokenFromTx = async (result, transfer) => {
                 }
             };
         };
-        console.log(`*** DB: ${result.length} transaction/s processed.`);
+        logger.info(`**DB: ${result.length} transaction/s processed.`);
         return result;
     } catch (err) {
-        console.log(err);
+        handleErr(`personalHandler->getGTokenFromTx() [transfer: ${transfer}]`, err);
     }
 };
+
 const parseDataFromEvent = async (logs, side) => {
     try {
         let result = [];
@@ -214,7 +215,7 @@ const parseDataFromEvent = async (logs, side) => {
         });
         return result;
     } catch (err) {
-        console.log(err);
+        handleErr(`personalHandler->parseDataFromEvent() [side: ${side}]`, err);
     }
 }
 
@@ -241,8 +242,8 @@ const loadTmpUserTransfers = async (
             fromBlock,
             toBlock,
             account,
-        ).catch((error) => {
-            console.log(error);
+        ).catch((err) => {
+            logger.error(err);
         });
 
         let finalResult = [];
@@ -263,22 +264,25 @@ const loadTmpUserTransfers = async (
                 params.push(Object.values(item));
             const rows = await query((side === Transfer.DEPOSIT) ? 'insert_tmp_user_deposits.sql' : 'insert_tmp_user_withdrawals.sql', params);
 
-            console.log(`*** DB: ${rows} record/s added into ${(side === Transfer.DEPOSIT) ? 'TMP_USER_DEPOSITS' : 'TMP_USER_WITHDRAWALS'}`);
+            logger.info(`**DB: ${rows} record/s added into ${(side === Transfer.DEPOSIT) ? 'TMP_USER_DEPOSITS' : 'TMP_USER_WITHDRAWALS'}`);
         } else {
-            console.log(`*** DB: No moar ${(side === Transfer.DEPOSIT) ? 'deposits' : 'withdrawals'} to be processed.`);
+            logger.info(`**DB: No moar ${(side === Transfer.DEPOSIT) ? 'deposits' : 'withdrawals'} to be processed.`);
             return;
         }
 
         // Store latest block processed into table SYS_TABLE_LOADS
         const lastBlock = finalResult[finalResult.length - 1].block_number;
-        await updateLastTableLoad(
+        const result = await updateLastTableLoad(
             (side === Transfer.DEPOSIT) ? 'TMP_USER_DEPOSITS' : 'TMP_USER_WITHDRAWALS',
             lastBlock,
             moment.unix((await getBlockData(lastBlock)).timestamp),
         );
 
+        return (result) ? true : false;
+
     } catch (err) {
-        console.log(err);
+        handleErr(`personalHandler->loadTmpUserTransfers() [blocks from: ${fromBlock} to ${toBlock}, side: ${side}, account: ${account}]`, err);
+        return false;
     }
 }
 
@@ -289,31 +293,38 @@ const loadTmpUserTransfers = async (
 const loadUserTransfers = async () => {
     try {
         // Get block numbers to be processed from temporary tables on deposits & withdrawals
-        const blocks = await query('select_distinct_blocks_transfers.sql', []);
+        const result = await query('select_distinct_blocks_transfers.sql', []);
+        if (result === QUERY_ERROR) return false;
 
-        if (blocks.rows.length > 0) {
+        if (result.rows.length > 0) {
             // Add block numbers into ETH_BLOCKS (incl. block timestamp)
-            await loadEthBlocks(blocks.rows);
+            if (await loadEthBlocks(result.rows)) {
 
-            // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
-            const rows = await query('insert_user_transfers.sql', []);
-            console.log(`*** DB: ${rows.rowCount} records added into USER_TRANSFERS`);
+                // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
+                const res = await query('insert_user_transfers.sql', []);
+                if (res === QUERY_ERROR) return false;
+                logger.info(`**DB: ${res.rowCount} records added into USER_TRANSFERS`);
 
-            // Store latest block processed into table SYS_TABLE_LOADS
-            const result = await query('select_max_block_transfers.sql', []);
-            const lastBlock = result.rows[0].max_block_number;
-            if (result.rows) {
-                await updateLastTableLoad(
-                    'USER_TRANSFERS',
-                    lastBlock,
-                    moment.unix((await getBlockData(lastBlock)).timestamp),
-                );
+                // Store latest block processed into table SYS_TABLE_LOADS
+                const result = await query('select_max_block_transfers.sql', []);
+                if (res === QUERY_ERROR) return false;
+                const lastBlock = result.rows[0].max_block_number;
+                if (result.rows) {
+                    const result = await updateLastTableLoad(
+                        'USER_TRANSFERS',
+                        lastBlock,
+                        moment.unix((await getBlockData(lastBlock)).timestamp),
+                    );
+                    if (!result) return false;
+                }
+            } else {
+                return false;
             }
         } else {
-            console.log('*** DB: No moar user transfers to be loaded (TMP_USER_DEPOSIT and TMP_USER_WITHDRAWALS empty?)');
+            logger.info('**DB: No moar user transfers to be loaded (TMP_USER_DEPOSIT and TMP_USER_WITHDRAWALS empty?)');
         }
     } catch (err) {
-        console.log(err);
+        handleErr('personalHandler->loadUserTransfers()', err);
     }
 }
 
@@ -325,7 +336,7 @@ const generateDateRange = (_fromDate, _toDate) => {
     try {
         // Check format date
         if (_fromDate.length !== 10 || _toDate.length !== 10) {
-            console.log('*** DB: Date format is incorrect: should be "DD/MM/YYYY');
+            logger.info('**DB: Date format is incorrect: should be "DD/MM/YYYY');
             return;
         }
 
@@ -343,7 +354,7 @@ const generateDateRange = (_fromDate, _toDate) => {
         }
         return dates;
     } catch (err) {
-        console.log(err);
+        handleErr(`personalHandler->generateDateRange() [from: ${_fromDate}, to: ${_toDate}]`, err);
     }
 }
 
@@ -354,8 +365,6 @@ const loadUserBalances = async (
     account = null
 ) => {
     try {
-        const dates = generateDateRange(fromDate, toDate);
-
         // Get users with any transfer
         const rows = (account)
             ? {
@@ -364,12 +373,11 @@ const loadUserBalances = async (
             }
             : await query('select_distinct_users_transfers.sql', []);
 
+        // For each date and for each user, check gvt & pwrd balance and insert data into USER_BALANCES
+        const dates = generateDateRange(fromDate, toDate);
         for (const date of dates) {
-
-            // For each user, check gvt & pwrd balance and insert data into USER_BALANCES
             if (rows.rowCount > 0) {
-                console.log(`*** DB: Processing ${rows.rowCount} user balance/s...`);
-
+                logger.info(`**DB: Processing ${rows.rowCount} user balance/s...`);
                 const day = moment.utc(date, "DD/MM/YYYY")
                     .add(23, 'hours')
                     .add(59, 'seconds')
@@ -377,7 +385,6 @@ const loadUserBalances = async (
                 const blockTag = {
                     blockTag: (await findBlockByDate(day)).block
                 }
-
                 let rowCount = 0;
                 for (const item of rows.rows) {
                     const account = item.user_address;
@@ -396,28 +403,27 @@ const loadUserBalances = async (
                     const result = await query('insert_user_balances.sql', params);
                     rowCount += result.rowCount;
                 }
-                console.log(`*** DB: ${rowCount} record/s added into USER_BALANCES for date ${day}`);
-
+                logger.info(`**DB: ${rowCount} record/s added into USER_BALANCES for date ${moment(date).format('DD/MM/YYYY')}`);
                 await updateLastTableLoad(
                     'USER_BALANCES',
                     null,
                     date
                 );
+                return true;
             } else {
-                console.log('*** DB: No users with transfers found - No balance calculation needed.')
+                logger.info('**DB: No users with transfers found - No balance calculation needed.');
+                return false;
             }
         }
     } catch (err) {
-        console.log(err);
+        handleErr(`personalHandler->loadUserBalances() [from: ${fromDate}, to: ${toDate}, account: ${account}]`, err);
     }
 }
 
-/// @notice Load net results into USER_NET_RESULTS
+/// @notice Loads net results into USER_NET_RESULTS
 ///         Data sourced from USER_DEPOSITS & USER_TRANSACTIONS (full load w/o filters)
 /// @param fromDate Start date to load net results
 /// @param toDdate End date to load net results
-// TODO: *****   account as parameter
-// TODO: *****   copy query 'insert_user_net_returns.sql' and add condition 'AND user_address = X'
 const loadUserNetResults = async (
     fromDate,
     toDate,
@@ -425,18 +431,23 @@ const loadUserNetResults = async (
     try {
         const dates = generateDateRange(fromDate, toDate);
         let rowCount = 0;
-        console.log(`*** DB: Processing user net result/s...`);
+        logger.info(`**DB: Processing user net result/s...`);
         for (const date of dates) {
+            const day = moment(date).format('DD/MM/YYYY');
             const q = (account) ? 'insert_user_net_returns_by_address.sql' : 'insert_user_net_returns.sql';
-            const params = (account) ? [moment(date).format('DD/MM/YYYY'), account] : [moment(date).format('DD/MM/YYYY')];
+            const params = (account) ? [day, account] : [day];
             rowCount = (await query(q, params)).rowCount;
-            console.log(`*** DB: ${rowCount} record/s added into USER_NET_RESULTS for date ${date}`);
+            logger.info(`**DB: ${rowCount} record/s added into USER_NET_RESULTS for date ${day}`);
         }
     } catch (err) {
-        console.log(err);
+        handleErr(`personalHandler->loadUserNetResults() [from: ${fromDate}, to: ${toDate}, account: ${account}]`, err);
     }
 }
 
+/// @notice Calculates blocks and dates to be processed
+/// @param fromDate Start date to process data
+/// @param toDdate End date to process data
+/// @return Array with start block, end block and list of dates to be processed
 const preload = async (_fromDate, _toDate) => {
     try {
         // Calculate dates & blocks to process
@@ -452,65 +463,103 @@ const preload = async (_fromDate, _toDate) => {
         const toBlock = (await findBlockByDate(toDate)).block;
         return [fromBlock, toBlock, dates];
     } catch (err) {
-        console.log(err);
+        handleErr(`personalHandler->preload() [from: ${_fromDate}, to: ${_toDate}]`, err);
     }
 }
 
 /// @notice Reloads user transfers, balances & net results for a given time interval
 /// @dev    Previous data for the given time interval will be overwritten
+/// @dev    It is strongly recommended to reload data until D-1
 /// @param fromDate Start date to reload data
 /// @param toDdate End date to reload data
 const reload = async (
     _fromDate,
     _toDate,
-    account = null) => {
+    account = null
+) => {
     try {
         // Calculate dates & blocks to be processed
         const [fromBlock, toBlock, dates] = await preload(_fromDate, _toDate);
 
         // Execute transfers calculations in temporary tables
-        await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, account);
-        await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account);
+        if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, account))
+            if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account)) {
+                // Delete previous blocks from ETH_BLOCKS
+                // const previousBlocks = (await query('select_distinct_blocks_transfers.sql', [])).rows;
+                let previousBlocks;
+                const result = await query('select_distinct_blocks_transfers.sql', []);
+                if (result === QUERY_ERROR) { 
+                    return;
+                } else {
+                    previousBlocks = result.rows;
+                }
 
-        // Delete previous blocks from ETH_BLOCKS
-        const previousBlocks = (await query('select_distinct_blocks_transfers.sql', [])).rows;
+                let rowCount = 0;
+                for (const block of previousBlocks) {
+                    // TODO: how to delete in a single call with list of block numbers
+                    // rowCount += (await query('delete_eth_blocks.sql', [block.block_number])).rowCount;
+                    const result = await query('delete_eth_blocks.sql', [block.block_number]);
+                    if (result === QUERY_ERROR) {
+                        return;
+                    } else {
+                        rowCount += result.rowCount;
+                    }
+                }
+                logger.info(`**DB: ${rowCount} record/s deleted from ETH_BLOCKS`);
 
-        let rowCount = 0;
-        for (const block of previousBlocks) {
-            // TODO: how to delete in a single call with list of block numbers
-            rowCount += (await query('delete_eth_blocks.sql', [block.block_number])).rowCount;
-        }
-        console.log(`*** DB: ${rowCount} record/s deleted from ETH_BLOCKS`);
+                // Delete previous transfers, balances & net results
+                let rowCountTramsfers = 0;
+                let rowCountBalances = 0;
+                let rowCountNetReturns = 0;
+                for (const day of dates) {
+                    const params = (account)
+                        ? [moment(day).format('DD/MM/YYYY'), account]
+                        : [moment(day).format('DD/MM/YYYY')];
+                    // Delete previous transfers from USER_TRANSFERS
+                    // rowCountTramsfers += (await query((account) ? 'delete_user_transfers_by_address.sql' : 'delete_user_transfers.sql', params)).rowCount;
+                    const resTransfers = await query((account) ? 'delete_user_transfers_by_address.sql' : 'delete_user_transfers.sql', params);
+                    if (resTransfers === QUERY_ERROR) {
+                        return;
+                    } else {
+                        rowCountTramsfers += resTransfers.rowCount;
+                    }
+                    // Delete previous balances from USER_BALANCES
+                    // rowCountBalances += (await query((account) ? 'delete_user_balances_by_address.sql' : 'delete_user_balances.sql', params)).rowCount;
+                    const resBalances = await query((account) ? 'delete_user_balances_by_address.sql' : 'delete_user_balances.sql', params);
+                    if (resBalances === QUERY_ERROR) {
+                        return;
+                    } else {
+                        rowCountBalances += resBalances.rowCount;
+                    }
+                    // Delete previous net results from USER_NET_RESULTS
+                    // rowCountNetReturns += (await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params)).rowCount;
+                    const resReturns = await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params);
+                    if (resReturns === QUERY_ERROR) {
+                        return;
+                    } else {
+                        rowCountNetReturns += resReturns.rowCount;
+                    }
+                }
+                logger.info(`**DB: ${rowCountTramsfers} record/s deleted from USER_TRANSFERS`);
+                logger.info(`**DB: ${rowCountBalances} record/s deleted from USER_BALANCES`);
+                logger.info(`**DB: ${rowCountNetReturns} record/s deleted from USER_NET_RESULTS`);
 
-        // Delete previous transfers, balances & net results
-        let rowCountTramsfers = 0;
-        let rowCountBalances = 0;
-        let rowCountNetReturns = 0;
-        for (const day of dates) {
-            const params = (account)
-                ? [moment(day).format('DD/MM/YYYY'), account]
-                : [moment(day).format('DD/MM/YYYY')];
-            // Delete previous transfers from USER_TRANSFERS
-            rowCountTramsfers += (await query((account) ? 'delete_user_transfers_by_address.sql' : 'delete_user_transfers.sql', params)).rowCount;
-            // Delete previous balances from USER_BALANCES
-            rowCountBalances += (await query((account) ? 'delete_user_balances_by_address.sql' : 'delete_user_balances.sql', params)).rowCount;
-            // Delete previous net results from USER_NET_RESULTS
-            rowCountNetReturns += (await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params)).rowCount;
-        }
-        console.log(`*** DB: ${rowCountTramsfers} record/s deleted from USER_TRANSFERS`);
-        console.log(`*** DB: ${rowCountBalances} record/s deleted from USER_BALANCES`);
-        console.log(`*** DB: ${rowCountNetReturns} record/s deleted from USER_NET_RESULTS`);
-
-        // Execute deposits, balances & net results calculations
-        await loadUserTransfers();
-        await loadUserBalances(_fromDate, _toDate, account);
-        await loadUserNetResults(_fromDate, _toDate, account);
-
+                // Execute deposits, balances & net results calculations
+                if (await loadUserTransfers())
+                    if (await loadUserBalances(_fromDate, _toDate, account))
+                        await loadUserNetResults(_fromDate, _toDate, account);
+            }
     } catch (err) {
-        console.log(err);
+        handleErr(`personalHandler->reload() [from: ${_fromDate}, to: ${_toDate}, account: ${account}]`, err);
     }
 }
 
+/// @notice Loads user transfers, balances & net results for a given time interval
+/// @dev    - If previous data was loaded for the same interval, there will be errors
+///         referring to duplicated primary key
+///         - If any data load fails, execution is stopped (to avoid data inconsistency)
+/// @param fromDate Start date to reload data
+/// @param toDdate End date to reload data
 const load = async (
     fromDate,
     toDate,
@@ -520,39 +569,30 @@ const load = async (
     const [fromBlock, toBlock] = await preload(fromDate, toDate);
 
     // Execute deposits, balances & net results calculations
-    await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, account);
-    await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account);
-    await loadUserTransfers();
-    await loadUserBalances(fromDate, toDate, account);
-    await loadUserNetResults(fromDate, toDate, account);
+    if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, account))
+        if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account))
+            if (await loadUserTransfers())
+                if (await loadUserBalances(fromDate, toDate, account))
+                    await loadUserNetResults(fromDate, toDate, account);
 }
 
 const loadGroStatsDB = async () => {
     try {
         const provider = getAlchemyRpcProvider('stats_gro');
         scanner = new BlocksScanner(provider);
-
-        initAllContracts().then(async () => {
-
+        initDatabaseContracts().then(async () => {
             // TODO: ******* PROVAR una adreça que no existeixi
             //await load('04/06/2021', '04/06/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072')
             //await reload("04/06/2021", "04/06/2021", '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
+            //await load("04/06/2021", "04/06/2021", null);
             await reload("04/06/2021", "04/06/2021", null);
-
-            process.exit();
+            process.exit(); // for testing purposes
         });
-
-
     } catch (err) {
-        console.log(err);
+        handleErr(`personalHandler->loadGroStatsDB()`, err);
     }
 }
 
-// TODO: subscribe to DepositHandler and WithdrawHandler from the latest block processed. From there,
-// keep updating any new deposit or withdraw at address level.
-
-
 module.exports = {
-    //generateGroStatsFile,
     loadGroStatsDB,
 };
