@@ -123,7 +123,7 @@ const updateLastTableLoad = async (table, last_block, last_date) => {
             getNetworkId(),
             moment.utc()];
         const result = await query('update_sys_table_loads.sql', params);
-        return (result !== 400) ? true : false;
+        return (result !== QUERY_ERROR) ? true : false;
     } catch (err) {
         handleErr(`personalHandler->updateLastTableLoad() [table: ${table}, last_block: ${last_block}, last_date: ${last_date}]`, err);
         return false;
@@ -219,12 +219,13 @@ const parseDataFromEvent = async (logs, side) => {
     }
 }
 
-/// @notice Load deposits/withdrawals from all user accounts into temporary tables
-///         Gtoken amount is retrieved from related transaction
-///         Rest of data is retrieved from related event (LogNewDeposit or LogNewWithdrawal)
-/// @dev    Truncates the temporary tables before the load
+/// @notice - Loads deposits/withdrawals from all user accounts into temporary tables
+///         - Gtoken amount is retrieved from related transaction
+///         - Rest of data is retrieved from related event (LogNewDeposit or LogNewWithdrawal)
+/// @dev    - Truncates always temporary tables beforehand even if no data to be processed, 
+///           otherwise, old data would be loaded if no new deposits/withdrawals
 /// @param fromBlock Starting block to search for events
-/// @param toBlock Ending block to search for events (normally latestBlock)
+/// @param toBlock Ending block to search for events
 /// @param side Load deposits ('Transfer.Deposit') or withdrawals ('Transfer.Withdraw')
 /// @param account User account to be processed - if null, all accounts to be processed
 const loadTmpUserTransfers = async (
@@ -246,6 +247,10 @@ const loadTmpUserTransfers = async (
             logger.error(err);
         });
 
+        // Truncate table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
+        const res = await query((side === Transfer.DEPOSIT) ? 'truncate_tmp_user_deposits.sql' : 'truncate_tmp_user_withdrawals.sql', []);
+        if (res === QUERY_ERROR) return false;
+
         let finalResult = [];
         if (logs.length > 0) {
             // Parse relevant data from each event
@@ -254,9 +259,6 @@ const loadTmpUserTransfers = async (
             // Get Gtoken amount from each transaction linked to the previous events 
             // and update gvt_amount & pwrd_amount
             finalResult = await getGTokenFromTx(preResult, side);
-
-            // Truncate table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
-            await query((side === Transfer.DEPOSIT) ? 'truncate_tmp_user_deposits.sql' : 'truncate_tmp_user_withdrawals.sql', []);
 
             // Store data into table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
             let params = [];
@@ -267,7 +269,7 @@ const loadTmpUserTransfers = async (
             logger.info(`**DB: ${rows} record/s added into ${(side === Transfer.DEPOSIT) ? 'TMP_USER_DEPOSITS' : 'TMP_USER_WITHDRAWALS'}`);
         } else {
             logger.info(`**DB: No moar ${(side === Transfer.DEPOSIT) ? 'deposits' : 'withdrawals'} to be processed.`);
-            return;
+            return true;
         }
 
         // Store latest block processed into table SYS_TABLE_LOADS
@@ -307,7 +309,7 @@ const loadUserTransfers = async () => {
 
                 // Store latest block processed into table SYS_TABLE_LOADS
                 const result = await query('select_max_block_transfers.sql', []);
-                if (res === QUERY_ERROR) return false;
+                if (result === QUERY_ERROR) return false;
                 const lastBlock = result.rows[0].max_block_number;
                 if (result.rows) {
                     const result = await updateLastTableLoad(
@@ -315,7 +317,7 @@ const loadUserTransfers = async () => {
                         lastBlock,
                         moment.unix((await getBlockData(lastBlock)).timestamp),
                     );
-                    if (!result) return false;
+                    return (result) ? true : false;
                 }
             } else {
                 return false;
@@ -484,31 +486,27 @@ const reload = async (
         // Execute transfers calculations in temporary tables
         if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, account))
             if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account)) {
+
                 // Delete previous blocks from ETH_BLOCKS
-                // const previousBlocks = (await query('select_distinct_blocks_transfers.sql', [])).rows;
-                let previousBlocks;
+                // TODO: delete in a single query?
+                let rowCount = 0;
                 const result = await query('select_distinct_blocks_transfers.sql', []);
-                if (result === QUERY_ERROR) { 
+                if (result === QUERY_ERROR) {
                     return;
                 } else {
-                    previousBlocks = result.rows;
-                }
-
-                let rowCount = 0;
-                for (const block of previousBlocks) {
-                    // TODO: how to delete in a single call with list of block numbers
-                    // rowCount += (await query('delete_eth_blocks.sql', [block.block_number])).rowCount;
-                    const result = await query('delete_eth_blocks.sql', [block.block_number]);
-                    if (result === QUERY_ERROR) {
-                        return;
-                    } else {
-                        rowCount += result.rowCount;
+                    for (const block of result.rows) {
+                        const result = await query('delete_eth_blocks.sql', [block.block_number]);
+                        if (result === QUERY_ERROR) {
+                            return;
+                        } else {
+                            rowCount += result.rowCount;
+                        }
                     }
                 }
                 logger.info(`**DB: ${rowCount} record/s deleted from ETH_BLOCKS`);
 
                 // Delete previous transfers, balances & net results
-                let rowCountTramsfers = 0;
+                let rowCountTransfers = 0;
                 let rowCountBalances = 0;
                 let rowCountNetReturns = 0;
                 for (const day of dates) {
@@ -521,7 +519,7 @@ const reload = async (
                     if (resTransfers === QUERY_ERROR) {
                         return;
                     } else {
-                        rowCountTramsfers += resTransfers.rowCount;
+                        rowCountTransfers += resTransfers.rowCount;
                     }
                     // Delete previous balances from USER_BALANCES
                     // rowCountBalances += (await query((account) ? 'delete_user_balances_by_address.sql' : 'delete_user_balances.sql', params)).rowCount;
@@ -540,7 +538,7 @@ const reload = async (
                         rowCountNetReturns += resReturns.rowCount;
                     }
                 }
-                logger.info(`**DB: ${rowCountTramsfers} record/s deleted from USER_TRANSFERS`);
+                logger.info(`**DB: ${rowCountTransfers} record/s deleted from USER_TRANSFERS`);
                 logger.info(`**DB: ${rowCountBalances} record/s deleted from USER_BALANCES`);
                 logger.info(`**DB: ${rowCountNetReturns} record/s deleted from USER_NET_RESULTS`);
 
