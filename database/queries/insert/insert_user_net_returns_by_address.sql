@@ -1,18 +1,24 @@
-INSERT INTO gro."USER_NET_RESULTS" (
+INSERT INTO gro."USER_NET_RETURNS" (
         "balance_date",
         "network_id",
         "user_address",
         "usd_value",
         "pwrd_value",
         "gvt_value",
+        "usd_ratio_value",
+        "pwrd_ratio_value",
+        "gvt_ratio_value",
         "creation_date"
     )
 SELECT ub.balance_date as balace_date,
     ut.network_id as network_id,
     ut.user_address as user_address,
     ub.usd_value - ut.usd_value as total_value,
-    ub.pwrd_value - ut.pwrd_value as total_value_pwrd,
-    ub.gvt_value - ut.gvt_value as total_value_gvt,
+    ub.pwrd_value - ut.pwrd_value as pwrd_value,
+    ub.gvt_value - ut.gvt_value as gvt_value,
+    (ub.usd_value - ut.usd_value) / ut.usd_value as total_ratio_value,
+    (ub.pwrd_value - ut.pwrd_value) / ut.pwrd_value as pwrd_ratio_value,
+    (ub.gvt_value - ut.gvt_value) / ut.gvt_value as gvt_ratio_value,
     now()::timestamp as creation_date
 FROM (
         SELECT sum(t.usd_value) as usd_value,

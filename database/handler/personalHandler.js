@@ -415,7 +415,7 @@ const loadUserBalances = async (
     }
 }
 
-/// @notice Loads net results into USER_NET_RESULTS
+/// @notice Loads net results into USER_NET_RETURNS
 ///         Data sourced from USER_DEPOSITS & USER_TRANSACTIONS (full load w/o filters)
 /// @param fromDate Start date to load net results
 /// @param toDdate End date to load net results
@@ -432,7 +432,7 @@ const loadUserNetResults = async (
             const q = (account) ? 'insert_user_net_returns_by_address.sql' : 'insert_user_net_returns.sql';
             const params = (account) ? [day, account] : [day];
             rowCount = (await query(q, params)).rowCount;
-            logger.info(`**DB: ${rowCount} record/s added into USER_NET_RESULTS for date ${day}`);
+            logger.info(`**DB: ${rowCount} record/s added into USER_NET_RETURNS for date ${day}`);
         }
     } catch (err) {
         handleErr(`personalHandler->loadUserNetResults() [from: ${fromDate}, to: ${toDate}, account: ${account}]`, err);
@@ -522,7 +522,7 @@ const reload = async (
                     } else {
                         rowCountBalances += resBalances.rowCount;
                     }
-                    // Delete previous net results from USER_NET_RESULTS
+                    // Delete previous net results from USER_NET_RETURNS
                     // rowCountNetReturns += (await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params)).rowCount;
                     const resReturns = await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params);
                     if (resReturns === QUERY_ERROR) {
@@ -533,7 +533,7 @@ const reload = async (
                 }
                 logger.info(`**DB: ${rowCountTransfers} record/s deleted from USER_TRANSFERS`);
                 logger.info(`**DB: ${rowCountBalances} record/s deleted from USER_BALANCES`);
-                logger.info(`**DB: ${rowCountNetReturns} record/s deleted from USER_NET_RESULTS`);
+                logger.info(`**DB: ${rowCountNetReturns} record/s deleted from USER_NET_RETURNS`);
 
                 // Execute deposits, balances & net results calculations
                 if (await loadUserTransfers())
