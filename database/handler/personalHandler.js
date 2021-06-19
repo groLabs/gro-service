@@ -295,36 +295,31 @@ const loadTmpUserTransfers = async (
 const loadUserTransfers = async () => {
     try {
         // Get block numbers to be processed from temporary tables on deposits & withdrawals
-        const result = await query('select_distinct_blocks_transfers.sql', []);
-        if (result === QUERY_ERROR) return false;
+        const blocks = await query('select_distinct_blocks_transfers.sql', []);
+        if (blocks === QUERY_ERROR) return false;
 
-        if (result.rows.length > 0) {
-            // Add block numbers into ETH_BLOCKS (incl. block timestamp)
-            if (await loadEthBlocks(result.rows)) {
+        // Add block numbers into ETH_BLOCKS (incl. block timestamp)
+        if (blocks.rowCount > 0 && await loadEthBlocks(blocks.rows)) {
 
-                // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
-                const res = await query('insert_user_transfers.sql', []);
-                if (res === QUERY_ERROR) return false;
-                logger.info(`**DB: ${res.rowCount} records added into USER_TRANSFERS`);
+            // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
+            const res = await query('insert_user_transfers.sql', []);
+            if (res === QUERY_ERROR) return false;
+            logger.info(`**DB: ${res.rowCount} records added into USER_TRANSFERS`);
 
-                // Store latest block processed into table SYS_TABLE_LOADS
-                const result = await query('select_max_block_transfers.sql', []);
-                if (result === QUERY_ERROR) return false;
-                const lastBlock = result.rows[0].max_block_number;
-                if (result.rows) {
-                    const result = await updateLastTableLoad(
-                        'USER_TRANSFERS',
-                        lastBlock,
-                        moment.unix((await getBlockData(lastBlock)).timestamp),
-                    );
-                    return (result) ? true : false;
-                }
-            } else {
-                return false;
+            // Store latest block processed into table SYS_TABLE_LOADS
+            const maxBlock = await query('select_max_block_transfers.sql', []);
+            if (maxBlock === QUERY_ERROR) return false;
+            const lastBlock = maxBlock.rows[0].max_block_number;
+            if (maxBlock.rows) {
+                const result = await updateLastTableLoad(
+                    'USER_TRANSFERS',
+                    lastBlock,
+                    moment.unix((await getBlockData(lastBlock)).timestamp),
+                );
+                return (result) ? true : false;
             }
-        } else {
-            logger.info('**DB: No moar user transfers to be loaded (TMP_USER_DEPOSIT and TMP_USER_WITHDRAWALS empty?)');
         }
+        return true;
     } catch (err) {
         handleErr('personalHandler->loadUserTransfers()', err);
     }
@@ -360,7 +355,7 @@ const generateDateRange = (_fromDate, _toDate) => {
     }
 }
 
-// TODO: account as parameter. If null, do all accounts from TMP_USER_TRANSFERS.
+
 const loadUserBalances = async (
     fromDate,
     toDate,
@@ -368,55 +363,53 @@ const loadUserBalances = async (
 ) => {
     try {
         // Get users with any transfer
-        const rows = (account)
+        const users = (account)
             ? {
                 rowCount: 1,
                 rows: [{ user_address: account }]
             }
             : await query('select_distinct_users_transfers.sql', []);
+        if (users === QUERY_ERROR) return false;
 
-        // For each date and for each user, check gvt & pwrd balance and insert data into USER_BALANCES
+        // For each date, check gvt & pwrd balance and insert data into USER_BALANCES
         const dates = generateDateRange(fromDate, toDate);
+        logger.info(`**DB: Processing ${users.rowCount} user balance/s...`);
         for (const date of dates) {
-            if (rows.rowCount > 0) {
-                logger.info(`**DB: Processing ${rows.rowCount} user balance/s...`);
-                const day = moment.utc(date, "DD/MM/YYYY")
-                    .add(23, 'hours')
-                    .add(59, 'seconds')
-                    .add(59, 'minutes');
-                const blockTag = {
-                    blockTag: (await findBlockByDate(day)).block
-                }
-                let rowCount = 0;
-                for (const item of rows.rows) {
-                    const account = item.user_address;
-                    const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-                    const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
-                    const totalValue = gvtValue + pwrdValue;
-                    const params = [
-                        day,
-                        getNetworkId(),
-                        account,
-                        totalValue,
-                        gvtValue,
-                        pwrdValue,
-                        moment.utc()
-                    ];
-                    const result = await query('insert_user_balances.sql', params);
-                    rowCount += result.rowCount;
-                }
-                logger.info(`**DB: ${rowCount} record/s added into USER_BALANCES for date ${moment(date).format('DD/MM/YYYY')}`);
-                await updateLastTableLoad(
-                    'USER_BALANCES',
-                    null,
-                    date
-                );
-                return true;
-            } else {
-                logger.info('**DB: No users with transfers found - No balance calculation needed.');
-                return false;
+            const day = moment.utc(date, "DD/MM/YYYY")
+                .add(23, 'hours')
+                .add(59, 'seconds')
+                .add(59, 'minutes');
+            const blockTag = {
+                blockTag: (await findBlockByDate(day)).block
             }
+            let rowCount = 0;
+            for (const user of users.rows) {
+                const account = user.user_address;
+                const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
+                const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
+                const totalValue = gvtValue + pwrdValue;
+                const params = [
+                    day,
+                    getNetworkId(),
+                    account,
+                    totalValue,
+                    gvtValue,
+                    pwrdValue,
+                    moment.utc()
+                ];
+                const result = await query('insert_user_balances.sql', params);
+                rowCount += result.rowCount;
+            }
+            logger.info(`**DB: ${rowCount} record/s added into USER_BALANCES for date ${moment(date).format('DD/MM/YYYY')}`);
         }
+
+        // Update table SYS_TABLE_LOADS
+        await updateLastTableLoad(
+            'USER_BALANCES',
+            null,
+            dates[dates.length - 1]
+        );
+        return true;
     } catch (err) {
         handleErr(`personalHandler->loadUserBalances() [from: ${fromDate}, to: ${toDate}, account: ${account}]`, err);
     }
@@ -583,7 +576,15 @@ const loadGroStatsDB = async () => {
             //await load('04/06/2021', '04/06/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072')
             //await reload("04/06/2021", "04/06/2021", '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
             //await load("04/06/2021", "04/06/2021", null);
-            await reload("04/06/2021", "04/06/2021", null);
+            //await reload("04/06/2021", "04/06/2021", null);
+
+
+            await reload("19/06/2021", "19/06/2021", '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
+
+            //const [fromBlock, toBlock] = await preload('01/05/2021', '18/06/2021');
+            // if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, '0xb5bE4d2510294d0BA77214F26F704d2956a99072'))
+            // if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, '0xb5bE4d2510294d0BA77214F26F704d2956a99072'))
+            //     if (await loadUserTransfers())
             process.exit(); // for testing purposes
         });
     } catch (err) {
