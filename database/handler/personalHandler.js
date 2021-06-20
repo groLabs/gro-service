@@ -71,9 +71,13 @@ const handleErr = async (func, err) => {
     logger.error(`**DB: ${func} \n Message: ${err}`);
 }
 
+const isPlural = (count) => (count > 1) ? 's' : '';
+
+
 const loadEthBlocks = async (blocks) => {
     try {
-        logger.info(`**DB: Processing ${blocks.length} blocks...`);
+        const numBlocks = blocks.length;
+        logger.info(`**DB: Processing ${numBlocks} block${isPlural(numBlocks)}...`);
         for (const item of blocks) {
             const block = await getBlockData(item.block_number);
             const params = [
@@ -86,7 +90,7 @@ const loadEthBlocks = async (blocks) => {
             if (result === QUERY_ERROR)
                 return false;
         }
-        logger.info(`**DB: ${blocks.length} block/s added into ETH_BLOCKS`);
+        logger.info(`**DB: ${numBlocks} block${isPlural(numBlocks)} added into ETH_BLOCKS`);
         return true;
     } catch (err) {
         handleErr('personalHandler->loadEthBlocks()', err);
@@ -130,9 +134,10 @@ const updateLastTableLoad = async (table, last_block, last_date) => {
     }
 }
 
-const getGTokenFromTx = async (result, transfer) => {
+const getGTokenFromTx = async (result, side) => {
     try {
-        logger.info(`**DB: Processing ${result.length} ${(transfer === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'} transaction/s...`);
+        const numTx = result.length;
+        logger.info(`**DB: Processing ${numTx} ${(side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'} transaction${isPlural(numTx)}...`);
         // Interface for ERC20 token transfer
         const iface = new ethers.utils.Interface([
             "event Transfer(address indexed from, address indexed to, uint256 amount)",
@@ -148,7 +153,7 @@ const getGTokenFromTx = async (result, transfer) => {
             for (const log of txReceipt.logs) {
                 // Only when signature is an ERC20 transfer: `Transfer(address from, address to, uint256 value)`
                 if (log.topics[0] === ERC20_TRANSFER_SIGNATURE) {
-                    const index = (transfer === Transfer.DEPOSIT) ? 1 : 2; // from is 0x0 : to is 0x0
+                    const index = (side === Transfer.DEPOSIT) ? 1 : 2; // from is 0x0 : to is 0x0
                     // Only when a token is minted (from: 0x)
                     if (log.topics[index] === ZERO_ADDRESS) {
                         const data = log.data;
@@ -157,19 +162,19 @@ const getGTokenFromTx = async (result, transfer) => {
                         // Update result array with the correct GTokens
                         if (item.gvt_amount !== 0) {
                             item.gvt_amount = parseFloat(ethers.utils.formatEther(output.args[2]));
-                            item.gvt_amount = (transfer === Transfer.DEPOSIT) ? item.gvt_amount : -item.gvt_amount
+                            item.gvt_amount = (side === Transfer.DEPOSIT) ? item.gvt_amount : -item.gvt_amount
                         } else {
                             item.pwrd_amount = parseFloat(ethers.utils.formatEther(output.args[2]));
-                            item.pwrd_amount = (transfer === Transfer.DEPOSIT) ? item.pwrd_amount : -item.pwrd_amount
+                            item.pwrd_amount = (side === Transfer.DEPOSIT) ? item.pwrd_amount : -item.pwrd_amount
                         }
                     }
                 }
             };
         };
-        logger.info(`**DB: ${result.length} transaction/s processed.`);
+        logger.info(`**DB: ${result.length} transaction${isPlural(numTx)} processed`);
         return result;
     } catch (err) {
-        handleErr(`personalHandler->getGTokenFromTx() [transfer: ${transfer}]`, err);
+        handleErr(`personalHandler->getGTokenFromTx() [transfer: ${side}]`, err);
     }
 };
 
@@ -177,6 +182,7 @@ const parseDataFromEvent = async (logs, side) => {
     try {
         let result = [];
         logs.forEach((log) => {
+
             const dai_amount = (side === Transfer.DEPOSIT)
                 ? parseAmount(log.args[4][0], 'DAI')
                 : - parseAmount(log.args[8][0], 'DAI');
@@ -186,9 +192,15 @@ const parseDataFromEvent = async (logs, side) => {
             const usdt_amount = (side === Transfer.DEPOSIT)
                 ? parseAmount(log.args[4][2], 'USDT')
                 : - parseAmount(log.args[8][2], 'USDT');
-            const usd_deduct = (side === Transfer.DEPOSIT) ? 0 : - parseAmount(log.args[5], 'USD');
-            const usd_return = (side === Transfer.DEPOSIT) ? 0 : - parseAmount(log.args[6], 'USD');
-            const lp_amount = (side === Transfer.DEPOSIT) ? 0 : - parseAmount(log.args[7], 'USD');
+            const usd_deduct = (side === Transfer.DEPOSIT)
+                ? 0
+                : - parseAmount(log.args[5], 'USD');
+            const usd_return = (side === Transfer.DEPOSIT)
+                ? 0
+                : - parseAmount(log.args[6], 'USD');
+            const lp_amount = (side === Transfer.DEPOSIT)
+                ? 0
+                : - parseAmount(log.args[7], 'USD');
             const usd_value = (side === Transfer.DEPOSIT)
                 ? parseAmount(log.args[3], 'USD')
                 : usd_return;
@@ -219,6 +231,35 @@ const parseDataFromEvent = async (logs, side) => {
     }
 }
 
+/// @notice Generates a collection of dates from a given start date to an end date
+/// @param _fromDate Start date
+/// @param _toDdate End date
+/// @return An array with all dates from the start to the end date
+const generateDateRange = (_fromDate, _toDate) => {
+    try {
+        // Check format date
+        if (_fromDate.length !== 10 || _toDate.length !== 10) {
+            logger.info('**DB: Date format is incorrect: should be "DD/MM/YYYY');
+            return;
+        }
+        // Build array of dates
+        const fromDate = moment.utc(_fromDate, "DD/MM/YYYY");
+        const toDate = moment.utc(_toDate, "DD/MM/YYYY");
+        const days = toDate.diff(fromDate, 'days');
+        let dates = [];
+        let day;
+        if (days >= 0) {
+            for (let i = 0; i <= days; i++) {
+                day = fromDate.clone().add(i, 'days');
+                dates.push(day);
+            }
+        }
+        return dates;
+    } catch (err) {
+        handleErr(`personalHandler->generateDateRange() [from: ${_fromDate}, to: ${_toDate}]`, err);
+    }
+}
+
 /// @notice - Loads deposits/withdrawals from all user accounts into temporary tables
 ///         - Gtoken amount is retrieved from related transaction
 ///         - Rest of data is retrieved from related event (LogNewDeposit or LogNewWithdrawal)
@@ -244,31 +285,26 @@ const loadTmpUserTransfers = async (
             toBlock,
             account,
         ).catch((err) => {
-            logger.error(err);
+            handleErr(`personalHandler->loadTmpUserTransfers()->getEvents(): `, err);
         });
-
         // Truncate table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
         const res = await query((side === Transfer.DEPOSIT) ? 'truncate_tmp_user_deposits.sql' : 'truncate_tmp_user_withdrawals.sql', []);
         if (res === QUERY_ERROR) return false;
-
         let finalResult = [];
         if (logs.length > 0) {
             // Parse relevant data from each event
             const preResult = await parseDataFromEvent(logs, side);
-
-            // Get Gtoken amount from each transaction linked to the previous events 
-            // and update gvt_amount & pwrd_amount
+            // Get Gtoken amount from tx's in previous events and update gvt_amount & pwrd_amount
             finalResult = await getGTokenFromTx(preResult, side);
-
             // Store data into table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
             let params = [];
             for (const item of finalResult)
                 params.push(Object.values(item));
             const rows = await query((side === Transfer.DEPOSIT) ? 'insert_tmp_user_deposits.sql' : 'insert_tmp_user_withdrawals.sql', params);
-
-            logger.info(`**DB: ${rows} record/s added into ${(side === Transfer.DEPOSIT) ? 'TMP_USER_DEPOSITS' : 'TMP_USER_WITHDRAWALS'}`);
+            if (rows === QUERY_ERROR) return false;
+            logger.info(`**DB: ${rows} record${isPlural(rows)} added into ${(side === Transfer.DEPOSIT) ? 'TMP_USER_DEPOSITS' : 'TMP_USER_WITHDRAWALS'}`);
         } else {
-            logger.info(`**DB: No moar ${(side === Transfer.DEPOSIT) ? 'deposits' : 'withdrawals'} to be processed.`);
+            logger.info(`**DB: No moar ${(side === Transfer.DEPOSIT) ? 'deposits' : 'withdrawals'} to be processed`);
             return true;
         }
 
@@ -304,7 +340,8 @@ const loadUserTransfers = async () => {
             // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
             const res = await query('insert_user_transfers.sql', []);
             if (res === QUERY_ERROR) return false;
-            logger.info(`**DB: ${res.rowCount} records added into USER_TRANSFERS`);
+            const numTransfers = res.rowCount;
+            logger.info(`**DB: ${numTransfers} record${isPlural(numTransfers)} added into USER_TRANSFERS`);
 
             // Store latest block processed into table SYS_TABLE_LOADS
             const maxBlock = await query('select_max_block_transfers.sql', []);
@@ -325,37 +362,6 @@ const loadUserTransfers = async () => {
     }
 }
 
-/// @notice Generates a collection of dates from a given start date to an end date
-/// @param _fromDate Start date
-/// @param _toDdate End date
-/// @return An array with all dates from the start to the end date
-const generateDateRange = (_fromDate, _toDate) => {
-    try {
-        // Check format date
-        if (_fromDate.length !== 10 || _toDate.length !== 10) {
-            logger.info('**DB: Date format is incorrect: should be "DD/MM/YYYY');
-            return;
-        }
-
-        // Build array of dates
-        const fromDate = moment.utc(_fromDate, "DD/MM/YYYY");
-        const toDate = moment.utc(_toDate, "DD/MM/YYYY");
-        const days = toDate.diff(fromDate, 'days');
-        let dates = [];
-        let day;
-        if (days >= 0) {
-            for (let i = 0; i <= days; i++) {
-                day = fromDate.clone().add(i, 'days');
-                dates.push(day);
-            }
-        }
-        return dates;
-    } catch (err) {
-        handleErr(`personalHandler->generateDateRange() [from: ${_fromDate}, to: ${_toDate}]`, err);
-    }
-}
-
-
 const loadUserBalances = async (
     fromDate,
     toDate,
@@ -373,7 +379,7 @@ const loadUserBalances = async (
 
         // For each date, check gvt & pwrd balance and insert data into USER_BALANCES
         const dates = generateDateRange(fromDate, toDate);
-        logger.info(`**DB: Processing ${users.rowCount} user balance/s...`);
+        logger.info(`**DB: Processing ${users.rowCount} user balance${isPlural(users.rowCount)}...`);
         for (const date of dates) {
             const day = moment.utc(date, "DD/MM/YYYY")
                 .add(23, 'hours')
@@ -398,9 +404,10 @@ const loadUserBalances = async (
                     moment.utc()
                 ];
                 const result = await query('insert_user_balances.sql', params);
+                if (result === QUERY_ERROR) return false;
                 rowCount += result.rowCount;
             }
-            logger.info(`**DB: ${rowCount} record/s added into USER_BALANCES for date ${moment(date).format('DD/MM/YYYY')}`);
+            logger.info(`**DB: ${rowCount} record${isPlural(rowCount)} added into USER_BALANCES for date ${moment(date).format('DD/MM/YYYY')}`);
         }
 
         // Update table SYS_TABLE_LOADS
@@ -419,23 +426,24 @@ const loadUserBalances = async (
 ///         Data sourced from USER_DEPOSITS & USER_TRANSACTIONS (full load w/o filters)
 /// @param fromDate Start date to load net results
 /// @param toDdate End date to load net results
-const loadUserNetResults = async (
+const loadUserNetReturns = async (
     fromDate,
     toDate,
     account = null) => {
     try {
         const dates = generateDateRange(fromDate, toDate);
-        let rowCount = 0;
         logger.info(`**DB: Processing user net result/s...`);
         for (const date of dates) {
             const day = moment(date).format('DD/MM/YYYY');
             const q = (account) ? 'insert_user_net_returns_by_address.sql' : 'insert_user_net_returns.sql';
             const params = (account) ? [day, account] : [day];
-            rowCount = (await query(q, params)).rowCount;
-            logger.info(`**DB: ${rowCount} record/s added into USER_NET_RETURNS for date ${day}`);
+            const result = await query(q, params);
+            if (result === QUERY_ERROR) return false;
+            const numResults = result.rowCount;
+            logger.info(`**DB: ${numResults} record${isPlural(numResults)} added into USER_NET_RETURNS for date ${day}`);
         }
     } catch (err) {
-        handleErr(`personalHandler->loadUserNetResults() [from: ${fromDate}, to: ${toDate}, account: ${account}]`, err);
+        handleErr(`personalHandler->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}, account: ${account}]`, err);
     }
 }
 
@@ -460,6 +468,10 @@ const preload = async (_fromDate, _toDate) => {
     } catch (err) {
         handleErr(`personalHandler->preload() [from: ${_fromDate}, to: ${_toDate}]`, err);
     }
+}
+
+const remove = async () => {
+    //TODO: add here all truncates from reload()
 }
 
 /// @notice Reloads user transfers, balances & net results for a given time interval
@@ -496,7 +508,7 @@ const reload = async (
                         }
                     }
                 }
-                logger.info(`**DB: ${rowCount} record/s deleted from ETH_BLOCKS`);
+                logger.info(`**DB: ${rowCount} record${isPlural(rowCount)} deleted from ETH_BLOCKS`);
 
                 // Delete previous transfers, balances & net results
                 let rowCountTransfers = 0;
@@ -531,14 +543,14 @@ const reload = async (
                         rowCountNetReturns += resReturns.rowCount;
                     }
                 }
-                logger.info(`**DB: ${rowCountTransfers} record/s deleted from USER_TRANSFERS`);
-                logger.info(`**DB: ${rowCountBalances} record/s deleted from USER_BALANCES`);
-                logger.info(`**DB: ${rowCountNetReturns} record/s deleted from USER_NET_RETURNS`);
+                logger.info(`**DB: ${rowCountTransfers} record${isPlural(rowCountTransfers)} deleted from USER_TRANSFERS`);
+                logger.info(`**DB: ${rowCountBalances} record${isPlural(rowCountBalances)} deleted from USER_BALANCES`);
+                logger.info(`**DB: ${rowCountNetReturns} record${isPlural(rowCountNetReturns)} deleted from USER_NET_RETURNS`);
 
                 // Execute deposits, balances & net results calculations
                 if (await loadUserTransfers())
                     if (await loadUserBalances(_fromDate, _toDate, account))
-                        await loadUserNetResults(_fromDate, _toDate, account);
+                        await loadUserNetReturns(_fromDate, _toDate, account);
             }
     } catch (err) {
         handleErr(`personalHandler->reload() [from: ${_fromDate}, to: ${_toDate}, account: ${account}]`, err);
@@ -564,7 +576,7 @@ const load = async (
         if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account))
             if (await loadUserTransfers())
                 if (await loadUserBalances(fromDate, toDate, account))
-                    await loadUserNetResults(fromDate, toDate, account);
+                    await loadUserNetReturns(fromDate, toDate, account);
 }
 
 const loadGroStatsDB = async () => {
@@ -573,18 +585,25 @@ const loadGroStatsDB = async () => {
         scanner = new BlocksScanner(provider);
         initDatabaseContracts().then(async () => {
             // TODO: ******* PROVAR una adreça que no existeixi
+
+            // DEV:
             //await load('04/06/2021', '04/06/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072')
             //await reload("04/06/2021", "04/06/2021", '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
             //await load("04/06/2021", "04/06/2021", null);
             //await reload("04/06/2021", "04/06/2021", null);
+            // const [fromBlock, toBlock] = await preload('25/05/2021', '03/06/2021');
+            // if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837'))
+            //     if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837'))
+            //         await loadUserTransfers()
+            //await reload("27/05/2021", "18/06/2021", '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
+
+            // PROD
+            //const [fromBlock, toBlock] = await preload('24/05/2021', '18/06/2021');
+            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null);
+            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null)
+            await reload("18/06/2021", "18/06/2021", null);
 
 
-            await reload("19/06/2021", "19/06/2021", '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
-
-            //const [fromBlock, toBlock] = await preload('01/05/2021', '18/06/2021');
-            // if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, '0xb5bE4d2510294d0BA77214F26F704d2956a99072'))
-            // if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, '0xb5bE4d2510294d0BA77214F26F704d2956a99072'))
-            //     if (await loadUserTransfers())
             process.exit(); // for testing purposes
         });
     } catch (err) {

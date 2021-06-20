@@ -5,15 +5,16 @@ const path = require('path');
 
 const { DatabaseCallError } = require('../../common/error');
 const botEnv = process.env.BOT_ENV.toLowerCase();
+const nodeEnv = process.env.NODE_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 const dbConnection = {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_INSTANCE,
+    host: (nodeEnv === 'kovan') ? process.env.DB_DEV_HOST : process.env.DB_PROD_HOST,
+    port: (nodeEnv === 'kovan') ? process.env.DB_DEV_PORT : process.env.DB_PROD_PORT,
+    user: (nodeEnv === 'kovan') ? process.env.DB_DEV_USER : process.env.DB_PROD_USER,
+    password: (nodeEnv === 'kovan') ? process.env.DB_DEV_PASSWORD : process.env.DB_PROD_PASSWORD,
+    database: (nodeEnv === 'kovan') ? process.env.DB_DEV_INSTANCE : process.env.DB_PROD_INSTANCE,
 }
 
 const pool = new pg.Pool(dbConnection);
