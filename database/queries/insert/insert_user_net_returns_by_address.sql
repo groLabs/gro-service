@@ -16,9 +16,21 @@ SELECT ub.balance_date as balace_date,
     ub.usd_value - ut.usd_value as total_value,
     ub.pwrd_value - ut.pwrd_value as pwrd_value,
     ub.gvt_value - ut.gvt_value as gvt_value,
-    (ub.usd_value - ut.usd_value) / ut.usd_value as total_ratio_value,
-    (ub.pwrd_value - ut.pwrd_value) / ut.pwrd_value as pwrd_ratio_value,
-    (ub.gvt_value - ut.gvt_value) / ut.gvt_value as gvt_ratio_value,
+    CASE
+        ut.usd_value
+        WHEN 0 THEN 0
+        ELSE (ub.usd_value - ut.usd_value) / ut.usd_value
+    END as total_ratio_value,
+    CASE
+        ut.pwrd_value
+        WHEN 0 THEN 0
+        ELSE(ub.pwrd_value - ut.pwrd_value) / ut.pwrd_value
+    END as pwrd_ratio_value,
+    CASE
+        ut.gvt_value
+        WHEN 0 THEN 0
+        ELSE (ub.gvt_value - ut.gvt_value) / ut.gvt_value
+    END as gvt_ratio_value,
     now()::timestamp as creation_date
 FROM (
         SELECT sum(t.usd_value) as usd_value,
