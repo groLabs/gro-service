@@ -34,7 +34,7 @@ const QUERY_ERROR = 400;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
 const ERC20_TRANSFER_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 const Transfer = Object.freeze({ "DEPOSIT": 1, "WITHDRAWAL": 2 });
-
+let scanner;
 
 const parseAmount = (amount, coin) => {
     return parseFloat(div(
@@ -110,10 +110,6 @@ const loadEthBlocks = async () => {
 
 // TODO start: to be moved to /common. 
 // Files currently using findBlockByDate(): statsDBHandler.js, apyHandler.js and currentApyHandler.js
-let scanner;
-function updateBlocksScanner(newProvider) {
-    scanner = new BlocksScanner(newProvider);
-}
 async function findBlockByDate(scanDate) {
     try {
         const blockFound = await scanner
@@ -388,15 +384,14 @@ const loadUserBalances = async (
             }
             : await query('select_distinct_users_transfers.sql', []);
         if (users === QUERY_ERROR) return false;
-
         // For each date, check gvt & pwrd balance and insert data into USER_BALANCES
         const dates = generateDateRange(fromDate, toDate);
         logger.info(`**DB: Processing ${users.rowCount} user balance${isPlural(users.rowCount)}...`);
         for (const date of dates) {
             const day = moment.utc(date, "DD/MM/YYYY")
                 .add(23, 'hours')
-                .add(59, 'seconds')
-                .add(59, 'minutes');
+                .add(59, 'minutes')
+                .add(59, 'seconds');
             const blockTag = {
                 blockTag: (await findBlockByDate(day)).block
             }
@@ -448,7 +443,8 @@ const loadUserNetReturns = async (
         const dates = generateDateRange(fromDate, toDate);
         logger.info(`**DB: Processing user net result/s...`);
         for (const date of dates) {
-            const day = moment(date).format('DD/MM/YYYY');
+            /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
+            const day = moment(date).format('MM/DD/YYYY');
             const q = (account) ? 'insert_user_net_returns_by_address.sql' : 'insert_user_net_returns.sql';
             const params = (account) ? [day, account] : [day];
             const result = await query(q, params);
@@ -589,6 +585,7 @@ const loadGroStatsDB = async () => {
     try {
         const provider = getAlchemyRpcProvider('stats_gro');
         scanner = new BlocksScanner(provider);
+
         initDatabaseContracts().then(async () => {
             // TODO: ******* PROVAR una adreça que no existeixi
 
@@ -596,7 +593,6 @@ const loadGroStatsDB = async () => {
             //await load('04/06/2021', '04/06/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072')
             //await reload("04/06/2021", "04/06/2021", '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
             //await load("04/06/2021", "04/06/2021", null);
-            await reload("04/06/2021", "18/06/2021", null);
             // const [fromBlock, toBlock] = await preload('25/05/2021', '03/06/2021');
             // if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837'))
             //     if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837'))
@@ -604,13 +600,16 @@ const loadGroStatsDB = async () => {
             //await reload("27/05/2021", "05/06/2021", '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
 
             // PROD:
-            //const [fromBlock, toBlock] = await preload('24/05/2021', '18/06/2021');
+            //const [fromBlock, toBlock] = await preload('24/05/2021', '19/06/2021');
             // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null);
             // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null)
-            //await load("18/06/2021", "18/06/2021", null);
-            // const [fromBlock, toBlock] = await preload('24/05/2021', '01/06/2021');
-            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null);
-            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null)
+            // await reload("24/05/2021", "19/06/2021", null);
+
+            // if (await loadUserBalances("28/05/2021", "19/06/2021", null))
+            //     await loadUserNetReturns("28/05/2021", "19/06/2021", null);
+
+            await reload("28/05/2021", "02/06/2021", '0xCC9E13BAc74b9c37e0B90fDE71a1f2Bb6E5d1c1E');
+
 
             process.exit(); // for testing purposes
         });
