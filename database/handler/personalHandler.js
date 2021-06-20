@@ -73,27 +73,38 @@ const handleErr = async (func, err) => {
 
 const isPlural = (count) => (count > 1) ? 's' : '';
 
-
-const loadEthBlocks = async (blocks) => {
+/// @notice Adds new blocks into table ETH_BLOCKS
+/// @return True if no exceptions found, false otherwise
+const loadEthBlocks = async () => {
     try {
-        const numBlocks = blocks.length;
-        logger.info(`**DB: Processing ${numBlocks} block${isPlural(numBlocks)}...`);
-        for (const item of blocks) {
-            const block = await getBlockData(item.block_number);
-            const params = [
-                block.number,
-                block.timestamp,
-                moment.unix(block.timestamp),
-                getNetworkId(),
-                moment.utc()];
-            const result = await query('insert_eth_blocks.sql', params);
-            if (result === QUERY_ERROR)
-                return false;
+        // Get block numbers to be processed from temporary tables on deposits & withdrawals
+        const blocks = await query('select_distinct_blocks_tmp_transfers.sql', []);
+        if (blocks === QUERY_ERROR) return false;
+
+        // Insert new blocks into ETH_BLOCKS
+        const numBlocks = blocks.rowCount;
+        if (numBlocks > 0) {
+            logger.info(`**DB: Processing ${numBlocks} block${isPlural(numBlocks)}...`);
+            for (const item of blocks.rows) {
+                const block = await getBlockData(item.block_number);
+                const params = [
+                    block.number,
+                    block.timestamp,
+                    moment.unix(block.timestamp),
+                    getNetworkId(),
+                    moment.utc()];
+                const result = await query('insert_eth_blocks.sql', params);
+                if (result === QUERY_ERROR)
+                    return false;
+            }
+            logger.info(`**DB: ${numBlocks} block${isPlural(numBlocks)} added into ETH_BLOCKS`);
+        } else {
+            logger.info(`**DB: No new blocks to be added`);
         }
-        logger.info(`**DB: ${numBlocks} block${isPlural(numBlocks)} added into ETH_BLOCKS`);
         return true;
     } catch (err) {
         handleErr('personalHandler->loadEthBlocks()', err);
+        return false;
     }
 }
 
@@ -138,6 +149,7 @@ const getGTokenFromTx = async (result, side) => {
     try {
         const numTx = result.length;
         logger.info(`**DB: Processing ${numTx} ${(side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'} transaction${isPlural(numTx)}...`);
+
         // Interface for ERC20 token transfer
         const iface = new ethers.utils.Interface([
             "event Transfer(address indexed from, address indexed to, uint256 amount)",
@@ -182,7 +194,6 @@ const parseDataFromEvent = async (logs, side) => {
     try {
         let result = [];
         logs.forEach((log) => {
-
             const dai_amount = (side === Transfer.DEPOSIT)
                 ? parseAmount(log.args[4][0], 'DAI')
                 : - parseAmount(log.args[8][0], 'DAI');
@@ -263,12 +274,13 @@ const generateDateRange = (_fromDate, _toDate) => {
 /// @notice - Loads deposits/withdrawals from all user accounts into temporary tables
 ///         - Gtoken amount is retrieved from related transaction
 ///         - Rest of data is retrieved from related event (LogNewDeposit or LogNewWithdrawal)
-/// @dev    - Truncates always temporary tables beforehand even if no data to be processed, 
-///           otherwise, old data would be loaded if no new deposits/withdrawals
+/// @dev - Truncates always temporary tables beforehand even if no data to be processed, 
+///        otherwise, old data would be loaded if no new deposits/withdrawals
 /// @param fromBlock Starting block to search for events
 /// @param toBlock Ending block to search for events
 /// @param side Load deposits ('Transfer.Deposit') or withdrawals ('Transfer.Withdraw')
 /// @param account User account to be processed - if null, all accounts to be processed
+/// @return True if no exceptions found, false otherwise
 const loadTmpUserTransfers = async (
     fromBlock,
     toBlock,
@@ -287,9 +299,11 @@ const loadTmpUserTransfers = async (
         ).catch((err) => {
             handleErr(`personalHandler->loadTmpUserTransfers()->getEvents(): `, err);
         });
+
         // Truncate table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
         const res = await query((side === Transfer.DEPOSIT) ? 'truncate_tmp_user_deposits.sql' : 'truncate_tmp_user_withdrawals.sql', []);
         if (res === QUERY_ERROR) return false;
+
         let finalResult = [];
         if (logs.length > 0) {
             // Parse relevant data from each event
@@ -317,7 +331,6 @@ const loadTmpUserTransfers = async (
         );
 
         return (result) ? true : false;
-
     } catch (err) {
         handleErr(`personalHandler->loadTmpUserTransfers() [blocks from: ${fromBlock} to ${toBlock}, side: ${side}, account: ${account}]`, err);
         return false;
@@ -328,14 +341,11 @@ const loadTmpUserTransfers = async (
 ///         Data sourced from TMP_USER_DEPOSITS & TMP_USER_TRANSACTIONS (full load w/o filters)
 ///         All blocks from such transactions are stored into ETH_BLOCKS (incl. timestamp)
 ///         Latest block & time processed are stored into SYS_TABLE_LOADS
+/// @return True if no exceptions found, false otherwise
 const loadUserTransfers = async () => {
     try {
-        // Get block numbers to be processed from temporary tables on deposits & withdrawals
-        const blocks = await query('select_distinct_blocks_transfers.sql', []);
-        if (blocks === QUERY_ERROR) return false;
-
-        // Add block numbers into ETH_BLOCKS (incl. block timestamp)
-        if (blocks.rowCount > 0 && await loadEthBlocks(blocks.rows)) {
+        // Add new blocks into ETH_BLOCKS (incl. block timestamp)
+        if (await loadEthBlocks()) {
 
             // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
             const res = await query('insert_user_transfers.sql', []);
@@ -355,6 +365,8 @@ const loadUserTransfers = async () => {
                 );
                 return (result) ? true : false;
             }
+        } else {
+            return false;
         }
         return true;
     } catch (err) {
@@ -423,9 +435,11 @@ const loadUserBalances = async (
 }
 
 /// @notice Loads net results into USER_NET_RETURNS
-///         Data sourced from USER_DEPOSITS & USER_TRANSACTIONS (full load w/o filters)
+/// @dev Data sourced from USER_DEPOSITS & USER_TRANSACTIONS (full load w/o filters)
 /// @param fromDate Start date to load net results
 /// @param toDdate End date to load net results
+/// @param account User account to be processed - if null, all accounts to be processed
+/// @return True if no exceptions found, false otherwise
 const loadUserNetReturns = async (
     fromDate,
     toDate,
@@ -470,19 +484,67 @@ const preload = async (_fromDate, _toDate) => {
     }
 }
 
-const remove = async () => {
-    //TODO: add here all truncates from reload()
+/// @notice Deletes transfers, balances and net returns for the given dates interval
+/// @param dates An array with all dates from the start to the end date
+/// @param fromDate Start date to delete data
+/// @param toDdate End date to delete data
+/// @param account User account to be processed - if null, all accounts to be processed
+/// @return True if no exceptions found, false otherwise
+const remove = async (dates, _fromDate, _toDate, account) => {
+    try {
+        // Delete previous transfers, balances & net results
+        let rowCountTransfers = 0;
+        let rowCountBalances = 0;
+        let rowCountNetReturns = 0;
+        for (const day of dates) {
+            const params = (account)
+                ? [moment(day).format('DD/MM/YYYY'), account]
+                : [moment(day).format('DD/MM/YYYY')];
+            // Delete previous transfers from USER_TRANSFERS
+            // rowCountTramsfers += (await query((account) ? 'delete_user_transfers_by_address.sql' : 'delete_user_transfers.sql', params)).rowCount;
+            const resTransfers = await query((account) ? 'delete_user_transfers_by_address.sql' : 'delete_user_transfers.sql', params);
+            if (resTransfers === QUERY_ERROR) {
+                return false;
+            } else {
+                rowCountTransfers += resTransfers.rowCount;
+            }
+            // Delete previous balances from USER_BALANCES
+            // rowCountBalances += (await query((account) ? 'delete_user_balances_by_address.sql' : 'delete_user_balances.sql', params)).rowCount;
+            const resBalances = await query((account) ? 'delete_user_balances_by_address.sql' : 'delete_user_balances.sql', params);
+            if (resBalances === QUERY_ERROR) {
+                return false;
+            } else {
+                rowCountBalances += resBalances.rowCount;
+            }
+            // Delete previous net results from USER_NET_RETURNS
+            // rowCountNetReturns += (await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params)).rowCount;
+            const resReturns = await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params);
+            if (resReturns === QUERY_ERROR) {
+                return false;
+            } else {
+                rowCountNetReturns += resReturns.rowCount;
+            }
+        }
+        logger.info(`**DB: ${rowCountTransfers} record${isPlural(rowCountTransfers)} deleted from USER_TRANSFERS`);
+        logger.info(`**DB: ${rowCountBalances} record${isPlural(rowCountBalances)} deleted from USER_BALANCES`);
+        logger.info(`**DB: ${rowCountNetReturns} record${isPlural(rowCountNetReturns)} deleted from USER_NET_RETURNS`);
+        return true;
+    } catch (err) {
+        handleErr(`personalHandler->remove() [from: ${_fromDate}, to: ${_toDate}, account: ${account}]`, err);
+        return false;
+    }
 }
 
 /// @notice Reloads user transfers, balances & net results for a given time interval
-/// @dev    Previous data for the given time interval will be overwritten
-/// @dev    It is strongly recommended to reload data until D-1
+/// @dev    - Previous data for the given time interval will be overwritten
+/// @dev    - It is strongly recommended to reload data until D-1
 /// @param fromDate Start date to reload data
 /// @param toDdate End date to reload data
+/// @param account User account to be processed - if null, all accounts to be processed
 const reload = async (
     _fromDate,
     _toDate,
-    account = null
+    account = null,
 ) => {
     try {
         // Calculate dates & blocks to be processed
@@ -490,68 +552,11 @@ const reload = async (
 
         // Execute transfers calculations in temporary tables
         if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, account))
-            if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account)) {
-
-                // Delete previous blocks from ETH_BLOCKS
-                // TODO: delete in a single query?
-                let rowCount = 0;
-                const result = await query('select_distinct_blocks_transfers.sql', []);
-                if (result === QUERY_ERROR) {
-                    return;
-                } else {
-                    for (const block of result.rows) {
-                        const result = await query('delete_eth_blocks.sql', [block.block_number]);
-                        if (result === QUERY_ERROR) {
-                            return;
-                        } else {
-                            rowCount += result.rowCount;
-                        }
-                    }
-                }
-                logger.info(`**DB: ${rowCount} record${isPlural(rowCount)} deleted from ETH_BLOCKS`);
-
-                // Delete previous transfers, balances & net results
-                let rowCountTransfers = 0;
-                let rowCountBalances = 0;
-                let rowCountNetReturns = 0;
-                for (const day of dates) {
-                    const params = (account)
-                        ? [moment(day).format('DD/MM/YYYY'), account]
-                        : [moment(day).format('DD/MM/YYYY')];
-                    // Delete previous transfers from USER_TRANSFERS
-                    // rowCountTramsfers += (await query((account) ? 'delete_user_transfers_by_address.sql' : 'delete_user_transfers.sql', params)).rowCount;
-                    const resTransfers = await query((account) ? 'delete_user_transfers_by_address.sql' : 'delete_user_transfers.sql', params);
-                    if (resTransfers === QUERY_ERROR) {
-                        return;
-                    } else {
-                        rowCountTransfers += resTransfers.rowCount;
-                    }
-                    // Delete previous balances from USER_BALANCES
-                    // rowCountBalances += (await query((account) ? 'delete_user_balances_by_address.sql' : 'delete_user_balances.sql', params)).rowCount;
-                    const resBalances = await query((account) ? 'delete_user_balances_by_address.sql' : 'delete_user_balances.sql', params);
-                    if (resBalances === QUERY_ERROR) {
-                        return;
-                    } else {
-                        rowCountBalances += resBalances.rowCount;
-                    }
-                    // Delete previous net results from USER_NET_RETURNS
-                    // rowCountNetReturns += (await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params)).rowCount;
-                    const resReturns = await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params);
-                    if (resReturns === QUERY_ERROR) {
-                        return;
-                    } else {
-                        rowCountNetReturns += resReturns.rowCount;
-                    }
-                }
-                logger.info(`**DB: ${rowCountTransfers} record${isPlural(rowCountTransfers)} deleted from USER_TRANSFERS`);
-                logger.info(`**DB: ${rowCountBalances} record${isPlural(rowCountBalances)} deleted from USER_BALANCES`);
-                logger.info(`**DB: ${rowCountNetReturns} record${isPlural(rowCountNetReturns)} deleted from USER_NET_RETURNS`);
-
-                // Execute deposits, balances & net results calculations
-                if (await loadUserTransfers())
-                    if (await loadUserBalances(_fromDate, _toDate, account))
-                        await loadUserNetReturns(_fromDate, _toDate, account);
-            }
+            if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account))
+                if (await remove(dates, _fromDate, _toDate, account))
+                    if (await loadUserTransfers())
+                        if (await loadUserBalances(_fromDate, _toDate, account))
+                            await loadUserNetReturns(_fromDate, _toDate, account);
     } catch (err) {
         handleErr(`personalHandler->reload() [from: ${_fromDate}, to: ${_toDate}, account: ${account}]`, err);
     }
@@ -563,6 +568,7 @@ const reload = async (
 ///         - If any data load fails, execution is stopped (to avoid data inconsistency)
 /// @param fromDate Start date to reload data
 /// @param toDdate End date to reload data
+/// @param account User account to be processed - if null, all accounts to be processed
 const load = async (
     fromDate,
     toDate,
@@ -590,19 +596,21 @@ const loadGroStatsDB = async () => {
             //await load('04/06/2021', '04/06/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072')
             //await reload("04/06/2021", "04/06/2021", '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
             //await load("04/06/2021", "04/06/2021", null);
-            //await reload("04/06/2021", "04/06/2021", null);
+            await reload("04/06/2021", "18/06/2021", null);
             // const [fromBlock, toBlock] = await preload('25/05/2021', '03/06/2021');
             // if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837'))
             //     if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837'))
             //         await loadUserTransfers()
-            //await reload("27/05/2021", "18/06/2021", '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
+            //await reload("27/05/2021", "05/06/2021", '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
 
-            // PROD
+            // PROD:
             //const [fromBlock, toBlock] = await preload('24/05/2021', '18/06/2021');
             // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null);
             // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null)
-            await reload("18/06/2021", "18/06/2021", null);
-
+            //await load("18/06/2021", "18/06/2021", null);
+            // const [fromBlock, toBlock] = await preload('24/05/2021', '01/06/2021');
+            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null);
+            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null)
 
             process.exit(); // for testing purposes
         });
