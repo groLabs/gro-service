@@ -18,9 +18,10 @@ module.exports = {
         },
         '0x2F54D1563963fC04770E85AF819c89Dc807f6a06': {},
     },
+    old_pnl: '0xe59bBC020Aa0215Ed5456C125e52fb0d574987dC',
     blockchain: {
         network: 'http://localhost:8545',
-        start_block: 12657976,
+        start_block: 1161,
         alchemy_api_keys: {
             default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
@@ -50,6 +51,12 @@ module.exports = {
                 rapid_private_key:
                     process.env.BOT_PRIVATE_KEY_REGULAR_RAPID_GAS,
             },
+        },
+        default_api_keys: {
+            alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
+            infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
+            etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
+            pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
         },
     },
     trigger_scheduler: {
@@ -131,7 +138,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x975Ab64F4901Af5f0C96636deA0b9de3419D0c2F',
+        controller: '0x1246F4B0A4F73457c5dBB6588E4EB65275f8b925',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

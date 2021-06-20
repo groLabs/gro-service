@@ -194,7 +194,7 @@ async function getExposureStats(blockTag, systemStats) {
     // Harvest strategy is in vault 2, strategy 0
     const harvestExposure = systemStats.vaults[2].strategies[0].share;
     exposureProtocol.push({
-        name: 'Harvest',
+        name: protocolNames[3],
         concentration: harvestExposure,
     });
     logger.info(
@@ -274,7 +274,12 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
             }
         );
         systemApy = systemApy.add(vaultApy);
-        const estimatedVaultApy = vaultApy.div(vaultPercent);
+        let estimatedVaultApy;
+        if (vaultPercent.isZero) {
+            estimatedVaultApy = ZERO;
+        } else {
+            estimatedVaultApy = vaultApy.div(vaultPercent);
+        }
         logger.info(`estimatedVaultApy ${vaultIndex} ${estimatedVaultApy}`);
         const share = calculateSharePercent(vaultAsset.amount, totalAssetsUsd);
         systemShare = systemShare.add(share);

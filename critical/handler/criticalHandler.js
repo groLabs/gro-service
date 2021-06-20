@@ -155,7 +155,7 @@ async function curvePriceCheck(providerKey, walletKey) {
     logger.info(`price12 ${price12}`);
     const coinIndex = findBrokenToken(price01, price02, price12);
     logger.info(`coinIndex ${coinIndex}`);
-    if (coinIndex > 3) {
+    if (coinIndex < 3) {
         await getController(providerKey, walletKey)
             .emergency(coinIndex)
             .catch((error) => {
