@@ -12,13 +12,11 @@ const {
 const { pendingTransactionResend } = require('../../gasPrice/transaction');
 const {
     investTrigger,
-    pnlTrigger,
     rebalanceTrigger,
     harvestOneTrigger,
 } = require('../handler/triggerHandler');
 const {
     invest,
-    execPnl,
     rebalance,
     harvest,
     curveInvest,
@@ -50,8 +48,6 @@ const investTriggerSchedulerSetting =
     getConfig('trigger_scheduler.invest', false) || '0 * * * *';
 const harvestTriggerSchedulerSetting =
     getConfig('trigger_scheduler.harvest', false) || '15 * * * *';
-const pnlTriggerSchedulerSetting =
-    getConfig('trigger_scheduler.pnl', false) || '30 * * * *';
 const rebalanceTriggerSchedulerSetting =
     getConfig('trigger_scheduler.rebalance', false) || '45 * * * *';
 const longPendingTransactionSetting = getConfig('transaction_long_pending');
@@ -192,29 +188,6 @@ function investTriggerScheduler() {
     });
 }
 
-function pnlTriggerScheduler() {
-    const providerKey = 'default';
-    const walletKey = 'fast';
-    schedule.scheduleJob(pnlTriggerSchedulerSetting, async () => {
-        try {
-            const result = await checkPendingTransactions(['pnl']);
-            pnlTransactionMessage(result);
-
-            const triggerResult = await pnlTrigger(providerKey, walletKey);
-
-            if (!triggerResult.needCall) return;
-
-            const currectBlockNumber = await getCurrentBlockNumber(providerKey);
-            if (!currectBlockNumber) return;
-
-            await syncManagerNonce(providerKey, walletKey);
-            await execPnl(currectBlockNumber, providerKey, walletKey);
-        } catch (error) {
-            sendMessageToAlertChannel(error);
-        }
-    });
-}
-
 function rebalanceTriggerScheduler() {
     const providerKey = 'default';
     const walletKey = 'fast';
@@ -284,7 +257,6 @@ function startRegularJobs() {
     checkBotAccountBalance();
     investTriggerScheduler();
     harvestTriggerScheduler();
-    pnlTriggerScheduler();
     rebalanceTriggerScheduler();
     longPendingTransactionsScheduler();
 }

@@ -1,6 +1,5 @@
 const {
     getInsurance,
-    getPnl,
     getLifeguard,
     getVaults,
     getVaultAndStrategyLabels,
@@ -11,7 +10,6 @@ const { ContractSendError } = require('../../common/error');
 const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { investMessage } = require('../../discordMessage/investMessage');
 const { rebalanceMessage } = require('../../discordMessage/rebalanceMessage');
-const { pnlMessage } = require('../../discordMessage/pnlMessage');
 const { harvestMessage } = require('../../discordMessage/harvestMessage');
 const { wrapSendTransaction } = require('../../gasPrice/transaction');
 const logger = require('../regularLogger');
@@ -119,33 +117,6 @@ async function harvest(blockNumber, strategyInfo, providerKey, walletKey) {
     });
 }
 
-async function execPnl(blockNumber, providerKey, walletKey) {
-    const pnl = getPnl(providerKey, walletKey);
-    const pnlResponse = await wrapSendTransaction(pnl, 'execPnL', [0]).catch(
-        (error) => {
-            logger.error(error);
-            throw new ContractSendError(
-                'ExecPnL call failed.',
-                MESSAGE_TYPES.pnl
-            );
-        }
-    );
-
-    addPendingTransaction(
-        'pnl',
-        {
-            blockNumber,
-            providerKey,
-            walletKey,
-            reSendTimes: 0,
-            methodName: 'execPnL',
-            label: MESSAGE_TYPES.pnl,
-        },
-        pnlResponse
-    );
-    pnlMessage({ transactionHash: pnlResponse.hash });
-}
-
 async function rebalance(blockNumber, providerKey, walletKey) {
     const rebalanceReponse = await wrapSendTransaction(
         getInsurance(providerKey, walletKey),
@@ -221,20 +192,14 @@ async function execActions(blockNumber, triggerResult) {
         await harvest(blockNumber, triggerResult[1].params);
     }
 
-    // Handle Pnl
-    if (triggerResult[2].needCall) {
-        logger.info('pnl');
-        await execPnl(blockNumber);
-    }
-
     // Handle Rebalance
-    if (triggerResult[3].needCall) {
+    if (triggerResult[2].needCall) {
         logger.info('rebalance');
         await rebalance(blockNumber);
     }
 
     // Handle Curve invest
-    if (triggerResult[4].needCall) {
+    if (triggerResult[3].needCall) {
         logger.info('curve invest');
         await curveInvest(blockNumber);
     }
@@ -244,7 +209,6 @@ module.exports = {
     invest,
     curveInvest,
     harvest,
-    execPnl,
     rebalance,
     execActions,
 };
