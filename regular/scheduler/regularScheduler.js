@@ -12,17 +12,14 @@ const {
 const { pendingTransactionResend } = require('../../gasPrice/transaction');
 const {
     investTrigger,
-    pnlTrigger,
     rebalanceTrigger,
     harvestOneTrigger,
 } = require('../handler/triggerHandler');
 const {
     invest,
-    execPnl,
     rebalance,
     harvest,
     curveInvest,
-    updateChainlinkPrice,
 } = require('../handler/actionHandler');
 
 const { getVaults, getStrategyLength } = require('../../contract/allContracts');
@@ -51,13 +48,8 @@ const investTriggerSchedulerSetting =
     getConfig('trigger_scheduler.invest', false) || '0 * * * *';
 const harvestTriggerSchedulerSetting =
     getConfig('trigger_scheduler.harvest', false) || '15 * * * *';
-const pnlTriggerSchedulerSetting =
-    getConfig('trigger_scheduler.pnl', false) || '30 * * * *';
 const rebalanceTriggerSchedulerSetting =
     getConfig('trigger_scheduler.rebalance', false) || '45 * * * *';
-const botUpdateChainPriceSchedulerSetting =
-    getConfig('trigger_scheduler.bot_chainlink_check', false) ||
-    '00 20 * * * *';
 const longPendingTransactionSetting = getConfig('transaction_long_pending');
 
 const botBalanceWarnVault =
@@ -196,29 +188,6 @@ function investTriggerScheduler() {
     });
 }
 
-function pnlTriggerScheduler() {
-    const providerKey = 'default';
-    const walletKey = 'fast';
-    schedule.scheduleJob(pnlTriggerSchedulerSetting, async () => {
-        try {
-            const result = await checkPendingTransactions(['pnl']);
-            pnlTransactionMessage(result);
-
-            const triggerResult = await pnlTrigger(providerKey, walletKey);
-
-            if (!triggerResult.needCall) return;
-
-            const currectBlockNumber = await getCurrentBlockNumber(providerKey);
-            if (!currectBlockNumber) return;
-
-            await syncManagerNonce(providerKey, walletKey);
-            await execPnl(currectBlockNumber, providerKey, walletKey);
-        } catch (error) {
-            sendMessageToAlertChannel(error);
-        }
-    });
-}
-
 function rebalanceTriggerScheduler() {
     const providerKey = 'default';
     const walletKey = 'fast';
@@ -284,40 +253,12 @@ function harvestTriggerScheduler() {
     });
 }
 
-function updateChainPrice() {
-    const providerKey = 'default';
-    const walletKey = 'standard';
-    schedule.scheduleJob(botUpdateChainPriceSchedulerSetting, async () => {
-        try {
-            const result = await checkPendingTransactions([
-                'chainPrice-0',
-                'chainPrice-1',
-                'chainPrice-2',
-            ]);
-            updatePriceTransactionMessage(result);
-
-            const currectBlockNumber = await getCurrentBlockNumber();
-            if (!currectBlockNumber) return;
-            await syncManagerNonce(providerKey, walletKey);
-            await updateChainlinkPrice(
-                currectBlockNumber,
-                providerKey,
-                walletKey
-            );
-        } catch (error) {
-            sendMessageToAlertChannel(error);
-        }
-    });
-}
-
 function startRegularJobs() {
     checkBotAccountBalance();
     investTriggerScheduler();
     harvestTriggerScheduler();
-    pnlTriggerScheduler();
     rebalanceTriggerScheduler();
     longPendingTransactionsScheduler();
-    updateChainPrice();
 }
 
 module.exports = {

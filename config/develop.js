@@ -1,10 +1,29 @@
 module.exports = {
     bot_balance_warn: '200000000000000000000000',
+    deposit_handler_history: {
+        '0x5081a39b8A5f0E35a8D959395a630b68B74Dd30f': {
+            abi: 'old',
+            event_fragment: [
+                'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)',
+            ],
+        },
+        '0x2A590C461Db46bca129E8dBe5C3998A8fF402e76': {},
+    },
+    withdraw_handler_history: {
+        '0x1fA02b2d6A771842690194Cf62D91bdd92BfE28d': {
+            abi: 'old',
+            event_fragment: [
+                'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
+            ],
+        },
+        '0x2F54D1563963fC04770E85AF819c89Dc807f6a06': {},
+    },
+    old_pnl: '0xe59bBC020Aa0215Ed5456C125e52fb0d574987dC',
     blockchain: {
         network: 'http://localhost:8545',
-        start_block: 12584881,
+        start_block: 1161,
         alchemy_api_keys: {
-            default: 'http://localhost:8545', // process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
+            default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
             stats_gro: process.env.ALCHEMY_KEY_STATS_GRO,
         },
@@ -33,6 +52,12 @@ module.exports = {
                     process.env.BOT_PRIVATE_KEY_REGULAR_RAPID_GAS,
             },
         },
+        default_api_keys: {
+            alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
+            infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
+            etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
+            pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
+        },
     },
     trigger_scheduler: {
         pending_transaction_check: '5 * * * * *',
@@ -41,11 +66,11 @@ module.exports = {
         harvest: '*/1 * * * *',
         pnl: '23 * * * * *',
         rebalance: '33 * * * * *',
-        generate_stats: '10 * * * *',
+        generate_stats: '10 * * *',
         remove_stats_file: '*/2 * * * *',
         bot_curve_check: '*/1 * * * *',
         deposit_withdraw_event: '*/2 * * * *',
-        event_summary: '*/2 * * * *',
+        event_summary: '*/3 * * * *',
         bot_chainlink_check: '25,55 * * * * *',
     },
     emoji: {
@@ -113,7 +138,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x4c5859f0F772848b2D91F1D83E2Fe57935348029',
+        controller: '0x1246F4B0A4F73457c5dBB6588E4EB65275f8b925',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

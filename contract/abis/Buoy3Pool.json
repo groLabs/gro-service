@@ -3,8 +3,28 @@
         "inputs": [
             {
                 "internalType": "address",
-                "name": "_chainOracle",
+                "name": "_crv3pool",
                 "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "poolToken",
+                "type": "address"
+            },
+            {
+                "internalType": "address[3]",
+                "name": "_tokens",
+                "type": "address[3]"
+            },
+            {
+                "internalType": "uint256[3]",
+                "name": "_decimals",
+                "type": "uint256[3]"
+            },
+            {
+                "internalType": "address[3]",
+                "name": "aggregators",
+                "type": "address[3]"
             }
         ],
         "stateMutability": "nonpayable",
@@ -21,31 +41,6 @@
             }
         ],
         "name": "LogAddToWhitelist",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "curvpool",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "lpToken",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "address[]",
-                "name": "tokens",
-                "type": "address[]"
-            }
-        ],
-        "name": "LogCurvePoolAdded",
         "type": "event"
     },
     {
@@ -140,6 +135,58 @@
     },
     {
         "inputs": [],
+        "name": "CURVE_RATIO_DECIMALS",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "CURVE_RATIO_DECIMALS_FACTOR",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "DAI",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "DAI_DECIMALS",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "DEFAULT_DECIMALS",
         "outputs": [
             {
@@ -169,9 +216,9 @@
         "name": "N_COINS",
         "outputs": [
             {
-                "internalType": "uint256",
+                "internalType": "uint8",
                 "name": "",
-                "type": "uint256"
+                "type": "uint8"
             }
         ],
         "stateMutability": "view",
@@ -204,6 +251,58 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "USDC",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "USDC_DECIMALS",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "USDT",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "USDT_DECIMALS",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "address",
@@ -214,38 +313,6 @@
         "name": "addToWhitelist",
         "outputs": [],
         "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "inAmount",
-                "type": "uint256"
-            }
-        ],
-        "name": "balancedCalculation",
-        "outputs": [
-            {
-                "internalType": "uint256[]",
-                "name": "outAmounts",
-                "type": "uint256[]"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "chainOracle",
-        "outputs": [
-            {
-                "internalType": "contract IChainPrice",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -262,19 +329,13 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "name": "decimals",
+        "inputs": [],
+        "name": "daiUsdAgg",
         "outputs": [
             {
-                "internalType": "uint256",
+                "internalType": "address",
                 "name": "",
-                "type": "uint256"
+                "type": "address"
             }
         ],
         "stateMutability": "view",
@@ -284,25 +345,15 @@
         "inputs": [
             {
                 "internalType": "uint256",
-                "name": "token0",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "token1",
+                "name": "i",
                 "type": "uint256"
             }
         ],
-        "name": "getRatio",
+        "name": "getPriceFeed",
         "outputs": [
             {
                 "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "",
+                "name": "_price",
                 "type": "uint256"
             }
         ],
@@ -343,10 +394,10 @@
     },
     {
         "inputs": [],
-        "name": "owner",
+        "name": "lpToken",
         "outputs": [
             {
-                "internalType": "address",
+                "internalType": "contract IERC20",
                 "name": "",
                 "type": "address"
             }
@@ -355,24 +406,13 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "token0",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "token1",
-                "type": "uint256"
-            }
-        ],
-        "name": "ratioCheck",
+        "inputs": [],
+        "name": "owner",
         "outputs": [
             {
-                "internalType": "uint256",
+                "internalType": "address",
                 "name": "",
-                "type": "uint256"
+                "type": "address"
             }
         ],
         "stateMutability": "view",
@@ -420,24 +460,6 @@
             }
         ],
         "name": "setBasisPointsLmit",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "_curvePool",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "_lpToken",
-                "type": "address"
-            }
-        ],
-        "name": "setCurvePool",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -517,9 +539,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint256[]",
+                "internalType": "uint256[3]",
                 "name": "tokenAmounts",
-                "type": "uint256[]"
+                "type": "uint256[3]"
             },
             {
                 "internalType": "bool",
@@ -541,9 +563,9 @@
     {
         "inputs": [
             {
-                "internalType": "uint256[]",
+                "internalType": "uint256[3]",
                 "name": "inAmounts",
-                "type": "uint256[]"
+                "type": "uint256[3]"
             },
             {
                 "internalType": "bool",
@@ -565,17 +587,22 @@
     {
         "inputs": [
             {
-                "internalType": "uint256",
+                "internalType": "address",
                 "name": "",
-                "type": "uint256"
-            }
-        ],
-        "name": "tokens",
-        "outputs": [
+                "type": "address"
+            },
             {
                 "internalType": "address",
                 "name": "",
                 "type": "address"
+            }
+        ],
+        "name": "tokenRatios",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
             }
         ],
         "stateMutability": "view",
@@ -595,6 +622,38 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "updateRatios",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tolerance",
+                "type": "uint256"
+            }
+        ],
+        "name": "updateRatiosWithTolerance",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "uint256",
@@ -608,6 +667,32 @@
                 "internalType": "uint256",
                 "name": "",
                 "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "usdcUsdAgg",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "usdtUsdAgg",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
             }
         ],
         "stateMutability": "view",

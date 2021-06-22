@@ -83,32 +83,34 @@ async function checkPriceUpdateInChainPrice(
     providerKey,
     walletKey
 ) {
-    const chainPriceInstance = getChainPrice(providerKey, walletKey);
-    for (let i = 0; i < stabeCoins.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        const checkResult = await chainPriceInstance
-            .priceUpdateCheck(stabeCoins[i])
-            .catch((error) => {
-                handleError(error, {
-                    curveCheck: {
-                        message: 'Call priceUpdateCheck failed',
-                    },
-                });
-            });
-        logger.info(`stabeCoins ${i}, ${checkResult}`);
-        if (checkResult) {
-            // eslint-disable-next-line no-await-in-loop
-            await chainPriceInstance
-                .updateTokenRatios(stabeCoins[i])
-                .catch((error) => {
-                    handleError(error, {
-                        curveCheck: {
-                            message: 'Call updateTokenRatios failed',
-                        },
-                    });
-                });
-        }
-    }
+    // Smart contracts change that removed ChainPrice contract need reconsider this logic
+    // TODO
+    // const chainPriceInstance = getChainPrice(providerKey, walletKey);
+    // for (let i = 0; i < stabeCoins.length; i += 1) {
+    //     // eslint-disable-next-line no-await-in-loop
+    //     const checkResult = await chainPriceInstance
+    //         .priceUpdateCheck(stabeCoins[i])
+    //         .catch((error) => {
+    //             handleError(error, {
+    //                 curveCheck: {
+    //                     message: 'Call priceUpdateCheck failed',
+    //                 },
+    //             });
+    //         });
+    //     logger.info(`stabeCoins ${i}, ${checkResult}`);
+    //     if (checkResult) {
+    //         // eslint-disable-next-line no-await-in-loop
+    //         await chainPriceInstance
+    //             .updateTokenRatios(stabeCoins[i])
+    //             .catch((error) => {
+    //                 handleError(error, {
+    //                     curveCheck: {
+    //                         message: 'Call updateTokenRatios failed',
+    //                     },
+    //                 });
+    //             });
+    //     }
+    // }
 }
 
 function outOfRange(value, decimal) {
@@ -153,7 +155,7 @@ async function curvePriceCheck(providerKey, walletKey) {
     logger.info(`price12 ${price12}`);
     const coinIndex = findBrokenToken(price01, price02, price12);
     logger.info(`coinIndex ${coinIndex}`);
-    if (coinIndex > 3) {
+    if (coinIndex < 3) {
         await getController(providerKey, walletKey)
             .emergency(coinIndex)
             .catch((error) => {

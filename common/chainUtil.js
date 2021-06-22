@@ -67,7 +67,7 @@ function getDefaultProvider() {
     if (defaultProvider) {
         return defaultProvider;
     }
-    const options = getConfig('blockchain.default_api_keys') || {};
+    const options = getConfig('blockchain.default_api_keys', false) || {};
     logger.info('Create a new default provider.');
     if (process.env.NODE_ENV === 'develop') {
         defaultProvider = ethers.providers.getDefaultProvider(network);
@@ -97,7 +97,7 @@ function getAlchemyRpcProvider(providerKey) {
             const key = `blockchain.alchemy_api_keys.${providerKey}`;
             const apiKeyValue = getConfig(key);
             if (process.env.NODE_ENV === 'develop') {
-                result = ethers.providers.getDefaultProvider(apiKeyValue);
+                result = ethers.providers.getDefaultProvider(network);
             } else {
                 result = new ethers.providers.AlchemyProvider(
                     network,

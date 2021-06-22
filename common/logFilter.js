@@ -8,6 +8,9 @@ const {
 } = require('../contract/allContracts');
 const { ContractCallError } = require('./error');
 const { getDefaultProvider } = require('./chainUtil');
+const depositHandlerABI = require('../contract/abis/DepositHandler.json');
+const withdrawHandlerABI = require('../contract/abis/WithdrawHandler.json');
+const { getConfig } = require('./configUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -28,10 +31,10 @@ const EVENT_TYPE = {
 
 const EVENT_FRAGMENT = {};
 EVENT_FRAGMENT[EVENT_TYPE.deposit] = [
-    'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)',
+    'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[3] tokens)',
 ];
 EVENT_FRAGMENT[EVENT_TYPE.withdraw] = [
-    'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
+    'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[3] tokenAmounts)',
 ];
 EVENT_FRAGMENT[EVENT_TYPE.gvtTransfer] = [
     'event LogTransfer(address indexed sender, address indexed recipient, uint256 indexed amount, uint256 factor)',
@@ -83,6 +86,60 @@ async function getGTokenApprovalFilters(account, providerKey) {
     return approvalFilters;
 }
 
+function getDepositWithdrawFilter(account, type, handlerAddresses) {
+    logger.info(
+        `type: ${type}, handlerAddresses: ${JSON.stringify(handlerAddresses)}`
+    );
+    let handler;
+    let handlerAddress;
+    const filters = [];
+    for (let i = 0; i < handlerAddresses.length; i += 1) {
+        handlerAddress = handlerAddresses[i];
+        let handlerABI = getConfig(`${type}_handler_history`)[handlerAddress];
+        logger.info(`handlerAddress: ${JSON.stringify(handlerAddress)}`);
+        handlerABI = handlerABI.abi;
+        const abiVersion = handlerABI ? `-${handlerABI}` : '';
+        logger.info(
+            `handlerAddress: ${handlerAddress}; abiVersion: ${abiVersion}`
+        );
+        switch (type) {
+            case EVENT_TYPE.deposit:
+                handler = new ethers.Contract(
+                    handlerAddress,
+                    require(`../contract/abis/DepositHandler${abiVersion}.json`)
+                );
+                filters.push(handler.filters.LogNewDeposit(account));
+                break;
+            case EVENT_TYPE.withdraw:
+                handler = new ethers.Contract(
+                    handlerAddress,
+                    require(`../contract/abis/WithdrawHandler${abiVersion}.json`)
+                );
+                filters.push(handler.filters.LogNewWithdrawal(account));
+                break;
+            default:
+                logger.error(`No type: ${type}`);
+        }
+    }
+    if (filters.length) return filters;
+
+    switch (type) {
+        case EVENT_TYPE.deposit:
+            handlerAddress = getDepositHandler().address;
+            handler = new ethers.Contract(handlerAddress, depositHandlerABI);
+            filters.push(handler.filters.LogNewDeposit(account));
+            break;
+        case EVENT_TYPE.withdraw:
+            handlerAddress = getWithdrawHandler().address;
+            handler = new ethers.Contract(handlerAddress, withdrawHandlerABI);
+            filters.push(handler.filters.LogNewWithdrawal(account));
+            break;
+        default:
+            logger.error(`No type: ${type}`);
+    }
+    return filters;
+}
+
 function getFilter(account, type, providerKey) {
     const depositHandler = getDepositHandler(providerKey);
     const withdrawHandler = getWithdrawHandler(providerKey);
@@ -120,15 +177,19 @@ function getFilter(account, type, providerKey) {
     return filter;
 }
 
-async function getEventsByFilter(filter, eventType, providerKey) {
+async function getEventsByFilter(
+    filter,
+    eventType,
+    providerKey,
+    specialEventFragment
+) {
     const provider = getDefaultProvider();
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(`Get ${eventType} logs failed.`);
     });
-    const controllerInstance = new ethers.utils.Interface(
-        EVENT_FRAGMENT[eventType]
-    );
+    const fragment = specialEventFragment || EVENT_FRAGMENT[eventType];
+    const controllerInstance = new ethers.utils.Interface(fragment);
     const logs = [];
     filterLogs.forEach((log) => {
         const eventInfo = {
@@ -170,6 +231,40 @@ async function getApprovalEvents(
         );
     }
     const promiseResult = await Promise.all(approvalLogsPromise);
+    for (let i = 0; i < promiseResult.length; i += 1) {
+        logs.push(...promiseResult[i]);
+    }
+    return logs;
+}
+
+async function getDepositWithdrawEvents(
+    eventType,
+    fromBlock,
+    toBlock = 'latest',
+    account = null,
+    providerKey,
+    handlerAddresses
+) {
+    const filters = getDepositWithdrawFilter(
+        account,
+        eventType,
+        handlerAddresses
+    );
+    const logs = [];
+    const eventsPromise = [];
+    for (let i = 0; i < filters.length; i += 1) {
+        const handlerAddress = handlerAddresses[i];
+        const eventFragment = getConfig(`${eventType}_handler_history`)[
+            handlerAddress
+        ].event_fragment;
+        const filter = filters[i];
+        filter.fromBlock = fromBlock;
+        filter.toBlock = toBlock;
+        eventsPromise.push(
+            getEventsByFilter(filter, eventType, providerKey, eventFragment)
+        );
+    }
+    const promiseResult = await Promise.all(eventsPromise);
     for (let i = 0; i < promiseResult.length; i += 1) {
         logs.push(...promiseResult[i]);
     }
@@ -335,4 +430,5 @@ module.exports = {
     getStrategyHavestEvents,
     getVaultTransferEvents,
     getPnLEvents,
+    getDepositWithdrawEvents,
 };

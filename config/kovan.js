@@ -1,4 +1,23 @@
 module.exports = {
+    deposit_handler_history: {
+        '0x0bB217d1D8049412aA51c4f8B1a30A2A36CF0D77': {
+            abi: 'old',
+            event_fragment: [
+                'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)',
+            ],
+        },
+        '0xDaCd9318Ac3412Be751C8c03184665be31dc4400': {},
+    },
+    withdraw_handler_history: {
+        '0x163A450699a6784978ed29380A704C52f94Eb7Ef': {
+            abi: 'old',
+            event_fragment: [
+                'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
+            ],
+        },
+        '0x015244C5127265C67D5ABC90F73FfEA19A6d20BB': {},
+    },
+    old_pnl: '0xe59bBC020Aa0215Ed5456C125e52fb0d574987dC',
     blockchain: {
         network: 'kovan',
         start_block: 25082399,
@@ -99,16 +118,9 @@ module.exports = {
     stats_latest: '../stats/gro-latest.json',
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
-    protocol: ['Compound', 'Cream', 'Curve'],
-    strategy_name: [
-        'Lev Comp',
-        'Cream',
-        'Lev Comp',
-        'Cream',
-        'Harvest',
-        'Cream',
-    ],
-    strategy_default_apy: [132800, 99000, 90000, 65000, 90000, 90278, 200000],
+    protocol: ['Compound', 'Cream', 'Curve', 'Idle'],
+    strategy_name: ['Lev Comp', 'Cream', 'Lev Comp', 'Cream', 'Idle', 'Cream'],
+    strategy_default_apy: [132800, 99000, 90000, 65000, 83000, 90278, 200000],
     curve_strategy_name: ['XPool'],
     harvest_strategy_dependency: [
         '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
@@ -131,7 +143,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x0bBc524f29aeA87E7df378D0Bb09905Cda57c4fF',
+        controller: '0x1246F4B0A4F73457c5dBB6588E4EB65275f8b925',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

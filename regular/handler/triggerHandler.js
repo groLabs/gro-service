@@ -1,7 +1,6 @@
 const { BigNumber } = require('ethers');
 const {
     getInsurance,
-    getPnl,
     getLifeguard,
     getVaults,
     getStrategyLength,
@@ -16,7 +15,6 @@ const {
     ContractCallError,
 } = require('../../common/error');
 const { investTriggerMessage } = require('../../discordMessage/investMessage');
-const { pnlTriggerMessage } = require('../../discordMessage/pnlMessage');
 const {
     rebalaneTriggerMessage,
 } = require('../../discordMessage/rebalanceMessage');
@@ -221,54 +219,6 @@ async function harvestOneTrigger(providerkey, walletKey) {
     return NONEED_TRIGGER;
 }
 
-async function pnlTrigger(providerkey, walletKey) {
-    if (pendingTransactions.get('pnl')) {
-        const result = `Already has pending Pnl transaction: ${
-            pendingTransactions.get('pnl').hash
-        }`;
-        logger.info(result);
-        throw new PendingTransactionError(result, MESSAGE_TYPES.pnlTrigger);
-    }
-
-    const pnlInstance = getPnl(providerkey, walletKey);
-
-    const needPnlVault = await pnlInstance.pnlTrigger().catch((error) => {
-        logger.error(error);
-        throw new ContractCallError(
-            'PnlTrigger call failed',
-            MESSAGE_TYPES.pnlTrigger
-        );
-    });
-    logger.info(`pnlTrigger: ${needPnlVault}`);
-    let pnlTriggerResult = NONEED_TRIGGER;
-    const messageContent = { pnlTrigger: needPnlVault, totalTrigger: false };
-    if (!needPnlVault) {
-        const needPnlAssets = await pnlInstance
-            .totalAssetsChangeTrigger()
-            .catch((error) => {
-                logger.error(error);
-                throw new ContractCallError(
-                    'TotalAssetsChangeTrigger call failed',
-                    MESSAGE_TYPES.pnlTrigger
-                );
-            });
-        messageContent.totalTrigger = needPnlAssets;
-        logger.info(`totalAssetsChangeTrigger: ${needPnlAssets}`);
-        if (needPnlAssets) {
-            pnlTriggerResult = {
-                needCall: true,
-            };
-        }
-    } else {
-        pnlTriggerResult = {
-            needCall: true,
-        };
-    }
-
-    pnlTriggerMessage(messageContent);
-    return pnlTriggerResult;
-}
-
 async function rebalanceTrigger(providerkey, walletKey) {
     if (pendingTransactions.get('rebalance')) {
         const result = `Already has pending rebalance transaction: ${
@@ -304,6 +254,5 @@ async function rebalanceTrigger(providerkey, walletKey) {
 module.exports = {
     investTrigger,
     harvestOneTrigger,
-    pnlTrigger,
     rebalanceTrigger,
 };

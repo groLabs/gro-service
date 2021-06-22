@@ -21,7 +21,6 @@ const withdrawHandlerABI = require('./abis/WithdrawHandler.json');
 const lifeguardABI = require('./abis/LifeGuard3Pool.json');
 const buoyABI = require('./abis/Buoy3Pool.json');
 const VaultABI = require('./abis/Vault.json');
-const chainPriceABI = require('./abis/ChainPrice.json');
 const erc20ABI = require('./abis/ERC20.json');
 const strategyABI = require('./abis/Strategy.json');
 
@@ -38,7 +37,6 @@ let withdrawHandler;
 let lifeguard;
 let buoy;
 let curveVault;
-let chainPrice;
 const vaults = [];
 const underlyTokens = [];
 const strategyLength = [];
@@ -249,14 +247,6 @@ async function initLifeguard() {
     const buoyAddresses = await lifeguard.buoy();
     logger.info(`bouy address: ${buoyAddresses}`);
     buoy = new ethers.Contract(buoyAddresses, buoyABI, nonceManager);
-
-    const chainPriceAddress = await buoy.chainOracle();
-    chainPrice = new ethers.Contract(
-        chainPriceAddress,
-        chainPriceABI,
-        nonceManager
-    );
-    logger.info(`chainPrice address: ${chainPriceAddress}`);
 }
 
 async function initVaultStabeCoins() {
@@ -487,16 +477,6 @@ function getVaultAndStrategyLabels() {
     return vaultAndStrategyLabels;
 }
 
-function getChainPrice(providerKey, signerKey) {
-    if (!providerKey) return chainPrice;
-    return getOrCreateContract(
-        chainPrice,
-        'chainPrice',
-        providerKey,
-        signerKey
-    );
-}
-
 function getVaultStabeCoins() {
     return vaultStabeCoins;
 }
@@ -538,7 +518,6 @@ module.exports = {
     getStrategyLength,
     getBuoy,
     getVaultAndStrategyLabels,
-    getChainPrice,
     getVaultStabeCoins,
     getUnderlyTokens,
     getYearnVaults,
