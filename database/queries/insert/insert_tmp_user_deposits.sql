@@ -2,14 +2,15 @@ INSERT INTO gro."TMP_USER_DEPOSITS" (
         "block_number",
         "tx_hash",
         "network_id",
+        "transfer_type",
         "user_address",
         "referral_address",
         "usd_value",
         "gvt_value",
         "pwrd_value",
-        "usd_amount",
         "gvt_amount",
         "pwrd_amount",
+        "stable_amount",
         "dai_amount",
         "usdc_amount",
         "usdt_amount",
@@ -30,5 +31,6 @@ VALUES (
         $12,
         $13,
         $14,
-        $15
+        $15,
+        $16
     );

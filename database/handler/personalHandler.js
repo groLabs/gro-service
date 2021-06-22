@@ -33,7 +33,14 @@ const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 const QUERY_ERROR = 400;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
 const ERC20_TRANSFER_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-const Transfer = Object.freeze({ "DEPOSIT": 1, "WITHDRAWAL": 2 });
+const Transfer = Object.freeze({
+    "DEPOSIT": 1,
+    "WITHDRAWAL": 2,
+    "EXTERNAL_GVT_DEPOSIT": 3,
+    "EXTERNAL_PWRD_DEPOSIT": 4,
+    "EXTERNAL_GVT_WITHDRAWAL": 5,
+    "EXTERNAL_PWRD_WITHDRAWAL": 6
+});
 let scanner;
 
 const parseAmount = (amount, coin) => {
@@ -42,6 +49,33 @@ const parseAmount = (amount, coin) => {
         (coin === 'DAI' || coin === 'USD') ? BN(10).pow(18) : BN(10).pow(6),
         amountDecimal
     ));
+}
+
+const transferType = (side) => {
+    switch (side) {
+        case Transfer.DEPOSIT:
+            return 'deposit';
+        case Transfer.WITHDRAWAL:
+            return 'withdrawal';
+        case Transfer.EXTERNAL_GVT_DEPOSIT:
+            return 'ext_gvt_deposit'
+        case Transfer.EXTERNAL_PWRD_DEPOSIT:
+            return 'ext_pwrd_deposit';
+        case Transfer.EXTERNAL_GVT_WITHDRAWAL:
+            return 'ext_gvt_withdrawal'
+        case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
+            return 'ext_pwrd_withdrawal'
+        default:
+            break;
+    }
+}
+
+const isDeposit = (side) => {
+    return (side === Transfer.DEPOSIT
+        || side === Transfer.EXTERNAL_GVT_DEPOSIT
+        || side === Transfer.EXTERNAL_PWRD_DEPOSIT)
+        ? true
+        : false;
 }
 
 // TODO start: to be included in /commmon/chainUtil.js
@@ -186,55 +220,116 @@ const getGTokenFromTx = async (result, side) => {
     }
 };
 
-const parseDataFromEvent = async (logs, side) => {
+const parseFromTransferEvent = async (logs, side) => {
     try {
         let result = [];
         logs.forEach((log) => {
-            const dai_amount = (side === Transfer.DEPOSIT)
-                ? parseAmount(log.args[4][0], 'DAI')
-                : - parseAmount(log.args[8][0], 'DAI');
-            const usdc_amount = (side === Transfer.DEPOSIT)
-                ? parseAmount(log.args[4][1], 'USDC')
-                : - parseAmount(log.args[8][1], 'USDC');
-            const usdt_amount = (side === Transfer.DEPOSIT)
-                ? parseAmount(log.args[4][2], 'USDT')
-                : - parseAmount(log.args[8][2], 'USDT');
-            const usd_deduct = (side === Transfer.DEPOSIT)
-                ? 0
-                : - parseAmount(log.args[5], 'USD');
-            const usd_return = (side === Transfer.DEPOSIT)
-                ? 0
-                : - parseAmount(log.args[6], 'USD');
-            const lp_amount = (side === Transfer.DEPOSIT)
-                ? 0
-                : - parseAmount(log.args[7], 'USD');
-            const usd_value = (side === Transfer.DEPOSIT)
-                ? parseAmount(log.args[3], 'USD')
-                : usd_return;
+            const dai_amount =
+                (side === Transfer.DEPOSIT)
+                    ? parseAmount(log.args[4][0], 'DAI') // LogNewDeposit.tokens[0]
+                    : (side === Transfer.WITHDRAWAL)
+                        ? - parseAmount(log.args[8][0], 'DAI') // LogNewWithdrawal.tokenAmounts[0]
+                        : 0;
+            const usdc_amount =
+                (side === Transfer.DEPOSIT)
+                    ? parseAmount(log.args[4][1], 'USDC') // LogNewDeposit.tokens[1]
+                    : (side === Transfer.WITHDRAWAL)
+                        ? - parseAmount(log.args[8][1], 'USDC') // LogNewWithdrawal.tokenAmounts[1]
+                        : 0;
+            const usdt_amount =
+                (side === Transfer.DEPOSIT)
+                    ? parseAmount(log.args[4][2], 'USDT') // LogNewDeposit.tokens[2]
+                    : (side === Transfer.WITHDRAWAL)
+                        ? - parseAmount(log.args[8][2], 'USDT') // LogNewWithdrawal.tokenAmounts[2]
+                        : 0;
+            const usd_deduct =
+                (side === Transfer.WITHDRAWAL)
+                    ? - parseAmount(log.args[5], 'USD') // LogNewWithdrawal.deductUsd
+                    : 0;
+            const lp_amount =
+                (side === Transfer.WITHDRAWAL)
+                    ? - parseAmount(log.args[7], 'USD') // LogNewWithdrawal.lpAmount
+                    : 0;
+            const usd_return =
+                (side === Transfer.WITHDRAWAL)
+                    ? - parseAmount(log.args[6], 'USD') // LogNewWithdrawal.returnUsd
+                    : (side === Transfer.EXTERNAL_GVT_WITHDRAWAL)
+                        ? - (parseAmount(log.args[2], 'USD') / parseAmount(log.args[3], 'USD')) // LogTransfer.amount / ratio (GVT)
+                        : (side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
+                            ? - parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
+                            : 0;
+            const usd_value =
+                (side === Transfer.DEPOSIT)
+                    ? parseAmount(log.args[3], 'USD') // LogNewDeposit.usdAmount
+                    : (side === Transfer.WITHDRAWAL || side === Transfer.EXTERNAL_GVT_WITHDRAWAL || side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
+                        ? usd_return
+                        : (side === Transfer.EXTERNAL_GVT_DEPOSIT)
+                            ? parseAmount(log.args[2], 'USD') / parseAmount(log.args[3], 'USD') // LogTransfer.amount / ratio (GVT)
+                            : (side === Transfer.EXTERNAL_PWRD_DEPOSIT)
+                                ? parseAmount(log.args[2], 'USD') // // LogTransfer.amount (PWRD) ** TODO: retrieve the ratio!!!! ****
+                                : 0;
+            const stable_amount =
+                (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL)
+                    ? dai_amount + usdc_amount + usdt_amount
+                    : 0;
+            const isGVT =
+                (((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && !log.args[2])
+                    || side === Transfer.EXTERNAL_GVT_DEPOSIT
+                    || side === Transfer.EXTERNAL_GVT_WITHDRAWAL)
+                    ? true
+                    : false;
+            const gvt_amount =
+                ((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && isGVT)
+                    ? 1 // calculated afterwards for Transfer.DEPOSIT & Transfer.WITHDRAWAL
+                    : (side === Transfer.EXTERNAL_GVT_DEPOSIT)
+                        ? parseAmount(log.args[2], 'USD') // LogTransfer.amount (GVT)
+                        : (side === Transfer.EXTERNAL_GVT_WITHDRAWAL)
+                            ? - parseAmount(log.args[2], 'USD') // LogTransfer.amount (GVT)
+                            : 0;
+            const pwrd_amount =
+                ((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && !isGVT)
+                    ? 1 // calculated afterwards for Transfer.DEPOSIT & Transfer.WITHDRAWAL
+                    : (side === Transfer.EXTERNAL_PWRD_DEPOSIT)
+                        ? parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
+                        : (side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
+                            ? - parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
+                            : 0;
+            const userAddress =
+                (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL)
+                    ? log.args[0] // LogNewDeposit.user or LogNewWithdrawal.user
+                    : (side === Transfer.EXTERNAL_GVT_WITHDRAWAL || side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
+                        ? log.args[0] // LogTransfer.sender
+                        : log.args[1]; // LogTransfer.receiver
+            const referralAddress =
+                (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL)
+                    ? log.args[1]
+                    : '0x0000000000000000000000000000000000000000';
+
             result.push({
                 block_number: log.blockNumber,
                 tx_hash: log.transactionHash,
                 network_id: getNetworkId(),
-                user_address: log.args[0],
-                referral_address: log.args[1],
+                transfer_type: transferType(side),
+                user_address: userAddress,
+                referral_address: referralAddress,
                 usd_value: usd_value,
-                gvt_value: (log.args[2]) ? 0 : usd_value,
-                pwrd_value: (log.args[2]) ? usd_value : 0,
-                usd_amount: dai_amount + usdc_amount + usdt_amount,
-                gvt_amount: (log.args[2]) ? 0 : 1,  // calculated afterwards
-                pwrd_amount: (log.args[2]) ? 1 : 0, // calculated afterwards
+                gvt_value: isGVT ? usd_value : 0,
+                pwrd_value: isGVT ? 0 : usd_value,
+                gvt_amount: gvt_amount,
+                pwrd_amount: pwrd_amount,
+                stable_amount: stable_amount,
                 dai_amount: dai_amount,
                 usdc_amount: usdc_amount,
                 usdt_amount: usdt_amount,
                 creation_date: moment.utc(),
-                ...(side === Transfer.WITHDRAWAL) && { usd_deduct: usd_deduct },
-                ...(side === Transfer.WITHDRAWAL) && { usd_return: usd_return },
-                ...(side === Transfer.WITHDRAWAL) && { lp_amount: lp_amount },
+                ...(!isDeposit(side)) && { usd_deduct: usd_deduct },
+                ...(!isDeposit(side)) && { usd_return: usd_return },
+                ...(!isDeposit(side)) && { lp_amount: lp_amount },
             });
         });
         return result;
     } catch (err) {
-        handleErr(`personalHandler->parseDataFromEvent() [side: ${side}]`, err);
+        handleErr(`personalHandler->parseFromTransferEvent() [side: ${side}]`, err);
     }
 }
 
@@ -284,11 +379,34 @@ const loadTmpUserTransfers = async (
     account = null
 ) => {
     try {
+        // Determine event type to apply filters
+        let eventType;
+        switch (side) {
+            case Transfer.DEPOSIT:
+                eventType = EVENT_TYPE.deposit;
+                break;
+            case Transfer.WITHDRAWAL:
+                eventType = EVENT_TYPE.withdraw;
+                break;
+            case Transfer.EXTERNAL_GVT_DEPOSIT:
+                eventType = EVENT_TYPE.inGvtTransfer;
+                break;
+            case Transfer.EXTERNAL_PWRD_DEPOSIT:
+                eventType = EVENT_TYPE.inPwrdTransfer;
+                break;
+            case Transfer.EXTERNAL_GVT_WITHDRAWAL:
+                eventType = EVENT_TYPE.outGvtTransfer;
+                break;
+            case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
+                eventType = EVENT_TYPE.outPwrdTransfer
+                break;
+            default:
+                return false;
+        };
+
         // Get all deposit or withdrawal events for a given block range
         const logs = await getEvents(
-            (side === Transfer.DEPOSIT)
-                ? EVENT_TYPE.deposit
-                : EVENT_TYPE.withdraw,
+            eventType,
             fromBlock,
             toBlock,
             account,
@@ -296,37 +414,44 @@ const loadTmpUserTransfers = async (
             handleErr(`personalHandler->loadTmpUserTransfers()->getEvents(): `, err);
         });
 
-        // Truncate table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
-        const res = await query((side === Transfer.DEPOSIT) ? 'truncate_tmp_user_deposits.sql' : 'truncate_tmp_user_withdrawals.sql', []);
-        if (res === QUERY_ERROR) return false;
-
+        // Store data into table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
         let finalResult = [];
         if (logs.length > 0) {
-            // Parse relevant data from each event
-            const preResult = await parseDataFromEvent(logs, side);
-            // Get Gtoken amount from tx's in previous events and update gvt_amount & pwrd_amount
-            finalResult = await getGTokenFromTx(preResult, side);
-            // Store data into table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
+            const preResult = await parseFromTransferEvent(logs, side);
+            // No need to retrieve Gtoken amounts from tx for direct transfers between users
+            if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) {
+                finalResult = await getGTokenFromTx(preResult, side);
+            } else {
+                finalResult = preResult;
+            }
             let params = [];
             for (const item of finalResult)
                 params.push(Object.values(item));
-            const rows = await query((side === Transfer.DEPOSIT) ? 'insert_tmp_user_deposits.sql' : 'insert_tmp_user_withdrawals.sql', params);
+            const rows = await query(
+                (isDeposit(side))
+                    ? 'insert_tmp_user_deposits.sql'
+                    : 'insert_tmp_user_withdrawals.sql'
+                , params);
             if (rows === QUERY_ERROR) return false;
-            logger.info(`**DB: ${rows} record${isPlural(rows)} added into ${(side === Transfer.DEPOSIT) ? 'TMP_USER_DEPOSITS' : 'TMP_USER_WITHDRAWALS'}`);
+            logger.info(`**DB: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isDeposit(side))
+                ? 'TMP_USER_DEPOSITS'
+                : 'TMP_USER_WITHDRAWALS'
+                }`);
         } else {
-            logger.info(`**DB: No moar ${(side === Transfer.DEPOSIT) ? 'deposits' : 'withdrawals'} to be processed`);
+            logger.info(`**DB: No ${transferType(side)}s found`);
             return true;
         }
 
         // Store latest block processed into table SYS_TABLE_LOADS
-        const lastBlock = finalResult[finalResult.length - 1].block_number;
-        const result = await updateLastTableLoad(
-            (side === Transfer.DEPOSIT) ? 'TMP_USER_DEPOSITS' : 'TMP_USER_WITHDRAWALS',
-            lastBlock,
-            moment.unix((await getBlockData(lastBlock)).timestamp),
-        );
+        // const lastBlock = finalResult[finalResult.length - 1].block_number;
+        // const result = await updateLastTableLoad(
+        //     (side === Transfer.DEPOSIT) ? 'TMP_USER_DEPOSITS' : 'TMP_USER_WITHDRAWALS',
+        //     lastBlock,
+        //     moment.unix((await getBlockData(lastBlock)).timestamp),
+        // );
+        //return (result) ? true : false;
+        return true;
 
-        return (result) ? true : false;
     } catch (err) {
         handleErr(`personalHandler->loadTmpUserTransfers() [blocks from: ${fromBlock} to ${toBlock}, side: ${side}, account: ${account}]`, err);
         return false;
@@ -350,17 +475,17 @@ const loadUserTransfers = async () => {
             logger.info(`**DB: ${numTransfers} record${isPlural(numTransfers)} added into USER_TRANSFERS`);
 
             // Store latest block processed into table SYS_TABLE_LOADS
-            const maxBlock = await query('select_max_block_transfers.sql', []);
-            if (maxBlock === QUERY_ERROR) return false;
-            const lastBlock = maxBlock.rows[0].max_block_number;
-            if (maxBlock.rows) {
-                const result = await updateLastTableLoad(
-                    'USER_TRANSFERS',
-                    lastBlock,
-                    moment.unix((await getBlockData(lastBlock)).timestamp),
-                );
-                return (result) ? true : false;
-            }
+            // const maxBlock = await query('select_max_block_transfers.sql', []);
+            // if (maxBlock === QUERY_ERROR) return false;
+            // const lastBlock = maxBlock.rows[0].max_block_number;
+            // if (maxBlock.rows) {
+            //     const result = await updateLastTableLoad(
+            //         'USER_TRANSFERS',
+            //         lastBlock,
+            //         moment.unix((await getBlockData(lastBlock)).timestamp),
+            //     );
+            //     return (result) ? true : false;
+            // }
         } else {
             return false;
         }
@@ -369,6 +494,68 @@ const loadUserTransfers = async () => {
         handleErr('personalHandler->loadUserTransfers()', err);
     }
 }
+
+/* EXPERIMENTAL */
+const showBalanceHourBlock = async (date, account) => {
+    try {
+        // let start = moment.utc("19/06/2021", "DD/MM/YYYY");
+        // //const days = moment.duration(end.diff(start)).asDays();
+
+        // let dates = [];
+        // for (let i = 0; i <= 23; i++) {
+        //     let newDate = moment(start).add(i, 'hours');
+        //     //let newDateStr = moment(newDate).format('DD/MM/YYYY HH24:MI:SS');
+        //     //console.log(newDateStr);
+        //     //await reload(newDateStr, newDateStr, null);
+        //     dates.push(newDate);
+        // }
+
+        // for (const date of dates) {
+        //     const blockTag = {
+        //         blockTag: (await findBlockByDate(date)).block
+        //     }
+        //     console.log(blockTag.blockTag)
+
+        //     const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
+        //     const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
+        //     const totalValue = gvtValue + pwrdValue;
+        //     const block = blockTag.blockTag;
+        //     const params = {
+        //         block: block,
+        //         date : date,
+        //         networkid: getNetworkId(),
+        //         account: account,
+        //         totalValue: totalValue,
+        //         gvtValue: gvtValue,
+        //         pwrdValue: pwrdValue,
+        //     };
+        //     // const result = await query('insert_user_balances.sql', params);
+        //     // if (result === QUERY_ERROR) return false;
+        //     // rowCount += result.rowCount;
+        //     console.log(params);
+        // }
+
+        const blockTag = {
+            blockTag: 25582733
+        };
+        const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
+        const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
+        const totalValue = gvtValue + pwrdValue;
+        const params = {
+            block: blockTag.blockTag,
+            date: date,
+            networkid: getNetworkId(),
+            account: account,
+            totalValue: totalValue,
+            gvtValue: gvtValue,
+            pwrdValue: pwrdValue,
+        };
+        console.log(params);
+    } catch (err) {
+        handleErr(`personalHandler->showBalanceHourBlock()`, err);
+    }
+}
+
 
 const loadUserBalances = async (
     fromDate,
@@ -450,7 +637,7 @@ const loadUserNetReturns = async (
             const result = await query(q, params);
             if (result === QUERY_ERROR) return false;
             const numResults = result.rowCount;
-            logger.info(`**DB: ${numResults} record${isPlural(numResults)} added into USER_NET_RETURNS for date ${day}`);
+            logger.info(`**DB: ${numResults} record${isPlural(numResults)} added into USER_NET_RETURNS for date ${moment(date).format('DD/MM/YYYY')}`);
         }
     } catch (err) {
         handleErr(`personalHandler->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}, account: ${account}]`, err);
@@ -463,6 +650,12 @@ const loadUserNetReturns = async (
 /// @return Array with start block, end block and list of dates to be processed
 const preload = async (_fromDate, _toDate) => {
     try {
+        // Truncate temporary table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
+        const res1 = await query('truncate_tmp_user_deposits.sql', []);
+        const res2 = await query('truncate_tmp_user_withdrawals.sql', []);
+        if (res1 === QUERY_ERROR || res2 === QUERY_ERROR) return;
+        // TODO: if error?
+
         // Calculate dates & blocks to process
         const dates = generateDateRange(_fromDate, _toDate);
         const fromDate = dates[0].clone();
@@ -486,6 +679,7 @@ const preload = async (_fromDate, _toDate) => {
 /// @param toDdate End date to delete data
 /// @param account User account to be processed - if null, all accounts to be processed
 /// @return True if no exceptions found, false otherwise
+/// TODO: if account informed, delete where dates IN [...] instead of loop by day
 const remove = async (dates, _fromDate, _toDate, account) => {
     try {
         // Delete previous transfers, balances & net results
@@ -497,7 +691,6 @@ const remove = async (dates, _fromDate, _toDate, account) => {
                 ? [moment(day).format('DD/MM/YYYY'), account]
                 : [moment(day).format('DD/MM/YYYY')];
             // Delete previous transfers from USER_TRANSFERS
-            // rowCountTramsfers += (await query((account) ? 'delete_user_transfers_by_address.sql' : 'delete_user_transfers.sql', params)).rowCount;
             const resTransfers = await query((account) ? 'delete_user_transfers_by_address.sql' : 'delete_user_transfers.sql', params);
             if (resTransfers === QUERY_ERROR) {
                 return false;
@@ -505,7 +698,6 @@ const remove = async (dates, _fromDate, _toDate, account) => {
                 rowCountTransfers += resTransfers.rowCount;
             }
             // Delete previous balances from USER_BALANCES
-            // rowCountBalances += (await query((account) ? 'delete_user_balances_by_address.sql' : 'delete_user_balances.sql', params)).rowCount;
             const resBalances = await query((account) ? 'delete_user_balances_by_address.sql' : 'delete_user_balances.sql', params);
             if (resBalances === QUERY_ERROR) {
                 return false;
@@ -513,7 +705,6 @@ const remove = async (dates, _fromDate, _toDate, account) => {
                 rowCountBalances += resBalances.rowCount;
             }
             // Delete previous net results from USER_NET_RETURNS
-            // rowCountNetReturns += (await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params)).rowCount;
             const resReturns = await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params);
             if (resReturns === QUERY_ERROR) {
                 return false;
@@ -528,6 +719,31 @@ const remove = async (dates, _fromDate, _toDate, account) => {
     } catch (err) {
         handleErr(`personalHandler->remove() [from: ${_fromDate}, to: ${_toDate}, account: ${account}]`, err);
         return false;
+    }
+}
+
+/// @notice Reloads ALL user transfers, balances & net results for a given time interval
+/// @dev - Avoids creating 0 balance & 0 net returns if there were previous users, as compared
+///        to launching reload() only
+///      - Previous data for the given time interval will be overwritten
+/// @param fromDate Start date to reload data
+/// @param toDdate End date to reload data
+const initialDataLoad = async (
+    fromDate,
+    toDate,
+) => {
+    try {
+        let start = moment.utc(fromDate, "DD/MM/YYYY");
+        let end = moment.utc(toDate, "DD/MM/YYYY");
+        const days = moment.duration(end.diff(start)).asDays();
+
+        for (let i = 0; i <= days; i++) {
+            let newDate = moment(start).add(i, 'days');
+            let newDateStr = moment(newDate).format('DD/MM/YYYY');
+            await reload(newDateStr, newDateStr, null);
+        }
+    } catch (err) {
+        handleErr(`personalHandler->reload() [from: ${fromDate}, to: ${toDate}]`, err);
     }
 }
 
@@ -549,10 +765,14 @@ const reload = async (
         // Execute transfers calculations in temporary tables
         if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, account))
             if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account))
-                if (await remove(dates, _fromDate, _toDate, account))
-                    if (await loadUserTransfers())
-                        if (await loadUserBalances(_fromDate, _toDate, account))
-                            await loadUserNetReturns(_fromDate, _toDate, account);
+                if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL))
+                    if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT))
+                        if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL))
+                            if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT))
+                                if (await remove(dates, _fromDate, _toDate, account))
+                                    if (await loadUserTransfers())
+                                        if (await loadUserBalances(_fromDate, _toDate, account))
+                                            await loadUserNetReturns(_fromDate, _toDate, account);
     } catch (err) {
         handleErr(`personalHandler->reload() [from: ${_fromDate}, to: ${_toDate}, account: ${account}]`, err);
     }
@@ -576,9 +796,14 @@ const load = async (
     // Execute deposits, balances & net results calculations
     if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, account))
         if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account))
-            if (await loadUserTransfers())
-                if (await loadUserBalances(fromDate, toDate, account))
-                    await loadUserNetReturns(fromDate, toDate, account);
+            if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL))
+                if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT))
+                    if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL))
+                        if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT))
+                            if (await loadUserTransfers())
+                                console.log('yuju');
+    // if (await loadUserBalances(fromDate, toDate, account))
+    //     await loadUserNetReturns(fromDate, toDate, account);
 }
 
 const loadGroStatsDB = async () => {
@@ -597,22 +822,42 @@ const loadGroStatsDB = async () => {
             // if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837'))
             //     if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837'))
             //         await loadUserTransfers()
-            //await reload("27/05/2021", "05/06/2021", '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
+            // await reload('27/05/2021', '05/06/2021', '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
+            //await reload('27/05/2021', '20/06/2021','0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
+            //await reload('27/05/2021', '20/06/2021', '0xd9Ae20877fE022FF453299a945CAcfcd2192350d');
+
+            //await showBalanceHourBlock(null, '0xd9Ae20877fE022FF453299a945CAcfcd2192350d')
+
+            // DEV: external transfers
+            //const [fromBlock, toBlock, dates] = await preload('28/05/2021', '31/05/2021');
+            //await loadTmpExternalUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
+            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL);
+            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT);
+            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL);
+            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT);
+            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT);
+            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL);
+            await reload('27/05/2021', '19/06/2021', '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
+
+
+
+
+            //await loadTmpExternalUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT, '0x95891bC31bD47147292Fc43c0aEEea9fCb3e765B');
+            // const [fromBlock, toBlock, dates] = await preload('03/06/2021', '03/06/2021');
+            // await loadTmpExternalUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
 
             // PROD:
             //const [fromBlock, toBlock] = await preload('24/05/2021', '19/06/2021');
             // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null);
             // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null)
-            // await reload("24/05/2021", "19/06/2021", null);
-
-            // if (await loadUserBalances("28/05/2021", "19/06/2021", null))
-            //     await loadUserNetReturns("28/05/2021", "19/06/2021", null);
-
-            await reload("28/05/2021", "02/06/2021", '0xCC9E13BAc74b9c37e0B90fDE71a1f2Bb6E5d1c1E');
-
+            // await reload("29/05/2021", "20/06/2021", null);
+            // await reload("31/05/2021", "31/05/2021", null);
+            // await initialDataLoad('29/05/2021', '20/06/2021');
 
             process.exit(); // for testing purposes
         });
+
+
     } catch (err) {
         handleErr(`personalHandler->loadGroStatsDB()`, err);
     }
