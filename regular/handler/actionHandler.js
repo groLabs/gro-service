@@ -78,7 +78,7 @@ async function harvest(blockNumber, strategyInfo, providerKey, walletKey) {
     const harvestResult = await wrapSendTransaction(
         strategyInfo.vault,
         'strategyHarvest',
-        [strategyInfo.strategyIndex, strategyInfo.callCost]
+        [strategyInfo.strategyIndex]
     ).catch((error) => {
         logger.error(error);
         throw new ContractSendError(

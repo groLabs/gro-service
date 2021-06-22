@@ -17,7 +17,6 @@ const methodGasMap = {
     invest: 'slow',
     investToCurveVault: 'slow',
     strategyHarvest: 'standard',
-    execPnL: 'fast',
     rebalance: 'rapid',
     getSafePriceFeed: 'standard',
 };

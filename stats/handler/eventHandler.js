@@ -271,17 +271,11 @@ function getTVLDelta(deposintTotalContent, withdrawTotalContent, currentTVL) {
 
 async function generateSummaryReport(fromBlock, toBlock) {
     logger.info(`Start to get event from block:${fromBlock} to ${toBlock}`);
-    const provider = getAlchemyRpcProvider(providerKey);
-    const startBlock = await provider.getBlock(fromBlock);
-    const endBlock = await provider.getBlock(toBlock);
-    const startTime = dayjs.unix(startBlock.timestamp);
-    let startTimeDisplay = startTime.format('h');
-    const endTime = dayjs.unix(endBlock.timestamp);
-    const endTimeDisplay = endTime.format('h');
-
-    if (startTimeDisplay === endTimeDisplay) {
-        startTimeDisplay = endTimeDisplay - 1;
-    }
+    // handler display time
+    const currentMillis = Date.now();
+    const endTime = dayjs(currentMillis);
+    const endTimeDisplay = endTime.format('H');
+    const startTimeDisplay = endTimeDisplay - 1;
 
     const depositEventResult = await generateDepositReport(fromBlock, toBlock);
     const withdrawEventResult = await generateWithdrawReport(

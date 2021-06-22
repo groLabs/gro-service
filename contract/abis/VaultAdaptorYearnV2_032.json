@@ -1,6 +1,17 @@
 [
     {
-        "inputs": [],
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_vault",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_token",
+                "type": "address"
+            }
+        ],
         "stateMutability": "nonpayable",
         "type": "constructor"
     },
@@ -86,6 +97,31 @@
             }
         ],
         "name": "LogAddToWhitelist",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "parent",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "child",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogMigrate",
         "type": "event"
     },
     {
@@ -187,6 +223,32 @@
     },
     {
         "inputs": [],
+        "name": "CURVE_RATIO_DECIMALS",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "CURVE_RATIO_DECIMALS_FACTOR",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "DEFAULT_DECIMALS",
         "outputs": [
             {
@@ -206,6 +268,19 @@
                 "internalType": "uint256",
                 "name": "",
                 "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "N_COINS",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
             }
         ],
         "stateMutability": "view",
@@ -252,24 +327,6 @@
     },
     {
         "inputs": [],
-        "name": "calcPnL",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "gain",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "loss",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
         "name": "controller",
         "outputs": [
             {
@@ -295,6 +352,19 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "uint256",
@@ -303,13 +373,6 @@
             }
         ],
         "name": "deposit",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "execPnL",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -380,16 +443,16 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "lastTotalAssets",
-        "outputs": [
+        "inputs": [
             {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
+                "internalType": "address",
+                "name": "child",
+                "type": "address"
             }
         ],
-        "stateMutability": "view",
+        "name": "migrate",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
@@ -480,32 +543,6 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "_token",
-                "type": "address"
-            }
-        ],
-        "name": "setToken",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "_vault",
-                "type": "address"
-            }
-        ],
-        "name": "setVault",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "uint256",
                 "name": "reserve",
                 "type": "uint256"
@@ -534,11 +571,6 @@
             {
                 "internalType": "uint256",
                 "name": "index",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "callCost",
                 "type": "uint256"
             }
         ],
@@ -638,19 +670,6 @@
             }
         ],
         "name": "transferOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "updatePnL",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -786,6 +805,19 @@
             }
         ],
         "name": "withdrawByStrategyOrder",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "withdrawToAdapter",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
