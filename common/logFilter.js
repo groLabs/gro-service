@@ -254,9 +254,13 @@ async function getDepositWithdrawEvents(
     const eventsPromise = [];
     for (let i = 0; i < filters.length; i += 1) {
         const handlerAddress = handlerAddresses[i];
-        const eventFragment = getConfig(`${eventType}_handler_history`)[
-            handlerAddress
-        ].event_fragment;
+        let eventFragment;
+        if (handlerAddress) {
+            eventFragment = getConfig(`${eventType}_handler_history`)[
+                handlerAddress
+            ].event_fragment;
+        }
+
         const filter = filters[i];
         filter.fromBlock = fromBlock;
         filter.toBlock = toBlock;
