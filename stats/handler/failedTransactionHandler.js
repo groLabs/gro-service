@@ -57,7 +57,7 @@ async function getTransactionsByAccount(accountAddress) {
     const res = await axios.get(endpoint).catch((error) => {
         logger.error(error);
     });
-    if (res.data.status === '1') {
+    if (res && res.data.status === '1') {
         result = res.data.result;
     } else {
         logger.error(`Get account ${accountAddress} transactions failed`);
