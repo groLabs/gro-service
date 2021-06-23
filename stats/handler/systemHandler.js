@@ -200,8 +200,6 @@ async function getExposureStats(blockTag, systemStats) {
     logger.info(
         `calculate harvest exposure all:${exposureProtocol[0].concentration} harvest:${harvestExposure}`
     );
-    exposureProtocol[0].concentration =
-        exposureProtocol[0].concentration.sub(harvestExposure);
     return exposureStats;
 }
 
