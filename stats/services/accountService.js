@@ -26,6 +26,9 @@ const {
 const { shortAccount } = require('../../common/digitalUtil');
 const { getVaultStabeCoins } = require('../../contract/allContracts');
 const { AppendGTokenMintOrBurnAmountToLog } = require('../common/tool');
+const {
+    getAccountFailTransactions,
+} = require('../handler/failedTransactionHandler');
 
 const fromBlock = getConfig('blockchain.start_block');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
@@ -338,8 +341,14 @@ async function generateReport(account) {
 
     logger.info(`${account} historical: ${JSON.stringify(data)}`);
     const { groVault, powerD, approval } = data;
+    const failTransactions = await getAccountFailTransactions(account);
     const transactions = await getTransactions(groVault, powerD, provider);
-    const transaction = await getTransaction(transactions, approval, provider);
+    const transaction = await getTransaction(
+        transactions,
+        approval,
+        failTransactions,
+        provider
+    );
     const launchTime = await getTimestampByBlockNumber(fromBlock, provider);
 
     const result = {
