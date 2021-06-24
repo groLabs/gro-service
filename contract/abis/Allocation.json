@@ -50,19 +50,6 @@
             {
                 "indexed": false,
                 "internalType": "uint256",
-                "name": "target",
-                "type": "uint256"
-            }
-        ],
-        "name": "LogNewExposureBufferTarget",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "uint256",
                 "name": "threshold",
                 "type": "uint256"
             }
@@ -130,6 +117,32 @@
     },
     {
         "inputs": [],
+        "name": "CURVE_RATIO_DECIMALS",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "CURVE_RATIO_DECIMALS_FACTOR",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "DEFAULT_DECIMALS",
         "outputs": [
             {
@@ -149,6 +162,19 @@
                 "internalType": "uint256",
                 "name": "",
                 "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "N_COINS",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
             }
         ],
         "stateMutability": "view",
@@ -232,14 +258,14 @@
                         "type": "uint256"
                     },
                     {
-                        "internalType": "uint256[]",
+                        "internalType": "uint256[3]",
                         "name": "vaultCurrentAssets",
-                        "type": "uint256[]"
+                        "type": "uint256[3]"
                     },
                     {
-                        "internalType": "uint256[]",
+                        "internalType": "uint256[3]",
                         "name": "vaultCurrentAssetsUsd",
-                        "type": "uint256[]"
+                        "type": "uint256[3]"
                     },
                     {
                         "internalType": "uint256",
@@ -257,9 +283,9 @@
                         "type": "uint256"
                     },
                     {
-                        "internalType": "uint256[]",
+                        "internalType": "uint256[3]",
                         "name": "stablePercents",
-                        "type": "uint256[]"
+                        "type": "uint256[3]"
                     },
                     {
                         "internalType": "uint256",
@@ -274,9 +300,9 @@
             {
                 "components": [
                     {
-                        "internalType": "uint256[]",
+                        "internalType": "uint256[3]",
                         "name": "stablecoinExposure",
-                        "type": "uint256[]"
+                        "type": "uint256[3]"
                     },
                     {
                         "internalType": "uint256[]",
@@ -324,9 +350,9 @@
                         "type": "uint256"
                     },
                     {
-                        "internalType": "uint256[]",
+                        "internalType": "uint256[3]",
                         "name": "protocolWithdrawalUsd",
-                        "type": "uint256[]"
+                        "type": "uint256[3]"
                     },
                     {
                         "components": [
@@ -336,24 +362,24 @@
                                 "type": "uint256"
                             },
                             {
-                                "internalType": "uint256[]",
+                                "internalType": "uint256[3]",
                                 "name": "swapInAmounts",
-                                "type": "uint256[]"
+                                "type": "uint256[3]"
                             },
                             {
-                                "internalType": "uint256[]",
+                                "internalType": "uint256[3]",
                                 "name": "swapInAmountsUsd",
-                                "type": "uint256[]"
+                                "type": "uint256[3]"
                             },
                             {
-                                "internalType": "uint256[]",
+                                "internalType": "uint256[3]",
                                 "name": "swapOutPercents",
-                                "type": "uint256[]"
+                                "type": "uint256[3]"
                             },
                             {
-                                "internalType": "uint256[]",
+                                "internalType": "uint256[3]",
                                 "name": "vaultsTargetUsd",
-                                "type": "uint256[]"
+                                "type": "uint256[3]"
                             },
                             {
                                 "internalType": "uint256",
@@ -399,14 +425,14 @@
                         "type": "uint256"
                     },
                     {
-                        "internalType": "uint256[]",
+                        "internalType": "uint256[3]",
                         "name": "vaultCurrentAssets",
-                        "type": "uint256[]"
+                        "type": "uint256[3]"
                     },
                     {
-                        "internalType": "uint256[]",
+                        "internalType": "uint256[3]",
                         "name": "vaultCurrentAssetsUsd",
-                        "type": "uint256[]"
+                        "type": "uint256[3]"
                     },
                     {
                         "internalType": "uint256",
@@ -424,9 +450,9 @@
                         "type": "uint256"
                     },
                     {
-                        "internalType": "uint256[]",
+                        "internalType": "uint256[3]",
                         "name": "stablePercents",
-                        "type": "uint256[]"
+                        "type": "uint256[3]"
                     },
                     {
                         "internalType": "uint256",
@@ -454,24 +480,24 @@
                         "type": "uint256"
                     },
                     {
-                        "internalType": "uint256[]",
+                        "internalType": "uint256[3]",
                         "name": "swapInAmounts",
-                        "type": "uint256[]"
+                        "type": "uint256[3]"
                     },
                     {
-                        "internalType": "uint256[]",
+                        "internalType": "uint256[3]",
                         "name": "swapInAmountsUsd",
-                        "type": "uint256[]"
+                        "type": "uint256[3]"
                     },
                     {
-                        "internalType": "uint256[]",
+                        "internalType": "uint256[3]",
                         "name": "swapOutPercents",
-                        "type": "uint256[]"
+                        "type": "uint256[3]"
                     },
                     {
-                        "internalType": "uint256[]",
+                        "internalType": "uint256[3]",
                         "name": "vaultsTargetUsd",
-                        "type": "uint256[]"
+                        "type": "uint256[3]"
                     },
                     {
                         "internalType": "uint256",
@@ -521,19 +547,6 @@
     {
         "inputs": [],
         "name": "curvePercentThreshold",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "exposureBufferTarget",
         "outputs": [
             {
                 "internalType": "uint256",
@@ -599,19 +612,6 @@
             }
         ],
         "name": "setCurvePercentThreshold",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_exposureBufferTarget",
-                "type": "uint256"
-            }
-        ],
-        "name": "setExposureBufferTarget",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"

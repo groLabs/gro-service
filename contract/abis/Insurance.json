@@ -407,7 +407,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "utilRatio",
+        "type": "uint256"
+      }
+    ],
     "name": "getStrategiesTargetRatio",
     "outputs": [
       {

@@ -17,7 +17,10 @@ module.exports = {
         },
         '0x4b6a4FD1e9Bd9863BCF864eAB312Fd7f6FE4822C': {},
     },
-    old_pnl: '0x156Ffb1A7CDc4207EF826335BB483E50cf7710A7',
+    old_pnl: [
+        '0x156Ffb1A7CDc4207EF826335BB483E50cf7710A7',
+        '0xea1bb475650cac3701d9b1f12765ee0ecce02c0c',
+    ],
     blockchain: {
         network: 'kovan',
         start_block: 25643447,
@@ -143,7 +146,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0xBAab9Fbfcc3B8F44cFF9A8e8D7b0F5105F97F195',
+        controller: '0x9C809a3Ae4017F4f9cF515961EB8b09Fc7bc72D6',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

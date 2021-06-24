@@ -36,11 +36,17 @@
             {
                 "indexed": true,
                 "internalType": "address",
-                "name": "user",
+                "name": "oldController",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "newController",
                 "type": "address"
             }
         ],
-        "name": "LogAddToWhitelist",
+        "name": "ChangeController",
         "type": "event"
     },
     {
@@ -60,19 +66,6 @@
             }
         ],
         "name": "LogNewBasisPointLimit",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            }
-        ],
-        "name": "LogRemoveFromWhitelist",
         "type": "event"
     },
     {
@@ -303,16 +296,29 @@
         "type": "function"
     },
     {
-        "inputs": [
+        "inputs": [],
+        "name": "controller",
+        "outputs": [
             {
                 "internalType": "address",
-                "name": "user",
+                "name": "",
                 "type": "address"
             }
         ],
-        "name": "addToWhitelist",
-        "outputs": [],
-        "stateMutability": "nonpayable",
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ctrlPaused",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -419,19 +425,6 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            }
-        ],
-        "name": "removeFromWhitelist",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
         "inputs": [],
         "name": "renounceOwnership",
         "outputs": [],
@@ -460,6 +453,19 @@
             }
         ],
         "name": "setBasisPointsLmit",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "newController",
+                "type": "address"
+            }
+        ],
+        "name": "setController",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -693,25 +699,6 @@
                 "internalType": "address",
                 "name": "",
                 "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "whitelist",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
             }
         ],
         "stateMutability": "view",

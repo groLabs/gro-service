@@ -75,6 +75,31 @@
         "inputs": [
             {
                 "indexed": false,
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256[3]",
+                "name": "amounts",
+                "type": "uint256[3]"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256[3]",
+                "name": "delta",
+                "type": "uint256[3]"
+            }
+        ],
+        "name": "LogNewCurveToStableDistribution",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
                 "internalType": "address",
                 "name": "curveVault",
                 "type": "address"
@@ -165,6 +190,25 @@
         "anonymous": false,
         "inputs": [
             {
+                "indexed": true,
+                "internalType": "bool",
+                "name": "pwrd",
+                "type": "bool"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "limit",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogNewUtilLimit",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
                 "indexed": false,
                 "internalType": "uint256",
                 "name": "index",
@@ -191,6 +235,31 @@
             }
         ],
         "name": "LogNewWithdrawHandler",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "pwrd",
+                "type": "bool"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "newFee",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogNewWithdrawalFee",
         "type": "event"
     },
     {
@@ -452,6 +521,24 @@
                 "internalType": "address",
                 "name": "account",
                 "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "referral",
+                "type": "address"
+            }
+        ],
+        "name": "addReferral",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
             }
         ],
         "name": "addSafeAddress",
@@ -512,6 +599,39 @@
         "type": "function"
     },
     {
+        "inputs": [
+            {
+                "internalType": "bool",
+                "name": "pwrd",
+                "type": "bool"
+            },
+            {
+                "internalType": "bool",
+                "name": "all",
+                "type": "bool"
+            },
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "bonus",
+                "type": "uint256"
+            }
+        ],
+        "name": "burnGToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "inputs": [],
         "name": "curveVault",
         "outputs": [
@@ -554,11 +674,16 @@
         "inputs": [
             {
                 "internalType": "uint256",
-                "name": "bonus",
+                "name": "amount",
                 "type": "uint256"
+            },
+            {
+                "internalType": "uint256[3]",
+                "name": "delta",
+                "type": "uint256[3]"
             }
         ],
-        "name": "distributeHodlerBonus",
+        "name": "distributeCurveAssets",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -592,6 +717,19 @@
         "name": "emergency",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "emergencyHandler",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -667,6 +805,43 @@
     },
     {
         "inputs": [],
+        "name": "getStrategiesTargetRatio",
+        "outputs": [
+            {
+                "internalType": "uint256[]",
+                "name": "",
+                "type": "uint256[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bool",
+                "name": "pwrd",
+                "type": "bool"
+            },
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "getUserAssets",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "deductUsd",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "gvt",
         "outputs": [
             {
@@ -694,12 +869,22 @@
     {
         "inputs": [
             {
+                "internalType": "bool",
+                "name": "pwrd",
+                "type": "bool"
+            },
+            {
+                "internalType": "bool",
+                "name": "deposit",
+                "type": "bool"
+            },
+            {
                 "internalType": "uint256",
                 "name": "amount",
                 "type": "uint256"
             }
         ],
-        "name": "isBigFish",
+        "name": "isValidBigFish",
         "outputs": [
             {
                 "internalType": "bool",
@@ -721,6 +906,29 @@
             }
         ],
         "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bool",
+                "name": "pwrd",
+                "type": "bool"
+            },
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "mintGToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
@@ -788,6 +996,38 @@
         "outputs": [
             {
                 "internalType": "contract IToken",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "tolerance",
+                "type": "uint256"
+            }
+        ],
+        "name": "realizePriceChange",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "referrals",
+        "outputs": [
+            {
+                "internalType": "address",
                 "name": "",
                 "type": "address"
             }
@@ -960,6 +1200,32 @@
         "inputs": [
             {
                 "internalType": "uint256",
+                "name": "_utilisationRatioLimitGvt",
+                "type": "uint256"
+            }
+        ],
+        "name": "setUtilisationRatioLimitGvt",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_utilisationRatioLimitPwrd",
+                "type": "uint256"
+            }
+        ],
+        "name": "setUtilisationRatioLimitPwrd",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
                 "name": "index",
                 "type": "uint256"
             },
@@ -980,9 +1246,32 @@
                 "internalType": "address",
                 "name": "_withdrawHandler",
                 "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_emergencyHandler",
+                "type": "address"
             }
         ],
         "name": "setWithdrawHandler",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bool",
+                "name": "pwrd",
+                "type": "bool"
+            },
+            {
+                "internalType": "uint256",
+                "name": "newFee",
+                "type": "uint256"
+            }
+        ],
+        "name": "setWithdrawalFee",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -1066,6 +1355,51 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "utilisationRatioLimitGvt",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "utilisationRatioLimitPwrd",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "validGTokenDecrease",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "address",
@@ -1124,6 +1458,25 @@
                 "internalType": "address",
                 "name": "",
                 "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "name": "withdrawalFee",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
             }
         ],
         "stateMutability": "view",

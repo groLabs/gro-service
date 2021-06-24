@@ -1378,7 +1378,7 @@
         ],
         "stateMutability": "nonpayable",
         "type": "function",
-        "gas": 1010145
+        "gas": 529727
     },
     {
         "name": "sweep",
