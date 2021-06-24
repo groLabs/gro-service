@@ -6,7 +6,12 @@ module.exports = {
                 'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)',
             ],
         },
-        '0x1d4e23A8da2571Ab3755329f9fc9BFA29E119b80': {},
+        '0xE123035EAB51dF44425733905230d9bdB09B5549': {
+            event_fragment: [
+                'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[3] tokens)',
+            ],
+        },
+        '0x4AD396529f0b13d41F8a835D0c1ba84fb2AEd0FB': {},
     },
     withdraw_handler_history: {
         '0xdEA56F4e3096d524F432f6105537d89ae3641962': {
@@ -15,7 +20,12 @@ module.exports = {
                 'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
             ],
         },
-        '0x4b6a4FD1e9Bd9863BCF864eAB312Fd7f6FE4822C': {},
+        '0x1703dF0282aa8a8A55E0a03F1714e2e9A5301ef1': {
+            event_fragment: [
+                'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[3] tokenAmounts)',
+            ],
+        },
+        '0x72De5A334b984A0663701275c5ea6D3c14A5a74A': {},
     },
     old_pnl: [
         '0x156Ffb1A7CDc4207EF826335BB483E50cf7710A7',
@@ -122,9 +132,16 @@ module.exports = {
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
     protocol: ['Compound', 'Cream', 'Curve', 'Idle'],
-    strategy_name: ['Lev Comp', 'Cream', 'Lev Comp', 'Cream', 'Idle', 'Cream'],
+    strategy_name: [
+        'Lev Comp',
+        'Cream',
+        'Lev Comp',
+        'Cream',
+        'Idle',
+        'Cream',
+        'XPool',
+    ],
     strategy_default_apy: [132800, 99000, 90000, 65000, 83000, 90278, 200000],
-    curve_strategy_name: ['XPool'],
     harvest_strategy_dependency: [
         '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
         '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE',
