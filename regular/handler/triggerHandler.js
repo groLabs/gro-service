@@ -6,6 +6,7 @@ const {
     getStrategyLength,
     getVaultAndStrategyLabels,
     getYearnVaults,
+    getController,
 } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
 const { MESSAGE_TYPES } = require('../../common/discord/discordService');
@@ -25,6 +26,17 @@ const logger = require('../regularLogger');
 
 const NONEED_TRIGGER = { needCall: false };
 
+async function isEmergencyState(messageType, providerKey, walletKey) {
+    const controller = getController(providerKey, walletKey);
+    const emergencyState = await controller.emergencyState().catch((error) => {
+        logger.error(error);
+        throw new ContractCallError(
+            "Get system's emergency state failed",
+            messageType
+        );
+    });
+    return emergencyState;
+}
 async function adapterInvestTrigger(vault) {
     const vaultName = getVaultAndStrategyLabels()[vault.address].name;
     if (pendingTransactions.get(`invest-${vault.address}`)) {
@@ -112,6 +124,19 @@ async function sortStrategyByLastHarvested(vaults) {
 }
 
 async function investTrigger(providerKey, walletKey) {
+    // emergency check
+    const isEmergency = await isEmergencyState(
+        MESSAGE_TYPES.investTrigger,
+        providerKey,
+        walletKey
+    );
+    if (isEmergency) {
+        logger.info(
+            'System is in emergency state, invest action will be paused.'
+        );
+        return NONEED_TRIGGER;
+    }
+
     const vaults = getVaults(providerKey, walletKey);
     const triggerPromises = [];
     for (let i = 0; i < vaults.length - 1; i += 1) {
@@ -191,8 +216,21 @@ async function investTrigger(providerKey, walletKey) {
 //     return promises;
 // }
 
-async function harvestOneTrigger(providerkey, walletKey) {
-    const vaults = getVaults(providerkey, walletKey);
+async function harvestOneTrigger(providerKey, walletKey) {
+    // emergency check
+    const isEmergency = await isEmergencyState(
+        MESSAGE_TYPES.harvestTrigger,
+        providerKey,
+        walletKey
+    );
+    if (isEmergency) {
+        logger.info(
+            'System is in emergency state, harvest action will be paused.'
+        );
+        return NONEED_TRIGGER;
+    }
+
+    const vaults = getVaults(providerKey, walletKey);
     const strategies = await sortStrategyByLastHarvested(vaults);
     for (let i = 0; i < strategies.length; i += 1) {
         const { vaultIndex, strategyIndex, trigger } = strategies[i];
@@ -219,7 +257,20 @@ async function harvestOneTrigger(providerkey, walletKey) {
     return NONEED_TRIGGER;
 }
 
-async function rebalanceTrigger(providerkey, walletKey) {
+async function rebalanceTrigger(providerKey, walletKey) {
+    // emergency check
+    const isEmergency = await isEmergencyState(
+        MESSAGE_TYPES.rebalanceTrigger,
+        providerKey,
+        walletKey
+    );
+    if (isEmergency) {
+        logger.info(
+            'System is in emergency state, rebalance action will be paused.'
+        );
+        return NONEED_TRIGGER;
+    }
+
     if (pendingTransactions.get('rebalance')) {
         const result = `Already has pending rebalance transaction: ${
             pendingTransactions.get('rebalance').hash
@@ -231,7 +282,7 @@ async function rebalanceTrigger(providerkey, walletKey) {
         );
     }
 
-    const needRebalance = await getInsurance(providerkey, walletKey)
+    const needRebalance = await getInsurance(providerKey, walletKey)
         .rebalanceTrigger()
         .catch((error) => {
             logger.error(error);
