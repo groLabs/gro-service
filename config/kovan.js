@@ -1,26 +1,39 @@
 module.exports = {
     deposit_handler_history: {
-        '0x0bB217d1D8049412aA51c4f8B1a30A2A36CF0D77': {
+        '0xa8eB347f14C9230637c608D6Fe64428CB15dc564': {
             abi: 'old',
             event_fragment: [
                 'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)',
             ],
         },
-        '0xDaCd9318Ac3412Be751C8c03184665be31dc4400': {},
+        '0xE123035EAB51dF44425733905230d9bdB09B5549': {
+            event_fragment: [
+                'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[3] tokens)',
+            ],
+        },
+        '0x4AD396529f0b13d41F8a835D0c1ba84fb2AEd0FB': {},
     },
     withdraw_handler_history: {
-        '0x163A450699a6784978ed29380A704C52f94Eb7Ef': {
+        '0xdEA56F4e3096d524F432f6105537d89ae3641962': {
             abi: 'old',
             event_fragment: [
                 'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
             ],
         },
-        '0x015244C5127265C67D5ABC90F73FfEA19A6d20BB': {},
+        '0x1703dF0282aa8a8A55E0a03F1714e2e9A5301ef1': {
+            event_fragment: [
+                'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[3] tokenAmounts)',
+            ],
+        },
+        '0x72De5A334b984A0663701275c5ea6D3c14A5a74A': {},
     },
-    old_pnl: '0xe59bBC020Aa0215Ed5456C125e52fb0d574987dC',
+    old_pnl: [
+        '0x156Ffb1A7CDc4207EF826335BB483E50cf7710A7',
+        '0xea1bb475650cac3701d9b1f12765ee0ecce02c0c',
+    ],
     blockchain: {
         network: 'kovan',
-        start_block: 25082399,
+        start_block: 25643447,
         default_api_keys: {
             alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
@@ -114,14 +127,21 @@ module.exports = {
     keep_stats_file_number: 250,
     stats_folder: '../stats',
     log_folder: '../logs',
-    blockNumberFile: './lastBlockNumber.json',
+    blockNumberFile: '../stats/lastBlockNumber.json',
     stats_latest: '../stats/gro-latest.json',
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
     protocol: ['Compound', 'Cream', 'Curve', 'Idle'],
-    strategy_name: ['Lev Comp', 'Cream', 'Lev Comp', 'Cream', 'Idle', 'Cream'],
+    strategy_name: [
+        'Lev Comp',
+        'Cream',
+        'Lev Comp',
+        'Cream',
+        'Idle',
+        'Cream',
+        'XPool',
+    ],
     strategy_default_apy: [132800, 99000, 90000, 65000, 83000, 90278, 200000],
-    curve_strategy_name: ['XPool'],
     harvest_strategy_dependency: [
         '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
         '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE',
@@ -143,7 +163,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x1246F4B0A4F73457c5dBB6588E4EB65275f8b925',
+        controller: '0x9C809a3Ae4017F4f9cF515961EB8b09Fc7bc72D6',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

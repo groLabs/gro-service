@@ -38,7 +38,7 @@ const ZERO = BigNumber.from(0);
 // config
 const launchBlock = getConfig('blockchain.start_block');
 const defaultApy = getConfig('strategy_default_apy');
-const oldPnlAddress = getConfig('old_pnl');
+const oldPnlAddresses = getConfig('old_pnl');
 
 async function findBlockByDate(scanDate) {
     const blockFound = await scanner
@@ -269,14 +269,17 @@ async function getHodlBonusApy() {
         latestBlock.number,
         providerKey
     );
-    const oldPnl = pnl.attach(oldPnlAddress);
-    const oldPnlLogs = await getPnLEvents(
-        oldPnl,
-        block7DaysAgo.block,
-        latestBlock.number,
-        providerKey
-    );
-    pnlLogs.push(...oldPnlLogs);
+    for (let i = 0; i < oldPnlAddresses.length; i += 1) {
+        logger.info(`oldPnlAddresses ${i} ${oldPnlAddresses[i]}`);
+        const oldPnl = pnl.attach(oldPnlAddresses[i]);
+        const oldPnlLogs = await getPnLEvents(
+            oldPnl,
+            block7DaysAgo.block,
+            latestBlock.number,
+            providerKey
+        );
+        pnlLogs.push(...oldPnlLogs);
+    }
 
     let withdrawalBonus = BigNumber.from(0);
     let priceChanged = BigNumber.from(0);

@@ -1,27 +1,9 @@
 module.exports = {
-    bot_balance_warn: '200000000000000000000000',
-    deposit_handler_history: {
-        '0x5081a39b8A5f0E35a8D959395a630b68B74Dd30f': {
-            abi: 'old',
-            event_fragment: [
-                'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)',
-            ],
-        },
-        '0x2A590C461Db46bca129E8dBe5C3998A8fF402e76': {},
-    },
-    withdraw_handler_history: {
-        '0x1fA02b2d6A771842690194Cf62D91bdd92BfE28d': {
-            abi: 'old',
-            event_fragment: [
-                'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
-            ],
-        },
-        '0x2F54D1563963fC04770E85AF819c89Dc807f6a06': {},
-    },
-    old_pnl: '0xe59bBC020Aa0215Ed5456C125e52fb0d574987dC',
+    bot_balance_warn: '20000000000000000000',
+    old_pnl: '0xb185E9f6531BA9877741022C92CE858cDCc5760E',
     blockchain: {
         network: 'http://localhost:8545',
-        start_block: 1161,
+        start_block: 12676591,
         alchemy_api_keys: {
             default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
@@ -60,11 +42,11 @@ module.exports = {
         },
     },
     trigger_scheduler: {
-        pending_transaction_check: '5 * * * * *',
+        pending_transaction_check: '10 * * * * *',
         bot_balance_check: '10 * * * * *',
-        invest: '*/3 * * * *',
-        harvest: '*/1 * * * *',
-        pnl: '23 * * * * *',
+        invest: '*/1 * * * *',
+        harvest: '*/2 * * * *',
+        pnl: '*/3 * * * *',
         rebalance: '33 * * * * *',
         generate_stats: '10 * * *',
         remove_stats_file: '*/2 * * * *',
@@ -114,7 +96,15 @@ module.exports = {
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
     protocol: ['Harvest', 'Cream', 'Curve'],
-    strategy_name: ['Harvest', 'Cream', 'Harvest', 'Cream', 'Harvest', 'Cream'],
+    strategy_name: [
+        'Harvest',
+        'Cream',
+        'Harvest',
+        'Cream',
+        'Harvest',
+        'Cream',
+        'XPool',
+    ],
     strategy_default_apy: [0, 0, 0, 0, 0, 0, 0],
     harvest_strategy_dependency: [
         '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
@@ -126,7 +116,6 @@ module.exports = {
         '0x44fbebd2f576670a6c33f6fc0b00aa8c5753b322',
         '0x797AAB1ce7c01eB727ab980762bA88e7133d2157',
     ],
-    curve_strategy_name: ['XPool'],
     curve_strategy_dependency: {
         yearn: '0x1B5eb1173D2Bf770e50F10410C9a96F7a8eB6e75',
         curve: '0x7Eb40E450b9655f4B3cC4259BCC731c63ff55ae6',
@@ -138,7 +127,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x1246F4B0A4F73457c5dBB6588E4EB65275f8b925',
+        controller: '0xb6aD2903fAC2db628624DeE61e217F50Ad54638E',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],

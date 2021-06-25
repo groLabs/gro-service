@@ -102,6 +102,7 @@ module.exports = {
         'Cream',
         'Harvest',
         'Cream',
+        'XPool',
     ],
     strategy_default_apy: [132800, 99000, 90000, 65000, 90000, 90278, 200000],
     harvest_strategy_dependency: [
@@ -114,7 +115,6 @@ module.exports = {
         '0x44fbebd2f576670a6c33f6fc0b00aa8c5753b322',
         '0x797AAB1ce7c01eB727ab980762bA88e7133d2157',
     ],
-    curve_strategy_name: ['XPool'],
     curve_strategy_dependency: {
         yearn: '0x1B5eb1173D2Bf770e50F10410C9a96F7a8eB6e75',
         curve: '0x7Eb40E450b9655f4B3cC4259BCC731c63ff55ae6',

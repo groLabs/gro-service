@@ -156,13 +156,7 @@ async function initVaults() {
         `curve vault ${curveVaultAddress} has ${curveVaultStrategyLength} strategies.`
     );
     strategyLength.push(curveVaultStrategyLength);
-    await initVaultStrategyLabel(
-        3,
-        tcurveVault,
-        curveVaultStrategyLength,
-        'vault_name',
-        'curve_strategy_name'
-    );
+    await initVaultStrategyLabel(3, tcurveVault, curveVaultStrategyLength);
 }
 
 async function initCurveVault() {

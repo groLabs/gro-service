@@ -2,6 +2,7 @@
 const config = require('config');
 const { BigNumber } = require('ethers');
 const {
+    getController,
     getGvt,
     getPwrd,
     getInsurance,
@@ -200,8 +201,6 @@ async function getExposureStats(blockTag, systemStats) {
     logger.info(
         `calculate harvest exposure all:${exposureProtocol[0].concentration} harvest:${harvestExposure}`
     );
-    exposureProtocol[0].concentration =
-        exposureProtocol[0].concentration.sub(harvestExposure);
     return exposureStats;
 }
 
@@ -211,12 +210,13 @@ async function getTvlStats(blockTag) {
     const prwdAssets = await getPwrd(providerKey).totalSupply(blockTag);
     const totalAssetsUsd = gvtAssets.add(prwdAssets);
     const utilRatio = calculateSharePercent(prwdAssets, gvtAssets);
-    const utilRatioLimitPD = await getDepositHandler(
-        providerKey
-    ).utilisationRatioLimitPwrd(blockTag);
-    const utilRatioLimitGW = await getWithdrawHandler(
-        providerKey
-    ).utilisationRatioLimitGvt(blockTag);
+    const controller = getController(providerKey);
+    const utilRatioLimitPD = await controller.utilisationRatioLimitPwrd(
+        blockTag
+    );
+    const utilRatioLimitGW = await controller.utilisationRatioLimitGvt(
+        blockTag
+    );
 
     const tvl = {
         pwrd: prwdAssets,
