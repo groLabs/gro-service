@@ -165,7 +165,7 @@ function createWallet(providerKey, walletKey) {
             flag: 'a+',
         });
         wallet = ethers.Wallet.fromEncryptedJsonSync(data, keystorePassword);
-        wallet.connect(provider);
+        wallet = wallet.connect(provider);
     }
     logger.info(
         `Create new wallet[${walletKey}] ${wallet.address}, and connect to ${providerKey} provider`
