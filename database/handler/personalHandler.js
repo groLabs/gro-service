@@ -220,6 +220,29 @@ const getGTokenFromTx = async (result, side) => {
     }
 };
 
+// Calculate the PWRD value based on the ratio in the block when the deposit/withdrawal was performed
+// Note from Kristian: pwrds factor is not applied to price, only GVT. So no need to apply this conversion
+// const getPwrdValue = async (result) => {
+//     try {
+//         for (const item of result) {
+//             if (item.pwrd_amount !== 0) {
+//                 const blockTag = {
+//                     blockTag: item.block_number
+//                 };
+//                 const factor = parseAmount(await getPwrd().factor(blockTag), 'USD');
+//                 if (factor > 0) { 
+//                     item.pwrd_value = item.pwrd_amount / factor;
+//                 } else {
+//                     handleErr(`personalHandler->getPwrdValue(): factor for PWRD is 0`, null);
+//                 }
+//                 console.log(factor, item)
+//             }
+//         }
+//     } catch(err) {
+//         handleErr(`personalHandler->getPwrdValue():`, null);
+//     }
+// }
+
 const parseFromTransferEvent = async (logs, side) => {
     try {
         let result = [];
@@ -254,19 +277,19 @@ const parseFromTransferEvent = async (logs, side) => {
                 (side === Transfer.WITHDRAWAL)
                     ? - parseAmount(log.args[6], 'USD') // LogNewWithdrawal.returnUsd
                     : (side === Transfer.EXTERNAL_GVT_WITHDRAWAL)
-                        ? - (parseAmount(log.args[2], 'USD') / parseAmount(log.args[3], 'USD')) // LogTransfer.amount / ratio (GVT)
+                        ? - (parseAmount(log.args[2], 'USD') / parseAmount(log.args[3], 'USD')) // LogTransfer.amount /  LogTransfer.ratio (GVT)
                         : (side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
                             ? - parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
                             : 0;
             const usd_value =
                 (side === Transfer.DEPOSIT)
-                    ? parseAmount(log.args[3], 'USD') // LogNewDeposit.usdAmount
+                    ? parseAmount(log.args[3], 'USD') // LogNewDeposit.usdAmount  ** TODO: retrieve the ratio!!!! **
                     : (side === Transfer.WITHDRAWAL || side === Transfer.EXTERNAL_GVT_WITHDRAWAL || side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
                         ? usd_return
                         : (side === Transfer.EXTERNAL_GVT_DEPOSIT)
-                            ? parseAmount(log.args[2], 'USD') / parseAmount(log.args[3], 'USD') // LogTransfer.amount / ratio (GVT)
+                            ? parseAmount(log.args[2], 'USD') / parseAmount(log.args[3], 'USD') // LogTransfer.amount /  LogTransfer.ratio (GVT)
                             : (side === Transfer.EXTERNAL_PWRD_DEPOSIT)
-                                ? parseAmount(log.args[2], 'USD') // // LogTransfer.amount (PWRD) ** TODO: retrieve the ratio!!!! ****
+                                ? parseAmount(log.args[2], 'USD') // // LogTransfer.amount (PWRD) ** TODO: retrieve the ratio!!!! **
                                 : 0;
             const stable_amount =
                 (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL)
@@ -370,13 +393,11 @@ const generateDateRange = (_fromDate, _toDate) => {
 /// @param fromBlock Starting block to search for events
 /// @param toBlock Ending block to search for events
 /// @param side Load deposits ('Transfer.Deposit') or withdrawals ('Transfer.Withdraw')
-/// @param account User account to be processed - if null, all accounts to be processed
 /// @return True if no exceptions found, false otherwise
 const loadTmpUserTransfers = async (
     fromBlock,
     toBlock,
     side,
-    account = null
 ) => {
     try {
         // Determine event type to apply filters
@@ -409,7 +430,7 @@ const loadTmpUserTransfers = async (
             eventType,
             fromBlock,
             toBlock,
-            account,
+            null,
         ).catch((err) => {
             handleErr(`personalHandler->loadTmpUserTransfers()->getEvents(): `, err);
         });
@@ -424,6 +445,7 @@ const loadTmpUserTransfers = async (
             } else {
                 finalResult = preResult;
             }
+            //await getPwrdValue(finalResult);
             let params = [];
             for (const item of finalResult)
                 params.push(Object.values(item));
@@ -441,7 +463,6 @@ const loadTmpUserTransfers = async (
             logger.info(`**DB: No ${transferType(side)}s found`);
             return true;
         }
-
         // Store latest block processed into table SYS_TABLE_LOADS
         // const lastBlock = finalResult[finalResult.length - 1].block_number;
         // const result = await updateLastTableLoad(
@@ -453,7 +474,7 @@ const loadTmpUserTransfers = async (
         return true;
 
     } catch (err) {
-        handleErr(`personalHandler->loadTmpUserTransfers() [blocks from: ${fromBlock} to ${toBlock}, side: ${side}, account: ${account}]`, err);
+        handleErr(`personalHandler->loadTmpUserTransfers() [blocks from: ${fromBlock} to ${toBlock}, side: ${side}]`, err);
         return false;
     }
 }
@@ -560,17 +581,12 @@ const showBalanceHourBlock = async (date, account) => {
 const loadUserBalances = async (
     fromDate,
     toDate,
-    account = null
 ) => {
     try {
         // Get users with any transfer
-        const users = (account)
-            ? {
-                rowCount: 1,
-                rows: [{ user_address: account }]
-            }
-            : await query('select_distinct_users_transfers.sql', []);
+        const users = await query('select_distinct_users_transfers.sql', []);
         if (users === QUERY_ERROR) return false;
+
         // For each date, check gvt & pwrd balance and insert data into USER_BALANCES
         const dates = generateDateRange(fromDate, toDate);
         logger.info(`**DB: Processing ${users.rowCount} user balance${isPlural(users.rowCount)}...`);
@@ -612,7 +628,7 @@ const loadUserBalances = async (
         );
         return true;
     } catch (err) {
-        handleErr(`personalHandler->loadUserBalances() [from: ${fromDate}, to: ${toDate}, account: ${account}]`, err);
+        handleErr(`personalHandler->loadUserBalances() [from: ${fromDate}, to: ${toDate}]`, err);
     }
 }
 
@@ -620,27 +636,24 @@ const loadUserBalances = async (
 /// @dev Data sourced from USER_DEPOSITS & USER_TRANSACTIONS (full load w/o filters)
 /// @param fromDate Start date to load net results
 /// @param toDdate End date to load net results
-/// @param account User account to be processed - if null, all accounts to be processed
 /// @return True if no exceptions found, false otherwise
 const loadUserNetReturns = async (
     fromDate,
     toDate,
-    account = null) => {
+) => {
     try {
         const dates = generateDateRange(fromDate, toDate);
         logger.info(`**DB: Processing user net result/s...`);
         for (const date of dates) {
             /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
             const day = moment(date).format('MM/DD/YYYY');
-            const q = (account) ? 'insert_user_net_returns_by_address.sql' : 'insert_user_net_returns.sql';
-            const params = (account) ? [day, account] : [day];
-            const result = await query(q, params);
+            const result = await query('insert_user_net_returns.sql', [day]);
             if (result === QUERY_ERROR) return false;
             const numResults = result.rowCount;
             logger.info(`**DB: ${numResults} record${isPlural(numResults)} added into USER_NET_RETURNS for date ${moment(date).format('DD/MM/YYYY')}`);
         }
     } catch (err) {
-        handleErr(`personalHandler->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}, account: ${account}]`, err);
+        handleErr(`personalHandler->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}]`, err);
     }
 }
 
@@ -677,35 +690,31 @@ const preload = async (_fromDate, _toDate) => {
 /// @param dates An array with all dates from the start to the end date
 /// @param fromDate Start date to delete data
 /// @param toDdate End date to delete data
-/// @param account User account to be processed - if null, all accounts to be processed
 /// @return True if no exceptions found, false otherwise
-/// TODO: if account informed, delete where dates IN [...] instead of loop by day
-const remove = async (dates, _fromDate, _toDate, account) => {
+const remove = async (dates, _fromDate, _toDate) => {
     try {
         // Delete previous transfers, balances & net results
         let rowCountTransfers = 0;
         let rowCountBalances = 0;
         let rowCountNetReturns = 0;
         for (const day of dates) {
-            const params = (account)
-                ? [moment(day).format('DD/MM/YYYY'), account]
-                : [moment(day).format('DD/MM/YYYY')];
+            const params = [moment(day).format('DD/MM/YYYY')];
             // Delete previous transfers from USER_TRANSFERS
-            const resTransfers = await query((account) ? 'delete_user_transfers_by_address.sql' : 'delete_user_transfers.sql', params);
+            const resTransfers = await query('delete_user_transfers.sql', params);
             if (resTransfers === QUERY_ERROR) {
                 return false;
             } else {
                 rowCountTransfers += resTransfers.rowCount;
             }
             // Delete previous balances from USER_BALANCES
-            const resBalances = await query((account) ? 'delete_user_balances_by_address.sql' : 'delete_user_balances.sql', params);
+            const resBalances = await query('delete_user_balances.sql', params);
             if (resBalances === QUERY_ERROR) {
                 return false;
             } else {
                 rowCountBalances += resBalances.rowCount;
             }
             // Delete previous net results from USER_NET_RETURNS
-            const resReturns = await query((account) ? 'delete_user_net_returns_by_address.sql' : 'delete_user_net_returns.sql', params);
+            const resReturns = await query('delete_user_net_returns.sql', params);
             if (resReturns === QUERY_ERROR) {
                 return false;
             } else {
@@ -717,7 +726,7 @@ const remove = async (dates, _fromDate, _toDate, account) => {
         logger.info(`**DB: ${rowCountNetReturns} record${isPlural(rowCountNetReturns)} deleted from USER_NET_RETURNS`);
         return true;
     } catch (err) {
-        handleErr(`personalHandler->remove() [from: ${_fromDate}, to: ${_toDate}, account: ${account}]`, err);
+        handleErr(`personalHandler->remove() [from: ${_fromDate}, to: ${_toDate}]`, err);
         return false;
     }
 }
@@ -740,7 +749,7 @@ const initialDataLoad = async (
         for (let i = 0; i <= days; i++) {
             let newDate = moment(start).add(i, 'days');
             let newDateStr = moment(newDate).format('DD/MM/YYYY');
-            await reload(newDateStr, newDateStr, null);
+            await reload(newDateStr, newDateStr);
         }
     } catch (err) {
         handleErr(`personalHandler->reload() [from: ${fromDate}, to: ${toDate}]`, err);
@@ -749,32 +758,29 @@ const initialDataLoad = async (
 
 /// @notice Reloads user transfers, balances & net results for a given time interval
 /// @dev    - Previous data for the given time interval will be overwritten
-/// @dev    - It is strongly recommended to reload data until D-1
 /// @param fromDate Start date to reload data
 /// @param toDdate End date to reload data
-/// @param account User account to be processed - if null, all accounts to be processed
 const reload = async (
     _fromDate,
     _toDate,
-    account = null,
 ) => {
     try {
         // Calculate dates & blocks to be processed
         const [fromBlock, toBlock, dates] = await preload(_fromDate, _toDate);
 
         // Execute transfers calculations in temporary tables
-        if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, account))
-            if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account))
+        if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT))
+            if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL))
                 if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL))
                     if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT))
                         if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL))
                             if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT))
-                                if (await remove(dates, _fromDate, _toDate, account))
+                                if (await remove(dates, _fromDate, _toDate))
                                     if (await loadUserTransfers())
-                                        if (await loadUserBalances(_fromDate, _toDate, account))
-                                            await loadUserNetReturns(_fromDate, _toDate, account);
+                                        if (await loadUserBalances(_fromDate, _toDate))
+                                            await loadUserNetReturns(_fromDate, _toDate);
     } catch (err) {
-        handleErr(`personalHandler->reload() [from: ${_fromDate}, to: ${_toDate}, account: ${account}]`, err);
+        handleErr(`personalHandler->reload() [from: ${_fromDate}, to: ${_toDate}]`, err);
     }
 }
 
@@ -784,26 +790,23 @@ const reload = async (
 ///         - If any data load fails, execution is stopped (to avoid data inconsistency)
 /// @param fromDate Start date to reload data
 /// @param toDdate End date to reload data
-/// @param account User account to be processed - if null, all accounts to be processed
 const load = async (
     fromDate,
     toDate,
-    account = null
 ) => {
     // Calculate dates & blocks to be processed
     const [fromBlock, toBlock] = await preload(fromDate, toDate);
 
     // Execute deposits, balances & net results calculations
-    if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, account))
-        if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, account))
+    if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT))
+        if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL))
             if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL))
                 if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT))
                     if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL))
                         if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT))
                             if (await loadUserTransfers())
-                                console.log('yuju');
-    // if (await loadUserBalances(fromDate, toDate, account))
-    //     await loadUserNetReturns(fromDate, toDate, account);
+                                if (await loadUserBalances(fromDate, toDate))
+                                    await loadUserNetReturns(fromDate, toDate);
 }
 
 const loadGroStatsDB = async () => {
@@ -831,14 +834,8 @@ const loadGroStatsDB = async () => {
             // DEV: external transfers
             //const [fromBlock, toBlock, dates] = await preload('28/05/2021', '31/05/2021');
             //await loadTmpExternalUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
-            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL);
-            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT);
-            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL);
-            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT);
-            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT);
-            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL);
-            await reload('27/05/2021', '19/06/2021', '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
-
+            //await reload('27/05/2021', '19/06/2021', '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
+            await reload('23/06/2021', '26/06/2021');
 
 
 
