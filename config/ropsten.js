@@ -169,6 +169,7 @@ module.exports = {
     },
     ratioUpperBond: 14000,
     ratioLowerBond: 7000,
+    curveRatioLowerBond: 1000,
     lifeguard_name: '3CRV',
     before_block: 30,
     fail_percentage_total: 1000,
