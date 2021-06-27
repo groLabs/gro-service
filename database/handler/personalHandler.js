@@ -83,6 +83,7 @@ const getNetworkId = () => {
     try {
         switch (process.env.NODE_ENV) {
             case 'mainnet': return 1;
+            case 'ropsten': return 3;
             case 'kovan': return 42;
             //case 'develop': return TBC;
         }
@@ -434,7 +435,7 @@ const loadTmpUserTransfers = async (
         ).catch((err) => {
             handleErr(`personalHandler->loadTmpUserTransfers()->getEvents(): `, err);
         });
-
+        
         // Store data into table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
         let finalResult = [];
         if (logs.length > 0) {
@@ -731,31 +732,6 @@ const remove = async (dates, _fromDate, _toDate) => {
     }
 }
 
-/// @notice Reloads ALL user transfers, balances & net results for a given time interval
-/// @dev - Avoids creating 0 balance & 0 net returns if there were previous users, as compared
-///        to launching reload() only
-///      - Previous data for the given time interval will be overwritten
-/// @param fromDate Start date to reload data
-/// @param toDdate End date to reload data
-const initialDataLoad = async (
-    fromDate,
-    toDate,
-) => {
-    try {
-        let start = moment.utc(fromDate, "DD/MM/YYYY");
-        let end = moment.utc(toDate, "DD/MM/YYYY");
-        const days = moment.duration(end.diff(start)).asDays();
-
-        for (let i = 0; i <= days; i++) {
-            let newDate = moment(start).add(i, 'days');
-            let newDateStr = moment(newDate).format('DD/MM/YYYY');
-            await reload(newDateStr, newDateStr);
-        }
-    } catch (err) {
-        handleErr(`personalHandler->reload() [from: ${fromDate}, to: ${toDate}]`, err);
-    }
-}
-
 /// @notice Reloads user transfers, balances & net results for a given time interval
 /// @dev    - Previous data for the given time interval will be overwritten
 /// @param fromDate Start date to reload data
@@ -815,41 +791,12 @@ const loadGroStatsDB = async () => {
         scanner = new BlocksScanner(provider);
 
         initDatabaseContracts().then(async () => {
-            // TODO: ******* PROVAR una adreça que no existeixi
-
             // DEV:
-            //await load('04/06/2021', '04/06/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072')
-            //await reload("04/06/2021", "04/06/2021", '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
-            //await load("04/06/2021", "04/06/2021", null);
-            // const [fromBlock, toBlock] = await preload('25/05/2021', '03/06/2021');
-            // if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837'))
-            //     if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837'))
-            //         await loadUserTransfers()
-            // await reload('27/05/2021', '05/06/2021', '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
-            //await reload('27/05/2021', '20/06/2021','0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
-            //await reload('27/05/2021', '20/06/2021', '0xd9Ae20877fE022FF453299a945CAcfcd2192350d');
-
-            //await showBalanceHourBlock(null, '0xd9Ae20877fE022FF453299a945CAcfcd2192350d')
-
-            // DEV: external transfers
-            //const [fromBlock, toBlock, dates] = await preload('28/05/2021', '31/05/2021');
-            //await loadTmpExternalUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
-            //await reload('27/05/2021', '19/06/2021', '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
-            await reload('23/06/2021', '26/06/2021');
-
-
-
-            //await loadTmpExternalUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT, '0x95891bC31bD47147292Fc43c0aEEea9fCb3e765B');
-            // const [fromBlock, toBlock, dates] = await preload('03/06/2021', '03/06/2021');
-            // await loadTmpExternalUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL, '0x44ad5FA4D36Dc37b7B83bAD6Ac6F373C47C3C837');
+            // await reload('23/06/2021', '26/06/2021');
+            // await load('23/06/2021', '26/06/2021');
 
             // PROD:
-            //const [fromBlock, toBlock] = await preload('24/05/2021', '19/06/2021');
-            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null);
-            // await loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null)
-            // await reload("29/05/2021", "20/06/2021", null);
-            // await reload("31/05/2021", "31/05/2021", null);
-            // await initialDataLoad('29/05/2021', '20/06/2021');
+            await load("29/05/2021", "26/06/2021");
 
             process.exit(); // for testing purposes
         });

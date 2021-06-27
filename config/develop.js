@@ -141,4 +141,11 @@ module.exports = {
             bot_logs: '825999075971039283',
         },
     },
+    database: {
+        host: process.env.DB_DEV_HOST,
+        port: process.env.DB_DEV_PORT,
+        user: process.env.DB_DEV_USER,
+        password: process.env.DB_DEV_PASSWORD,
+        database: process.env.DB_DEV_INSTANCE,
+    },
 };
