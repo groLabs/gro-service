@@ -14,6 +14,9 @@
         "start:kovan:stats": "cross-env NODE_ENV=kovan BOT_ENV=STATS node ./stats/bin/www",
         "start:kovan:regular": "cross-env NODE_ENV=kovan BOT_ENV=REGULAR node ./regular/index.js",
         "start:kovan:critic": "cross-env NODE_ENV=kovan BOT_ENV=CRITICAL node ./critical/index.js",
+        "start:ropsten:stats": "cross-env NODE_ENV=ropsten BOT_ENV=STATS node ./stats/bin/www",
+        "start:ropsten:regular": "cross-env NODE_ENV=ropsten BOT_ENV=REGULAR node ./regular/index.js",
+        "start:ropsten:critic": "cross-env NODE_ENV=ropsten BOT_ENV=CRITICAL node ./critical/index.js",
         "start:mainnet:stats": "cross-env NODE_ENV=mainnet BOT_ENV=STATS node ./stats/bin/www",
         "start:mainnet:regular": "cross-env NODE_ENV=mainnet BOT_ENV=REGULAR node ./regular/index.js",
         "start:mainnet:critic": "cross-env NODE_ENV=mainnet BOT_ENV=CRITICAL node ./critical/index.js"
