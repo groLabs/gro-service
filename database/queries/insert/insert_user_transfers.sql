@@ -1,7 +1,7 @@
 INSERT INTO gro."USER_TRANSFERS" (
         "block_number",
         "block_timestamp",
-        "block_date",
+        "transfer_date",
         "tx_hash",
         "network_id",
         "transfer_type",

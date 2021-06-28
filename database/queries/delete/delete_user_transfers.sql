@@ -1,2 +1,2 @@
 DELETE FROM gro."USER_TRANSFERS"
-WHERE TO_CHAR(block_date, 'DD/MM/YYYY') = $1;
+WHERE TO_CHAR(transfer_date, 'DD/MM/YYYY') = $1;

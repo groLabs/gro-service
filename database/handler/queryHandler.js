@@ -86,11 +86,11 @@ const batchQuery = async (q, file, op, params) => {
                 rows += result.rowCount;
             }
             if ((op === 'insert') || (op == 'update')) { await client.query('COMMIT') }
-            return rows;
+            return [true, rows];
         } catch (err) {
             if ((op === 'insert') || (op == 'update')) { await client.query('ROLLBACK') }
             logger.error(`**DB: queryHandler.js->batchQuery() \n Message: ${err} \n Query: ${file} \n Params: ${params}`);
-            return 400;
+            return [false, 0];
         } finally {
             client.release();
         }
