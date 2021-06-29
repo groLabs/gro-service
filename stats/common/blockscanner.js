@@ -27,7 +27,6 @@ module.exports = class {
         //     await this.getBoundaries();
         // }
         await this.getBoundaries();
-
         if (date.isBefore(moment.unix(this.firstBlock.timestamp))) {
             return this.returnWrapper(date.format(), 1);
         }
@@ -146,6 +145,9 @@ module.exports = class {
         block =
             block === 'latest' ? await this.provider.getBlockNumber() : block;
         if (this.savedBlocks[block]) return this.savedBlocks[block];
+        if (this.latestBlock && block > this.latestBlock.number) {
+            block = this.latestBlock.number;
+        }
         const { timestamp } = await this.provider.getBlock(block);
         this.savedBlocks[block] = {
             timestamp,
