@@ -92,7 +92,7 @@ MESSAGE_EMOJI[MESSAGE_TYPES.chainPrice] =
 
 function generateLink(urlDetail) {
     const nodeEnv = process.env.NODE_ENV.toLowerCase();
-    let host = 'https://kovan.etherscan.io';
+    let host = `https://${nodeEnv}.etherscan.io`;
     if (nodeEnv === 'mainnet') {
         host = 'https://etherscan.io';
     }
