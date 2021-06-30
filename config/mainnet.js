@@ -1,6 +1,23 @@
 module.exports = {
-    deposit_handler_history: {},
-    withdraw_handler_history: {},
+    deposit_handler_history: {
+        '0x79b14d909381D79B655C0700d0fdc2C7054635b9': {
+            abi: 'old',
+            event_fragment: [
+                'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)',
+            ],
+        },
+        '0x11a2f8eE421603013c148BBa8f7b307d1b2a4a08': {},
+    },
+    withdraw_handler_history: {
+        '0xd89512Bdf570476310DE854Ef69D715E0e85B09F': {
+            abi: 'old',
+            event_fragment: [
+                'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
+            ],
+        },
+        '0xcBBcC56f9f8883992cA21BbDa2b8c0ED293B4c9e': {},
+    },
+    old_pnl: ['0x4C4A81298CC85c5BBF8092bd241fCc5dD6Ec3f74'],
     blockchain: {
         network: 'mainnet',
         start_block: 12522788,
@@ -90,21 +107,21 @@ module.exports = {
     keep_stats_file_number: 250,
     stats_folder: '../stats',
     log_folder: '../logs',
-    blockNumberFile: './lastBlockNumber.json',
+    blockNumberFile: '../stats/lastBlockNumber.json',
     stats_latest: '../stats/gro-latest.json',
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
-    protocol: ['Compound', 'Cream', 'Curve'],
-    strategy_name: [
-        'Lev Comp',
-        'Cream',
-        'Lev Comp',
-        'Cream',
-        'Harvest',
-        'Cream',
-        'XPool',
+    strategy_exposure: [
+        ['Idle', 'Compound'],
+        ['Cream'],
+        ['Idle', 'Compound'],
+        ['Cream'],
+        ['Idle', 'Compound'],
+        ['Cream'],
+        ['Curve'],
     ],
-    strategy_default_apy: [132800, 99000, 90000, 65000, 90000, 90278, 200000],
+    strategy_name: ['Idle', 'Cream', 'Idle', 'Cream', 'Idle', 'Cream', 'XPool'],
+    strategy_default_apy: [58500, 99000, 30700, 65000, 83000, 90278, 200000],
     harvest_strategy_dependency: [
         '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
         '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE',

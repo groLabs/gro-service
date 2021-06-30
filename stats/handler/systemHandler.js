@@ -27,9 +27,9 @@ const ZERO = BigNumber.from(0);
 // config
 const stabeCoinNames = config.get('stable_coin');
 const vaultNames = config.get('vault_name');
-const protocolNames = config.get('protocol');
 const strategyNames = config.get('strategy_name');
 const lifeguardNames = config.get('lifeguard_name');
+const strategyExposure = config.get('strategy_exposure');
 
 const providerKey = 'stats_gro';
 
@@ -172,35 +172,49 @@ async function getExposureStats(blockTag, systemStats) {
     const exposure = getExposure(providerKey);
     logger.info(`getExposureStats blockTag : ${JSON.stringify(blockTag)}`);
     const preCal = await getInsurance(providerKey).prepareCalculation(blockTag);
-    const riskResult = await exposure.calcRiskExposure(preCal, blockTag);
+    const riskResult = await exposure.getExactRiskExposure(preCal, blockTag);
     const exposureStableCoin = riskResult[0].map((concentration, i) => ({
         name: stabeCoinNames[i],
         concentration: convertToSharePercentDecimal(concentration),
     }));
-    const exposureProtocol = riskResult[1].map((concentration, i) => ({
-        name: protocolNames[i],
-        concentration: convertToSharePercentDecimal(concentration),
-    }));
-
-    // add curve 3pool exposure
-    exposureProtocol.push({
-        name: 'Curve',
-        concentration: convertToSharePercentDecimal(riskResult[2]),
+    const exposureProtocol = [];
+    const protocols = [];
+    const vaultsStats = systemStats.vaults;
+    for (let i = 0; i < vaultsStats.length; i += 1) {
+        const vault = vaultsStats[i];
+        const strategyList = vault.strategies;
+        for (let j = 0; j < strategyList.length - 1; j += 1) {
+            const propertyIndex = i * 2 + j;
+            const strategy = strategyList[j];
+            const strategyProtocols = strategyExposure[propertyIndex];
+            for (let k = 0; k < strategyProtocols.length; k += 1) {
+                const index = protocols.indexOf(strategyProtocols[k]);
+                if (index >= 0) {
+                    const exposure = exposureProtocol[index];
+                    exposure.concentration = exposure.concentration.add(
+                        strategy.share
+                    );
+                } else {
+                    protocols.push(strategyProtocols[k]);
+                    exposureProtocol.push({
+                        name: strategyProtocols[k],
+                        concentration: strategy.share,
+                    });
+                }
+            }
+        }
+    }
+    exposureProtocol.forEach((item) => {
+        if (item.name === 'Curve') {
+            item.concentration = vaultsStats[3].share;
+            logger.info(`curve ${vaultsStats[3].share} ${item.concentration}`);
+        }
+        logger.info(`exposureProtocol ${item.name} ${item.concentration}`);
     });
     const exposureStats = {
         stablecoins: exposureStableCoin,
         protocols: exposureProtocol,
     };
-    // This is hard code to show harvest exposure
-    // Harvest strategy is in vault 2, strategy 0
-    const harvestExposure = systemStats.vaults[2].strategies[0].share;
-    exposureProtocol.push({
-        name: protocolNames[3],
-        concentration: harvestExposure,
-    });
-    logger.info(
-        `calculate harvest exposure all:${exposureProtocol[0].concentration} harvest:${harvestExposure}`
-    );
     return exposureStats;
 }
 
