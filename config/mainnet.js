@@ -63,8 +63,17 @@ module.exports = {
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
     protocol: ['Compound', 'Cream', 'Curve', 'Idle'],
+    strategy_exposure: [
+        ['Compound'],
+        ['Cream'],
+        ['Compound'],
+        ['Cream'],
+        ['Idle', 'Compound'],
+        ['Cream'],
+        ['Curve'],
+    ],
     strategy_name: ['Lev Comp', 'Cream', 'Lev Comp', 'Cream', 'Idle', 'Cream'],
-    strategy_default_apy: [132800, 99000, 90000, 65000, 83000, 90278, 200000],
+    strategy_default_apy: [58500, 99000, 30700, 65000, 83000, 90278, 200000],
     harvest_strategy_dependency: [
         '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
         '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE',
