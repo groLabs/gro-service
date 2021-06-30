@@ -9,7 +9,8 @@ module.exports = class {
     }
 
     async getBoundaries() {
-        this.latestBlock = await this.getBlockWrapper('latest');
+        this.latestBlockNumber = await this.provider.getBlockNumber();
+        this.latestBlock = await this.getBlockWrapper(this.latestBlockNumber);
         this.firstBlock = await this.getBlockWrapper(1);
         this.blockTime =
             (parseInt(this.latestBlock.timestamp, 10) -
@@ -145,8 +146,8 @@ module.exports = class {
         block =
             block === 'latest' ? await this.provider.getBlockNumber() : block;
         if (this.savedBlocks[block]) return this.savedBlocks[block];
-        if (this.latestBlock && block > this.latestBlock.number) {
-            block = this.latestBlock.number;
+        if (block > this.latestBlockNumber) {
+            block = this.latestBlockNumber;
         }
         const { timestamp } = await this.provider.getBlock(block);
         this.savedBlocks[block] = {
