@@ -3,18 +3,23 @@ const { query } = require('./queryHandler');
 const BN = require('bignumber.js');
 const {
     initDatabaseContracts,
+    initAllContracts,
     getGvt,
-    getPwrd
+    getPwrd,
+    getBuoy,
+    getDepositHandler,
+    getVaultStabeCoins,
 } = require('../../contract/allContracts');
 const { getConfig } = require('../../common/configUtil');
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
 const {
     EVENT_TYPE,
     getEvents,
+    getApprovalEvents,
 } = require('../../common/logFilter');
 const {
     getDefaultProvider,
-    getAlchemyRpcProvider
+    getAlchemyRpcProvider,
 } = require('../../common/chainUtil');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -39,7 +44,8 @@ const Transfer = Object.freeze({
     "EXTERNAL_GVT_DEPOSIT": 3,
     "EXTERNAL_PWRD_DEPOSIT": 4,
     "EXTERNAL_GVT_WITHDRAWAL": 5,
-    "EXTERNAL_PWRD_WITHDRAWAL": 6
+    "EXTERNAL_PWRD_WITHDRAWAL": 6,
+    "STABLECOIN_APPROVAL": 7,
 });
 let scanner;
 
@@ -58,13 +64,15 @@ const transferType = (side) => {
         case Transfer.WITHDRAWAL:
             return 'withdrawal';
         case Transfer.EXTERNAL_GVT_DEPOSIT:
-            return 'ext_gvt_deposit'
+            return 'ext_gvt_deposit';
         case Transfer.EXTERNAL_PWRD_DEPOSIT:
             return 'ext_pwrd_deposit';
         case Transfer.EXTERNAL_GVT_WITHDRAWAL:
-            return 'ext_gvt_withdrawal'
+            return 'ext_gvt_withdrawal';
         case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
-            return 'ext_pwrd_withdrawal'
+            return 'ext_pwrd_withdrawal';
+        case Transfer.STABLECOIN_APPROVAL:
+            return 'coin-approve';
         default:
             break;
     }
@@ -81,17 +89,35 @@ const isDeposit = (side) => {
 // TODO start: to be included in /commmon/chainUtil.js
 const getNetworkId = () => {
     try {
-        switch (process.env.NODE_ENV) {
+        switch (process.env.NODE_ENV.toLowerCase()) {
             case 'mainnet': return 1;
             case 'ropsten': return 3;
             case 'kovan': return 42;
             //case 'develop': return TBC;
+            //otherwise, raise exception
         }
+        return -1;
     } catch (err) {
         logger.error(err);
     }
 }
 // TODO end
+
+// DUPLICATED: to be moved to /common
+function getStableCoinIndex(tokenSymbol) {
+    switch (tokenSymbol) {
+        case 'DAI':
+            return 0;
+        case 'USDC':
+            return 1;
+        case 'USDT':
+            return 2;
+        default:
+            //throw new ParameterError(`Not found token symbo: ${tokenSymbol}`);
+            // TODO
+            return -1;
+    }
+}
 
 const getBlockData = async (blockNumber) => {
     const block = await getDefaultProvider()
@@ -110,10 +136,13 @@ const isPlural = (count) => (count > 1) ? 's' : '';
 
 /// @notice Adds new blocks into table ETH_BLOCKS
 /// @return True if no exceptions found, false otherwise
-const loadEthBlocks = async () => {
+const loadEthBlocks = async (func) => {
     try {
         // Get block numbers to be processed from temporary tables on deposits & withdrawals
-        const blocks = await query('select_distinct_blocks_tmp_transfers.sql', []);
+        const q = (func === 'loadUserTransfers')
+            ? 'select_distinct_blocks_tmp_transfers.sql'
+            : 'select_distinct_blocks_tmp_approvals.sql';
+        const blocks = await query(q, []);
         if (blocks === QUERY_ERROR) return false;
 
         // Insert new blocks into ETH_BLOCKS
@@ -186,6 +215,9 @@ const updateTableLoads = async (tableName, _fromDate, _toDate) => {
                 break;
             case 'USER_TRANSFERS':
                 q = 'insert_sys_load_user_transfers.sql';
+                break;
+            case 'USER_APPROVALS':
+                q = 'insert_sys_load_user_approvals.sql';
                 break;
             default:
                 handleErr(`personalHandler->updateLastTableLoad(): table name '${tableName}' not found`, null);
@@ -410,6 +442,191 @@ const generateDateRange = (_fromDate, _toDate) => {
     }
 }
 
+/* EXPERIMENTAL */
+const showBalanceHourBlock = async (date, account) => {
+    try {
+        // let start = moment.utc("19/06/2021", "DD/MM/YYYY");
+        // //const days = moment.duration(end.diff(start)).asDays();
+
+        // let dates = [];
+        // for (let i = 0; i <= 23; i++) {
+        //     let newDate = moment(start).add(i, 'hours');
+        //     //let newDateStr = moment(newDate).format('DD/MM/YYYY HH24:MI:SS');
+        //     //console.log(newDateStr);
+        //     //await reload(newDateStr, newDateStr, null);
+        //     dates.push(newDate);
+        // }
+
+        // for (const date of dates) {
+        //     const blockTag = {
+        //         blockTag: (await findBlockByDate(date)).block
+        //     }
+        //     console.log(blockTag.blockTag)
+
+        //     const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
+        //     const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
+        //     const totalValue = gvtValue + pwrdValue;
+        //     const block = blockTag.blockTag;
+        //     const params = {
+        //         block: block,
+        //         date : date,
+        //         networkid: getNetworkId(),
+        //         account: account,
+        //         totalValue: totalValue,
+        //         gvtValue: gvtValue,
+        //         pwrdValue: pwrdValue,
+        //     };
+        //     // const result = await query('insert_user_balances.sql', params);
+        //     // if (result === QUERY_ERROR) return false;
+        //     // rowCount += result.rowCount;
+        //     console.log(params);
+        // }
+
+        const blockTag = {
+            blockTag: 25582733
+        };
+        const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
+        const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
+        const totalValue = gvtValue + pwrdValue;
+        const params = {
+            block: blockTag.blockTag,
+            date: date,
+            networkid: getNetworkId(),
+            account: account,
+            totalValue: totalValue,
+            gvtValue: gvtValue,
+            pwrdValue: pwrdValue,
+        };
+        console.log(params);
+    } catch (err) {
+        handleErr(`personalHandler->showBalanceHourBlock()`, err);
+    }
+}
+
+const isGToken = (tokenSymbol) => {
+    return (['DAI', 'USDC', 'USDT'].includes(tokenSymbol)) ? false : true;
+}
+
+const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
+    try {
+        let usdAmount = 0;
+        //const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
+        //const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
+        if (getGvt().address === tokenAddress) {
+            usdAmount = await getGvt().getShareAssets(amount).catch((error) => {
+                logger.error(error);
+            });
+        } else if (getPwrd().address === tokenAddress) {
+            usdAmount = await getPwrd.getShareAssets(amount).catch((error) => {
+                logger.error(error);
+            });
+        } else {
+            usdAmount = await getBuoy().singleStableToUsd(
+                amount,
+                getStableCoinIndex(tokenSymbol)
+            )
+        }
+        return parseAmount(usdAmount, 'USD');
+    } catch (err) {
+        handleErr(`personalHandler->getGTokenUSDAmount() [tokenAddress: ${tokenAddress}, amount: ${amount}, tokenSymbol: ${tokenSymbol}]`, err);
+        return 0;
+    }
+}
+
+// @dev: STRONG DEPENDENCY with deposit transfers (related events have to be ignored) 
+// @DEV: Table TMP_USER_DEPOSITS must be loaded before
+const loadTmpUserApprovals = async (
+    fromBlock,
+    toBlock,
+) => {
+    try {
+        // Get all approval events for a given block range
+        const logs = await getApprovalEvents(
+            null,
+            fromBlock,
+            toBlock,
+        ).catch((err) => {
+            handleErr(`personalHandler->loadTmpUserTransfers()->getApprovalEvents(): `, err);
+        });
+
+        // COMPTE: només dipòsits del mateix periode, o qualsevol dipòsit?
+        const depositTx = [];
+        const res = await query('select_tmp_deposits.sql', []);
+        if (res === QUERY_ERROR) {
+            return false;
+        } else if (res.rows.length === 0) {
+            logger.info(`**DB: Warning! 0 deposit transfers before processing approval events`);
+        } else {
+            for (const tx of res.rows) {
+                depositTx.push(tx.tx_hash);
+            }
+        }
+
+        // Remove approvals referring to deposits (only get stablecoin approvals)
+        let logsFiltered = logs.filter((item) => !depositTx.includes(item.transactionHash));
+
+
+        logger.info(`**DB: Processing ${logsFiltered.length} approval event${isPlural(logsFiltered.length)}...`);
+        const stableCoinInfo = getVaultStabeCoins();
+        const approvals = [];
+        for (const log of logsFiltered) {
+            const decimal = stableCoinInfo.decimals[log.address];
+            // Decimals should be 6 for USDC & USDT or 18 for DAI, GVT & PWRD.
+            if (decimal >= 6) {
+                // To be included in a parseApprovalEvent() function
+                const tokenSymbol = stableCoinInfo.symbols[log.address];
+                approvals.push({
+                    block_number: log.blockNumber,
+                    network_id: getNetworkId(),
+                    stablecoin_id: getStableCoinIndex(tokenSymbol),
+                    tx_hash: log.transactionHash,
+                    sender_address: log.args[0],
+                    spender_address: log.args[1],
+                    coin_amount: div(log.args[2], BN(10).pow(decimal), 2),
+                    coin_usd: await getApprovalValue(log.address, log.args[2], tokenSymbol),
+                    creation_date: moment.utc(),
+                });
+                // }
+            } else {
+                handleErr(`personalHandler->loadTmpUserApprovals(): Wrong decimal in coin amount`, null);
+                return false;
+            }
+        }
+
+        // Insert approvals into USER_APPROVALS
+        for (const item of approvals) {
+            const params = (Object.values(item));
+            const res = await query('insert_tmp_user_approvals.sql', params);
+            if (res === QUERY_ERROR) return false;
+        }
+
+        return true;
+    } catch (err) {
+        handleErr(`personalHandler->loadTmpUserApprovals() [blocks: ${fromBlock} to: ${toBlock}]`, err);
+        return false;
+    }
+}
+
+const loadUserApprovals = async (fromDate, toDate) => {
+    try {
+        // Add new blocks into ETH_BLOCKS (incl. block timestamp)
+        if (await loadEthBlocks('loadUserApprovals')) {
+            // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
+            const res = await query('insert_user_approvals.sql', []);
+            if (res === QUERY_ERROR) return false;
+            const numTransfers = res.rowCount;
+            logger.info(`**DB: ${numTransfers} record${isPlural(numTransfers)} added into USER_APPROVALS`);
+        } else {
+            return false;
+        }
+        const res = await updateTableLoads('USER_APPROVALS', fromDate, toDate);
+        return (res) ? true : false;
+    } catch (err) {
+        handleErr('personalHandler->loadUserTransfers()', err);
+        return false;
+    }
+}
+
 /// @notice - Loads deposits/withdrawals from all user accounts into temporary tables
 ///         - Gtoken amount is retrieved from related transaction
 ///         - Rest of data is retrieved from related event (LogNewDeposit or LogNewWithdrawal)
@@ -495,67 +712,6 @@ const loadTmpUserTransfers = async (
     }
 }
 
-/* EXPERIMENTAL */
-const showBalanceHourBlock = async (date, account) => {
-    try {
-        // let start = moment.utc("19/06/2021", "DD/MM/YYYY");
-        // //const days = moment.duration(end.diff(start)).asDays();
-
-        // let dates = [];
-        // for (let i = 0; i <= 23; i++) {
-        //     let newDate = moment(start).add(i, 'hours');
-        //     //let newDateStr = moment(newDate).format('DD/MM/YYYY HH24:MI:SS');
-        //     //console.log(newDateStr);
-        //     //await reload(newDateStr, newDateStr, null);
-        //     dates.push(newDate);
-        // }
-
-        // for (const date of dates) {
-        //     const blockTag = {
-        //         blockTag: (await findBlockByDate(date)).block
-        //     }
-        //     console.log(blockTag.blockTag)
-
-        //     const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-        //     const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
-        //     const totalValue = gvtValue + pwrdValue;
-        //     const block = blockTag.blockTag;
-        //     const params = {
-        //         block: block,
-        //         date : date,
-        //         networkid: getNetworkId(),
-        //         account: account,
-        //         totalValue: totalValue,
-        //         gvtValue: gvtValue,
-        //         pwrdValue: pwrdValue,
-        //     };
-        //     // const result = await query('insert_user_balances.sql', params);
-        //     // if (result === QUERY_ERROR) return false;
-        //     // rowCount += result.rowCount;
-        //     console.log(params);
-        // }
-
-        const blockTag = {
-            blockTag: 25582733
-        };
-        const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-        const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
-        const totalValue = gvtValue + pwrdValue;
-        const params = {
-            block: blockTag.blockTag,
-            date: date,
-            networkid: getNetworkId(),
-            account: account,
-            totalValue: totalValue,
-            gvtValue: gvtValue,
-            pwrdValue: pwrdValue,
-        };
-        console.log(params);
-    } catch (err) {
-        handleErr(`personalHandler->showBalanceHourBlock()`, err);
-    }
-}
-
 /// @notice Loads deposits/withdrawals into USER_TRANSFERS
 ///         Data is sourced from TMP_USER_DEPOSITS & TMP_USER_TRANSACTIONS (full load w/o filters)
 ///         All blocks from such transactions are stored into ETH_BLOCKS (incl. timestamp)
@@ -564,7 +720,7 @@ const showBalanceHourBlock = async (date, account) => {
 const loadUserTransfers = async (fromDate, toDate) => {
     try {
         // Add new blocks into ETH_BLOCKS (incl. block timestamp)
-        if (await loadEthBlocks()) {
+        if (await loadEthBlocks('loadUserTransfers')) {
             // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
             const res = await query('insert_user_transfers.sql', []);
             if (res === QUERY_ERROR) return false;
@@ -665,17 +821,17 @@ const loadUserNetReturns = async (
     }
 }
 
-/// @notice Calculates blocks and dates to be processed
+/// @notice Truncates temporaty tables & calculates blocks and dates to be processed
 /// @param fromDate Start date to process data
 /// @param toDdate End date to process data
 /// @return Array with start block, end block and list of dates to be processed
 const preload = async (_fromDate, _toDate) => {
     try {
         // Truncate temporary table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
-        const res1 = await query('truncate_tmp_user_deposits.sql', []);
-        const res2 = await query('truncate_tmp_user_withdrawals.sql', []);
-        if (res1 === QUERY_ERROR || res2 === QUERY_ERROR) return;
-        // TODO: if error?
+        const res1 = await query('truncate_tmp_user_approvals.sql', []);
+        const res2 = await query('truncate_tmp_user_deposits.sql', []);
+        const res3 = await query('truncate_tmp_user_withdrawals.sql', []);
+        if (res1 === QUERY_ERROR || res2 === QUERY_ERROR || res3 === QUERY_ERROR) return;
 
         // Calculate dates & blocks to process
         const dates = generateDateRange(_fromDate, _toDate);
@@ -706,8 +862,10 @@ const remove = async (dates, _fromDate, _toDate) => {
         let rowCountTransfers = 0;
         let rowCountBalances = 0;
         let rowCountNetReturns = 0;
+        let rowCountApprovals = 0;
         for (const day of dates) {
             const params = [moment(day).format('DD/MM/YYYY')];
+            //TODO **** encapsulate the 4 queries ****
             // Delete previous transfers from USER_TRANSFERS
             const resTransfers = await query('delete_user_transfers.sql', params);
             if (resTransfers === QUERY_ERROR) {
@@ -729,10 +887,18 @@ const remove = async (dates, _fromDate, _toDate) => {
             } else {
                 rowCountNetReturns += resReturns.rowCount;
             }
+            // Delete previous approvals from USER_APPROVALS
+            const resApprovals = await query('delete_user_approvals.sql', params);
+            if (resApprovals === QUERY_ERROR) {
+                return false;
+            } else {
+                rowCountApprovals += resApprovals.rowCount;
+            }
         }
         logger.info(`**DB: ${rowCountTransfers} record${isPlural(rowCountTransfers)} deleted from USER_TRANSFERS`);
         logger.info(`**DB: ${rowCountBalances} record${isPlural(rowCountBalances)} deleted from USER_BALANCES`);
         logger.info(`**DB: ${rowCountNetReturns} record${isPlural(rowCountNetReturns)} deleted from USER_NET_RETURNS`);
+        logger.info(`**DB: ${rowCountApprovals} record${isPlural(rowCountApprovals)} deleted from USER_APPROVALS`);
         return true;
     } catch (err) {
         handleErr(`personalHandler->remove() [from: ${_fromDate}, to: ${_toDate}]`, err);
@@ -749,7 +915,7 @@ const reload = async (
     toDate,
 ) => {
     try {
-        // Calculate dates & blocks to be processed
+        // Truncates TMP tables and calculates dates & blocks to be processed
         const [fromBlock, toBlock, dates] = await preload(fromDate, toDate);
 
         // Reload transfers, balances & net results
@@ -760,16 +926,16 @@ const reload = async (
                         if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT))
                             if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL))
                                 if (await loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT))
-                                    if (await remove(dates, fromDate, toDate))
-                                        if (await loadUserTransfers(fromDate, toDate))
-                                            if (await loadUserBalances(fromDate, toDate))
-                                                await loadUserNetReturns(fromDate, toDate);
+                                    if (await loadTmpUserApprovals(fromBlock, toBlock))
+                                        if (await remove(dates, fromDate, toDate))
+                                            if (await loadUserApprovals(fromDate, toDate))
+                                                if (await loadUserTransfers(fromDate, toDate))
+                                                    if (await loadUserBalances(fromDate, toDate))
+                                                        await loadUserNetReturns(fromDate, toDate);
         } else {
             const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
             handleErr(`personalHandler->reload() Error with parameters: ${params}`, null);
         }
-
-
     } catch (err) {
         handleErr(`personalHandler->reload() [from: ${fromDate}, to: ${toDate}]`, err);
     }
@@ -785,7 +951,7 @@ const load = async (
     fromDate,
     toDate,
 ) => {
-    // Calculate dates & blocks to be processed
+    // Truncates TMP tables and calculate dates & blocks to be processed
     const [fromBlock, toBlock] = await preload(fromDate, toDate);
 
     // Reload transfers, balances & net results
@@ -810,17 +976,21 @@ const loadGroStatsDB = async () => {
         const provider = getAlchemyRpcProvider('stats_gro');
         scanner = new BlocksScanner(provider);
 
-        initDatabaseContracts().then(async () => {
-            // DEV:
-            await reload('23/06/2021', '26/06/2021');
-            // await load('23/06/2021', '26/06/2021');
+        //initDatabaseContracts().then(async () => {
+        initAllContracts().then(async () => {
+
+            // DEV Kovan:
+            // await reload('23/06/2021', '26/06/2021');
+            // await reload('23/06/2021', '26/06/2021');
+
+            // DEV Ropsten:
+            // await reload('27/06/2021', '29/06/2021');
 
             // PROD:
-            // await load("29/05/2021", "26/06/2021");
+            await reload("29/06/2021", "30/06/2021");
 
             process.exit(); // for testing purposes
         });
-
 
     } catch (err) {
         handleErr(`personalHandler->loadGroStatsDB()`, err);
