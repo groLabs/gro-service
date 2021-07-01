@@ -1,7 +1,7 @@
 INSERT INTO gro."TMP_USER_APPROVALS" (
         "block_number",
         "network_id",
-        "stablecoind_id",
+        "stablecoin_id",
         "tx_hash",
         "sender_address",
         "spender_address",

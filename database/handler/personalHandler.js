@@ -1,5 +1,6 @@
 const ethers = require('ethers');
 const { query } = require('./queryHandler');
+const { getPersonalStats } = require('./parseHandler');
 const BN = require('bignumber.js');
 const {
     initDatabaseContracts,
@@ -973,24 +974,27 @@ const load = async (
 
 const loadGroStatsDB = async () => {
     try {
-        const provider = getAlchemyRpcProvider('stats_gro');
-        scanner = new BlocksScanner(provider);
+        // const provider = getAlchemyRpcProvider('stats_gro');
+        // scanner = new BlocksScanner(provider);
 
-        //initDatabaseContracts().then(async () => {
-        initAllContracts().then(async () => {
+        // //initDatabaseContracts().then(async () => {
+        // initAllContracts().then(async () => {
 
-            // DEV Kovan:
-            // await reload('23/06/2021', '26/06/2021');
-            // await reload('23/06/2021', '26/06/2021');
+        // //     // DEV Kovan:
+        // //     // await reload('23/06/2021', '26/06/2021');
+        // //     // await reload('23/06/2021', '26/06/2021');
 
-            // DEV Ropsten:
-            // await reload('27/06/2021', '29/06/2021');
+        //     //DEV Ropsten:
+        //     await reload('27/06/2021', '30/06/2021');
 
-            // PROD:
-            await reload("29/06/2021", "30/06/2021");
+        // //     // PROD:
+        // //     await reload("30/06/2021", "30/06/2021");
 
-            process.exit(); // for testing purposes
-        });
+        // //     process.exit(); // for testing purposes
+        // });
+
+        await getPersonalStats('29/06/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
+        process.exit();
 
     } catch (err) {
         handleErr(`personalHandler->loadGroStatsDB()`, err);
