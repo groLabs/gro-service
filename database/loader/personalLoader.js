@@ -15,8 +15,8 @@ const { getConfig } = require('../../common/configUtil');
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
 const {
     EVENT_TYPE,
-    getEvents,
-    getApprovalEvents,
+    getEvents: getTransferEV,
+    getApprovalEvents: getApprovalEV,
 } = require('../../common/logFilter');
 const {
     getDefaultProvider,
@@ -307,7 +307,7 @@ const getGTokenFromTx = async (result, side) => {
 //     }
 // }
 
-const parseFromTransferEvent = async (logs, side) => {
+const parseTransferEvents = async (logs, side) => {
     try {
         let result = [];
         logs.forEach((log) => {
@@ -416,7 +416,7 @@ const parseFromTransferEvent = async (logs, side) => {
         });
         return result;
     } catch (err) {
-        handleErr(`personalHandler->parseFromTransferEvent() [side: ${side}]`, err);
+        handleErr(`personalHandler->parseTransferEvents() [side: ${side}]`, err);
     }
 }
 
@@ -540,43 +540,11 @@ const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
     }
 }
 
-// @dev: STRONG DEPENDENCY with deposit transfers (related events have to be ignored) 
-// @DEV: Table TMP_USER_DEPOSITS must be loaded before
-const loadTmpUserApprovals = async (
-    fromBlock,
-    toBlock,
-) => {
+const parseApprovalEvents = async (logs) => {
     try {
-        // Get all approval events for a given block range
-        const logs = await getApprovalEvents(
-            null,
-            fromBlock,
-            toBlock,
-        ).catch((err) => {
-            handleErr(`personalHandler->loadTmpUserTransfers()->getApprovalEvents(): `, err);
-        });
-
-        // COMPTE: només dipòsits del mateix periode, o qualsevol dipòsit?
-        const depositTx = [];
-        const res = await query('select_tmp_deposits.sql', []);
-        if (res === QUERY_ERROR) {
-            return false;
-        } else if (res.rows.length === 0) {
-            logger.info(`**DB: Warning! 0 deposit transfers before processing approval events`);
-        } else {
-            for (const tx of res.rows) {
-                depositTx.push(tx.tx_hash);
-            }
-        }
-
-        // Remove approvals referring to deposits (only get stablecoin approvals)
-        let logsFiltered = logs.filter((item) => !depositTx.includes(item.transactionHash));
-
-
-        logger.info(`**DB: Processing ${logsFiltered.length} approval event${isPlural(logsFiltered.length)}...`);
         const stableCoinInfo = getVaultStabeCoins();
         const approvals = [];
-        for (const log of logsFiltered) {
+        for (const log of logs) {
             const decimal = stableCoinInfo.decimals[log.address];
             // Decimals should be 6 for USDC & USDT or 18 for DAI, GVT & PWRD.
             if (decimal >= 6) {
@@ -595,18 +563,78 @@ const loadTmpUserApprovals = async (
                 });
                 // }
             } else {
-                handleErr(`personalHandler->loadTmpUserApprovals(): Wrong decimal in coin amount`, null);
+                handleErr(`personalHandler->parseApprovalEvents(): Wrong decimal in coin amount`, null);
                 return false;
             }
         }
+        return approvals;
+    } catch (err) {
+        handleErr(`personalHandler->parseApprovalEvents()`, err);
+        return false;
+    }
+}
 
-        // Insert approvals into USER_APPROVALS
-        for (const item of approvals) {
-            const params = (Object.values(item));
-            const res = await query('insert_tmp_user_approvals.sql', params);
-            if (res === QUERY_ERROR) return false;
+// Get all approval events for a given block range
+// TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
+const getApprovalEvents = async (account, fromBlock, toBlock) => {
+    try {
+        const logs = await getApprovalEV(
+            account,
+            fromBlock,
+            toBlock,
+        ).catch((err) => {
+            handleErr(`personalHandler->loadTmpUserTransfers()->getApprovalEvents(): `, err);
+            return false;
+        });
+
+        // COMPTE: només dipòsits del mateix periode, o qualsevol dipòsit?
+        const depositTx = [];
+        const res = await query('select_tmp_deposits.sql', []);
+        if (res === QUERY_ERROR) {
+            return false;
+        } else if (res.rows.length === 0) {
+            logger.info(`**DB: Warning! 0 deposit transfers before processing approval events`);
+        } else {
+            for (const tx of res.rows) {
+                depositTx.push(tx.tx_hash);
+            }
         }
 
+        // Remove approvals referring to deposits (only get stablecoin approvals)
+        let logsFiltered = logs.filter((item) => !depositTx.includes(item.transactionHash));
+
+        return logsFiltered;
+    } catch (err) {
+        handleErr(`personalHandler->getApprovalEvents() [blocks: from ${fromBlock} to: ${toBlock}, account: ${account}]`, err);
+        return false;
+    }
+}
+
+// @dev: STRONG DEPENDENCY with deposit transfers (related events have to be ignored) 
+// @DEV: Table TMP_USER_DEPOSITS must be loaded before
+// TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
+const loadTmpUserApprovals = async (
+    fromBlock,
+    toBlock,
+) => {
+    try {
+        // Get all approval events for a given block range
+        const logs = await getApprovalEvents(null, fromBlock, toBlock);
+        if (!logs)
+            return false;
+
+        // Parse approval events
+        logger.info(`**DB: Processing ${logs.length} approval event${isPlural(logs.length)}...`);
+        const approvals = await parseApprovalEvents(logs);
+
+        // Insert approvals into USER_APPROVALS
+        // TODO: returning different types will be a problem in TS
+        if (approvals)
+            for (const item of approvals) {
+                const params = (Object.values(item));
+                const res = await query('insert_tmp_user_approvals.sql', params);
+                if (res === QUERY_ERROR) return false;
+            }
         return true;
     } catch (err) {
         handleErr(`personalHandler->loadTmpUserApprovals() [blocks: ${fromBlock} to: ${toBlock}]`, err);
@@ -634,20 +662,7 @@ const loadUserApprovals = async (fromDate, toDate) => {
     }
 }
 
-/// @notice - Loads deposits/withdrawals from all user accounts into temporary tables
-///         - Gtoken amount is retrieved from related transaction
-///         - Rest of data is retrieved from related event (LogNewDeposit or LogNewWithdrawal)
-/// @dev - Truncates always temporary tables beforehand even if no data to be processed, 
-///        otherwise, old data would be loaded if no new deposits/withdrawals
-/// @param fromBlock Starting block to search for events
-/// @param toBlock Ending block to search for events
-/// @param side Load deposits ('Transfer.Deposit') or withdrawals ('Transfer.Withdraw')
-/// @return True if no exceptions found, false otherwise
-const loadTmpUserTransfers = async (
-    fromBlock,
-    toBlock,
-    side,
-) => {
+const getTransferEvents = async (side, fromBlock, toBlock, account) => {
     try {
         // Determine event type to apply filters
         let eventType;
@@ -671,23 +686,50 @@ const loadTmpUserTransfers = async (
                 eventType = EVENT_TYPE.outPwrdTransfer
                 break;
             default:
+                handleErr(`personalHandler->checkEventType()->switch: No valid event`, null);
                 return false;
         };
 
         // Get all deposit or withdrawal events for a given block range
-        const logs = await getEvents(
+        const logs = await getTransferEV(
             eventType,
             fromBlock,
             toBlock,
-            null,
+            account,
         ).catch((err) => {
-            handleErr(`personalHandler->loadTmpUserTransfers()->getEvents(): `, err);
+            handleErr(`personalHandler->checkEventType()->getEvents(): `, err);
+            return false;
         });
+        return logs;
+    } catch (err) {
+        handleErr(`personalHandler->checkEventType() [side: ${side}]`, err);
+        return false;
+    }
+}
+
+/// @notice - Loads deposits/withdrawals from all user accounts into temporary tables
+///         - Gtoken amount is retrieved from related transaction
+///         - Rest of data is retrieved from related event (LogNewDeposit or LogNewWithdrawal)
+/// @dev - Truncates always temporary tables beforehand even if no data to be processed, 
+///        otherwise, old data would be loaded if no new deposits/withdrawals
+/// @param fromBlock Starting block to search for events
+/// @param toBlock Ending block to search for events
+/// @param side Load deposits ('Transfer.Deposit') or withdrawals ('Transfer.Withdraw')
+/// @return True if no exceptions found, false otherwise
+const loadTmpUserTransfers = async (
+    fromBlock,
+    toBlock,
+    side,
+) => {
+    try {
+        const logs = await getTransferEvents(side, fromBlock, toBlock, null);
+        if (!logs)
+            return false;
 
         // Store data into table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
         let finalResult = [];
         if (logs.length > 0) {
-            const preResult = await parseFromTransferEvent(logs, side);
+            const preResult = await parseTransferEvents(logs, side);
             // No need to retrieve Gtoken amounts from tx for direct transfers between users
             if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) {
                 finalResult = await getGTokenFromTx(preResult, side);
@@ -1032,8 +1074,8 @@ const loadGroStatsDB = async () => {
             //     // await reload('23/06/2021', '26/06/2021');
 
             //DEV Ropsten:
-            // await reload('27/06/2021', '30/06/2021');
-            await load('27/06/2021', '30/06/2021');
+            await reload('27/06/2021', '30/06/2021');
+            // await load('27/06/2021', '30/06/2021');
 
             //     // PROD:
             //     await reload("30/06/2021", "30/06/2021");
