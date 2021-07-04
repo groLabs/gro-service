@@ -29,6 +29,21 @@ const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
 const BlocksScanner = require('../../stats/common/blockscanner');
+const {
+    getNetworkId,
+    getStableCoinIndex,
+    generateDateRange,
+    handleErr,
+    isDeposit,
+    Transfer,
+    transferType,
+} = require('../common/personalUtil');
+const {
+    parseAmount,
+    parseApprovalEvents,
+    parseTransferEvents,
+} = require('../common/personalParser');
+
 
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
@@ -39,86 +54,7 @@ const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 const QUERY_ERROR = 400;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
 const ERC20_TRANSFER_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-const Transfer = Object.freeze({
-    "DEPOSIT": 1,
-    "WITHDRAWAL": 2,
-    "EXTERNAL_GVT_DEPOSIT": 3,
-    "EXTERNAL_PWRD_DEPOSIT": 4,
-    "EXTERNAL_GVT_WITHDRAWAL": 5,
-    "EXTERNAL_PWRD_WITHDRAWAL": 6,
-    "STABLECOIN_APPROVAL": 7,
-});
 let scanner;
-
-const parseAmount = (amount, coin) => {
-    return parseFloat(div(
-        amount,
-        (coin === 'DAI' || coin === 'USD') ? BN(10).pow(18) : BN(10).pow(6),
-        amountDecimal
-    ));
-}
-
-const transferType = (side) => {
-    switch (side) {
-        case Transfer.DEPOSIT:
-            return 'deposit';
-        case Transfer.WITHDRAWAL:
-            return 'withdrawal';
-        case Transfer.EXTERNAL_GVT_DEPOSIT:
-            return 'ext_gvt_deposit';
-        case Transfer.EXTERNAL_PWRD_DEPOSIT:
-            return 'ext_pwrd_deposit';
-        case Transfer.EXTERNAL_GVT_WITHDRAWAL:
-            return 'ext_gvt_withdrawal';
-        case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
-            return 'ext_pwrd_withdrawal';
-        case Transfer.STABLECOIN_APPROVAL:
-            return 'coin-approve';
-        default:
-            break;
-    }
-}
-
-const isDeposit = (side) => {
-    return (side === Transfer.DEPOSIT
-        || side === Transfer.EXTERNAL_GVT_DEPOSIT
-        || side === Transfer.EXTERNAL_PWRD_DEPOSIT)
-        ? true
-        : false;
-}
-
-// TODO start: to be included in /commmon/chainUtil.js
-const getNetworkId = () => {
-    try {
-        switch (process.env.NODE_ENV.toLowerCase()) {
-            case 'mainnet': return 1;
-            case 'ropsten': return 3;
-            case 'kovan': return 42;
-            //case 'develop': return TBC;
-            //otherwise, raise exception
-        }
-        return -1;
-    } catch (err) {
-        logger.error(err);
-    }
-}
-// TODO end
-
-// DUPLICATED: to be moved to /common
-function getStableCoinIndex(tokenSymbol) {
-    switch (tokenSymbol) {
-        case 'DAI':
-            return 0;
-        case 'USDC':
-            return 1;
-        case 'USDT':
-            return 2;
-        default:
-            //throw new ParameterError(`Not found token symbo: ${tokenSymbol}`);
-            // TODO
-            return -1;
-    }
-}
 
 const getBlockData = async (blockNumber) => {
     const block = await getDefaultProvider()
@@ -127,10 +63,6 @@ const getBlockData = async (blockNumber) => {
             logger.error(err);
         });
     return block;
-}
-
-const handleErr = async (func, err) => {
-    logger.error(`**DB: ${func} \n Message: ${err}`);
 }
 
 const isPlural = (count) => (count > 1) ? 's' : '';
@@ -307,147 +239,38 @@ const getGTokenFromTx = async (result, side) => {
 //     }
 // }
 
-const parseTransferEvents = async (logs, side) => {
-    try {
-        let result = [];
-        logs.forEach((log) => {
-            const dai_amount =
-                (side === Transfer.DEPOSIT)
-                    ? parseAmount(log.args[4][0], 'DAI') // LogNewDeposit.tokens[0]
-                    : (side === Transfer.WITHDRAWAL)
-                        ? - parseAmount(log.args[8][0], 'DAI') // LogNewWithdrawal.tokenAmounts[0]
-                        : 0;
-            const usdc_amount =
-                (side === Transfer.DEPOSIT)
-                    ? parseAmount(log.args[4][1], 'USDC') // LogNewDeposit.tokens[1]
-                    : (side === Transfer.WITHDRAWAL)
-                        ? - parseAmount(log.args[8][1], 'USDC') // LogNewWithdrawal.tokenAmounts[1]
-                        : 0;
-            const usdt_amount =
-                (side === Transfer.DEPOSIT)
-                    ? parseAmount(log.args[4][2], 'USDT') // LogNewDeposit.tokens[2]
-                    : (side === Transfer.WITHDRAWAL)
-                        ? - parseAmount(log.args[8][2], 'USDT') // LogNewWithdrawal.tokenAmounts[2]
-                        : 0;
-            const usd_deduct =
-                (side === Transfer.WITHDRAWAL)
-                    ? - parseAmount(log.args[5], 'USD') // LogNewWithdrawal.deductUsd
-                    : 0;
-            const lp_amount =
-                (side === Transfer.WITHDRAWAL)
-                    ? - parseAmount(log.args[7], 'USD') // LogNewWithdrawal.lpAmount
-                    : 0;
-            const usd_return =
-                (side === Transfer.WITHDRAWAL)
-                    ? - parseAmount(log.args[6], 'USD') // LogNewWithdrawal.returnUsd
-                    : (side === Transfer.EXTERNAL_GVT_WITHDRAWAL)
-                        ? - (parseAmount(log.args[2], 'USD') / parseAmount(log.args[3], 'USD')) // LogTransfer.amount /  LogTransfer.ratio (GVT)
-                        : (side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
-                            ? - parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
-                            : 0;
-            const usd_value =
-                (side === Transfer.DEPOSIT)
-                    ? parseAmount(log.args[3], 'USD') // LogNewDeposit.usdAmount  ** TODO: retrieve the ratio!!!! **
-                    : (side === Transfer.WITHDRAWAL || side === Transfer.EXTERNAL_GVT_WITHDRAWAL || side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
-                        ? usd_return
-                        : (side === Transfer.EXTERNAL_GVT_DEPOSIT)
-                            ? parseAmount(log.args[2], 'USD') / parseAmount(log.args[3], 'USD') // LogTransfer.amount /  LogTransfer.ratio (GVT)
-                            : (side === Transfer.EXTERNAL_PWRD_DEPOSIT)
-                                ? parseAmount(log.args[2], 'USD') // // LogTransfer.amount (PWRD) ** TODO: retrieve the ratio!!!! **
-                                : 0;
-            const stable_amount =
-                (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL)
-                    ? dai_amount + usdc_amount + usdt_amount
-                    : 0;
-            const isGVT =
-                (((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && !log.args[2])
-                    || side === Transfer.EXTERNAL_GVT_DEPOSIT
-                    || side === Transfer.EXTERNAL_GVT_WITHDRAWAL)
-                    ? true
-                    : false;
-            const gvt_amount =
-                ((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && isGVT)
-                    ? 1 // calculated afterwards for Transfer.DEPOSIT & Transfer.WITHDRAWAL
-                    : (side === Transfer.EXTERNAL_GVT_DEPOSIT)
-                        ? parseAmount(log.args[2], 'USD') // LogTransfer.amount (GVT)
-                        : (side === Transfer.EXTERNAL_GVT_WITHDRAWAL)
-                            ? - parseAmount(log.args[2], 'USD') // LogTransfer.amount (GVT)
-                            : 0;
-            const pwrd_amount =
-                ((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && !isGVT)
-                    ? 1 // calculated afterwards for Transfer.DEPOSIT & Transfer.WITHDRAWAL
-                    : (side === Transfer.EXTERNAL_PWRD_DEPOSIT)
-                        ? parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
-                        : (side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
-                            ? - parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
-                            : 0;
-            const userAddress =
-                (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL)
-                    ? log.args[0] // LogNewDeposit.user or LogNewWithdrawal.user
-                    : (side === Transfer.EXTERNAL_GVT_WITHDRAWAL || side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
-                        ? log.args[0] // LogTransfer.sender
-                        : log.args[1]; // LogTransfer.receiver
-            const referralAddress =
-                (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL)
-                    ? log.args[1]
-                    : '0x0000000000000000000000000000000000000000';
+// const isGToken = (tokenSymbol) => {
+//     return (['DAI', 'USDC', 'USDT'].includes(tokenSymbol)) ? false : true;
+// }
 
-            result.push({
-                block_number: log.blockNumber,
-                tx_hash: log.transactionHash,
-                network_id: getNetworkId(),
-                transfer_type: transferType(side),
-                user_address: userAddress,
-                referral_address: referralAddress,
-                usd_value: usd_value,
-                gvt_value: isGVT ? usd_value : 0,
-                pwrd_value: isGVT ? 0 : usd_value,
-                gvt_amount: gvt_amount,
-                pwrd_amount: pwrd_amount,
-                stable_amount: stable_amount,
-                dai_amount: dai_amount,
-                usdc_amount: usdc_amount,
-                usdt_amount: usdt_amount,
-                creation_date: moment.utc(),
-                ...(!isDeposit(side)) && { usd_deduct: usd_deduct },
-                ...(!isDeposit(side)) && { usd_return: usd_return },
-                ...(!isDeposit(side)) && { lp_amount: lp_amount },
-            });
-        });
-        return result;
-    } catch (err) {
-        handleErr(`personalHandler->parseTransferEvents() [side: ${side}]`, err);
-    }
-}
-
-/// @notice Generates a collection of dates from a given start date to an end date
-/// @param _fromDate Start date
-/// @param _toDdate End date
-/// @return An array with all dates from the start to the end date
-const generateDateRange = (_fromDate, _toDate) => {
-    try {
-        // Check format date
-        if (_fromDate.length !== 10 || _toDate.length !== 10) {
-            logger.info('**DB: Date format is incorrect: should be "DD/MM/YYYY');
-            return;
-        }
-        // Build array of dates
-        const fromDate = moment.utc(_fromDate, "DD/MM/YYYY");
-        const toDate = moment.utc(_toDate, "DD/MM/YYYY");
-        const days = toDate.diff(fromDate, 'days');
-        let dates = [];
-        let day;
-        if (days >= 0) {
-            for (let i = 0; i <= days; i++) {
-                day = fromDate.clone().add(i, 'days');
-                dates.push(day);
-            }
-        }
-        return dates;
-    } catch (err) {
-        handleErr(`personalHandler->generateDateRange() [from: ${_fromDate}, to: ${_toDate}]`, err);
-    }
-}
+// /// @notice Generates a collection of dates from a given start date to an end date
+// /// @param _fromDate Start date
+// /// @param _toDdate End date
+// /// @return An array with all dates from the start to the end date
+// const generateDateRange = (_fromDate, _toDate) => {
+//     try {
+//         // Check format date
+//         if (_fromDate.length !== 10 || _toDate.length !== 10) {
+//             logger.info('**DB: Date format is incorrect: should be "DD/MM/YYYY');
+//             return;
+//         }
+//         // Build array of dates
+//         const fromDate = moment.utc(_fromDate, "DD/MM/YYYY");
+//         const toDate = moment.utc(_toDate, "DD/MM/YYYY");
+//         const days = toDate.diff(fromDate, 'days');
+//         let dates = [];
+//         let day;
+//         if (days >= 0) {
+//             for (let i = 0; i <= days; i++) {
+//                 day = fromDate.clone().add(i, 'days');
+//                 dates.push(day);
+//             }
+//         }
+//         return dates;
+//     } catch (err) {
+//         handleErr(`personalHandler->generateDateRange() [from: ${_fromDate}, to: ${_toDate}]`, err);
+//     }
+// }
 
 /* EXPERIMENTAL */
 const showBalanceHourBlock = async (date, account) => {
@@ -510,69 +333,7 @@ const showBalanceHourBlock = async (date, account) => {
     }
 }
 
-const isGToken = (tokenSymbol) => {
-    return (['DAI', 'USDC', 'USDT'].includes(tokenSymbol)) ? false : true;
-}
 
-const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
-    try {
-        let usdAmount = 0;
-        //const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-        //const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
-        if (getGvt().address === tokenAddress) {
-            usdAmount = await getGvt().getShareAssets(amount).catch((error) => {
-                logger.error(error);
-            });
-        } else if (getPwrd().address === tokenAddress) {
-            usdAmount = await getPwrd.getShareAssets(amount).catch((error) => {
-                logger.error(error);
-            });
-        } else {
-            usdAmount = await getBuoy().singleStableToUsd(
-                amount,
-                getStableCoinIndex(tokenSymbol)
-            )
-        }
-        return parseAmount(usdAmount, 'USD');
-    } catch (err) {
-        handleErr(`personalHandler->getGTokenUSDAmount() [tokenAddress: ${tokenAddress}, amount: ${amount}, tokenSymbol: ${tokenSymbol}]`, err);
-        return 0;
-    }
-}
-
-const parseApprovalEvents = async (logs) => {
-    try {
-        const stableCoinInfo = getVaultStabeCoins();
-        const approvals = [];
-        for (const log of logs) {
-            const decimal = stableCoinInfo.decimals[log.address];
-            // Decimals should be 6 for USDC & USDT or 18 for DAI, GVT & PWRD.
-            if (decimal >= 6) {
-                // To be included in a parseApprovalEvent() function
-                const tokenSymbol = stableCoinInfo.symbols[log.address];
-                approvals.push({
-                    block_number: log.blockNumber,
-                    network_id: getNetworkId(),
-                    stablecoin_id: getStableCoinIndex(tokenSymbol),
-                    tx_hash: log.transactionHash,
-                    sender_address: log.args[0],
-                    spender_address: log.args[1],
-                    coin_amount: div(log.args[2], BN(10).pow(decimal), 2),
-                    coin_usd: await getApprovalValue(log.address, log.args[2], tokenSymbol),
-                    creation_date: moment.utc(),
-                });
-                // }
-            } else {
-                handleErr(`personalHandler->parseApprovalEvents(): Wrong decimal in coin amount`, null);
-                return false;
-            }
-        }
-        return approvals;
-    } catch (err) {
-        handleErr(`personalHandler->parseApprovalEvents()`, err);
-        return false;
-    }
-}
 
 // Get all approval events for a given block range
 // TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
@@ -583,7 +344,7 @@ const getApprovalEvents = async (account, fromBlock, toBlock) => {
             fromBlock,
             toBlock,
         ).catch((err) => {
-            handleErr(`personalHandler->loadTmpUserTransfers()->getApprovalEvents(): `, err);
+            handleErr(`personalHandler->getApprovalEvents()->getApprovalEvents(): `, err);
             return false;
         });
 
@@ -725,7 +486,6 @@ const loadTmpUserTransfers = async (
         const logs = await getTransferEvents(side, fromBlock, toBlock, null);
         if (!logs)
             return false;
-
         // Store data into table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
         let finalResult = [];
         if (logs.length > 0) {
@@ -756,7 +516,8 @@ const loadTmpUserTransfers = async (
         }
         return true;
     } catch (err) {
-        handleErr(`personalHandler->loadTmpUserTransfers() [blocks from: ${fromBlock} to ${toBlock}, side: ${side}]`, err);
+        //handleErr(`personalHandler->loadTmpUserTransfers() [blocks from: ${fromBlock} to ${toBlock}, side: ${side}]`, err);
+        console.log(err)
         return false;
     }
 }
@@ -912,6 +673,7 @@ const remove = async (dates, _fromDate, _toDate) => {
         let rowCountBalances = 0;
         let rowCountNetReturns = 0;
         let rowCountApprovals = 0;
+        let rowCountLoads = 0;
         for (const day of dates) {
             const params = [moment(day).format('DD/MM/YYYY')];
             //TODO **** encapsulate the 4 queries ****
@@ -943,11 +705,19 @@ const remove = async (dates, _fromDate, _toDate) => {
             } else {
                 rowCountApprovals += resApprovals.rowCount;
             }
+            // Delete previous data loads from SYS_TABLE_LOADS
+            const resLoads = await query('delete_table_loads.sql', params);
+            if (resLoads === QUERY_ERROR) {
+                return false;
+            } else {
+                rowCountLoads += resLoads.rowCount;
+            }
         }
         logger.info(`**DB: ${rowCountTransfers} record${isPlural(rowCountTransfers)} deleted from USER_TRANSFERS`);
         logger.info(`**DB: ${rowCountBalances} record${isPlural(rowCountBalances)} deleted from USER_BALANCES`);
         logger.info(`**DB: ${rowCountNetReturns} record${isPlural(rowCountNetReturns)} deleted from USER_NET_RETURNS`);
         logger.info(`**DB: ${rowCountApprovals} record${isPlural(rowCountApprovals)} deleted from USER_APPROVALS`);
+        logger.info(`**DB: ${rowCountLoads} record${isPlural(rowCountLoads)} deleted from SYS_TABLE_LOADS`);
         return true;
     } catch (err) {
         handleErr(`personalHandler->remove() [from: ${_fromDate}, to: ${_toDate}]`, err);
@@ -1074,7 +844,7 @@ const loadGroStatsDB = async () => {
             //     // await reload('23/06/2021', '26/06/2021');
 
             //DEV Ropsten:
-            await reload('27/06/2021', '30/06/2021');
+            await reload('27/06/2021', '27/06/2021');
             // await load('27/06/2021', '30/06/2021');
 
             //     // PROD:
@@ -1086,6 +856,7 @@ const loadGroStatsDB = async () => {
         // JSON tests
         // const res = await getPersonalStats('29/06/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
         // console.log(res);
+        // console.log('yo')
         // process.exit();
 
     } catch (err) {
