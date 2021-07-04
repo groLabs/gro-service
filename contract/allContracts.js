@@ -7,17 +7,33 @@ const { ContractCallError } = require('../common/error');
 const { getConfig } = require('../common/configUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
+const nodeEnv = process.env.NODE_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
-const controllerABI = require('./abis/Controller.json');
+// const controllerABI = require('./abis/Controller.json');
+// const controllerABI = require('./abis/Controller-old.json'); // SJS PROD
+const controllerABI = require((nodeEnv === 'mainnet')
+    ? './abis/Controller-old.json'
+    : './abis/Controller.json'
+);
 const insuranceABI = require('./abis/Insurance.json');
 const exposureABI = require('./abis/Exposure.json');
 const pnlABI = require('./abis/PnL.json');
 const vaultAdapterABI = require('./abis/VaultAdaptorYearnV2_032.json');
 const gvtABI = require('./abis/NonRebasingGToken.json');
 const pwrdABI = require('./abis/RebasingGToken.json');
-const depositHandlerABI = require('./abis/DepositHandler.json');
-const withdrawHandlerABI = require('./abis/WithdrawHandler.json');
+// const depositHandlerABI = require('./abis/DepositHandler.json');
+// const withdrawHandlerABI = require('./abis/WithdrawHandler.json');
+// const depositHandlerABI = require('./abis/DepositHandler-old.json'); // SJS PROD
+// const withdrawHandlerABI = require('./abis/WithdrawHandler-old.json'); // SJS PROD
+const depositHandlerABI = require((nodeEnv === 'mainnet')
+    ? '../contract/abis/DepositHandler-old.json'
+    : '../contract/abis/DepositHandler.json'
+);
+const withdrawHandlerABI = require((nodeEnv === 'mainnet')
+    ? '../contract/abis/WithdrawHandler-old.json'
+    : '../contract/abis/WithdrawHandler.json'
+);
 const lifeguardABI = require('./abis/LifeGuard3Pool.json');
 const buoyABI = require('./abis/Buoy3Pool.json');
 const VaultABI = require('./abis/Vault.json');
