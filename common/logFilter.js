@@ -9,18 +9,16 @@ const {
 } = require('../contract/allContracts');
 const { ContractCallError } = require('./error');
 const { getDefaultProvider } = require('./chainUtil');
-// const depositHandlerABI = require('../contract/abis/DepositHandler-old.json'); // SJS PROD
-// const withdrawHandlerABI = require('../contract/abis/WithdrawHandler-old.json'); // SJS PROD
-// const depositHandlerABI = require('../contract/abis/DepositHandler.json');
-// const withdrawHandlerABI = require('../contract/abis/WithdrawHandler.json');
-const depositHandlerABI = require((nodeEnv === 'mainnet')
-    ? '../contract/abis/DepositHandler-old.json'
-    : '../contract/abis/DepositHandler.json'
-);
-const withdrawHandlerABI = require((nodeEnv === 'mainnet')
-    ? '../contract/abis/WithdrawHandler-old.json'
-    : '../contract/abis/WithdrawHandler.json'
-);
+const depositHandlerABI = require('../contract/abis/DepositHandler.json');
+const withdrawHandlerABI = require('../contract/abis/WithdrawHandler.json');
+// const depositHandlerABI = require((nodeEnv === 'mainnet')
+//     ? '../contract/abis/DepositHandler-old.json'
+//     : '../contract/abis/DepositHandler.json'
+// );
+// const withdrawHandlerABI = require((nodeEnv === 'mainnet')
+//     ? '../contract/abis/WithdrawHandler-old.json'
+//     : '../contract/abis/WithdrawHandler.json'
+// );
 
 
 const { getConfig } = require('./configUtil');
@@ -43,25 +41,20 @@ const EVENT_TYPE = {
 };
 
 const EVENT_FRAGMENT = {};
-EVENT_FRAGMENT[EVENT_TYPE.deposit] = [(nodeEnv === 'mainnet')
-    ? 'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)' // SJS PROD
-    : 'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[3] tokens)',
-];
-EVENT_FRAGMENT[EVENT_TYPE.withdraw] = [(nodeEnv === 'mainnet')
-    ? 'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)' // SJS PROD
-    : 'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[3] tokenAmounts)',
-];
-
-// EVENT_FRAGMENT[EVENT_TYPE.deposit] = [
-//     // 'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[3] tokens)',
-//     'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)', // SJS PROD
+// EVENT_FRAGMENT[EVENT_TYPE.deposit] = [(nodeEnv === 'mainnet')
+//     ? 'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)' // SJS PROD
+//     : 'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[3] tokens)',
 // ];
-
-// EVENT_FRAGMENT[EVENT_TYPE.withdraw] = [
-//     // 'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[3] tokenAmounts)',
-//     'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)', // SJS PROD
+// EVENT_FRAGMENT[EVENT_TYPE.withdraw] = [(nodeEnv === 'mainnet')
+//     ? 'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)' // SJS PROD
+//     : 'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[3] tokenAmounts)',
 // ];
-
+EVENT_FRAGMENT[EVENT_TYPE.deposit] = [
+    'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[3] tokens)',
+];
+EVENT_FRAGMENT[EVENT_TYPE.withdraw] = [
+    'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[3] tokenAmounts)',
+];
 EVENT_FRAGMENT[EVENT_TYPE.gvtTransfer] = [
     'event LogTransfer(address indexed sender, address indexed recipient, uint256 indexed amount, uint256 factor)',
 ];

@@ -844,11 +844,11 @@ const loadGroStatsDB = async () => {
             //     // await reload('23/06/2021', '26/06/2021');
 
             //DEV Ropsten:
-            await reload('27/06/2021', '27/06/2021');
+            // await reload('27/06/2021', '27/06/2021');
             // await load('27/06/2021', '30/06/2021');
 
-            //     // PROD:
-            //     await reload("30/06/2021", "30/06/2021");
+            // PROD:
+            await reload("02/07/2021", "04/07/2021");
 
             process.exit(); // for testing purposes
         });
