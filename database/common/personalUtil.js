@@ -12,6 +12,8 @@ const {
     getVaultStabeCoins,
 } = require('../../contract/allContracts');
 
+const isPlural = (count) => (count > 1) ? 's' : '';
+
 const handleErr = async (func, err) => {
     logger.error(`**DB: ${func} \n Message: ${err}`);
 }
@@ -121,6 +123,7 @@ module.exports = {
     generateDateRange,
     handleErr,
     isDeposit,
+    isPlural,
     Transfer,
     transferType,
 }

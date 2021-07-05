@@ -35,6 +35,7 @@ const {
     generateDateRange,
     handleErr,
     isDeposit,
+    isPlural,
     Transfer,
     transferType,
 } = require('../common/personalUtil');
@@ -44,9 +45,6 @@ const {
     parseTransferEvents,
 } = require('../common/personalParser');
 
-
-const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
-const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 
 // TODO: replace hardcoded strings by CONSTANTS
 // TODO: parse float function
@@ -64,8 +62,6 @@ const getBlockData = async (blockNumber) => {
         });
     return block;
 }
-
-const isPlural = (count) => (count > 1) ? 's' : '';
 
 /// @notice Adds new blocks into table ETH_BLOCKS
 /// @return True if no exceptions found, false otherwise
@@ -215,125 +211,6 @@ const getGTokenFromTx = async (result, side) => {
         handleErr(`personalHandler->getGTokenFromTx() [transfer: ${side}]`, err);
     }
 };
-
-// Calculate the PWRD value based on the ratio in the block when the deposit/withdrawal was performed
-// Note from Kristian: pwrds factor is not applied to price, only GVT. So no need to apply this conversion
-// const getPwrdValue = async (result) => {
-//     try {
-//         for (const item of result) {
-//             if (item.pwrd_amount !== 0) {
-//                 const blockTag = {
-//                     blockTag: item.block_number
-//                 };
-//                 const factor = parseAmount(await getPwrd().factor(blockTag), 'USD');
-//                 if (factor > 0) { 
-//                     item.pwrd_value = item.pwrd_amount / factor;
-//                 } else {
-//                     handleErr(`personalHandler->getPwrdValue(): factor for PWRD is 0`, null);
-//                 }
-//                 console.log(factor, item)
-//             }
-//         }
-//     } catch(err) {
-//         handleErr(`personalHandler->getPwrdValue():`, null);
-//     }
-// }
-
-// const isGToken = (tokenSymbol) => {
-//     return (['DAI', 'USDC', 'USDT'].includes(tokenSymbol)) ? false : true;
-// }
-
-// /// @notice Generates a collection of dates from a given start date to an end date
-// /// @param _fromDate Start date
-// /// @param _toDdate End date
-// /// @return An array with all dates from the start to the end date
-// const generateDateRange = (_fromDate, _toDate) => {
-//     try {
-//         // Check format date
-//         if (_fromDate.length !== 10 || _toDate.length !== 10) {
-//             logger.info('**DB: Date format is incorrect: should be "DD/MM/YYYY');
-//             return;
-//         }
-//         // Build array of dates
-//         const fromDate = moment.utc(_fromDate, "DD/MM/YYYY");
-//         const toDate = moment.utc(_toDate, "DD/MM/YYYY");
-//         const days = toDate.diff(fromDate, 'days');
-//         let dates = [];
-//         let day;
-//         if (days >= 0) {
-//             for (let i = 0; i <= days; i++) {
-//                 day = fromDate.clone().add(i, 'days');
-//                 dates.push(day);
-//             }
-//         }
-//         return dates;
-//     } catch (err) {
-//         handleErr(`personalHandler->generateDateRange() [from: ${_fromDate}, to: ${_toDate}]`, err);
-//     }
-// }
-
-/* EXPERIMENTAL */
-const showBalanceHourBlock = async (date, account) => {
-    try {
-        // let start = moment.utc("19/06/2021", "DD/MM/YYYY");
-        // //const days = moment.duration(end.diff(start)).asDays();
-
-        // let dates = [];
-        // for (let i = 0; i <= 23; i++) {
-        //     let newDate = moment(start).add(i, 'hours');
-        //     //let newDateStr = moment(newDate).format('DD/MM/YYYY HH24:MI:SS');
-        //     //console.log(newDateStr);
-        //     //await reload(newDateStr, newDateStr, null);
-        //     dates.push(newDate);
-        // }
-
-        // for (const date of dates) {
-        //     const blockTag = {
-        //         blockTag: (await findBlockByDate(date)).block
-        //     }
-        //     console.log(blockTag.blockTag)
-
-        //     const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-        //     const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
-        //     const totalValue = gvtValue + pwrdValue;
-        //     const block = blockTag.blockTag;
-        //     const params = {
-        //         block: block,
-        //         date : date,
-        //         networkid: getNetworkId(),
-        //         account: account,
-        //         totalValue: totalValue,
-        //         gvtValue: gvtValue,
-        //         pwrdValue: pwrdValue,
-        //     };
-        //     // const result = await query('insert_user_balances.sql', params);
-        //     // if (result === QUERY_ERROR) return false;
-        //     // rowCount += result.rowCount;
-        //     console.log(params);
-        // }
-
-        const blockTag = {
-            blockTag: 25582733
-        };
-        const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-        const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
-        const totalValue = gvtValue + pwrdValue;
-        const params = {
-            block: blockTag.blockTag,
-            date: date,
-            networkid: getNetworkId(),
-            account: account,
-            totalValue: totalValue,
-            gvtValue: gvtValue,
-            pwrdValue: pwrdValue,
-        };
-        console.log(params);
-    } catch (err) {
-        handleErr(`personalHandler->showBalanceHourBlock()`, err);
-    }
-}
-
-
 
 // Get all approval events for a given block range
 // TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
@@ -661,66 +538,45 @@ const preload = async (_fromDate, _toDate) => {
     }
 }
 
-/// @notice Deletes transfers, balances and net returns for the given dates interval
-/// @param dates An array with all dates from the start to the end date
+/// @notice Deletes transfers, approvals, balances and net returns for the given dates interval
 /// @param fromDate Start date to delete data
 /// @param toDdate End date to delete data
 /// @return True if no exceptions found, false otherwise
-const remove = async (dates, _fromDate, _toDate) => {
+const remove = async (fromDate, toDate) => {
     try {
-        // Delete previous transfers, balances & net results
-        let rowCountTransfers = 0;
-        let rowCountBalances = 0;
-        let rowCountNetReturns = 0;
-        let rowCountApprovals = 0;
-        let rowCountLoads = 0;
-        for (const day of dates) {
-            const params = [moment(day).format('DD/MM/YYYY')];
-            //TODO **** encapsulate the 4 queries ****
-            // Delete previous transfers from USER_TRANSFERS
-            const resTransfers = await query('delete_user_transfers.sql', params);
-            if (resTransfers === QUERY_ERROR) {
-                return false;
-            } else {
-                rowCountTransfers += resTransfers.rowCount;
-            }
-            // Delete previous balances from USER_BALANCES
-            const resBalances = await query('delete_user_balances.sql', params);
-            if (resBalances === QUERY_ERROR) {
-                return false;
-            } else {
-                rowCountBalances += resBalances.rowCount;
-            }
-            // Delete previous net results from USER_NET_RETURNS
-            const resReturns = await query('delete_user_net_returns.sql', params);
-            if (resReturns === QUERY_ERROR) {
-                return false;
-            } else {
-                rowCountNetReturns += resReturns.rowCount;
-            }
-            // Delete previous approvals from USER_APPROVALS
-            const resApprovals = await query('delete_user_approvals.sql', params);
-            if (resApprovals === QUERY_ERROR) {
-                return false;
-            } else {
-                rowCountApprovals += resApprovals.rowCount;
-            }
-            // Delete previous data loads from SYS_TABLE_LOADS
-            const resLoads = await query('delete_table_loads.sql', params);
-            if (resLoads === QUERY_ERROR) {
-                return false;
-            } else {
-                rowCountLoads += resLoads.rowCount;
-            }
+        const params = [fromDate, toDate];
+        const [
+            transfers,
+            balances,
+            netReturns,
+            approvals,
+            loads,
+        ] = await Promise.all([
+            query('delete_user_transfers.sql', params),
+            query('delete_user_balances.sql', params),
+            query('delete_user_net_returns.sql', params),
+            query('delete_user_approvals.sql', params),
+            query('delete_table_loads.sql', params),
+        ]);
+
+        if (transfers
+            && balances
+            && netReturns
+            && approvals
+            && loads) {
+            logger.info(`**DB: ${transfers.rowCount} record${isPlural(transfers.rowCount)} deleted from USER_TRANSFERS`);
+            logger.info(`**DB: ${balances.rowCount} record${isPlural(balances.rowCount)} deleted from USER_BALANCES`);
+            logger.info(`**DB: ${netReturns.rowCount} record${isPlural(netReturns.rowCount)} deleted from USER_NET_RETURNS`);
+            logger.info(`**DB: ${approvals.rowCount} record${isPlural(approvals.rowCount)} deleted from USER_APPROVALS`);
+            logger.info(`**DB: ${loads.rowCount} record${isPlural(loads.rowCount)} deleted from SYS_TABLE_LOADS`);
+        } else {
+            const params = `Dates [${fromDate} - ${toDate}]`;
+            handleErr(`personalHandler->remove() Delete query didn't return results. Params: ${params}`, null);
+            return false;
         }
-        logger.info(`**DB: ${rowCountTransfers} record${isPlural(rowCountTransfers)} deleted from USER_TRANSFERS`);
-        logger.info(`**DB: ${rowCountBalances} record${isPlural(rowCountBalances)} deleted from USER_BALANCES`);
-        logger.info(`**DB: ${rowCountNetReturns} record${isPlural(rowCountNetReturns)} deleted from USER_NET_RETURNS`);
-        logger.info(`**DB: ${rowCountApprovals} record${isPlural(rowCountApprovals)} deleted from USER_APPROVALS`);
-        logger.info(`**DB: ${rowCountLoads} record${isPlural(rowCountLoads)} deleted from SYS_TABLE_LOADS`);
         return true;
     } catch (err) {
-        handleErr(`personalHandler->remove() [from: ${_fromDate}, to: ${_toDate}]`, err);
+        handleErr(`personalHandler->remove() [from: ${fromDate}, to: ${toDate}]`, err);
         return false;
     }
 }
@@ -767,7 +623,7 @@ const reload = async (
                 && ext_gvt_withdrawal
                 && ext_pwrd_withdrawal) {
                 if (await loadTmpUserApprovals(fromBlock, toBlock))
-                    if (await remove(dates, fromDate, toDate))
+                    if (await remove(fromDate, toDate))
                         if (await loadUserTransfers(fromDate, toDate))
                             if (await loadUserApprovals(fromDate, toDate))
                                 if (await loadUserBalances(fromDate, toDate))
@@ -845,10 +701,11 @@ const loadGroStatsDB = async () => {
 
             //DEV Ropsten:
             // await reload('27/06/2021', '27/06/2021');
+            await reload('27/06/2021', '30/06/2021');
             // await load('27/06/2021', '30/06/2021');
 
             // PROD:
-            await reload("02/07/2021", "04/07/2021");
+            // await reload("02/07/2021", "04/07/2021");
 
             process.exit(); // for testing purposes
         });
@@ -867,3 +724,97 @@ const loadGroStatsDB = async () => {
 module.exports = {
     loadGroStatsDB,
 };
+
+
+
+
+
+// Calculate the PWRD value based on the ratio in the block when the deposit/withdrawal was performed
+// Note from Kristian: pwrds factor is not applied to price, only GVT. So no need to apply this conversion
+// const getPwrdValue = async (result) => {
+//     try {
+//         for (const item of result) {
+//             if (item.pwrd_amount !== 0) {
+//                 const blockTag = {
+//                     blockTag: item.block_number
+//                 };
+//                 const factor = parseAmount(await getPwrd().factor(blockTag), 'USD');
+//                 if (factor > 0) { 
+//                     item.pwrd_value = item.pwrd_amount / factor;
+//                 } else {
+//                     handleErr(`personalHandler->getPwrdValue(): factor for PWRD is 0`, null);
+//                 }
+//                 console.log(factor, item)
+//             }
+//         }
+//     } catch(err) {
+//         handleErr(`personalHandler->getPwrdValue():`, null);
+//     }
+// }
+
+// const isGToken = (tokenSymbol) => {
+//     return (['DAI', 'USDC', 'USDT'].includes(tokenSymbol)) ? false : true;
+// }
+
+/* EXPERIMENTAL */
+/*
+const showBalanceHourBlock = async (date, account) => {
+    try {
+        // let start = moment.utc("19/06/2021", "DD/MM/YYYY");
+        // //const days = moment.duration(end.diff(start)).asDays();
+
+        // let dates = [];
+        // for (let i = 0; i <= 23; i++) {
+        //     let newDate = moment(start).add(i, 'hours');
+        //     //let newDateStr = moment(newDate).format('DD/MM/YYYY HH24:MI:SS');
+        //     //console.log(newDateStr);
+        //     //await reload(newDateStr, newDateStr, null);
+        //     dates.push(newDate);
+        // }
+
+        // for (const date of dates) {
+        //     const blockTag = {
+        //         blockTag: (await findBlockByDate(date)).block
+        //     }
+        //     console.log(blockTag.blockTag)
+
+        //     const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
+        //     const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
+        //     const totalValue = gvtValue + pwrdValue;
+        //     const block = blockTag.blockTag;
+        //     const params = {
+        //         block: block,
+        //         date : date,
+        //         networkid: getNetworkId(),
+        //         account: account,
+        //         totalValue: totalValue,
+        //         gvtValue: gvtValue,
+        //         pwrdValue: pwrdValue,
+        //     };
+        //     // const result = await query('insert_user_balances.sql', params);
+        //     // if (result === QUERY_ERROR) return false;
+        //     // rowCount += result.rowCount;
+        //     console.log(params);
+        // }
+
+        const blockTag = {
+            blockTag: 25582733
+        };
+        const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
+        const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
+        const totalValue = gvtValue + pwrdValue;
+        const params = {
+            block: blockTag.blockTag,
+            date: date,
+            networkid: getNetworkId(),
+            account: account,
+            totalValue: totalValue,
+            gvtValue: gvtValue,
+            pwrdValue: pwrdValue,
+        };
+        console.log(params);
+    } catch (err) {
+        handleErr(`personalHandler->showBalanceHourBlock()`, err);
+    }
+}
+*/
