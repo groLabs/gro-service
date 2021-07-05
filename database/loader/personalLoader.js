@@ -1,7 +1,6 @@
 const ethers = require('ethers');
 const { query } = require('../handler/queryHandler');
 const { getPersonalStats } = require('../handler/personalHandler');
-const BN = require('bignumber.js');
 const {
     initDatabaseContracts,
     initAllContracts,
@@ -11,13 +10,6 @@ const {
     getDepositHandler,
     getVaultStabeCoins,
 } = require('../../contract/allContracts');
-const { getConfig } = require('../../common/configUtil');
-const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
-const {
-    EVENT_TYPE,
-    getEvents: getTransferEV,
-    getApprovalEvents: getApprovalEV,
-} = require('../../common/logFilter');
 const {
     getDefaultProvider,
     getAlchemyRpcProvider,
@@ -26,13 +18,15 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
-const fs = require('fs');
-const path = require('path');
 const BlocksScanner = require('../../stats/common/blockscanner');
 const {
+    QUERY_ERROR,
+    getBlockData,
     getNetworkId,
     getStableCoinIndex,
     generateDateRange,
+    getApprovalEvents,
+    getTransferEvents,
     handleErr,
     isDeposit,
     isPlural,
@@ -47,21 +41,10 @@ const {
 
 
 // TODO: replace hardcoded strings by CONSTANTS
-// TODO: parse float function
 // TODO: all CONSTANTS in one file: /common/constants.js
-const QUERY_ERROR = 400;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
 const ERC20_TRANSFER_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 let scanner;
-
-const getBlockData = async (blockNumber) => {
-    const block = await getDefaultProvider()
-        .getBlock(blockNumber)
-        .catch((err) => {
-            logger.error(err);
-        });
-    return block;
-}
 
 /// @notice Adds new blocks into table ETH_BLOCKS
 /// @return True if no exceptions found, false otherwise
@@ -212,42 +195,6 @@ const getGTokenFromTx = async (result, side) => {
     }
 };
 
-// Get all approval events for a given block range
-// TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
-const getApprovalEvents = async (account, fromBlock, toBlock) => {
-    try {
-        const logs = await getApprovalEV(
-            account,
-            fromBlock,
-            toBlock,
-        ).catch((err) => {
-            handleErr(`personalHandler->getApprovalEvents()->getApprovalEvents(): `, err);
-            return false;
-        });
-
-        // COMPTE: només dipòsits del mateix periode, o qualsevol dipòsit?
-        const depositTx = [];
-        const res = await query('select_tmp_deposits.sql', []);
-        if (res === QUERY_ERROR) {
-            return false;
-        } else if (res.rows.length === 0) {
-            logger.info(`**DB: Warning! 0 deposit transfers before processing approval events`);
-        } else {
-            for (const tx of res.rows) {
-                depositTx.push(tx.tx_hash);
-            }
-        }
-
-        // Remove approvals referring to deposits (only get stablecoin approvals)
-        let logsFiltered = logs.filter((item) => !depositTx.includes(item.transactionHash));
-
-        return logsFiltered;
-    } catch (err) {
-        handleErr(`personalHandler->getApprovalEvents() [blocks: from ${fromBlock} to: ${toBlock}, account: ${account}]`, err);
-        return false;
-    }
-}
-
 // @dev: STRONG DEPENDENCY with deposit transfers (related events have to be ignored) 
 // @DEV: Table TMP_USER_DEPOSITS must be loaded before
 // TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
@@ -296,51 +243,6 @@ const loadUserApprovals = async (fromDate, toDate) => {
         return (res) ? true : false;
     } catch (err) {
         handleErr('personalHandler->loadUserTransfers()', err);
-        return false;
-    }
-}
-
-const getTransferEvents = async (side, fromBlock, toBlock, account) => {
-    try {
-        // Determine event type to apply filters
-        let eventType;
-        switch (side) {
-            case Transfer.DEPOSIT:
-                eventType = EVENT_TYPE.deposit;
-                break;
-            case Transfer.WITHDRAWAL:
-                eventType = EVENT_TYPE.withdraw;
-                break;
-            case Transfer.EXTERNAL_GVT_DEPOSIT:
-                eventType = EVENT_TYPE.inGvtTransfer;
-                break;
-            case Transfer.EXTERNAL_PWRD_DEPOSIT:
-                eventType = EVENT_TYPE.inPwrdTransfer;
-                break;
-            case Transfer.EXTERNAL_GVT_WITHDRAWAL:
-                eventType = EVENT_TYPE.outGvtTransfer;
-                break;
-            case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
-                eventType = EVENT_TYPE.outPwrdTransfer
-                break;
-            default:
-                handleErr(`personalHandler->checkEventType()->switch: No valid event`, null);
-                return false;
-        };
-
-        // Get all deposit or withdrawal events for a given block range
-        const logs = await getTransferEV(
-            eventType,
-            fromBlock,
-            toBlock,
-            account,
-        ).catch((err) => {
-            handleErr(`personalHandler->checkEventType()->getEvents(): `, err);
-            return false;
-        });
-        return logs;
-    } catch (err) {
-        handleErr(`personalHandler->checkEventType() [side: ${side}]`, err);
         return false;
     }
 }
@@ -700,8 +602,8 @@ const loadGroStatsDB = async () => {
             //     // await reload('23/06/2021', '26/06/2021');
 
             //DEV Ropsten:
-            // await reload('27/06/2021', '27/06/2021');
-            await reload('27/06/2021', '30/06/2021');
+            await reload('27/06/2021', '27/06/2021');
+            // await reload('27/06/2021', '30/06/2021');
             // await load('27/06/2021', '30/06/2021');
 
             // PROD:

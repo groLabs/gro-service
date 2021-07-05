@@ -11,6 +11,18 @@ const {
     getDepositHandler,
     getVaultStabeCoins,
 } = require('../../contract/allContracts');
+const {
+    getDefaultProvider,
+    // getAlchemyRpcProvider,
+} = require('../../common/chainUtil');
+const { query } = require('../handler/queryHandler');
+const {
+    EVENT_TYPE,
+    getEvents: getTransferEV,
+    getApprovalEvents: getApprovalEV,
+} = require('../../common/logFilter');
+
+const QUERY_ERROR = 400;
 
 const isPlural = (count) => (count > 1) ? 's' : '';
 
@@ -55,6 +67,15 @@ const isDeposit = (side) => {
         || side === Transfer.EXTERNAL_PWRD_DEPOSIT)
         ? true
         : false;
+}
+
+const getBlockData = async (blockNumber) => {
+    const block = await getDefaultProvider()
+        .getBlock(blockNumber)
+        .catch((err) => {
+            logger.error(err);
+        });
+    return block;
 }
 
 const getNetworkId = () => {
@@ -117,10 +138,95 @@ const generateDateRange = (_fromDate, _toDate) => {
     }
 }
 
+// Get all approval events for a given block range
+// TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
+const getApprovalEvents = async (account, fromBlock, toBlock) => {
+    try {
+        const logs = await getApprovalEV(
+            account,
+            fromBlock,
+            toBlock,
+        ).catch((err) => {
+            handleErr(`personalHandler->getApprovalEvents()->getApprovalEvents(): `, err);
+            return false;
+        });
+
+        // COMPTE: només dipòsits del mateix periode, o qualsevol dipòsit?
+        const depositTx = [];
+        const res = await query('select_tmp_deposits.sql', []);
+        if (res === QUERY_ERROR) {
+            return false;
+        } else if (res.rows.length === 0) {
+            logger.info(`**DB: Warning! 0 deposit transfers before processing approval events`);
+        } else {
+            for (const tx of res.rows) {
+                depositTx.push(tx.tx_hash);
+            }
+        }
+
+        // Remove approvals referring to deposits (only get stablecoin approvals)
+        let logsFiltered = logs.filter((item) => !depositTx.includes(item.transactionHash));
+
+        return logsFiltered;
+    } catch (err) {
+        handleErr(`personalHandler->getApprovalEvents() [blocks: from ${fromBlock} to: ${toBlock}, account: ${account}]`, err);
+        return false;
+    }
+}
+
+const getTransferEvents = async (side, fromBlock, toBlock, account) => {
+    try {
+        // Determine event type to apply filters
+        let eventType;
+        switch (side) {
+            case Transfer.DEPOSIT:
+                eventType = EVENT_TYPE.deposit;
+                break;
+            case Transfer.WITHDRAWAL:
+                eventType = EVENT_TYPE.withdraw;
+                break;
+            case Transfer.EXTERNAL_GVT_DEPOSIT:
+                eventType = EVENT_TYPE.inGvtTransfer;
+                break;
+            case Transfer.EXTERNAL_PWRD_DEPOSIT:
+                eventType = EVENT_TYPE.inPwrdTransfer;
+                break;
+            case Transfer.EXTERNAL_GVT_WITHDRAWAL:
+                eventType = EVENT_TYPE.outGvtTransfer;
+                break;
+            case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
+                eventType = EVENT_TYPE.outPwrdTransfer
+                break;
+            default:
+                handleErr(`personalHandler->checkEventType()->switch: No valid event`, null);
+                return false;
+        };
+
+        // Get all deposit or withdrawal events for a given block range
+        const logs = await getTransferEV(
+            eventType,
+            fromBlock,
+            toBlock,
+            account,
+        ).catch((err) => {
+            handleErr(`personalHandler->checkEventType()->getEvents(): `, err);
+            return false;
+        });
+        return logs;
+    } catch (err) {
+        handleErr(`personalHandler->checkEventType() [side: ${side}]`, err);
+        return false;
+    }
+}
+
 module.exports = {
+    QUERY_ERROR,
+    getBlockData,
     getNetworkId,
     getStableCoinIndex,
     generateDateRange,
+    getApprovalEvents,
+    getTransferEvents,
     handleErr,
     isDeposit,
     isPlural,
