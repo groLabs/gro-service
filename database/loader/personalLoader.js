@@ -6,19 +6,17 @@ const {
     initAllContracts,
     getGvt,
     getPwrd,
-    getBuoy,
-    getDepositHandler,
-    getVaultStabeCoins,
+    // getBuoy,
+    // getDepositHandler,
+    //getVaultStabeCoins,
 } = require('../../contract/allContracts');
 const {
     getDefaultProvider,
-    getAlchemyRpcProvider,
+    // getAlchemyRpcProvider,
 } = require('../../common/chainUtil');
 const botEnv = process.env.BOT_ENV.toLowerCase();
-// eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
-const BlocksScanner = require('../../stats/common/blockscanner');
 const {
     QUERY_ERROR,
     getBlockData,
@@ -27,24 +25,19 @@ const {
     generateDateRange,
     getApprovalEvents,
     getTransferEvents,
+    getGTokenFromTx,
     handleErr,
     isDeposit,
     isPlural,
     Transfer,
     transferType,
+    findBlockByDate,
 } = require('../common/personalUtil');
 const {
     parseAmount,
     parseApprovalEvents,
     parseTransferEvents,
 } = require('../common/personalParser');
-
-
-// TODO: replace hardcoded strings by CONSTANTS
-// TODO: all CONSTANTS in one file: /common/constants.js
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
-const ERC20_TRANSFER_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-let scanner;
 
 /// @notice Adds new blocks into table ETH_BLOCKS
 /// @return True if no exceptions found, false otherwise
@@ -90,24 +83,6 @@ const loadEthBlocks = async (func) => {
     }
 }
 
-// TODO start: to be moved to /common. 
-// Files currently using findBlockByDate(): statsDBHandler.js, apyHandler.js and currentApyHandler.js
-async function findBlockByDate(scanDate) {
-    try {
-        const blockFound = await scanner
-            .getDate(scanDate.toDate())
-            .catch((err) => {
-                logger.error(err);
-                logger.error(`Could not get block ${scanDate}`);
-            });
-        return blockFound;
-    } catch (err) {
-        console.log(err);
-    }
-}
-// TODO end: to be moved to /common. 
-
-
 /// @notice Stores the last load time and number of records loaded into a final table for 
 ///         each day of a given time period
 /// @param tableName Name of the table
@@ -149,51 +124,6 @@ const updateTableLoads = async (tableName, _fromDate, _toDate) => {
         return false;
     }
 }
-
-const getGTokenFromTx = async (result, side) => {
-    try {
-        const numTx = result.length;
-        logger.info(`**DB: Processing ${numTx} ${(side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'} transaction${isPlural(numTx)}...`);
-
-        // Interface for ERC20 token transfer
-        const iface = new ethers.utils.Interface([
-            "event Transfer(address indexed from, address indexed to, uint256 amount)",
-        ]);
-
-        // For all transactions -> for all logs -> retrieve GToken
-        for (const item of result) {
-            const txReceipt = await getDefaultProvider()
-                .getTransactionReceipt(item.tx_hash)
-                .catch((err) => {
-                    console.log(err);
-                });
-            for (const log of txReceipt.logs) {
-                // Only when signature is an ERC20 transfer: `Transfer(address from, address to, uint256 value)`
-                if (log.topics[0] === ERC20_TRANSFER_SIGNATURE) {
-                    const index = (side === Transfer.DEPOSIT) ? 1 : 2; // from is 0x0 : to is 0x0
-                    // Only when a token is minted (from: 0x)
-                    if (log.topics[index] === ZERO_ADDRESS) {
-                        const data = log.data;
-                        const topics = log.topics;
-                        const output = iface.parseLog({ data, topics });
-                        // Update result array with the correct GTokens
-                        if (item.gvt_amount !== 0) {
-                            item.gvt_amount = parseFloat(ethers.utils.formatEther(output.args[2]));
-                            item.gvt_amount = (side === Transfer.DEPOSIT) ? item.gvt_amount : -item.gvt_amount
-                        } else {
-                            item.pwrd_amount = parseFloat(ethers.utils.formatEther(output.args[2]));
-                            item.pwrd_amount = (side === Transfer.DEPOSIT) ? item.pwrd_amount : -item.pwrd_amount
-                        }
-                    }
-                }
-            }
-        }
-        logger.info(`**DB: ${result.length} transaction${isPlural(numTx)} processed`);
-        return result;
-    } catch (err) {
-        handleErr(`personalHandler->getGTokenFromTx() [transfer: ${side}]`, err);
-    }
-};
 
 // @dev: STRONG DEPENDENCY with deposit transfers (related events have to be ignored) 
 // @DEV: Table TMP_USER_DEPOSITS must be loaded before
@@ -591,9 +521,6 @@ const load = async (
 
 const loadGroStatsDB = async () => {
     try {
-        const provider = getAlchemyRpcProvider('stats_gro');
-        scanner = new BlocksScanner(provider);
-
         //initDatabaseContracts().then(async () => {
         initAllContracts().then(async () => {
 

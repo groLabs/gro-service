@@ -3,7 +3,6 @@ const moment = require('moment');
 const { getConfig } = require('../../common/configUtil');
 const { div } = require('../../common/digitalUtil');
 const botEnv = process.env.BOT_ENV.toLowerCase();
-// eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
