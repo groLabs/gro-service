@@ -1642,7 +1642,12 @@
             }
         ],
         "stateMutability": "view",
+<<<<<<< HEAD
         "type": "function"
+=======
+        "type": "function",
+        "gas": 3300
+>>>>>>> ed909f4... [feat] LH- 07.07.21- feature/PROT-1201
     },
     {
         "name": "emergencyShutdown",
