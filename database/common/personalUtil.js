@@ -147,7 +147,7 @@ const generateDateRange = (_fromDate, _toDate) => {
 
 // Get all approval events for a given block range
 // TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
-const getApprovalEvents = async (account, fromBlock, toBlock) => {
+const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
     try {
         const logs = await getApprovalEV(
             account,
@@ -181,7 +181,7 @@ const getApprovalEvents = async (account, fromBlock, toBlock) => {
     }
 }
 
-const getTransferEvents = async (side, fromBlock, toBlock, account) => {
+const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
     try {
         // Determine event type to apply filters
         let eventType;
@@ -208,7 +208,6 @@ const getTransferEvents = async (side, fromBlock, toBlock, account) => {
                 handleErr(`personalUtil->checkEventType()->switch: No valid event`, null);
                 return false;
         };
-
         // Get all deposit or withdrawal events for a given block range
         const logs = await getTransferEV(
             eventType,
@@ -294,8 +293,8 @@ module.exports = {
     getNetworkId,
     getStableCoinIndex,
     generateDateRange,
-    getApprovalEvents,
-    getTransferEvents,
+    getApprovalEvents2,
+    getTransferEvents2,
     getGTokenFromTx,
     handleErr,
     isDeposit,

@@ -39,12 +39,16 @@ const query = async (file, params) => {
         case 'u':
             option = 'update';
             break;
-        default: return;
+        default: return 400;
     }
 
     const q = fs.readFileSync(path.join(__dirname, `/../queries/${option}/${file}`), 'utf8');
 
-    const result = (file === 'insert_tmp_user_deposits.sql' || file === 'insert_tmp_user_withdrawals.sql')
+    const result = (
+        file === 'insert_tmp_user_deposits.sql' || 
+        file === 'insert_tmp_user_withdrawals.sql' ||
+        file === 'insert_cache_tmp_user_deposits.sql' || 
+        file === 'insert_cache_tmp_user_withdrawals.sql')
         ? await batchQuery(q, file, option, params)
         : await singleQuery(q, file, option, params);
 

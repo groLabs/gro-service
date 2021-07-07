@@ -9,4 +9,4 @@ SELECT CASE
 FROM gro."USER_TRANSFERS" t
 WHERE t.user_address = $1
     AND t.transfer_type = $2
-    AND TO_CHAR(t.transfer_date, 'DD/MM/YYYY') <= $3;
+    AND TO_CHAR(t.transfer_date, 'DD/MM/YYYY') <= $3; -- is this to_char working properly?

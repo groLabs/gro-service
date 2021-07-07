@@ -23,8 +23,8 @@ const {
     getNetworkId,
     getStableCoinIndex,
     generateDateRange,
-    getApprovalEvents,
-    getTransferEvents,
+    getApprovalEvents2,
+    getTransferEvents2,
     getGTokenFromTx,
     handleErr,
     isDeposit,
@@ -134,7 +134,7 @@ const loadTmpUserApprovals = async (
 ) => {
     try {
         // Get all approval events for a given block range
-        const logs = await getApprovalEvents(null, fromBlock, toBlock);
+        const logs = await getApprovalEvents2(null, fromBlock, toBlock);
         if (!logs)
             return false;
 
@@ -150,6 +150,7 @@ const loadTmpUserApprovals = async (
                 const res = await query('insert_tmp_user_approvals.sql', params);
                 if (res === QUERY_ERROR) return false;
             }
+        // TODO: missing N records added into table X
         return true;
     } catch (err) {
         handleErr(`personalHandler->loadTmpUserApprovals() [blocks: ${fromBlock} to: ${toBlock}]`, err);
@@ -192,36 +193,35 @@ const loadTmpUserTransfers = async (
     side,
 ) => {
     try {
-        const logs = await getTransferEvents(side, fromBlock, toBlock, null);
-        if (!logs)
-            return false;
-        // Store data into table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
-        let finalResult = [];
-        if (logs.length > 0) {
-            const preResult = await parseTransferEvents(logs, side);
-            // No need to retrieve Gtoken amounts from tx for direct transfers between users
-            if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) {
-                finalResult = await getGTokenFromTx(preResult, side);
+        const logs = await getTransferEvents2(side, fromBlock, toBlock, null);
+        if (logs) {
+            // Store data into table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
+            let finalResult = [];
+            if (logs.length > 0) {
+                const preResult = await parseTransferEvents(logs, side);
+                // No need to retrieve Gtoken amounts from tx for direct transfers between users
+                if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) {
+                    finalResult = await getGTokenFromTx(preResult, side);
+                } else {
+                    finalResult = preResult;
+                }
+                //await getPwrdValue(finalResult);
+                let params = [];
+                for (const item of finalResult)
+                    params.push(Object.values(item));
+                const [res, rows] = await query(
+                    (isDeposit(side))
+                        ? 'insert_tmp_user_deposits.sql'
+                        : 'insert_tmp_user_withdrawals.sql'
+                    , params);
+                if (!res) return false;
+                logger.info(`**DB: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isDeposit(side))
+                    ? 'TMP_USER_DEPOSITS'
+                    : 'TMP_USER_WITHDRAWALS'
+                    }`);
             } else {
-                finalResult = preResult;
+                logger.info(`**DB: No ${transferType(side)}s found`);
             }
-            //await getPwrdValue(finalResult);
-            let params = [];
-            for (const item of finalResult)
-                params.push(Object.values(item));
-            const [res, rows] = await query(
-                (isDeposit(side))
-                    ? 'insert_tmp_user_deposits.sql'
-                    : 'insert_tmp_user_withdrawals.sql'
-                , params);
-            if (!res) return false;
-            logger.info(`**DB: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isDeposit(side))
-                ? 'TMP_USER_DEPOSITS'
-                : 'TMP_USER_WITHDRAWALS'
-                }`);
-        } else {
-            logger.info(`**DB: No ${transferType(side)}s found`);
-            return true;
         }
         return true;
     } catch (err) {
@@ -347,6 +347,7 @@ const loadUserNetReturns = async (
 const preload = async (_fromDate, _toDate) => {
     try {
         // Truncate temporary table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
+        // TODO *** Promise.all
         const res1 = await query('truncate_tmp_user_approvals.sql', []);
         const res2 = await query('truncate_tmp_user_deposits.sql', []);
         const res3 = await query('truncate_tmp_user_withdrawals.sql', []);
@@ -363,6 +364,7 @@ const preload = async (_fromDate, _toDate) => {
             .add(59, 'minutes');
         const fromBlock = (await findBlockByDate(fromDate)).block;
         const toBlock = (await findBlockByDate(toDate)).block;
+
         return [fromBlock, toBlock, dates];
     } catch (err) {
         handleErr(`personalHandler->preload() [from: ${_fromDate}, to: ${_toDate}]`, err);
@@ -529,7 +531,7 @@ const loadGroStatsDB = async () => {
             //     // await reload('23/06/2021', '26/06/2021');
 
             //DEV Ropsten:
-            await reload('27/06/2021', '27/06/2021');
+            await reload('27/06/2021', '30/06/2021');
             // await reload('27/06/2021', '30/06/2021');
             // await load('27/06/2021', '30/06/2021');
 
