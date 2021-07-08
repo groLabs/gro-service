@@ -122,13 +122,11 @@ router.get(
             .withMessage('address cannot be empty.')
             .matches(/^0x[A-Za-z0-9]{40}/)
             .withMessage('address should be a valid address start with "0x".'),
-        query('network')
-            .trim()
-            .notEmpty()
-            .withMessage('network can be empty.'),
-        query('date')
-            .matches(/^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/),
-            // .matches(/^\d{10}$/),  //if unix timestamp
+        query('network').trim().notEmpty().withMessage('network can be empty.'),
+        query('date').matches(
+            /^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/
+        ),
+        // .matches(/^\d{10}$/),  //if unix timestamp
     ]),
     wrapAsync(async (req, res) => {
         let { network } = req.query;
