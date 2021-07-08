@@ -379,7 +379,10 @@ const preload = async (_fromDate, _toDate) => {
 /// @return True if no exceptions found, false otherwise
 const remove = async (fromDate, toDate) => {
     try {
-        const params = [fromDate, toDate];
+        /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
+        const fromDateParsed = moment(fromDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
+        const toDateParsed = moment(toDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
+        const params = [fromDateParsed, toDateParsed];
         const [
             transfers,
             balances,
@@ -526,7 +529,7 @@ const loadGroStatsDB = async () => {
     try {
         // initAllContracts().then(async () => {
         //     //DEV Ropsten:
-        //     await reload('27/06/2021', '28/06/2021');
+        //     await reload('27/06/2021', '06/07/2021');
         //     // await reload('27/06/2021', '30/06/2021');
         //     // await load('27/06/2021', '30/06/2021');
 

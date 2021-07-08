@@ -1,3 +1,3 @@
 DELETE FROM gro."USER_BALANCES"
-WHERE TO_CHAR(balance_date, 'DD/MM/YYYY') >= $1
-AND TO_CHAR(balance_date, 'DD/MM/YYYY') <= $2;
+WHERE date(balance_date) >= $1
+AND date(balance_date) <= $2;

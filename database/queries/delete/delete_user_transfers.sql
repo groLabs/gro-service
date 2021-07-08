@@ -1,3 +1,3 @@
 DELETE FROM gro."USER_TRANSFERS"
-WHERE TO_CHAR(transfer_date, 'DD/MM/YYYY') >= $1
-AND TO_CHAR(transfer_date, 'DD/MM/YYYY') <= $2;
+WHERE date(transfer_date) >= $1
+AND date(transfer_date) <= $2;
