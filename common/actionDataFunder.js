@@ -1,5 +1,7 @@
 const { ethers } = require('ethers');
 const { getAlchemyRpcProvider } = require('./chainUtil');
+const { getLatestContractsAddress } = require('../registry/registryLoader');
+const { ContractNames } = require('../registry/registry');
 const { BlockChainCallError } = require('./error');
 const { MESSAGE_TYPES } = require('./discord/discordService');
 const { adjustDecimal, toSum } = require('./digitalUtil');
@@ -224,12 +226,13 @@ async function getMintOrBurnGToken(
     );
     if (transactionReceipt) {
         const { logs } = transactionReceipt;
-        let gtoken = getPwrd(providerKey).address;
+        let gtoken = getLatestContractsAddress()[ContractNames.powerD].address;
         const eventFragment = getEventFragment(erc20ABI, 'Transfer');
         if (eventFragment) {
             logger.info(`Transfer topic: ${eventFragment.topic}`);
             if (!isPWRD) {
-                gtoken = getGvt(providerKey).address;
+                gtoken =
+                    getLatestContractsAddress()[ContractNames.groVault].address;
             }
             for (let i = 0; i < logs.length; i += 1) {
                 const { topics, address, data } = logs[i];

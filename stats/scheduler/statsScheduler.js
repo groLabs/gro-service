@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const schedule = require('node-schedule');
-const { generateGroStatsFile } = require('../handler/statsHandler');
+const { generateGroStatsFile } = require('../handler/statsHandler-new');
 const { getCurrentApy } = require('../handler/currentApyHandler');
 const { getConfig } = require('../../common/configUtil');
 const {
@@ -12,7 +12,7 @@ const {
     generateDepositAndWithdrawReport,
     updateLastBlockNumber,
     generateSummaryReport,
-} = require('../handler/eventHandler');
+} = require('../handler/eventHandler-new');
 const { getCurrentBlockNumber } = require('../../common/chainUtil');
 const logger = require('../statsLogger.js');
 

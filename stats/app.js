@@ -19,6 +19,7 @@ const customLogger = require('./statsLogger');
 const statsRouter = require('./routes/stats');
 const scheduler = require('./scheduler/statsScheduler');
 const { initAllContracts } = require('../contract/allContracts');
+const { initAddressAndHistory } = require('../registry/registryLoader');
 
 const app = express();
 
@@ -79,8 +80,9 @@ app.use((error, req, res, next) => {
 });
 
 // start the schedule task
-initAllContracts().then(() => {
+initAddressAndHistory().then(() => {
     scheduler.starStatsJobs();
+    console.log('init done!');
 });
 
 module.exports = app;
