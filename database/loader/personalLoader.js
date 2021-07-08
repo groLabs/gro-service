@@ -366,6 +366,7 @@ const preload = async (_fromDate, _toDate) => {
         const toBlock = (await findBlockByDate(toDate)).block;
 
         return [fromBlock, toBlock, dates];
+
     } catch (err) {
         handleErr(`personalHandler->preload() [from: ${_fromDate}, to: ${_toDate}]`, err);
         return [];
@@ -523,29 +524,23 @@ const load = async (
 
 const loadGroStatsDB = async () => {
     try {
-        //initDatabaseContracts().then(async () => {
-        initAllContracts().then(async () => {
+        // initAllContracts().then(async () => {
+        //     //DEV Ropsten:
+        //     await reload('27/06/2021', '28/06/2021');
+        //     // await reload('27/06/2021', '30/06/2021');
+        //     // await load('27/06/2021', '30/06/2021');
 
-            //     // DEV Kovan:
-            //     // await reload('23/06/2021', '26/06/2021');
-            //     // await reload('23/06/2021', '26/06/2021');
+        //     // PROD:
+        //     // await reload("02/07/2021", "04/07/2021");
 
-            //DEV Ropsten:
-            await reload('27/06/2021', '30/06/2021');
-            // await reload('27/06/2021', '30/06/2021');
-            // await load('27/06/2021', '30/06/2021');
-
-            // PROD:
-            // await reload("02/07/2021", "04/07/2021");
-
-            process.exit(); // for testing purposes
-        });
+        //     process.exit(); // for testing purposes
+        // });
 
         // JSON tests
-        // const res = await getPersonalStats('29/06/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
-        // console.log(res);
-        // console.log('yo')
-        // process.exit();
+        const res = await getPersonalStats('06/07/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
+        console.log(res);
+        console.log('yo')
+        process.exit();
 
     } catch (err) {
         handleErr(`personalHandler->loadGroStatsDB()`, err);

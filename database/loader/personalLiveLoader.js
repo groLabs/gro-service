@@ -2,6 +2,8 @@ const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
+const { getConfig } = require('../../common/configUtil');
+const { getTimestampByBlockNumber } = require('../../common/chainUtil');
 const {
     initDatabaseContracts,
     initAllContracts,
@@ -132,7 +134,7 @@ const loadUserBalances2 = async (
             }
         } else {
             users = await query('select_distinct_users_transfers.sql', []);
-            if (users === QUERY_ERROR) 
+            if (users === QUERY_ERROR)
                 return false;
         }
         // const users = await query('select_distinct_users_transfers.sql', []);
@@ -344,11 +346,31 @@ const preloadCache = async (account) => {
             _fromDate === QUERY_ERROR)
             return [];
 
+        // User has no balance yet in USER_BALANCES
+        let fromDate;
+        if (!_fromDate.rows[0].max_balance_date) {
+            const launchBlock = getConfig('blockchain.start_block');
+            const timestamp = await getTimestampByBlockNumber(launchBlock);
+            fromDate = moment
+                .unix(timestamp)
+                .utc();
+            // It should be enough by looking a couple of days ago, but for testing purposes,
+            // we look at all events from the contracts creation
+            // fromDate = moment
+            //     .utc()
+            //     .subtract(2, 'days');
+        } else {
+            fromDate = moment
+                .utc(_fromDate.rows[0].max_balance_date)
+                .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
+                .add(1, 'days');
+        }
+        
         // Calculate starting date, starting block and dates range to be processed
-        const fromDate = moment
-            .utc(_fromDate.rows[0].max_balance_date)
-            .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
-            .add(1, 'days');
+        // const fromDate = moment
+        //     .utc(_fromDate.rows[0].max_balance_date)
+        //     .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
+        //     .add(1, 'days');
         const fromBlock = (await findBlockByDate(fromDate)).block;
         const toDate = moment
             .utc()
@@ -392,7 +414,7 @@ const loadCache = async (account) => {
                     if (await loadUserTransfers2(account))
                         if (await loadUserApprovals2(account))
                             if (await loadUserBalances2(fromDate, toDate, account))
-                                 await loadUserNetReturns2(fromDate, toDate, account);
+                                await loadUserNetReturns2(fromDate, toDate, account);
                 console.log('All loaded')
             }
         } else {

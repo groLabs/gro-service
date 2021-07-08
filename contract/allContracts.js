@@ -12,8 +12,8 @@ const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 const controllerABI = require('./abis/Controller.json');
 // const controllerABI = require((nodeEnv === 'mainnet')
-//     ? './abis/Controller-old.json'
-//     : './abis/Controller.json'
+//     ? './abis/Controller.json'
+//     : './abis/Controller-old.json'
 // );
 const insuranceABI = require('./abis/Insurance.json');
 const exposureABI = require('./abis/Exposure.json');

@@ -158,9 +158,12 @@ const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
             return false;
         });
 
-        // COMPTE: només dipòsits del mateix periode, o qualsevol dipòsit?
+        // TODO/QUESTION: only deposits from the same period, or any previous deposit?
         const depositTx = [];
-        const res = await query('select_tmp_deposits.sql', []);
+        const q = (account)
+            ? 'select_cache_tmp_deposits.sql'
+            : 'select_tmp_deposits.sql';
+        const res = await query(q, []);
         if (res === QUERY_ERROR) {
             return false;
         } else if (res.rows.length === 0) {

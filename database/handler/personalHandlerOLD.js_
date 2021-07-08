@@ -1,11 +1,10 @@
 const { query } = require('./queryHandler');
 // const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
-const {
-    QUERY_ERROR,
-} = require('../common/personalUtil');
 
-const getTransfers = async (account) => {
+const QUERY_ERROR = 400;
+
+const getTransfers = async (account, toDate) => {
     try {
         const qTransfers = 'select_fe_user_transactions.sql';
         const qApprovals = 'select_fe_user_approvals.sql';
@@ -19,13 +18,13 @@ const getTransfers = async (account) => {
             ext_pwrd_withdrawal,
             approvals,
         ] = await Promise.all([
-            query(qTransfers, [account, 'deposit']),
-            query(qTransfers, [account, 'withdrawal']),
-            query(qTransfers, [account, 'ext_gvt_deposit']),
-            query(qTransfers, [account, 'ext_pwrd_deposit']),
-            query(qTransfers, [account, 'ext_gvt_withdrawal']),
-            query(qTransfers, [account, 'ext_pwrd_withdrawal']),
-            query(qApprovals, [account]),
+            query(qTransfers, [account, 'deposit', toDate]),
+            query(qTransfers, [account, 'withdrawal', toDate]),
+            query(qTransfers, [account, 'ext_gvt_deposit', toDate]),
+            query(qTransfers, [account, 'ext_pwrd_deposit', toDate]),
+            query(qTransfers, [account, 'ext_gvt_withdrawal', toDate]),
+            query(qTransfers, [account, 'ext_pwrd_withdrawal', toDate]),
+            query(qApprovals, [account, toDate]),
         ]);
 
         if (deposits !== QUERY_ERROR
@@ -50,10 +49,10 @@ const getTransfers = async (account) => {
     }
 }
 
-const getNetAmounts = async (account) => {
+const getNetAmounts = async (account, toDate) => {
     try {
         const qNetAmounts = 'select_fe_user_net_amounts.sql';
-        const result = await query(qNetAmounts, [account]);
+        const result = await query(qNetAmounts, [account, toDate]);
         if (result !== QUERY_ERROR) {
             const res = result.rows[0];
             return {
@@ -81,10 +80,10 @@ const getNetAmounts = async (account) => {
     }
 }
 
-const getNetBalances = async (account) => {
+const getNetBalances = async (account, toDate) => {
     try {
         const qBalance = 'select_fe_user_net_balances.sql';
-        const result = await query(qBalance, [account]);
+        const result = await query(qBalance, [account, toDate]);
         if (result !== QUERY_ERROR) {
             const res = result.rows[0];
             console.log('res:', res)
@@ -103,10 +102,10 @@ const getNetBalances = async (account) => {
     }
 }
 
-const getNetReturns = async (account) => {
+const getNetReturns = async (account, toDate) => {
     try {
         const qBalance = 'select_fe_user_net_returns.sql';
-        const result = await query(qBalance, [account]);
+        const result = await query(qBalance, [account, toDate]);
         if (result !== QUERY_ERROR) {
             const res = result.rows[0];
             console.log('res:', res)
@@ -131,25 +130,22 @@ const getNetReturns = async (account) => {
 }
 
 const getPersonalStats = async (toDate, account) => {
-    try {
+    try {     
+
         // if (!(/^\d{10}$/).test(_toDate))
         //     return {
         //         "error": 'wrong timestamp'
         //     }
-        const [
-            transfers,
-            netAmounts,
-            balances,
-            returns
-        ] = await Promise.all([
-            getTransfers(account),
-            getNetAmounts(account),
-            getNetBalances(account),
-            getNetReturns(account)
-        ]);
 
-        const launchDate = moment
-            .utc(toDate, "DD/MM/YYYY")
+        // TODO IMPROVEMENT *** Promise.all ***
+        const transfers = await getTransfers(account, toDate);
+        const netAmounts = await getNetAmounts(account, toDate);
+        const balances = await getNetBalances(account, toDate);
+        const returns = await getNetReturns(account, toDate);
+        const launchDate = moment.utc(toDate, "DD/MM/YYYY")
+            .add(23, 'hours')
+            .add(59, 'minutes')
+            .add(59, 'seconds')
             .unix();
 
         console.log('transfers:', transfers);
