@@ -1,10 +1,12 @@
 const { loadGroStatsDB } = require('./loader/personalLoader');
-const { loadGroStatsLiveDB } = require('./loader/personalLiveLoader');
-const { loadGroStatsDBAll } = require('./loader/personalLoaderALL');
+// const { loadGroStatsLiveDB } = require('./loader/personalLiveLoader');
+// const { loadGroStatsDBAll } = require('./loader/personalLoaderALL');
+
 
 loadGroStatsDB();
 //loadGroStatsLiveDB('0xb5bE4d2510294d0BA77214F26F704d2956a99072');
 //loadGroStatsDBAll();
+console.log('hello')
 
 /*
 npm i pg

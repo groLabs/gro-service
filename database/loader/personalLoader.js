@@ -38,307 +38,20 @@ const {
     parseApprovalEvents,
     parseTransferEvents,
 } = require('../common/personalParser');
+const { loadEthBlocks } = require('./loadEthBlocks');
+const { loadTableUpdates } = require('./loadTableUpdates');
+const {
+    loadUserTransfers,
+    loadTmpUserTransfers,
+} = require('./loadUserTransfers.js');
+const {
+    loadUserApprovals,
+    loadTmpUserApprovals,
+} = require('./loadUserApprovals.js');
+const { loadUserBalances } = require('./loadUserBalances');
+const { loadUserNetReturns } = require('./loadUserNetReturns');
 
-/// @notice Adds new blocks into table ETH_BLOCKS
-/// @return True if no exceptions found, false otherwise
-const loadEthBlocks = async (func) => {
-    try {
-        // Get block numbers to be processed from temporary tables on deposits & withdrawals
-        const q = (func === 'loadUserTransfers')
-            ? 'select_distinct_blocks_tmp_transfers.sql'
-            : 'select_distinct_blocks_tmp_approvals.sql';
-        const blocks = await query(q, []);
-        if (blocks === QUERY_ERROR) return false;
 
-        // Insert new blocks into ETH_BLOCKS
-        const numBlocks = blocks.rowCount;
-        if (numBlocks > 0) {
-            logger.info(`**DB: Processing ${numBlocks} block${isPlural(numBlocks)} from ${(func === 'loadUserTransfers')
-                ? 'transfers'
-                : 'approvals'
-                }...`);
-            for (const item of blocks.rows) {
-                const block = await getBlockData(item.block_number);
-                const params = [
-                    block.number,
-                    block.timestamp,
-                    moment.unix(block.timestamp),
-                    getNetworkId(),
-                    moment.utc()];
-                const result = await query('insert_eth_blocks.sql', params);
-                if (result === QUERY_ERROR)
-                    return false;
-            }
-            logger.info(`**DB: ${numBlocks} block${isPlural(numBlocks)} added into ETH_BLOCKS`);
-        } else {
-            logger.info(`**DB: No blocks to be added from ${(func === 'loadUserTransfers')
-                ? 'transfers'
-                : 'approvals'
-                }`);
-        }
-        return true;
-    } catch (err) {
-        handleErr('personalHandler->loadEthBlocks()', err);
-        return false;
-    }
-}
-
-/// @notice Stores the last load time and number of records loaded into a final table for 
-///         each day of a given time period
-/// @param tableName Name of the table
-/// @param _fromDate Start date of loading process
-/// @param _toDate End date of loading process
-/// @return True if no exceptions found, false otherwise
-const updateTableLoads = async (tableName, _fromDate, _toDate) => {
-    try {
-        const fromDate = moment.utc(_fromDate, "DD/MM/YYYY").format('MM/DD/YYYY');
-        const toDate = moment.utc(_toDate, "DD/MM/YYYY").format('MM/DD/YYYY');
-        const params = [
-            tableName,
-            fromDate,
-            toDate,
-            moment.utc()];
-        let q;
-        switch (tableName) {
-            case 'USER_BALANCES':
-                q = 'insert_sys_load_user_balances.sql';
-                break;
-            case 'USER_NET_RETURNS':
-                q = 'insert_sys_load_user_net_returns.sql';
-                break;
-            case 'USER_TRANSFERS':
-                q = 'insert_sys_load_user_transfers.sql';
-                break;
-            case 'USER_APPROVALS':
-                q = 'insert_sys_load_user_approvals.sql';
-                break;
-            default:
-                handleErr(`personalHandler->updateLastTableLoad(): table name '${tableName}' not found`, null);
-                return false;
-        }
-        const result = await query(q, params);
-        return (result !== QUERY_ERROR) ? true : false;
-    } catch (err) {
-        const params = `table: ${tableName}, fromDate: ${_fromDate}, toDate: ${_toDate}`;
-        handleErr(`personalHandler->updateLastTableLoad() ${params}`, err);
-        return false;
-    }
-}
-
-// @dev: STRONG DEPENDENCY with deposit transfers (related events have to be ignored) 
-// @DEV: Table TMP_USER_DEPOSITS must be loaded before
-// TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
-const loadTmpUserApprovals = async (
-    fromBlock,
-    toBlock,
-) => {
-    try {
-        // Get all approval events for a given block range
-        const logs = await getApprovalEvents2(null, fromBlock, toBlock);
-        if (!logs)
-            return false;
-
-        // Parse approval events
-        logger.info(`**DB: Processing ${logs.length} approval event${isPlural(logs.length)}...`);
-        const approvals = await parseApprovalEvents(logs);
-
-        // Insert approvals into USER_APPROVALS
-        // TODO: returning different types will be a problem in TS
-        if (approvals)
-            for (const item of approvals) {
-                const params = (Object.values(item));
-                const res = await query('insert_tmp_user_approvals.sql', params);
-                if (res === QUERY_ERROR) return false;
-            }
-        // TODO: missing N records added into table X
-        return true;
-    } catch (err) {
-        handleErr(`personalHandler->loadTmpUserApprovals() [blocks: ${fromBlock} to: ${toBlock}]`, err);
-        return false;
-    }
-}
-
-const loadUserApprovals = async (fromDate, toDate) => {
-    try {
-        // Add new blocks into ETH_BLOCKS (incl. block timestamp)
-        if (await loadEthBlocks('loadUserApprovals')) {
-            // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
-            const res = await query('insert_user_approvals.sql', []);
-            if (res === QUERY_ERROR) return false;
-            const numTransfers = res.rowCount;
-            logger.info(`**DB: ${numTransfers} record${isPlural(numTransfers)} added into USER_APPROVALS`);
-        } else {
-            return false;
-        }
-        const res = await updateTableLoads('USER_APPROVALS', fromDate, toDate);
-        return (res) ? true : false;
-    } catch (err) {
-        handleErr('personalHandler->loadUserTransfers()', err);
-        return false;
-    }
-}
-
-/// @notice - Loads deposits/withdrawals from all user accounts into temporary tables
-///         - Gtoken amount is retrieved from related transaction
-///         - Rest of data is retrieved from related event (LogNewDeposit or LogNewWithdrawal)
-/// @dev - Truncates always temporary tables beforehand even if no data to be processed, 
-///        otherwise, old data would be loaded if no new deposits/withdrawals
-/// @param fromBlock Starting block to search for events
-/// @param toBlock Ending block to search for events
-/// @param side Load deposits ('Transfer.Deposit') or withdrawals ('Transfer.Withdraw')
-/// @return True if no exceptions found, false otherwise
-const loadTmpUserTransfers = async (
-    fromBlock,
-    toBlock,
-    side,
-) => {
-    try {
-        const logs = await getTransferEvents2(side, fromBlock, toBlock, null);
-        if (logs) {
-            // Store data into table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
-            let finalResult = [];
-            if (logs.length > 0) {
-                const preResult = await parseTransferEvents(logs, side);
-                // No need to retrieve Gtoken amounts from tx for direct transfers between users
-                if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) {
-                    finalResult = await getGTokenFromTx(preResult, side);
-                } else {
-                    finalResult = preResult;
-                }
-                //await getPwrdValue(finalResult);
-                let params = [];
-                for (const item of finalResult)
-                    params.push(Object.values(item));
-                const [res, rows] = await query(
-                    (isDeposit(side))
-                        ? 'insert_tmp_user_deposits.sql'
-                        : 'insert_tmp_user_withdrawals.sql'
-                    , params);
-                if (!res) return false;
-                logger.info(`**DB: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isDeposit(side))
-                    ? 'TMP_USER_DEPOSITS'
-                    : 'TMP_USER_WITHDRAWALS'
-                    }`);
-            } else {
-                logger.info(`**DB: No ${transferType(side)}s found`);
-            }
-        }
-        return true;
-    } catch (err) {
-        //handleErr(`personalHandler->loadTmpUserTransfers() [blocks from: ${fromBlock} to ${toBlock}, side: ${side}]`, err);
-        console.log(err)
-        return false;
-    }
-}
-
-/// @notice Loads deposits/withdrawals into USER_TRANSFERS
-///         Data is sourced from TMP_USER_DEPOSITS & TMP_USER_TRANSACTIONS (full load w/o filters)
-///         All blocks from such transactions are stored into ETH_BLOCKS (incl. timestamp)
-///         Latest block & time processed are stored into SYS_TABLE_LOADS
-/// @return True if no exceptions found, false otherwise
-const loadUserTransfers = async (fromDate, toDate) => {
-    try {
-        // Add new blocks into ETH_BLOCKS (incl. block timestamp)
-        if (await loadEthBlocks('loadUserTransfers')) {
-            // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
-            const res = await query('insert_user_transfers.sql', []);
-            if (res === QUERY_ERROR) return false;
-            const numTransfers = res.rowCount;
-            logger.info(`**DB: ${numTransfers} record${isPlural(numTransfers)} added into USER_TRANSFERS`);
-        } else {
-            return false;
-        }
-        const res = await updateTableLoads('USER_TRANSFERS', fromDate, toDate);
-        return (res) ? true : false;
-    } catch (err) {
-        handleErr('personalHandler->loadUserTransfers()', err);
-        return false;
-    }
-}
-
-/// @notice Loads balances into USER_BALANCES
-/// @dev Data is sourced from smart contract calls to user's balances at a certain block number
-///      according to the dates provided
-/// @param fromDate Start date to load balances
-/// @param toDdate End date to load balances
-/// @return True if no exceptions found, false otherwise
-const loadUserBalances = async (
-    fromDate,
-    toDate,
-) => {
-    try {
-        // Get users with any transfer
-        const users = await query('select_distinct_users_transfers.sql', []);
-        if (users === QUERY_ERROR) return false;
-
-        // For each date, check gvt & pwrd balance and insert data into USER_BALANCES
-        const dates = generateDateRange(fromDate, toDate);
-        logger.info(`**DB: Processing ${users.rowCount} user balance${isPlural(users.rowCount)}...`);
-        for (const date of dates) {
-            const day = moment.utc(date, "DD/MM/YYYY")
-                .add(23, 'hours')
-                .add(59, 'minutes')
-                .add(59, 'seconds');
-            const blockTag = {
-                blockTag: (await findBlockByDate(day)).block
-            }
-            let rowCount = 0;
-            for (const user of users.rows) {
-                const account = user.user_address;
-                const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-                const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
-                const totalValue = gvtValue + pwrdValue;
-                const params = [
-                    day,
-                    getNetworkId(),
-                    account,
-                    totalValue,
-                    gvtValue,
-                    pwrdValue,
-                    moment.utc()
-                ];
-                const result = await query('insert_user_balances.sql', params);
-                if (result === QUERY_ERROR) return false;
-                rowCount += result.rowCount;
-            }
-            let msg = `**DB: ${rowCount} record${isPlural(rowCount)} added into `;
-            msg += `USER_BALANCES for date ${moment(date).format('DD/MM/YYYY')}`;
-            logger.info(msg);
-        }
-        const res = await updateTableLoads('USER_BALANCES', fromDate, toDate);
-        return (res) ? true : false;
-    } catch (err) {
-        handleErr(`personalHandler->loadUserBalances() [from: ${fromDate}, to: ${toDate}]`, err);
-        return false;
-    }
-}
-
-/// @notice Loads net results into USER_NET_RETURNS
-/// @dev Data sourced from USER_DEPOSITS & USER_TRANSACTIONS (full load w/o filters)
-/// @param fromDate Start date to load net results
-/// @param toDdate End date to load net results
-const loadUserNetReturns = async (
-    fromDate,
-    toDate,
-) => {
-    try {
-        const dates = generateDateRange(fromDate, toDate);
-        logger.info(`**DB: Processing user net result/s...`);
-        for (const date of dates) {
-            /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
-            const day = moment(date).format('MM/DD/YYYY');
-            const result = await query('insert_user_net_returns.sql', [day]);
-            if (result === QUERY_ERROR) return false;
-            const numResults = result.rowCount;
-            let msg = `**DB: ${numResults} record${isPlural(numResults)} added into `;
-            msg += `USER_NET_RETURNS for date ${moment(date).format('DD/MM/YYYY')}`;
-            logger.info(msg);
-        }
-        await updateTableLoads('USER_NET_RETURNS', fromDate, toDate);
-    } catch (err) {
-        handleErr(`personalHandler->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}]`, err);
-    }
-}
 
 /// @notice Truncates temporaty tables & calculates blocks and dates to be processed
 /// @param fromDate Start date to process data
@@ -527,24 +240,21 @@ const load = async (
 
 const loadGroStatsDB = async () => {
     try {
-        // initAllContracts().then(async () => {
-        //     //DEV Ropsten:
-        //     await reload('27/06/2021', '06/07/2021');
-        //     // await reload('27/06/2021', '30/06/2021');
-        //     // await load('27/06/2021', '30/06/2021');
+        initAllContracts().then(async () => {
+            //DEV Ropsten:
+            await reload('27/06/2021', '30/06/2021');
+            // await reload('27/06/2021', '30/06/2021');
+            // await load('27/06/2021', '30/06/2021');
 
-        //     // PROD:
-        //     // await reload("02/07/2021", "04/07/2021");
-
-        //     process.exit(); // for testing purposes
-        // });
-
+            // PROD:
+            // await reload("02/07/2021", "04/07/2021");
+            process.exit(); // for testing purposes
+        });
         // JSON tests
-        const res = await getPersonalStats('06/07/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
-        console.log(res);
-        console.log('yo')
-        process.exit();
-
+        // const res = await getPersonalStats('06/07/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
+        // console.log(res);
+        // console.log('yo')
+        // process.exit();
     } catch (err) {
         handleErr(`personalHandler->loadGroStatsDB()`, err);
     }
