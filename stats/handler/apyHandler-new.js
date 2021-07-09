@@ -3,16 +3,12 @@ const utc = require('dayjs/plugin/utc');
 const { BigNumber } = require('ethers');
 
 dayjs.extend(utc);
-const { getGvt, getPwrd } = require('../../contract/allContracts');
 const BlocksScanner = require('../common/blockscanner');
 const logger = require('../statsLogger');
-const {
-    getTimestampByBlockNumber,
-    getAlchemyRpcProvider,
-} = require('../../common/chainUtil');
+const { getTimestampByBlockNumber } = require('../../common/chainUtil');
 const { BlockChainCallError } = require('../../common/error');
 const { getConfig } = require('../../common/configUtil');
-const { newLatestContract } = require('../../registry/contracts');
+const { getLatestSystemContract } = require('../common/contractStorage');
 const { ContractNames } = require('../../registry/registry');
 
 const FACTOR_DECIMAL = BigNumber.from(10).pow(BigNumber.from(18));
@@ -23,30 +19,19 @@ const WEEKS_IN_YEAR = BigNumber.from(52);
 const MONTHS_IN_YEAR = BigNumber.from(12);
 
 const providerKey = 'stats_gro';
-const provider = getAlchemyRpcProvider(providerKey);
 // config
 const launchBlock = getConfig('blockchain.start_block');
 
 let scanner;
-let groVault;
-let powerD;
-
 function updateBlocksScanner(newProvider) {
     scanner = new BlocksScanner(newProvider);
 }
 
-function getLatestGroVault() {
-    if (!groVault) {
-        groVault = newLatestContract(ContractNames.groVault, provider);
-    }
-    return groVault;
-}
-
 function getLatestPowerD() {
-    if (!powerD) {
-        powerD = newLatestContract(ContractNames.powerD, provider);
-    }
-    return powerD;
+    return getLatestSystemContract(ContractNames.powerD, providerKey);
+}
+function getLatestGroVault() {
+    return getLatestSystemContract(ContractNames.groVault, providerKey);
 }
 
 function calculatePriceDiff(factorStart, factorEnd) {
