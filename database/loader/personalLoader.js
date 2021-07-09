@@ -50,6 +50,7 @@ const {
 } = require('./loadUserApprovals.js');
 const { loadUserBalances } = require('./loadUserBalances');
 const { loadUserNetReturns } = require('./loadUserNetReturns');
+const { loadGroStats } = require('./loadGroStats');
 
 
 
@@ -248,13 +249,16 @@ const loadGroStatsDB = async () => {
 
             // PROD:
             // await reload("02/07/2021", "04/07/2021");
+
+            // Gro Stats
             process.exit(); // for testing purposes
         });
-        // JSON tests
+        // Personal Stats
         // const res = await getPersonalStats('06/07/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
         // console.log(res);
         // console.log('yo')
         // process.exit();
+
     } catch (err) {
         handleErr(`personalHandler->loadGroStatsDB()`, err);
     }

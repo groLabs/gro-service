@@ -428,10 +428,10 @@ const loadCache = async (account) => {
 
 const loadGroStatsLiveDB = async (account) => {
     try {
-        // initAllContracts().then(async () => {
-        //     await loadCache(account);
-        //     process.exit(); // for testing purposes
-        // });
+        initAllContracts().then(async () => {
+            await loadCache(account);
+            process.exit(); // for testing purposes
+        });
         console.log('hey')
     } catch (err) {
         handleErr(`personalLiveLoader->loadGroStatsLiveDB()`, err);
