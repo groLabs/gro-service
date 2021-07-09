@@ -1,29 +1,13 @@
 /* eslint-disable no-await-in-loop */
 const config = require('config');
 const { BigNumber } = require('ethers');
-const {
-    getController,
-    getGvt,
-    getPwrd,
-    getInsurance,
-    getExposure,
-    getLifeguard,
-    getVaults,
-    getCurveVault,
-    getStrategyLength,
-    getDepositHandler,
-    getWithdrawHandler,
-    getBuoy,
-} = require('../../contract/allContracts');
-const { getAlchemyRpcProvider } = require('../../common/chainUtil');
 const logger = require('../statsLogger');
-
 const { getCurrentApy } = require('./currentApyHandler-new');
-const {
-    newSystemLatestContracts,
-    newSystemLatestVaultStrategyContracts,
-} = require('../../registry/contracts');
 const { ContractNames } = require('../../registry/registry');
+const {
+    getLatestVaultsAndStrategies,
+    getLatestSystemContract: getLatestContract,
+} = require('../common/contractStorage');
 
 // constant
 const SHARE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
@@ -39,35 +23,32 @@ const lifeguardNames = config.get('lifeguard_name');
 
 const providerKey = 'stats_gro';
 
-let latestSystemContracts;
-let latestSystemVaultStrategyContracts;
-
 function getLatestSystemContract(contractName) {
-    if (!latestSystemContracts) {
-        latestSystemContracts = newSystemLatestContracts(providerKey);
-    }
-    return latestSystemContracts[contractName];
+    return getLatestContract(contractName, providerKey);
 }
 
-async function getLatestSystemVaultStrategyContracts() {
-    if (!latestSystemVaultStrategyContracts) {
-        latestSystemVaultStrategyContracts =
-            newSystemLatestVaultStrategyContracts(providerKey);
+async function getLatestVaultAdapters() {
+    const vaultAdaptersInfo = await getLatestVaultsAndStrategies(providerKey);
+    const adapterAddresses = Object.keys(vaultAdaptersInfo);
+    const vaultAdapters = [];
+    for (let i = 0; i < adapterAddresses.length; i += 1) {
+        vaultAdapters.push(vaultAdaptersInfo[adapterAddresses[i]].contract);
     }
-    return latestSystemVaultStrategyContracts;
+    return vaultAdapters;
 }
 
 async function getUsdValue(i, amount, blockTag) {
-    const usdValue = await getLatestSystemContract(
+    const usdValue = getLatestSystemContract(
         ContractNames.buoy3Pool
     ).singleStableToUsd(amount, i, blockTag);
     return usdValue;
 }
 
 async function getUsdValueForLP(amount, blockTag) {
-    const usdValue = await getLatestSystemContract(
-        ContractNames.buoy3Pool
-    ).lpToUsd(amount, blockTag);
+    const usdValue = getLatestSystemContract(ContractNames.buoy3Pool).lpToUsd(
+        amount,
+        blockTag
+    );
     return usdValue;
 }
 
@@ -152,15 +133,12 @@ async function getStrategiesStats(
 }
 
 async function getVaultStats(blockTag) {
-    const vaults = [
-        getLatestSystemContract(ContractNames.DAIVaultAdaptor),
-        getLatestSystemContract(ContractNames.USDCVaultAdaptor),
-        getLatestSystemContract(ContractNames.USDTVaultAdaptor),
-    ];
-    const vaultStrategyContracts =
-        await getLatestSystemVaultStrategyContracts();
+    const vaults = await getLatestVaultAdapters();
+    const vaultStrategyContracts = await getLatestVaultsAndStrategies(
+        providerKey
+    );
     const vaultAssets = [];
-    for (let vaultIndex = 0; vaultIndex < vaults.length; vaultIndex += 1) {
+    for (let vaultIndex = 0; vaultIndex < vaults.length - 1; vaultIndex += 1) {
         const vault = vaults[vaultIndex];
         const vaultTotalAsset = await vault.totalAssets(blockTag);
         const assetUsd = await getUsdValue(
@@ -266,12 +244,7 @@ async function getTvlStats(blockTag) {
 
 async function getSystemStats(totalAssetsUsd, blockTag) {
     logger.info('SystemStats');
-    const vaults = [
-        getLatestSystemContract(ContractNames.DAIVaultAdaptor),
-        getLatestSystemContract(ContractNames.USDCVaultAdaptor),
-        getLatestSystemContract(ContractNames.USDTVaultAdaptor),
-        getLatestSystemContract(ContractNames.CRVVaultAdaptor),
-    ];
+    const vaults = await getLatestVaultAdapters();
     const lifeGuardStats = await getLifeguardStats(blockTag);
     lifeGuardStats.share = calculateSharePercent(
         lifeGuardStats.amount,

@@ -17,10 +17,8 @@ const {
 const { getConfig } = require('../../common/configUtil');
 const { getContractsHistory } = require('../../registry/registryLoader');
 const { ContractNames } = require('../../registry/registry');
-const {
-    newContract,
-    newSystemLatestContracts,
-} = require('../../registry/contracts');
+const { newContract } = require('../../registry/contracts');
+const { getLatestVaultsAndStrategies } = require('../common/contractStorage');
 
 const providerKey = 'stats_gro';
 const provider = getAlchemyRpcProvider(providerKey);
@@ -34,49 +32,43 @@ const WEEKS_IN_YEAR = BigNumber.from(52);
 const launchBlock = getConfig('blockchain.start_block');
 const defaultApy = getConfig('strategy_default_apy');
 
-let latestSystemContracts;
-
-function getLatestSystemContract(contractName) {
-    if (!latestSystemContracts) {
-        latestSystemContracts = newSystemLatestContracts(providerKey);
+async function getLatestVaultAdapters() {
+    const vaultAdaptersInfo = await getLatestVaultsAndStrategies(providerKey);
+    const adapterAddresses = Object.keys(vaultAdaptersInfo);
+    const vaultAdapters = [];
+    for (let i = 0; i < adapterAddresses.length; i += 1) {
+        vaultAdapters.push(vaultAdaptersInfo[adapterAddresses[i]].contract);
     }
-    return latestSystemContracts[contractName];
+    return vaultAdapters;
 }
 
-function getLatestVaultAdapters() {
-    return [
-        getLatestSystemContract(ContractNames.DAIVaultAdaptor),
-        getLatestSystemContract(ContractNames.USDCVaultAdaptor),
-        getLatestSystemContract(ContractNames.USDTVaultAdaptor),
-        getLatestSystemContract(ContractNames.CRVVaultAdaptor),
-    ];
-}
-
-function getLatestYearnVaults() {
-    return [
-        getLatestSystemContract(ContractNames.DAIVault),
-        getLatestSystemContract(ContractNames.USDCVault),
-        getLatestSystemContract(ContractNames.USDTVault),
-        getLatestSystemContract(ContractNames.CRVVault),
-    ];
-}
-
-function getVaultAdapterStrategies(stableCoin) {
-    const result = [
-        {
-            strategy: getLatestSystemContract(
-                ContractNames[`${stableCoin}Primary`]
-            ),
-        },
-    ];
-    if (stableCoin !== 'CRV') {
-        result.push({
-            strategy: getLatestSystemContract(
-                ContractNames[`${stableCoin}Secondary`]
-            ),
-        });
+async function getLatestYearnVaults() {
+    const vaultAdaptersInfo = await getLatestVaultsAndStrategies(providerKey);
+    const adapterAddresses = Object.keys(vaultAdaptersInfo);
+    const vaults = [];
+    for (let i = 0; i < adapterAddresses.length; i += 1) {
+        const { vault } = vaultAdaptersInfo[adapterAddresses[i]];
+        vaults.push(vault.contract);
     }
-    return result;
+    return vaults;
+}
+
+async function getStrategies() {
+    const vaultAdaptersInfo = await getLatestVaultsAndStrategies(providerKey);
+    const adapterAddresses = Object.keys(vaultAdaptersInfo);
+    const vaultstrategies = [];
+    for (let i = 0; i < adapterAddresses.length; i += 1) {
+        const { strategies } = vaultAdaptersInfo[adapterAddresses[i]].vault;
+        const strategyAddresses = Object.keys(strategies);
+        const everyAdapterStrategies = [];
+        for (let j = 0; j < strategyAddresses.length; j += 1) {
+            everyAdapterStrategies.push({
+                strategy: strategies[strategyAddresses[j]].contract,
+            });
+        }
+        vaultstrategies.push({ strategies: everyAdapterStrategies });
+    }
+    return vaultstrategies;
 }
 
 async function findBlockByDate(scanDate) {
@@ -252,14 +244,9 @@ async function calcCurrentStrategyAPY(startBlock, endBlock) {
         `calculate strategy apy ${startBlock.blockNumber}  ${endBlock.blockNumber}`
     );
 
-    const vaults = getLatestVaultAdapters();
-    const yearnVaults = getLatestYearnVaults();
-    const vaultStrategy = [
-        { strategies: getVaultAdapterStrategies('DAI') },
-        { strategies: getVaultAdapterStrategies('USDC') },
-        { strategies: getVaultAdapterStrategies('USDT') },
-        { strategies: getVaultAdapterStrategies('CRV') },
-    ];
+    const vaults = await getLatestVaultAdapters();
+    const yearnVaults = await getLatestYearnVaults();
+    const vaultStrategy = await getStrategies();
     for (let i = 0; i < vaults.length; i += 1) {
         logger.info(`vault ${i} ${vaults[i].address}`);
         const { strategies } = vaultStrategy[i];
@@ -322,11 +309,9 @@ function getPnlEventFilters(latestBlock, block7DaysAgo) {
     for (let i = 0; i < contractHistory.length; i += 1) {
         const contractInfo = contractHistory[i];
         if (!contractInfo.endBlock || contractInfo.endBlock > startBlock) {
-            const pnlContract = newContract(
-                ContractNames.pnl,
-                contractInfo,
-                provider
-            );
+            const pnlContract = newContract(ContractNames.pnl, contractInfo, {
+                providerKey,
+            });
             const filter = pnlContract.filters.LogPnLExecution();
             if (contractInfo.startBlock < startBlock) {
                 filter.fromBlock = startBlock;

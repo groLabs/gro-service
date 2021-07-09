@@ -6,7 +6,6 @@ const { getFilterEvents } = require('../../common/logFilter-new');
 const { ContractCallError } = require('../../common/error');
 const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
-const { getAlchemyRpcProvider } = require('../../common/chainUtil');
 const { formatNumber } = require('../../common/digitalUtil');
 const { calculateDelta } = require('../../common/digitalUtil');
 const {
@@ -15,7 +14,7 @@ const {
     summaryMessage,
 } = require('../../discordMessage/eventMessage');
 const { AppendGTokenMintOrBurnAmountToLog } = require('../common/tool');
-const { newLatestContract } = require('../../registry/contracts');
+const { getLatestSystemContract } = require('../common/contractStorage');
 const { ContractNames } = require('../../registry/registry');
 
 const logger = require('../statsLogger');
@@ -23,7 +22,6 @@ const logger = require('../statsLogger');
 let blockNumberFile = '../lastBlockNumber.json';
 
 const providerKey = 'stats_gro';
-const provider = getAlchemyRpcProvider(providerKey);
 
 if (config.has('blockNumberFile')) {
     blockNumberFile = config.get('blockNumberFile');
@@ -52,9 +50,9 @@ async function updateLastBlockNumber(blockNumber, type) {
 
 async function generateDepositReport(fromBlock, toBlock) {
     // generate deposit filter
-    const latestDepositHandler = newLatestContract(
+    const latestDepositHandler = getLatestSystemContract(
         ContractNames.depositHandler,
-        provider
+        providerKey
     );
     const depositFilter = latestDepositHandler.filters.LogNewDeposit();
     depositFilter.fromBlock = fromBlock;
@@ -134,9 +132,9 @@ async function generateDepositReport(fromBlock, toBlock) {
 
 async function generateWithdrawReport(fromBlock, toBlock) {
     // generate withdraw filter
-    const latestWithdrawHandler = newLatestContract(
+    const latestWithdrawHandler = getLatestSystemContract(
         ContractNames.withdrawHandler,
-        provider
+        providerKey
     );
     const withdrawFilter = latestWithdrawHandler.filters.LogNewWithdrawal();
     withdrawFilter.fromBlock = fromBlock;
@@ -287,8 +285,14 @@ async function generateSummaryReport(fromBlock, toBlock) {
         fromBlock,
         toBlock
     );
-    const latestGvt = newLatestContract(ContractNames.groVault, provider);
-    const latestPWRD = newLatestContract(ContractNames.powerD, provider);
+    const latestGvt = getLatestSystemContract(
+        ContractNames.groVault,
+        providerKey
+    );
+    const latestPWRD = getLatestSystemContract(
+        ContractNames.powerD,
+        providerKey
+    );
     const { originValue: originVaultValue, value: vaultTVL } =
         await getGTokenAsset(latestGvt, toBlock);
     const { originValue: originPwrdValue, value: pwrdTVL } =
