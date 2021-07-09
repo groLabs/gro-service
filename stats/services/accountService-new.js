@@ -27,6 +27,9 @@ const {
     getContractsHistory,
     getLatestContractsAddress,
 } = require('../../registry/registryLoader');
+
+const { getLatestSystemContract } = require('../common/contractStorage');
+
 const erc20ABI = require('../../abi/ERC20.json');
 
 const fromBlock = getConfig('blockchain.start_block');
@@ -40,10 +43,6 @@ let groVaultContracts;
 let powerDContracts;
 let depositHandlerContracts;
 let withdrawHandlerContracts;
-let latestDepositHandler;
-let latestGroVault;
-let latestPowerD;
-let latestBuoy;
 const stabeCoins = [];
 const stabeCoinsInfo = {};
 
@@ -74,7 +73,9 @@ function getContracts(contractName) {
     const contractHistory = getContractsHistory()[contractName];
     for (let i = 0; i < contractHistory.length; i += 1) {
         const contractInfo = contractHistory[i];
-        const contract = newContract(contractName, contractInfo, provider);
+        const contract = newContract(contractName, contractInfo, {
+            providerKey,
+        });
         contracts[contractInfo.address] = contract;
     }
     return contracts;
@@ -82,12 +83,9 @@ function getContracts(contractName) {
 
 async function getStabeCoins() {
     if (!stabeCoins.length) {
-        const latestAddresses = getLatestContractsAddress();
-        const contractInfo = latestAddresses[ContractNames.controller];
-        const latestController = newContract(
+        const latestController = getLatestSystemContract(
             ContractNames.controller,
-            contractInfo,
-            provider
+            providerKey
         );
         const stabeCoinAddresses = await latestController
             .stablecoins()
@@ -155,65 +153,16 @@ function getPowerDContracts() {
     return powerDContracts;
 }
 
-function getLatestContract(contractName) {
-    logger.info(`contractName: ${contractName}`);
-    const latestAddresses = getLatestContractsAddress();
-    const contractInfo = latestAddresses[contractName];
-    logger.info(`contractInfo: ${contractInfo}`);
-    const contractAddress = contractInfo.address;
-    logger.info(`contractAddress: ${contractAddress}`);
-    let contractHistory = [];
-    switch (contractName) {
-        case ContractNames.depositHandler:
-            contractHistory = getDepositHandlerContracts();
-            break;
-        case ContractNames.groVault:
-            contractHistory = getGroVaultContracts();
-            break;
-        case ContractNames.powerD:
-            contractHistory = getPowerDContracts();
-            break;
-        default:
-            logger.warn(`Not found history for ${contractName}`);
-    }
-    return contractHistory[contractAddress];
-}
-
 function getLatestDepositHandler() {
-    if (!latestDepositHandler) {
-        latestDepositHandler = getLatestContract(ContractNames.depositHandler);
-    }
-    return latestDepositHandler;
+    return getLatestSystemContract(ContractNames.depositHandler, providerKey);
 }
 
 function getLatestGroVault() {
-    if (!latestGroVault) {
-        latestGroVault = getLatestContract(ContractNames.groVault);
-    }
-    logger.info(`latestPowerD: ${latestPowerD}`);
-    return latestGroVault;
+    return getLatestSystemContract(ContractNames.groVault, providerKey);
 }
 
 function getLatestPowerD() {
-    if (!latestPowerD) {
-        logger.info('init latestPowerD');
-        latestPowerD = getLatestContract(ContractNames.powerD);
-    }
-    logger.info(`latestPowerD: ${latestPowerD}`);
-    return latestPowerD;
-}
-
-function getLatestBuoy() {
-    if (!latestBuoy) {
-        const latestBuoyInfo =
-            getLatestContractsAddress()[ContractNames.buoy3Pool];
-        latestBuoy = newContract(
-            ContractNames.buoy3Pool,
-            latestBuoyInfo,
-            provider
-        );
-    }
-    return latestBuoy;
+    return getLatestSystemContract(ContractNames.powerD, providerKey);
 }
 
 async function getHandlerEvents(account, contractName, eventName) {
@@ -530,7 +479,7 @@ async function getApprovalHistoryies(account, depositEventHashs) {
     const stableCoinInfo = getStabeCoinsInfo();
     const result = [];
     const usdAmoutPromise = [];
-    const buoy = getLatestBuoy();
+    const buoy = getLatestSystemContract(ContractNames.buoy3Pool, providerKey);
     for (let i = 0; i < approvalEventResult.length; i += 1) {
         const { address, transactionHash, blockNumber, args } =
             approvalEventResult[i];

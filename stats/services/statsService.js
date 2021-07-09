@@ -1,5 +1,9 @@
 const fs = require('fs');
 const config = require('config');
+const {
+    loadContractInfoFromRegistry,
+} = require('../../registry/registryLoader');
+const { reloadData } = require('../common/contractStorage');
 
 const statsLatest = config.get('stats_latest');
 
@@ -21,7 +25,14 @@ async function getArgentStatsContent() {
     return JSON.parse(stats.toString());
 }
 
+async function reloadContractsFromRegistry(providerKey) {
+    await loadContractInfoFromRegistry();
+    await reloadData(providerKey);
+    return { result: 'Reload registry done!.' };
+}
+
 module.exports = {
     getGroStatsContent,
     getArgentStatsContent,
+    reloadContractsFromRegistry,
 };

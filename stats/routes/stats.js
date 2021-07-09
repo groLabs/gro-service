@@ -8,6 +8,7 @@ const { ParameterError } = require('../../common/error');
 const {
     getGroStatsContent,
     getArgentStatsContent,
+    reloadContractsFromRegistry,
 } = require('../services/statsService');
 const { generateReport } = require('../services/accountService');
 const { getPersonalStats } = require('../../database/handler/personalHandler');
@@ -139,6 +140,23 @@ router.get(
             req.query.address
         );
         res.json(groStats);
+    })
+);
+
+router.get(
+    '/reload_contracts',
+    wrapAsync(async (req, res) => {
+        let { network, providerKey } = req.query;
+        network = network || '';
+        providerKey = providerKey || '';
+        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+            throw new ParameterError('Parameter network failed.');
+        }
+        if (providerKey.length === 0) {
+            throw new ParameterError('Parameter providerKey failed.');
+        }
+        const result = await reloadContractsFromRegistry(providerKey);
+        res.json(result);
     })
 );
 
