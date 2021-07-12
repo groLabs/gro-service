@@ -51,9 +51,9 @@ async function getGTokenBaseFactor(isPWRD) {
     return BigNumber.from(factor.toString());
 }
 
-async function findBlockByDate(scanDate) {
+async function findBlockByDate(scanDate, after = true) {
     const blockFound = await scanner
-        .getDate(scanDate.toDate())
+        .getDate(scanDate.toDate(), after)
         .catch((error) => {
             logger.error(error);
             logger.error(`Could not get block ${scanDate}`);

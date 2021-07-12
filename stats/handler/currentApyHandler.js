@@ -40,9 +40,9 @@ const launchBlock = getConfig('blockchain.start_block');
 const defaultApy = getConfig('strategy_default_apy');
 const oldPnlAddresses = getConfig('old_pnl');
 
-async function findBlockByDate(scanDate) {
+async function findBlockByDate(scanDate, after = true) {
     const blockFound = await scanner
-        .getDate(scanDate.toDate())
+        .getDate(scanDate.toDate(), after)
         .catch((error) => {
             logger.error(error);
             logger.error(`Could not get block ${scanDate}`);
@@ -218,10 +218,6 @@ async function calcCurrentStrategyAPY(startBlock, endBlock) {
                 BigNumber.from(defaultApy[i * 2 + j])
             );
             strategies[j].apy = apy;
-            // TODO: hard code to use default apy for cream
-            if ((i === 1 && j === 1) || (i === 2 && j === 1)) {
-                strategies[j].apy = BigNumber.from(defaultApy[i * 2 + j]);
-            }
         }
     }
     for (let i = 0; i < vaults.length; i += 1) {

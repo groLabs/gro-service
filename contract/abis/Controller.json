@@ -1423,9 +1423,9 @@
         "name": "vaults",
         "outputs": [
             {
-                "internalType": "address[]",
+                "internalType": "address[3]",
                 "name": "",
-                "type": "address[]"
+                "type": "address[3]"
             }
         ],
         "stateMutability": "view",

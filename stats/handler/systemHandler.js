@@ -289,7 +289,7 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
         );
         systemApy = systemApy.add(vaultApy);
         let estimatedVaultApy;
-        if (vaultPercent.isZero) {
+        if (vaultPercent.isZero()) {
             estimatedVaultApy = ZERO;
         } else {
             estimatedVaultApy = vaultApy.div(vaultPercent);
