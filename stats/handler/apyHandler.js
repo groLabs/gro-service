@@ -3,12 +3,13 @@ const utc = require('dayjs/plugin/utc');
 const { BigNumber } = require('ethers');
 
 dayjs.extend(utc);
-const { getGvt, getPwrd } = require('../../contract/allContracts');
 const BlocksScanner = require('../common/blockscanner');
 const logger = require('../statsLogger');
 const { getTimestampByBlockNumber } = require('../../common/chainUtil');
 const { BlockChainCallError } = require('../../common/error');
 const { getConfig } = require('../../common/configUtil');
+const { getLatestSystemContract } = require('../common/contractStorage');
+const { ContractNames } = require('../../registry/registry');
 
 const FACTOR_DECIMAL = BigNumber.from(10).pow(BigNumber.from(18));
 const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
@@ -22,9 +23,15 @@ const providerKey = 'stats_gro';
 const launchBlock = getConfig('blockchain.start_block');
 
 let scanner;
-
 function updateBlocksScanner(newProvider) {
     scanner = new BlocksScanner(newProvider);
+}
+
+function getLatestPowerD() {
+    return getLatestSystemContract(ContractNames.powerD, providerKey);
+}
+function getLatestGroVault() {
+    return getLatestSystemContract(ContractNames.groVault, providerKey);
 }
 
 function calculatePriceDiff(factorStart, factorEnd) {
@@ -39,7 +46,12 @@ function calculatePriceDiff(factorStart, factorEnd) {
 }
 
 async function getGTokenBaseFactor(isPWRD) {
-    const token = isPWRD ? getPwrd(providerKey) : getGvt(providerKey);
+    let token;
+    if (isPWRD) {
+        token = getLatestPowerD();
+    } else {
+        token = getLatestGroVault();
+    }
     const factor = await token
         .factor({ blockTag: launchBlock })
         .catch((error) => {
@@ -73,8 +85,9 @@ async function calcApyByPeriod(
     const startBlockTag = {
         blockTag: startBlock.block,
     };
-    const startGvtFactor = await getGvt(providerKey).factor(startBlockTag);
-    const startPwrdFactor = await getPwrd(providerKey).factor(startBlockTag);
+
+    const startGvtFactor = await getLatestGroVault().factor(startBlockTag);
+    const startPwrdFactor = await getLatestPowerD().factor(startBlockTag);
 
     const gvtApy = calculatePriceDiff(startGvtFactor, currentGvtFactor).mul(
         multiplier
@@ -109,8 +122,8 @@ async function calcApyOfInitDays(latestBlock, launchTimestamp) {
         blockTag: latestBlock.number,
     };
 
-    const gvtFactorNow = await getGvt(providerKey).factor(latestBlockTag);
-    const pwrdFactorNow = await getPwrd(providerKey).factor(latestBlockTag);
+    const gvtFactorNow = await getLatestGroVault().factor(latestBlockTag);
+    const pwrdFactorNow = await getLatestPowerD().factor(latestBlockTag);
     const gvtFactor = await getGTokenBaseFactor(false);
     const pwrdFactor = await getGTokenBaseFactor(true);
     const gvtApy = calculatePriceDiff(gvtFactor, gvtFactorNow)
@@ -134,8 +147,8 @@ async function calcApyOfInitDays(latestBlock, launchTimestamp) {
 async function calcAlltimeApy(startOfToday, launchTimestamp) {
     logger.info(`calculate alltime apy ${startOfToday}`);
 
-    const gvt = getGvt(providerKey);
-    const pwrd = getPwrd(providerKey);
+    const gvt = getLatestGroVault();
+    const pwrd = getLatestPowerD();
 
     const blockUtcToday = await findBlockByDate(startOfToday);
     const blockTagUtcToday = {
@@ -177,8 +190,8 @@ async function calcAlltimeApy(startOfToday, launchTimestamp) {
 async function getSystemApy(latestBlock, provider) {
     updateBlocksScanner(provider);
     logger.info('SystemApy');
-    const gvt = getGvt(providerKey);
-    const pwrd = getPwrd(providerKey);
+    const gvt = getLatestGroVault();
+    const pwrd = getLatestPowerD();
 
     const startOfUTCToday = dayjs
         .unix(latestBlock.timestamp)

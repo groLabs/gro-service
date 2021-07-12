@@ -2,22 +2,11 @@ const fs = require('fs');
 const config = require('config');
 const dayjs = require('dayjs');
 const { BigNumber } = require('ethers');
-const {
-    EVENT_TYPE,
-    getEvents,
-    getTransferEvents,
-} = require('../../common/logFilter');
+const { getFilterEvents } = require('../../common/logFilter-new');
 const { ContractCallError } = require('../../common/error');
-const {
-    MESSAGE_TYPES,
-    MESSAGE_EMOJI,
-    DISCORD_CHANNELS,
-    sendMessageToChannel,
-} = require('../../common/discord/discordService');
+const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
-const { getAlchemyRpcProvider } = require('../../common/chainUtil');
-const { formatNumber, shortAccount } = require('../../common/digitalUtil');
-const { getGvt, getPwrd } = require('../../contract/allContracts');
+const { formatNumber } = require('../../common/digitalUtil');
 const { calculateDelta } = require('../../common/digitalUtil');
 const {
     depositEventMessage,
@@ -25,6 +14,8 @@ const {
     summaryMessage,
 } = require('../../discordMessage/eventMessage');
 const { AppendGTokenMintOrBurnAmountToLog } = require('../common/tool');
+const { getLatestSystemContract } = require('../common/contractStorage');
+const { ContractNames } = require('../../registry/registry');
 
 const logger = require('../statsLogger');
 
@@ -58,11 +49,17 @@ async function updateLastBlockNumber(blockNumber, type) {
 }
 
 async function generateDepositReport(fromBlock, toBlock) {
-    const logs = await getEvents(
-        EVENT_TYPE.deposit,
-        fromBlock,
-        toBlock,
-        null,
+    // generate deposit filter
+    const latestDepositHandler = getLatestSystemContract(
+        ContractNames.depositHandler,
+        providerKey
+    );
+    const depositFilter = latestDepositHandler.filters.LogNewDeposit();
+    depositFilter.fromBlock = fromBlock;
+    depositFilter.toBlock = toBlock;
+    const logs = await getFilterEvents(
+        depositFilter,
+        latestDepositHandler.interface,
         providerKey
     ).catch((error) => {
         logger.error(error);
@@ -134,11 +131,17 @@ async function generateDepositReport(fromBlock, toBlock) {
 }
 
 async function generateWithdrawReport(fromBlock, toBlock) {
-    const logs = await getEvents(
-        EVENT_TYPE.withdraw,
-        fromBlock,
-        toBlock,
-        null,
+    // generate withdraw filter
+    const latestWithdrawHandler = getLatestSystemContract(
+        ContractNames.withdrawHandler,
+        providerKey
+    );
+    const withdrawFilter = latestWithdrawHandler.filters.LogNewWithdrawal();
+    withdrawFilter.fromBlock = fromBlock;
+    withdrawFilter.toBlock = toBlock;
+    const logs = await getFilterEvents(
+        withdrawFilter,
+        latestWithdrawHandler.interface,
         providerKey
     ).catch((error) => {
         logger.error(error);
@@ -282,10 +285,18 @@ async function generateSummaryReport(fromBlock, toBlock) {
         fromBlock,
         toBlock
     );
+    const latestGvt = getLatestSystemContract(
+        ContractNames.groVault,
+        providerKey
+    );
+    const latestPWRD = getLatestSystemContract(
+        ContractNames.powerD,
+        providerKey
+    );
     const { originValue: originVaultValue, value: vaultTVL } =
-        await getGTokenAsset(getGvt(providerKey), toBlock);
+        await getGTokenAsset(latestGvt, toBlock);
     const { originValue: originPwrdValue, value: pwrdTVL } =
-        await getGTokenAsset(getPwrd(providerKey), toBlock);
+        await getGTokenAsset(latestPWRD, toBlock);
     const tvl = getTVLDelta(
         depositEventResult.total,
         withdrawEventResult.total,
@@ -308,151 +319,8 @@ async function generateSummaryReport(fromBlock, toBlock) {
     summaryMessage(result);
 }
 
-async function generateGvtTransfer(fromBlock, toBlock) {
-    logger.info(
-        `Start to get Gvt transfer event from block:${fromBlock} to ${toBlock}`
-    );
-    const logs = await getTransferEvents(
-        EVENT_TYPE.gvtTransfer,
-        fromBlock,
-        toBlock,
-        null,
-        providerKey
-    ).catch((error) => {
-        logger.error(error);
-        throw new ContractCallError(
-            `Get Gvt events transfer event from block ${fromBlock} to ${toBlock} failed.`,
-            MESSAGE_TYPES.transferEvent
-        );
-    });
-
-    const result = [];
-    logs.forEach((log) => {
-        const item = {};
-        item.blockNumber = log.blockNumber;
-        item.transactionHash = log.transactionHash;
-        item.gToken = 'Gvt';
-        [item.sender, item.recipient] = log.args;
-        item.amount = log.args[2].toString();
-        item.factor = log.args[3].toString();
-        result.push(item);
-    });
-    logger.info(
-        `Gvt transfer events from block ${fromBlock} to ${toBlock}:\n${JSON.stringify(
-            result
-        )}`
-    );
-
-    // send report to discord
-    result.forEach((log) => {
-        const msg = `\nGToken: ${log.gToken}\nBlockNumer: ${log.blockNumber}\nTransactionHash: ${log.transactionHash}\nSender: ${log.sender}\nRecipient: ${log.recipient}\nAmount: ${log.amount}\nFactor: ${log.factor}`;
-        const label = 'TX';
-        const sender = shortAccount(log.sender);
-        const recipient = shortAccount(log.recipient);
-        sendMessageToChannel(DISCORD_CHANNELS.trades, {
-            message: msg,
-            type: MESSAGE_TYPES.transferEvent,
-            emojis: [MESSAGE_EMOJI[log.gToken]],
-            description: `${label} ${sender} transfer **${formatNumber(
-                log.amount,
-                18,
-                2
-            )}** to ${recipient}`,
-            urls: [
-                {
-                    label,
-                    type: 'tx',
-                    value: log.transactionHash,
-                },
-                {
-                    sender,
-                    type: 'account',
-                    value: log.sender,
-                },
-                {
-                    recipient,
-                    type: 'account',
-                    value: log.recipient,
-                },
-            ],
-        });
-    });
-}
-
-async function generatePwrdTransfer(fromBlock, toBlock) {
-    logger.info(
-        `Start to get Pwrd transfer event from block:${fromBlock} to ${toBlock}`
-    );
-    const logs = await getTransferEvents(
-        EVENT_TYPE.pwrdTransfer,
-        fromBlock,
-        toBlock,
-        null,
-        providerKey
-    ).catch((error) => {
-        logger.error(error);
-        throw new ContractCallError(
-            `Get Pwrd events transfer event from block ${fromBlock} to ${toBlock} failed.`,
-            MESSAGE_TYPES.transferEvent
-        );
-    });
-
-    const result = [];
-    logs.forEach((log) => {
-        const item = {};
-        item.blockNumber = log.blockNumber;
-        item.transactionHash = log.transactionHash;
-        item.gToken = 'Pwrd';
-        [item.sender, item.recipient] = log.args;
-        item.amount = log.args[2].toString();
-        result.push(item);
-    });
-    logger.info(
-        `Pwrd transfer events from block ${fromBlock} to ${toBlock}:\n${JSON.stringify(
-            result
-        )}`
-    );
-
-    // send report to discord
-    result.forEach((log) => {
-        const msg = `\nGToken: ${log.gToken}\nBlockNumer: ${log.blockNumber}\nTransactionHash: ${log.transactionHash}\nSender: ${log.sender}\nRecipient: ${log.recipient}\nAmount: ${log.amount}`;
-        const label = 'TX';
-        const sender = shortAccount(log.sender);
-        const recipient = shortAccount(log.recipient);
-        sendMessageToChannel(DISCORD_CHANNELS.trades, {
-            message: msg,
-            type: MESSAGE_TYPES.transferEvent,
-            emojis: [MESSAGE_EMOJI[log.gToken]],
-            description: `${label} ${sender} transfer **${formatNumber(
-                log.amount,
-                18,
-                2
-            )}** to ${recipient}`,
-            urls: [
-                {
-                    label,
-                    type: 'tx',
-                    value: log.transactionHash,
-                },
-                {
-                    sender,
-                    type: 'account',
-                    value: log.sender,
-                },
-                {
-                    recipient,
-                    type: 'account',
-                    value: log.recipient,
-                },
-            ],
-        });
-    });
-}
-
 module.exports = {
     getLastBlockNumber,
-    generateGvtTransfer,
-    generatePwrdTransfer,
     updateLastBlockNumber,
     generateDepositAndWithdrawReport,
     generateSummaryReport,
