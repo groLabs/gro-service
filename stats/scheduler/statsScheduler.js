@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const schedule = require('node-schedule');
-const { generateGroStatsFile } = require('../handler/statsHandler-new');
+const { generateGroStatsFile } = require('../handler/statsHandler');
 const { getConfig } = require('../../common/configUtil');
 const {
     sendMessageToAlertChannel,
@@ -11,7 +11,7 @@ const {
     generateDepositAndWithdrawReport,
     updateLastBlockNumber,
     generateSummaryReport,
-} = require('../handler/eventHandler-new');
+} = require('../handler/eventHandler');
 const { getCurrentBlockNumber } = require('../../common/chainUtil');
 const logger = require('../statsLogger.js');
 
