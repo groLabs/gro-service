@@ -25,9 +25,9 @@ const getTimeTransformations = (target) => {
     }
 }
 
-const getTimestamps = async (target, table) => {
+const getTimestamps = async (targetTimestamp, table, filter) => {
     try {
-        const delta = getTimeTransformations(target);
+        const delta = getTimeTransformations(targetTimestamp);
         const [
             current,
             diff_5m,
@@ -35,16 +35,16 @@ const getTimestamps = async (target, table) => {
             diff_1d,
             diff_1w,
         ] = await Promise.all([
-            query(`select_max_timestamp_${table}.sql`, [target, target]),
-            query(`select_max_timestamp_${table}.sql`, [delta.MAX_5m, delta.MIN_5m]),
-            query(`select_max_timestamp_${table}.sql`, [delta.MAX_1h, delta.MIN_1h]),
-            query(`select_max_timestamp_${table}.sql`, [delta.MAX_1d, delta.MIN_1d]),
-            query(`select_max_timestamp_${table}.sql`, [delta.MAX_1w, delta.MIN_1w]),
+            query(`select_all_${table}.sql`, [targetTimestamp, targetTimestamp, ...filter]),
+            query(`select_all_${table}.sql`, [delta.MAX_5m, delta.MIN_5m, ...filter]),
+            query(`select_all_${table}.sql`, [delta.MAX_1h, delta.MIN_1h, ...filter]),
+            query(`select_all_${table}.sql`, [delta.MAX_1d, delta.MIN_1d, ...filter]),
+            query(`select_all_${table}.sql`, [delta.MAX_1w, delta.MIN_1w, ...filter]),
         ]);
 
         if (current === QUERY_ERROR || diff_5m === QUERY_ERROR || diff_1h === QUERY_ERROR
             || diff_1d === QUERY_ERROR || diff_1w === QUERY_ERROR)
-            throw `Query error in getTimestamps [target: ${target}]`;
+            throw `Query error in getTimestamps [targetTimestamp: ${targetTimestamp}]`;
 
         return {
             "current": current.rows[0],
@@ -58,73 +58,219 @@ const getTimestamps = async (target, table) => {
     }
 }
 
+const getDistincts = async (targetTimestamp, table) => {
+    try {
+        const res = await query(`select_distinct_${table}.sql`, [targetTimestamp, targetTimestamp]);
+        if (res === QUERY_ERROR)
+            throw `Query error in getTimestamps [targetTimestamp: ${targetTimestamp}]`;
+        return res.rows;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+const calcKPI = (root, kpi) => {
+    return {
+        [kpi]: root.current[kpi],
+        [kpi + '_5m']: (root.diff_5m) ? root.diff_5m[kpi] : NA,
+        [kpi + '_5m_dif']: (root.diff_5m) ? root.current[kpi] - root.diff_5m[kpi] : NA,
+        [kpi + '_1h']: (root.diff_1h) ? root.diff_1h[kpi] : NA,
+        [kpi + '_1h_dif']: (root.diff_1h) ? root.current[kpi] - root.diff_1h[kpi] : NA,
+        [kpi + '_1d']: (root.diff_1d) ? root.diff_1d[kpi] : NA,
+        [kpi + '_1d_dif']: (root.diff_1d) ? root.current[kpi] - root.diff_1d[kpi] : NA,
+        [kpi + '_1w']: (root.diff_1w) ? root.diff_1w[kpi] : NA,
+        [kpi + '_1w_dif']: (root.diff_1w) ? root.current[kpi] - root.diff_1w[kpi] : NA,
+    }
+}
+
 const getTVL = async (targetTimestamp) => {
-    const tvl = await getTimestamps(targetTimestamp, 'protocol_tvl');
+    const tvl = await getTimestamps(targetTimestamp, 'protocol_tvl', []);
     if (tvl.current) {
         return {
             "launch_timestamp": tvl.current.launch_timestamp,
             "launch_date": tvl.current.launch_date,
-            "tvl_total": tvl.current.tvl_total,
-            "tvl_total_5m": (tvl.diff_5m) ? tvl.diff_5m.tvl_total : NA,
-            "tvl_total_5m_dif": (tvl.diff_5m) ? tvl.current.tvl_total - tvl.diff_5m.tvl_total : NA,
-            "tvl_total_1h": (tvl.diff_1h) ? tvl.diff_1h.tvl_total : NA,
-            "tvl_total_1h_dif": (tvl.diff_1h) ? tvl.current.tvl_total - tvl.diff_1h.tvl_total : NA,
-            "tvl_total_1d": (tvl.diff_1d) ? tvl.diff_1d.tvl_total : NA,
-            "tvl_total_1d_dif": (tvl.diff_1d) ? tvl.current.tvl_total - tvl.diff_1d.tvl_total : NA,
-            "tvl_total_1w": (tvl.diff_1w) ? tvl.diff_1w.tvl_total : NA,
-            "tvl_total_1w_dif": (tvl.diff_1w) ? tvl.current.tvl_total - tvl.diff_1w.tvl_total : NA,
-            "tvl_pwrd": tvl.current.tvl_pwrd,
-            "tvl_pwrd_5m": (tvl.diff_5m) ? tvl.diff_5m.tvl_pwrd : NA,
-            "tvl_pwrd_5m_dif": (tvl.diff_5m) ? tvl.current.tvl_pwrd - tvl.diff_5m.tvl_pwrd : NA,
-            "tvl_pwrd_1h": (tvl.diff_1h) ? tvl.diff_1h.tvl_pwrd : NA,
-            "tvl_pwrd_1h_dif": (tvl.diff_1h) ? tvl.current.tvl_pwrd - tvl.diff_1h.tvl_pwrd : NA,
-            "tvl_pwrd_1d": (tvl.diff_1d) ? tvl.diff_1d.tvl_pwrd : NA,
-            "tvl_pwrd_1d_dif": (tvl.diff_1d) ? tvl.current.tvl_pwrd - tvl.diff_1d.tvl_pwrd : NA,
-            "tvl_pwrd_1w": (tvl.diff_1w) ? tvl.diff_1w.tvl_pwrd : NA,
-            "tvl_pwrd_1w_dif": (tvl.diff_1w) ? tvl.current.tvl_pwrd - tvl.diff_1w.tvl_pwrd : NA,
-            "tvl_gvt": tvl.current.tvl_gvt,
-            "tvl_gvt_5m": (tvl.diff_5m) ? tvl.diff_5m.tvl_gvt : NA,
-            "tvl_gvt_5m_dif": (tvl.diff_5m) ? tvl.current.tvl_gvt - tvl.diff_5m.tvl_gvt : NA,
-            "tvl_gvt_1h": (tvl.diff_1h) ? tvl.diff_1h.tvl_gvt : NA,
-            "tvl_gvt_1h_dif": (tvl.diff_1h) ? tvl.current.tvl_gvt - tvl.diff_1h.tvl_gvt : NA,
-            "tvl_gvt_1d": (tvl.diff_1d) ? tvl.diff_1d.tvl_gvt : NA,
-            "tvl_gvt_1d_dif": (tvl.diff_1d) ? tvl.current.tvl_gvt - tvl.diff_1d.tvl_gvt : NA,
-            "tvl_gvt_1w": (tvl.diff_1w) ? tvl.diff_1w.tvl_gvt : NA,
-            "tvl_gvt_1w_dif": (tvl.diff_1w) ? tvl.current.tvl_gvt - tvl.diff_1w.tvl_gvt : NA,
-            "util_ratio_5m": (tvl.diff_5m) ? tvl.diff_5m.util_ratio : NA,
-            "util_ratio_5m_dif": (tvl.diff_5m) ? tvl.current.util_ratio - tvl.diff_5m.util_ratio : NA,
-            "util_ratio_1h": (tvl.diff_1h) ? tvl.diff_1h.util_ratio : NA,
-            "util_ratio_1h_dif": (tvl.diff_1h) ? tvl.current.util_ratio - tvl.diff_1h.util_ratio : NA,
-            "util_ratio_1d": (tvl.diff_1d) ? tvl.diff_1d.util_ratio : NA,
-            "util_ratio_1d_dif": (tvl.diff_1d) ? tvl.current.util_ratio - tvl.diff_1d.util_ratio : NA,
-            "util_ratio_1w": (tvl.diff_1w) ? tvl.diff_1w.util_ratio : NA,
-            "util_ratio_1w_dif": (tvl.diff_1w) ? tvl.current.util_ratio - tvl.diff_1w.util_ratio : NA,
-            "util_ratio_limit_pwrd_5m": (tvl.diff_5m) ? tvl.diff_5m.util_ratio_limit_pwrd : NA,
-            "util_ratio_limit_pwrd_5m_dif": (tvl.diff_5m) ? tvl.current.util_ratio_limit_pwrd - tvl.diff_5m.util_ratio_limit_pwrd : NA,
-            "util_ratio_limit_pwrd_1h": (tvl.diff_1h) ? tvl.diff_1h.util_ratio_limit_pwrd : NA,
-            "util_ratio_limit_pwrd_1h_dif": (tvl.diff_1h) ? tvl.current.util_ratio_limit_pwrd - tvl.diff_1h.util_ratio_limit_pwrd : NA,
-            "util_ratio_limit_pwrd_1d": (tvl.diff_1d) ? tvl.diff_1d.util_ratio_limit_pwrd : NA,
-            "util_ratio_limit_pwrd_1d_dif": (tvl.diff_1d) ? tvl.current.util_ratio_limit_pwrd - tvl.diff_1d.util_ratio_limit_pwrd : NA,
-            "util_ratio_limit_pwrd_1w": (tvl.diff_1w) ? tvl.diff_1w.util_ratio_limit_pwrd : NA,
-            "util_ratio_limit_pwrd_1w_dif": (tvl.diff_1w) ? tvl.current.util_ratio_limit_pwrd - tvl.diff_1w.util_ratio_limit_pwrd : NA,
-            "util_ratio_limit_gvt_5m": (tvl.diff_5m) ? tvl.diff_5m.util_ratio_limit_gvt : NA,
-            "util_ratio_limit_gvt_5m_dif": (tvl.diff_5m) ? tvl.current.util_ratio_limit_gvt - tvl.diff_5m.util_ratio_limit_gvt : NA,
-            "util_ratio_limit_gvt_1h": (tvl.diff_1h) ? tvl.diff_1h.util_ratio_limit_gvt : NA,
-            "util_ratio_limit_gvt_1h_dif": (tvl.diff_1h) ? tvl.current.util_ratio_limit_gvt - tvl.diff_1h.util_ratio_limit_gvt : NA,
-            "util_ratio_limit_gvt_1d": (tvl.diff_1d) ? tvl.diff_1d.util_ratio_limit_gvt : NA,
-            "util_ratio_limit_gvt_1d_dif": (tvl.diff_1d) ? tvl.current.util_ratio_limit_gvt - tvl.diff_1d.util_ratio_limit_gvt : NA,
-            "util_ratio_limit_gvt_1w": (tvl.diff_1w) ? tvl.diff_1w.util_ratio_limit_gvt : NA,
-            "util_ratio_limit_gvt_1w_dif": (tvl.diff_1w) ? tvl.current.util_ratio_limit_gvt - tvl.diff_1w.util_ratio_limit_gvt : NA,
-        }
+            ...calcKPI(tvl, 'tvl_total'),
+            ...calcKPI(tvl, 'tvl_pwrd'),
+            ...calcKPI(tvl, 'tvl_gvt'),
+            ...calcKPI(tvl, 'util_ratio'),
+            ...calcKPI(tvl, 'tvl_total'),
+            ...calcKPI(tvl, 'util_ratio_limit_pwrd'),
+            ...calcKPI(tvl, 'util_ratio_limit_gvt'),
+        };
     } else {
         return {};
     }
 }
 
+const getAPY = async (targetTimestamp, productId) => {
+    const apy = await getTimestamps(targetTimestamp, 'protocol_apy', [productId]);
+    if (apy.current) {
+        return {
+            "launch_timestamp": apy.current.launch_timestamp,
+            "launch_date": apy.current.launch_date,
+            ...calcKPI(apy, 'apy_last24h'),
+            ...calcKPI(apy, 'apy_last7d'),
+            ...calcKPI(apy, 'apy_daily'),
+            ...calcKPI(apy, 'apy_weekly'),
+            ...calcKPI(apy, 'apy_monthly'),
+            ...calcKPI(apy, 'apy_all_time'),
+        };
+    } else {
+        return {};
+    }
+}
 
-const groStatsHandler = async (targetTimestamp) => {
-    console.log('Hello from groStatsHandler');
-    const res = await getTVL(1624826772);
+const getLifeguard = async (targetTimestamp) => {
+    const lifeguard = await getTimestamps(targetTimestamp, 'protocol_lifeguard', []);
+    if (lifeguard.current) {
+        return {
+            "launch_timestamp": lifeguard.current.launch_timestamp,
+            "launch_date": lifeguard.current.launch_date,
+            "name": lifeguard.current.name,
+            ...calcKPI(lifeguard, 'amount'),
+            ...calcKPI(lifeguard, 'share'),
+            ...calcKPI(lifeguard, 'last3d_apy'),
+        };
+    } else {
+        return {};
+    }
+}
+
+const getSystem = async (targetTimestamp) => {
+    const system = await getTimestamps(targetTimestamp, 'protocol_system', []);
+    if (system.current) {
+        return {
+            "launch_timestamp": system.current.launch_timestamp,
+            "launch_date": system.current.launch_date,
+            ...calcKPI(system, 'total_share'),
+            ...calcKPI(system, 'total_amount'),
+            ...calcKPI(system, 'last3d_apy'),
+            ...calcKPI(system, 'hodl_bonus'),
+        };
+    } else {
+        return {};
+    }
+}
+
+const getVaults = async (targetTimestamp) => {
+    const result = [];
+    const vaults = await getDistincts(targetTimestamp, 'protocol_vaults');
+    if (vaults.length > 0) {
+        for (const item of vaults) {
+            const vault = await getTimestamps(targetTimestamp, 'protocol_vaults', [item.name]);
+            if (vault.current) {
+                result.push({
+                    "launch_timestamp": vault.current.launch_timestamp,
+                    "launch_date": vault.current.launch_date,
+                    "name": vault.current.name,
+                    ...calcKPI(vault, 'amount'),
+                    ...calcKPI(vault, 'share'),
+                    ...calcKPI(vault, 'last3d_apy'),
+                });
+            } else {
+                return {};
+            }
+        }
+    } else {
+        return {};
+    }
+    return result;
+}
+
+const getStrategies = async (targetTimestamp) => {
+    const result = [];
+    const strategies = await getDistincts(targetTimestamp, 'protocol_strategies');
+    if (strategies.length > 0) {
+        for (const item of strategies) {
+            const strategy = await getTimestamps(
+                targetTimestamp,
+                'protocol_strategies',
+                [item.vault_name, item.strategy_name]
+            );
+            if (strategy.current) {
+                result.push({
+                    "launch_timestamp": strategy.current.launch_timestamp,
+                    "launch_date": strategy.current.launch_date,
+                    "vault_name": strategy.current.vault_name,
+                    "strategy_name": strategy.current.strategy_name,
+                    ...calcKPI(strategy, 'amount'),
+                    ...calcKPI(strategy, 'share'),
+                    ...calcKPI(strategy, 'last3d_apy'),
+                });
+            } else {
+                return {};
+            }
+        }
+    } else {
+        return {};
+    }
+    return result;
+}
+
+const getExposureStables = async (targetTimestamp) => {
+    const result = [];
+    const stables = await getDistincts(targetTimestamp, 'protocol_exposure_stables');
+    if (stables.length > 0) {
+        for (const item of stables) {
+            const stable = await getTimestamps(
+                targetTimestamp,
+                'protocol_exposure_stables',
+                [item.name]
+            );
+            if (stable.current) {
+                result.push({
+                    "launch_timestamp": stable.current.launch_timestamp,
+                    "launch_date": stable.current.launch_date,
+                    "name": stable.current.name,
+                    ...calcKPI(stable, 'concentration'),
+                });
+            } else {
+                return {};
+            }
+        }
+    } else {
+        return {};
+    }
+    return result;
+}
+
+const getExposureProtocols = async (targetTimestamp) => {
+    const result = [];
+    const protocols = await getDistincts(targetTimestamp, 'protocol_exposure_protocols');
+    if (protocols.length > 0) {
+        for (const item of protocols) {
+            const protocol = await getTimestamps(
+                targetTimestamp,
+                'protocol_exposure_protocols',
+                [item.name]
+            );
+            if (protocol.current) {
+                result.push({
+                    "launch_timestamp": protocol.current.launch_timestamp,
+                    "launch_date": protocol.current.launch_date,
+                    "name": protocol.current.name,
+                    ...calcKPI(protocol, 'concentration'),
+                });
+            } else {
+                return {};
+            }
+        }
+    } else {
+        return {};
+    }
+    return result;
+}
+
+const groStatsHandler = async (targetTimestamp, productId) => {
+    // const res = await getTVL(1624826772);
+    // const res = await getAPY(1624827717, 1);
+    // const res = await getAPY(1624827717, 2);
+    // const res = await getLifeguard(1624827717);
+    // const res = await getSystem(1624827717);
+    // const res = await getVaults(1624827717);
+    // const res = await getStrategies(1624827717);
+    // const res = await getExposureStables(1624827717);
+    const res = await getExposureProtocols(1624827717);
     console.log(res);
     process.exit();
 }
