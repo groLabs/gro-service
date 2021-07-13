@@ -3,6 +3,7 @@ INSERT INTO gro."PROTOCOL_LIFEGUARD" (
         "launch_date",
         "network_id",
         "name",
+        "display_name",
         "amount",
         "share",
         "last3d_apy",
@@ -16,5 +17,6 @@ VALUES (
         $5,
         $6,
         $7,
-        $8
+        $8,
+        $9
     );

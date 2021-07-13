@@ -127,6 +127,7 @@ const getLifeguard = async (targetTimestamp) => {
             "launch_timestamp": lifeguard.current.launch_timestamp,
             "launch_date": lifeguard.current.launch_date,
             "name": lifeguard.current.name,
+            "display_name": lifeguard.current.display_name,
             ...calcKPI(lifeguard, 'amount'),
             ...calcKPI(lifeguard, 'share'),
             ...calcKPI(lifeguard, 'last3d_apy'),
@@ -153,7 +154,7 @@ const getSystem = async (targetTimestamp) => {
 }
 
 const getVaults = async (targetTimestamp) => {
-    const result = [];
+    let result = [];
     const vaults = await getDistincts(targetTimestamp, 'protocol_vaults');
     if (vaults.length > 0) {
         for (const item of vaults) {
@@ -163,6 +164,7 @@ const getVaults = async (targetTimestamp) => {
                     "launch_timestamp": vault.current.launch_timestamp,
                     "launch_date": vault.current.launch_date,
                     "name": vault.current.name,
+                    "display_name": vault.current.display_name,
                     ...calcKPI(vault, 'amount'),
                     ...calcKPI(vault, 'share'),
                     ...calcKPI(vault, 'last3d_apy'),
@@ -177,8 +179,39 @@ const getVaults = async (targetTimestamp) => {
     return result;
 }
 
+const getReserves = async (targetTimestamp) => {
+    let result = [];
+    const reserves = await getDistincts(targetTimestamp, 'protocol_reserves');
+    if (reserves.length > 0) {
+        for (const item of reserves) {
+            const reserve = await getTimestamps(
+                targetTimestamp,
+                'protocol_reserves',
+                [item.vault_name, item.reserve_name]
+            );
+            if (reserve.current) {
+                result.push({
+                    "launch_timestamp": reserve.current.launch_timestamp,
+                    "launch_date": reserve.current.launch_date,
+                    "vault_name": reserve.current.vault_name,
+                    "reserve_name": reserve.current.reserve_name,
+                    "display_name": reserve.current.display_name,
+                    ...calcKPI(reserve, 'amount'),
+                    ...calcKPI(reserve, 'share'),
+                    ...calcKPI(reserve, 'last3d_apy'),
+                });
+            } else {
+                return {};
+            }
+        }
+    } else {
+        return {};
+    }
+    return result;
+}
+
 const getStrategies = async (targetTimestamp) => {
-    const result = [];
+    let result = [];
     const strategies = await getDistincts(targetTimestamp, 'protocol_strategies');
     if (strategies.length > 0) {
         for (const item of strategies) {
@@ -193,6 +226,7 @@ const getStrategies = async (targetTimestamp) => {
                     "launch_date": strategy.current.launch_date,
                     "vault_name": strategy.current.vault_name,
                     "strategy_name": strategy.current.strategy_name,
+                    "display_name": strategy.current.display_name,
                     ...calcKPI(strategy, 'amount'),
                     ...calcKPI(strategy, 'share'),
                     ...calcKPI(strategy, 'last3d_apy'),
@@ -208,7 +242,7 @@ const getStrategies = async (targetTimestamp) => {
 }
 
 const getExposureStables = async (targetTimestamp) => {
-    const result = [];
+    let result = [];
     const stables = await getDistincts(targetTimestamp, 'protocol_exposure_stables');
     if (stables.length > 0) {
         for (const item of stables) {
@@ -222,6 +256,7 @@ const getExposureStables = async (targetTimestamp) => {
                     "launch_timestamp": stable.current.launch_timestamp,
                     "launch_date": stable.current.launch_date,
                     "name": stable.current.name,
+                    "display_name": stable.current.display_name,
                     ...calcKPI(stable, 'concentration'),
                 });
             } else {
@@ -235,7 +270,7 @@ const getExposureStables = async (targetTimestamp) => {
 }
 
 const getExposureProtocols = async (targetTimestamp) => {
-    const result = [];
+    let result = [];
     const protocols = await getDistincts(targetTimestamp, 'protocol_exposure_protocols');
     if (protocols.length > 0) {
         for (const item of protocols) {
@@ -249,6 +284,7 @@ const getExposureProtocols = async (targetTimestamp) => {
                     "launch_timestamp": protocol.current.launch_timestamp,
                     "launch_date": protocol.current.launch_date,
                     "name": protocol.current.name,
+                    "display_name": protocol.current.display_name,
                     ...calcKPI(protocol, 'concentration'),
                 });
             } else {
@@ -270,7 +306,8 @@ const groStatsHandler = async (targetTimestamp, productId) => {
     // const res = await getVaults(1624827717);
     // const res = await getStrategies(1624827717);
     // const res = await getExposureStables(1624827717);
-    const res = await getExposureProtocols(1624827717);
+    // const res = await getExposureProtocols(1624827717);
+    const res = await getReserves(1624827717);
     console.log(res);
     process.exit();
 }

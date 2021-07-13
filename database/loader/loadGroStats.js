@@ -6,6 +6,7 @@ const {
     getTVL,
     getSystem,
     getVaults,
+    getReserves,
     getLifeguard,
     getStrategies,
     getExposureStables,
@@ -17,6 +18,7 @@ const checkQueryResult = (result, table) => {
     if (result === 400) {
         throw `Query error with table ${table}`;
     } else if (table !== 'PROTOCOL_VAULTS'
+        && table !== 'PROTOCOL_RESERVES'
         && table !== 'PROTOCOL_STRATEGIES'
         && table !== 'PROTOCOL_EXPOSURE_STABLES'
         && table !== 'PROTOCOL_EXPOSURE_PROTOCOLS') {
@@ -81,6 +83,20 @@ const loadVaults = async () => {
     }
 }
 
+const loadReserves = async () => {
+    try {
+        let rows = 0;
+        for (const vault of getReserves()) {
+            const vaults = await query('insert_protocol_reserves.sql', vault);
+            checkQueryResult(vaults, 'PROTOCOL_RESERVES');
+            rows += vaults.rowCount;
+        }
+        console.log(`${rows} records added into ${'PROTOCOL_RESERVES'}`);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 const loadStrategies = async () => {
     try {
         let rows = 0;
@@ -128,6 +144,7 @@ module.exports = {
     loadTVL,
     loadSystem,
     loadVaults,
+    loadReserves,
     loadLifeguard,
     loadStrategies,
     loadExposureStables,

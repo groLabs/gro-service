@@ -14,7 +14,10 @@ const moment = require('moment');
 // } = require('../common/personalUtil');
 
 /* TEST VALUES */
-const stats = {"current_timestamp":"1625765886","launch_timestamp":"1624827717","network":"ropsten","apy":{"last24h":{"pwrd":"0.016425","gvt":"-185.939760"},"last7d":{"pwrd":"0.130832","gvt":"-26.396916"},"daily":{"pwrd":"0.067160","gvt":"0.067160"},"weekly":{"pwrd":"0.167336","gvt":"0.233688"},"monthly":{"pwrd":"0.239900","gvt":"0.286012"},"all_time":{"pwrd":"0.239900","gvt":"0.286012"},"hodl_bonus":"0.065312","current":{"pwrd":"0.098096","gvt":"0.164552"}},"tvl":{"pwrd":"72250.4670805","gvt":"108751.0034513","total":"181001.4705318","util_ratio":"0.664365","util_ratio_limit_PD":"0.600000","util_ratio_limit_GW":"0.950000"},"system":{"total_share":"0.999998","total_amount":"181001.3649338","last3d_apy":"0.072713","lifeguard":{"name":"3CRV","amount":"1776.8233064","share":"0.009816","last3d_apy":"0.000000"},"vaults":[{"name":"DAI yVault","amount":"80971.1935806","share":"0.447351","last3d_apy":"0.000000","strategies":[{"name":"Idle","amount":"52037.8447872","last3d_apy":"0.098842","share":"0.287499"},{"name":"Cream","amount":"16119.1366162","last3d_apy":"0.097904","share":"0.089055"},{"name":"DAI","amount":"12814.2935981","last3d_apy":"0.000000","share":"0.070796"}]},{"name":"USDC yVault","amount":"71002.9416699","share":"0.392278","last3d_apy":"0.000000","strategies":[{"name":"Idle","amount":"54910.5354894","last3d_apy":"0.101739","share":"0.303370"},{"name":"Cream","amount":"13123.8366989","last3d_apy":"0.065000","share":"0.072506"},{"name":"USDC","amount":"2968.5957601","last3d_apy":"0.000000","share":"0.016400"}]},{"name":"USDT yVault","amount":"495.0858295","share":"0.002735","last3d_apy":"0.000000","strategies":[{"name":"Idle","amount":"0.0000000","last3d_apy":"0.096341","share":"0.000000"},{"name":"Cream","amount":"0.0000000","last3d_apy":"0.090278","share":"0.000000"},{"name":"USDT","amount":"495.0858295","last3d_apy":"0.000000","share":"0.002735"}]},{"name":"Curve yVault","amount":"26755.3205473","share":"0.147818","last3d_apy":"0.000000","strategies":[{"name":"XPool","amount":"26755.3205473","last3d_apy":"0.000000","share":"0.147818"},{"name":"3CRV","amount":"0.0000000","last3d_apy":"0.000000","share":"0.000000"}]}]},"exposure":{"stablecoins":[{"name":"DAI","concentration":"0.599300"},{"name":"USDC","concentration":"0.685000"},{"name":"USDT","concentration":"0.150500"}],"protocols":[{"name":"Idle","concentration":"0.590869"},{"name":"Compound","concentration":"0.590869"},{"name":"Cream","concentration":"0.161561"},{"name":"Curve","concentration":"0.147818"}]}}
+// const {stats_old} = require('./sample_old');
+const {stats_new} = require('./sample_new');
+// const stats = {"current_timestamp":"1625765886","launch_timestamp":"1624827717","network":"ropsten","apy":{"last24h":{"pwrd":"0.016425","gvt":"-185.939760"},"last7d":{"pwrd":"0.130832","gvt":"-26.396916"},"daily":{"pwrd":"0.067160","gvt":"0.067160"},"weekly":{"pwrd":"0.167336","gvt":"0.233688"},"monthly":{"pwrd":"0.239900","gvt":"0.286012"},"all_time":{"pwrd":"0.239900","gvt":"0.286012"},"hodl_bonus":"0.065312","current":{"pwrd":"0.098096","gvt":"0.164552"}},"tvl":{"pwrd":"72250.4670805","gvt":"108751.0034513","total":"181001.4705318","util_ratio":"0.664365","util_ratio_limit_PD":"0.600000","util_ratio_limit_GW":"0.950000"},"system":{"total_share":"0.999998","total_amount":"181001.3649338","last3d_apy":"0.072713","lifeguard":{"name":"3CRV","amount":"1776.8233064","share":"0.009816","last3d_apy":"0.000000"},"vaults":[{"name":"DAI yVault","amount":"80971.1935806","share":"0.447351","last3d_apy":"0.000000","strategies":[{"name":"Idle","amount":"52037.8447872","last3d_apy":"0.098842","share":"0.287499"},{"name":"Cream","amount":"16119.1366162","last3d_apy":"0.097904","share":"0.089055"},{"name":"DAI","amount":"12814.2935981","last3d_apy":"0.000000","share":"0.070796"}]},{"name":"USDC yVault","amount":"71002.9416699","share":"0.392278","last3d_apy":"0.000000","strategies":[{"name":"Idle","amount":"54910.5354894","last3d_apy":"0.101739","share":"0.303370"},{"name":"Cream","amount":"13123.8366989","last3d_apy":"0.065000","share":"0.072506"},{"name":"USDC","amount":"2968.5957601","last3d_apy":"0.000000","share":"0.016400"}]},{"name":"USDT yVault","amount":"495.0858295","share":"0.002735","last3d_apy":"0.000000","strategies":[{"name":"Idle","amount":"0.0000000","last3d_apy":"0.096341","share":"0.000000"},{"name":"Cream","amount":"0.0000000","last3d_apy":"0.090278","share":"0.000000"},{"name":"USDT","amount":"495.0858295","last3d_apy":"0.000000","share":"0.002735"}]},{"name":"Curve yVault","amount":"26755.3205473","share":"0.147818","last3d_apy":"0.000000","strategies":[{"name":"XPool","amount":"26755.3205473","last3d_apy":"0.000000","share":"0.147818"},{"name":"3CRV","amount":"0.0000000","last3d_apy":"0.000000","share":"0.000000"}]}]},"exposure":{"stablecoins":[{"name":"DAI","concentration":"0.599300"},{"name":"USDC","concentration":"0.685000"},{"name":"USDT","concentration":"0.150500"}],"protocols":[{"name":"Idle","concentration":"0.590869"},{"name":"Compound","concentration":"0.590869"},{"name":"Cream","concentration":"0.161561"},{"name":"Curve","concentration":"0.147818"}]}}
+let stats = stats_new.gro_stats;
 const getNetworkId = () => 3;
 const QUERY_ERROR = 400;
 const getProductId = (product) => {
@@ -74,6 +77,7 @@ const getLifeguard = () => {
     const result = [
         ...defaultData,
         stats.system.lifeguard.name,
+        stats.system.lifeguard.display_name,
         stats.system.lifeguard.amount,
         stats.system.lifeguard.share,
         stats.system.lifeguard.last3d_apy,
@@ -84,10 +88,11 @@ const getLifeguard = () => {
 
 const getVaults = () => {
     let result = [];
-    for (const vault of stats.system.vaults) {
+    for (const vault of stats.system.vault) {
         result.push([
             ...defaultData,
             vault.name,
+            vault.display_name,
             vault.amount,
             vault.share,
             vault.last3d_apy,
@@ -97,14 +102,33 @@ const getVaults = () => {
     return result;
 }
 
+const getReserves = () => {
+    let result = [];
+    for (const reserve of stats.system.vault) {
+        result.push([
+            ...defaultData,
+            reserve.name,
+            reserve.reserves.name,
+            reserve.reserves.display_name,
+            reserve.reserves.amount,
+            reserve.reserves.share,
+            reserve.reserves.last3d_apy,
+            moment().utc(),
+        ]);
+    }
+    return result;
+}
+
 const getStrategies = () => {
     let result = [];
-    for (const vault of stats.system.vaults) {
+    for (const vault of stats.system.vault) {
         for (const strategy of vault.strategies) {
             result.push([
                 ...defaultData,
                 vault.name,
                 strategy.name,
+                strategy.display_name,
+                strategy.address,
                 strategy.amount,
                 strategy.share,
                 strategy.last3d_apy,
@@ -121,6 +145,7 @@ const getExposureStables = () => {
         result.push([
             ...defaultData,
             stablecoin.name,
+            stablecoin.display_name,
             stablecoin.concentration,
             moment().utc(),
         ]);
@@ -134,6 +159,7 @@ const getExposureProtocols = () => {
         result.push([
             ...defaultData,
             protocol.name,
+            protocol.display_name,
             protocol.concentration,
             moment().utc(),
         ]);
@@ -147,6 +173,7 @@ module.exports = {
     getSystem,
     getLifeguard,
     getVaults,
+    getReserves,
     getStrategies,
     getExposureStables,
     getExposureProtocols,

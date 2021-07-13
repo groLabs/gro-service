@@ -1,11 +1,10 @@
-INSERT INTO gro."PROTOCOL_STRATEGIES" (
+INSERT INTO gro."PROTOCOL_RESERVES" (
         "launch_timestamp",
         "launch_date",
         "network_id",
         "vault_name",
-        "strategy_name",
+        "reserve_name",
         "display_name",
-        "address",
         "amount",
         "share",
         "last3d_apy",
@@ -21,6 +20,5 @@ VALUES (
         $7,
         $8,
         $9,
-        $10,
-        $11
+        $10
     );
