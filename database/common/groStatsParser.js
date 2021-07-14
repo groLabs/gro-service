@@ -1,26 +1,14 @@
 // const botEnv = process.env.BOT_ENV.toLowerCase();
 // const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
-//const { query } = require('../handler/queryHandler');
-// const {
-//     QUERY_ERROR,
-//     getBlockData,
-//     getNetworkId,
-//     handleErr,
-//     isPlural,
+const {
+    getNetworkId
+} = require('../common/personalUtil');
 
-// const {
-//     getNetworkId
-// } = require('../common/personalUtil');
-// let stats = {};
-// const { stats } = require('../etl/etlGroStats');
-
-const getNetworkId = () => 3;
-const QUERY_ERROR = 400;
+// TODO: from DB?
 const getProductId = (product) => {
     return (product === 'pwrd' ? 1 : 2);
 }
-
 
 const defaultData = (stats) => {
     return [
@@ -167,7 +155,6 @@ const getExposureProtocols = (stats) => {
 }
 
 module.exports = {
-    defaultData,
     getAPY,
     getTVL,
     getSystem,

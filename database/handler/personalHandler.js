@@ -10,6 +10,7 @@ const getTransfers = async (account) => {
         const qTransfers = 'select_fe_user_transactions.sql';
         const qApprovals = 'select_fe_user_approvals.sql';
 
+        // TODO: if (res.every( val => (val !== 400 ))) {
         const [
             deposits,
             withdrawals,

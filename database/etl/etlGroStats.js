@@ -10,7 +10,7 @@ const { groStatsCall } = require('../common/groStatsCall');
 
 /* TEST VALUES */
 const { stats_new } = require('./sample_new');
-const stats = stats_new.gro_stats;
+const stats2 = stats_new.gro_stats;
 
 // checks last timestamp stored in DB and compares to current statsBot timestamp
 const etlGroStats = async () => {
@@ -20,7 +20,7 @@ const etlGroStats = async () => {
         const currentTimestamp = parseInt(stats.gro_stats.launch_timestamp);
         if (currentTimestamp > lastTimestamp) {
             console.log('go loading');
-            //await loadAllTables(stats);
+            await loadAllTables(stats2);
         } else {
             console.log('no load needed'); // TODO: to be removed
         }

@@ -39,7 +39,7 @@ const query = async (file, params) => {
         case 'u':
             option = 'update';
             break;
-        default: return 400;
+        default: return QUERY_ERROR;
     }
 
     const q = fs.readFileSync(path.join(__dirname, `/../queries/${option}/${file}`), 'utf8');
