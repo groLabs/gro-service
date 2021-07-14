@@ -1,11 +1,13 @@
 module.exports = {
     deposit_handler_history: {
         '0x4246529D7168FE98F0530d99d93d346092bf50F1': {},
+        '0xB2a9B574cD0ABD2E24E7F2B412B21d49B87a3CD1': {},
     },
     withdraw_handler_history: {
         '0x50B325c2d97CfC88c79E051d2d2A9E3D9C0ac3A8': {},
+        '0xb8082aAeE3fC604FB5E09d895297B138973fA981': {},
     },
-    old_pnl: [],
+    old_pnl: ['0x6E50c4d3b3917a4aa4196F4F90C2533C2d2e1634'],
     blockchain: {
         network: 'ropsten',
         start_block: 10525267,
@@ -107,16 +109,24 @@ module.exports = {
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
     strategy_exposure: [
-        ['Idle', 'Compound'],
+        ['Compound'],
         ['Cream'],
-        ['Idle', 'Compound'],
+        ['Compound'],
         ['Cream'],
         ['Idle', 'Compound'],
         ['Cream'],
         ['Curve'],
     ],
-    strategy_name: ['Idle', 'Cream', 'Idle', 'Cream', 'Idle', 'Cream', 'XPool'],
-    strategy_default_apy: [58500, 99000, 30700, 65000, 83000, 90278, 200000],
+    strategy_name: [
+        'Lev Comp',
+        'Cream',
+        'Lev Comp',
+        'Cream',
+        'Idle',
+        'Cream',
+        'XPool',
+    ],
+    strategy_default_apy: [132800, 99000, 90000, 65000, 83000, 90278, 200000],
     harvest_strategy_dependency: [
         '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
         '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE',
@@ -138,7 +148,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0xBA0E31cfED0e7B49Cc691c3019566C59a96c4c24',
+        controller: '0x8A59743BBC178063BE23603B39059e1DFE9edD22',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
