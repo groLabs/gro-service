@@ -1,60 +1,33 @@
 const { query } = require('../handler/queryHandler');
-const {
-    initAllContracts,
-} = require('../../contract/allContracts');
 const config = require('config');
-// const {
-//     getController,
-//     getGvt,
-//     getPwrd,
-//     getInsurance,
-//     getExposure,
-//     getLifeguard,
-//     getVaults,
-//     getCurveVault,
-//     getStrategyLength,
-//     getDepositHandler,
-//     getWithdrawHandler,
-//     getBuoy,
-// } = require('../../contract/allContracts');
 const logger = require('../databaseLogger');
 const {
-    loadAPY,
-    loadTVL,
-    loadVaults,
-    loadReserves,
-    loadSystem,
-    loadLifeguard,
-    loadStrategies,
-    loadExposureStables,
-    loadExposureProtocols,
+    loadAllTables,
+    checkLastTimestamp
 } = require('../loader/loadGroStats');
-// const { generateGroStatsFile } = require('../../stats/handler/statsHandler');
+const { groStatsCall } = require('../common/groStatsCall');
 
 
+/* TEST VALUES */
+const { stats_new } = require('./sample_new');
+const stats = stats_new.gro_stats;
 
+// checks last timestamp stored in DB and compares to current statsBot timestamp
 const etlGroStats = async () => {
-    await Promise.all([
-        loadAPY(),
-        loadTVL(),
-        loadSystem(),
-        loadVaults(),
-        loadReserves(),
-        loadStrategies(),
-        loadExposureStables(),
-        loadExposureProtocols(),
-        loadLifeguard(),
-    ]);
-    process.exit(); // for testing purposes
-
-
-
-    // initAllContracts().then(async () => {
-    //     console.log('go!');
-    //     const a = await generateGroStatsFile();
-    //     console.log(a);
-    //     process.exit(); // for testing purposes
-    // });
+    const lastTimestamp = await checkLastTimestamp();
+    if (lastTimestamp) {
+        const stats = JSON.parse(await groStatsCall());
+        const currentTimestamp = parseInt(stats.gro_stats.launch_timestamp);
+        if (currentTimestamp > lastTimestamp) {
+            console.log('go loading');
+            //await loadAllTables(stats);
+        } else {
+            console.log('no load needed'); // TODO: to be removed
+        }
+    } else {
+        console.log('No last timestamp found'); // TODO: raise warning
+    }
+    process.exit(); // TODO: for testing purposes
 }
 
 module.exports = {
