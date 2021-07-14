@@ -12,8 +12,8 @@ const getProductId = (product) => {
 
 const defaultData = (stats) => {
     return [
-        stats.launch_timestamp,
-        moment.unix(stats.launch_timestamp).utc(),
+        stats.current_timestamp,
+        moment.unix(stats.current_timestamp).utc(),
         getNetworkId(),
     ];
 };

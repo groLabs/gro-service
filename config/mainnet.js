@@ -162,4 +162,16 @@ module.exports = {
         password: process.env.DB_PROD_PASSWORD,
         database: process.env.DB_PROD_INSTANCE,
     },
+    route: {
+        gro_stats: {
+            hostname: 'h4sk4iwj75.execute-api.eu-west-2.amazonaws.com',
+            path: '/stats/gro_stats?network=mainnet',
+            port: 443,
+        },
+        personal_stats: {
+            hostname: 'h4sk4iwj75.execute-api.eu-west-2.amazonaws.com',
+            path: '/stats/gro_personal_position?network=mainnet&address=',
+            port: 443,
+        },
+    },
 };

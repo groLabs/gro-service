@@ -1,6 +1,6 @@
 INSERT INTO gro."PROTOCOL_APY" (
-        "launch_timestamp",
-        "launch_date",
+        "current_timestamp",
+        "current_date",
         "network_id",
         "product_id",
         "apy_last24h",
