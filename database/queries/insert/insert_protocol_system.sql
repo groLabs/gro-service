@@ -1,6 +1,6 @@
 INSERT INTO gro."PROTOCOL_SYSTEM" (
-        "launch_timestamp",
-        "launch_date",
+        "current_timestamp",
+        "current_date",
         "network_id",
         "total_share",
         "total_amount",

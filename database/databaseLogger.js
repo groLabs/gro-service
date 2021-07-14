@@ -11,10 +11,9 @@ if (config.has('log_folder')) {
 }
 
 const logMsgFormat = printf(({ level, message, timestamp, stack }) => {
-    if (stack) {
-        return `${timestamp} ${level}: ${message} - ${stack}`;
-    }
-    return `${timestamp} ${level}: ${message}`;
+    return (stack)
+        ? `${timestamp} ${level}: ${message} - ${stack}`
+        : `${timestamp} ${level}: ${message}`;
 });
 
 const databaseLogger = createLogger({

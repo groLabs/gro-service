@@ -1,4 +1,8 @@
 const https = require('https');
+const { getConfig } = require('../../common/configUtil');
+const route = getConfig('route');
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 const groStatsCall = () => {
     return new Promise(async (resolve) => {
@@ -6,16 +10,15 @@ const groStatsCall = () => {
             let result = "";
 
             const options = {
-                hostname: 'ajj49or3nh.execute-api.eu-west-2.amazonaws.com',
-                port: 443,
-                path: '/stats/gro_stats?network=ropsten',
+                hostname: route.gro_stats.hostname,
+                port: route.gro_stats.port,
+                path: route.gro_stats.path,
                 method: 'GET'
             };
 
             const req = https.request(options, (res) => {
-                console.log('statusCode:', res.statusCode);
-                console.log('headers:', res.headers);
-
+                // console.log('statusCode:', res.statusCode);
+                // console.log('headers:', res.headers);
                 res.on('data', (d) => {
                     result += d;
                 }).on('end', () => {
@@ -23,12 +26,13 @@ const groStatsCall = () => {
                 });
             });
 
-            req.on('error', (e) => {
+            req.on('error', (err) => {
+                logger.error('**DB: Error in groStatsCall.js:', err);
                 resolve({});
             });
             req.end();
         } catch (err) {
-            console.log(err);
+            logger.error('**DB: Error in groStatsCall.js:', err);
         }
     });
 }

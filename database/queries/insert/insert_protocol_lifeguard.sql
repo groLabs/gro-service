@@ -1,6 +1,6 @@
 INSERT INTO gro."PROTOCOL_LIFEGUARD" (
-        "launch_timestamp",
-        "launch_date",
+        "current_timestamp",
+        "current_date",
         "network_id",
         "name",
         "display_name",

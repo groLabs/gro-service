@@ -17,6 +17,8 @@ const {
     getExposureStables,
     getExposureProtocols,
 } = require('../common/groStatsParser');
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const QUERY_ERROR = 400;
 
 
@@ -37,7 +39,7 @@ const checkQueryResult = (result, table) => {
         && table !== 'PROTOCOL_STRATEGIES'
         && table !== 'PROTOCOL_EXPOSURE_STABLES'
         && table !== 'PROTOCOL_EXPOSURE_PROTOCOLS') {
-        console.log(`${result.rowCount} records added into ${table}`);
+        logger.info(`**DB: ${result.rowCount} records added into ${table}`);
     }
 }
 
@@ -54,7 +56,7 @@ const loadAPY = async (stats) => {
         checkQueryResult(gvt, 'PROTOCOL_APY');
         return true;
     } catch (err) {
-        console.log(err); //TODO
+        logger.error(`**DB: Error in loadGroStats.js->loadAPY(): ${err}`);
         return false;
     }
 }
@@ -65,7 +67,7 @@ const loadTVL = async (stats) => {
         checkQueryResult(tvl, 'PROTOCOL_TVL');
         return true;
     } catch (err) {
-        console.log(err); //TODO
+        logger.error(`**DB: Error in loadGroStats.js->loadTVL(): ${err}`);
         return false;
     }
 }
@@ -76,7 +78,7 @@ const loadLifeguard = async (stats) => {
         checkQueryResult(lifeguard, 'PROTOCOL_LIFEGUARD');
         return true;
     } catch (err) {
-        console.log(err); //TODO
+        logger.error(`**DB: Error in loadGroStats.js->loadLifeguard(): ${err}`);
         return false;
     }
 }
@@ -87,7 +89,7 @@ const loadSystem = async (stats) => {
         checkQueryResult(system, 'PROTOCOL_SYSTEM');
         return true;
     } catch (err) {
-        console.log(err); //TODO
+        logger.error(`**DB: Error in loadGroStats.js->loadSystem(): ${err}`);
         return false;
     }
 }
@@ -100,10 +102,10 @@ const loadVaults = async (stats) => {
             checkQueryResult(vaults, 'PROTOCOL_VAULTS');
             rows += vaults.rowCount;
         }
-        console.log(`${rows} records added into ${'PROTOCOL_VAULTS'}`);
+        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_VAULTS'}`);
         return true;
     } catch (err) {
-        console.log(err); //TODO
+        logger.error(`**DB: Error in loadGroStats.js->loadVaults(): ${err}`);
         return false;
     }
 }
@@ -116,10 +118,10 @@ const loadReserves = async (stats) => {
             checkQueryResult(vaults, 'PROTOCOL_RESERVES');
             rows += vaults.rowCount;
         }
-        console.log(`${rows} records added into ${'PROTOCOL_RESERVES'}`);
+        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_RESERVES'}`);
         return true;
     } catch (err) {
-        console.log(err); //TODO
+        logger.error(`**DB: Error in loadGroStats.js->loadReserves(): ${err}`);
         return false;
     }
 }
@@ -132,10 +134,10 @@ const loadStrategies = async (stats) => {
             checkQueryResult(strategies, 'PROTOCOL_STRATEGIES');
             rows += strategies.rowCount;
         }
-        console.log(`${rows} records added into ${'PROTOCOL_STRATEGIES'}`);
+        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_STRATEGIES'}`);
         return true;
     } catch (err) {
-        console.log(err); //TODO
+        logger.error(`**DB: Error in loadGroStats.js->loadStrategies(): ${err}`);
         return false;
     }
 }
@@ -148,10 +150,10 @@ const loadExposureStables = async (stats) => {
             checkQueryResult(stables, 'PROTOCOL_EXPOSURE_STABLES');
             rows += stables.rowCount;
         }
-        console.log(`${rows} records added into ${'PROTOCOL_EXPOSURE_STABLES'}`);
+        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_EXPOSURE_STABLES'}`);
         return true;
     } catch (err) {
-        console.log(err); //TODO
+        logger.error(`**DB: Error in loadGroStats.js->loadExposureStables(): ${err}`);
         return false;
     }
 }
@@ -164,10 +166,10 @@ const loadExposureProtocols = async (stats) => {
             checkQueryResult(stables, 'PROTOCOL_EXPOSURE_PROTOCOLS');
             rows += stables.rowCount;
         }
-        console.log(`${rows} records added into ${'PROTOCOL_EXPOSURE_PROTOCOLS'}`);
+        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_EXPOSURE_PROTOCOLS'}`);
         return true;
     } catch (err) {
-        console.log(err); //TODO
+        logger.error(`**DB: Error in loadGroStats.js->loadExposureProtocols(): ${err}`);
         return false;
     }
 }
@@ -175,7 +177,7 @@ const loadExposureProtocols = async (stats) => {
 const updateTimeStamp = async (stats) => {
     try {
         const params = [
-            stats.launch_timestamp,
+            stats.current_timestamp,
             moment().utc(),
             getNetworkId(),
         ];
@@ -183,33 +185,35 @@ const updateTimeStamp = async (stats) => {
         if (res === QUERY_ERROR)
             throw `Query error in updateTimeStamp()`; //TODO
     } catch (err) {
-        console.log(err); //TODO
+        logger.error(`**DB: Error in loadGroStats.js->updateTimeStamp(): ${err}`);
     }
 }
 
 const loadAllTables = async (stats) => {
     try {
-        const res = await Promise.all([
-            loadAPY(stats),
-            loadTVL(stats),
-            loadSystem(stats),
-            loadVaults(stats),
-            loadReserves(stats),
-            loadLifeguard(stats),
-            loadStrategies(stats),
-            loadExposureStables(stats),
-            loadExposureProtocols(stats),
-        ]);
-
-        if (res.every(Boolean)) {
-            await updateTimeStamp(stats);
+        if (stats.current_timestamp > 0) {
+            const res = await Promise.all([
+                loadAPY(stats),
+                loadTVL(stats),
+                loadSystem(stats),
+                loadVaults(stats),
+                loadReserves(stats),
+                loadLifeguard(stats),
+                loadStrategies(stats),
+                loadExposureStables(stats),
+                loadExposureProtocols(stats),
+            ]);
+            if (res.every(Boolean)) {
+                await updateTimeStamp(stats);
+            } else {
+                logger.warn(`**DB: Errors found in loadGroStats.js->Table SYS_PROTOCOL_LOAD not updated.`);
+            }
         } else {
-            console.log('wanrning loadAllTables'); //TODO: logger
+            logger.error(`**DB: Error in loadGroStats.js->loadAllTables(): stats JSON structure is not correct.`);
         }
     } catch (err) {
-        console.log(err); //TODO
+        logger.error(`**DB: Error in loadGroStats.js->loadAllTables(): ${err}`);
     }
-
 }
 
 module.exports = {

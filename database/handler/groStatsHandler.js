@@ -87,8 +87,8 @@ const getTVL = async (targetTimestamp) => {
     const tvl = await getTimestamps(targetTimestamp, 'protocol_tvl', []);
     if (tvl.current) {
         return {
-            "launch_timestamp": tvl.current.launch_timestamp,
-            "launch_date": tvl.current.launch_date,
+            "current_timestamp": tvl.current.current_timestamp,
+            "current_date": tvl.current.current_date,
             ...calcKPI(tvl, 'tvl_total'),
             ...calcKPI(tvl, 'tvl_pwrd'),
             ...calcKPI(tvl, 'tvl_gvt'),
@@ -106,8 +106,8 @@ const getAPY = async (targetTimestamp, productId) => {
     const apy = await getTimestamps(targetTimestamp, 'protocol_apy', [productId]);
     if (apy.current) {
         return {
-            "launch_timestamp": apy.current.launch_timestamp,
-            "launch_date": apy.current.launch_date,
+            "current_timestamp": apy.current.current_timestamp,
+            "current_date": apy.current.current_date,
             ...calcKPI(apy, 'apy_last24h'),
             ...calcKPI(apy, 'apy_last7d'),
             ...calcKPI(apy, 'apy_daily'),
@@ -124,8 +124,8 @@ const getLifeguard = async (targetTimestamp) => {
     const lifeguard = await getTimestamps(targetTimestamp, 'protocol_lifeguard', []);
     if (lifeguard.current) {
         return {
-            "launch_timestamp": lifeguard.current.launch_timestamp,
-            "launch_date": lifeguard.current.launch_date,
+            "current_timestamp": lifeguard.current.current_timestamp,
+            "current_date": lifeguard.current.current_date,
             "name": lifeguard.current.name,
             "display_name": lifeguard.current.display_name,
             ...calcKPI(lifeguard, 'amount'),
@@ -141,8 +141,8 @@ const getSystem = async (targetTimestamp) => {
     const system = await getTimestamps(targetTimestamp, 'protocol_system', []);
     if (system.current) {
         return {
-            "launch_timestamp": system.current.launch_timestamp,
-            "launch_date": system.current.launch_date,
+            "current_timestamp": system.current.current_timestamp,
+            "current_date": system.current.current_date,
             ...calcKPI(system, 'total_share'),
             ...calcKPI(system, 'total_amount'),
             ...calcKPI(system, 'last3d_apy'),
@@ -161,8 +161,8 @@ const getVaults = async (targetTimestamp) => {
             const vault = await getTimestamps(targetTimestamp, 'protocol_vaults', [item.name]);
             if (vault.current) {
                 result.push({
-                    "launch_timestamp": vault.current.launch_timestamp,
-                    "launch_date": vault.current.launch_date,
+                    "current_timestamp": vault.current.current_timestamp,
+                    "current_date": vault.current.current_date,
                     "name": vault.current.name,
                     "display_name": vault.current.display_name,
                     ...calcKPI(vault, 'amount'),
@@ -191,8 +191,8 @@ const getReserves = async (targetTimestamp) => {
             );
             if (reserve.current) {
                 result.push({
-                    "launch_timestamp": reserve.current.launch_timestamp,
-                    "launch_date": reserve.current.launch_date,
+                    "current_timestamp": reserve.current.current_timestamp,
+                    "current_date": reserve.current.current_date,
                     "vault_name": reserve.current.vault_name,
                     "reserve_name": reserve.current.reserve_name,
                     "display_name": reserve.current.display_name,
@@ -222,8 +222,8 @@ const getStrategies = async (targetTimestamp) => {
             );
             if (strategy.current) {
                 result.push({
-                    "launch_timestamp": strategy.current.launch_timestamp,
-                    "launch_date": strategy.current.launch_date,
+                    "current_timestamp": strategy.current.current_timestamp,
+                    "current_date": strategy.current.current_date,
                     "vault_name": strategy.current.vault_name,
                     "strategy_name": strategy.current.strategy_name,
                     "display_name": strategy.current.display_name,
@@ -253,8 +253,8 @@ const getExposureStables = async (targetTimestamp) => {
             );
             if (stable.current) {
                 result.push({
-                    "launch_timestamp": stable.current.launch_timestamp,
-                    "launch_date": stable.current.launch_date,
+                    "current_timestamp": stable.current.current_timestamp,
+                    "current_date": stable.current.current_date,
                     "name": stable.current.name,
                     "display_name": stable.current.display_name,
                     ...calcKPI(stable, 'concentration'),
@@ -281,8 +281,8 @@ const getExposureProtocols = async (targetTimestamp) => {
             );
             if (protocol.current) {
                 result.push({
-                    "launch_timestamp": protocol.current.launch_timestamp,
-                    "launch_date": protocol.current.launch_date,
+                    "current_timestamp": protocol.current.current_timestamp,
+                    "current_date": protocol.current.current_date,
                     "name": protocol.current.name,
                     "display_name": protocol.current.display_name,
                     ...calcKPI(protocol, 'concentration'),
