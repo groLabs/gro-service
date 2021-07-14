@@ -169,4 +169,16 @@ module.exports = {
         password: process.env.DB_DEV_PASSWORD,
         database: process.env.DB_DEV_INSTANCE,
     },
+    route: {
+        gro_stats: {
+            hostname: 'ajj49or3nh.execute-api.eu-west-2.amazonaws.com',
+            path: '/stats/gro_stats?network=ropsten',
+            port: 443,
+        },
+        personal_stats: {
+            hostname: 'ajj49or3nh.execute-api.eu-west-2.amazonaws.com',
+            path: '/stats/gro_personal_position?network=ropsten&address=',
+            port: 443,
+        },
+    },
 };
