@@ -150,6 +150,7 @@ const reload = async (
         // Truncates TMP tables and calculates dates & blocks to be processed
         const [fromBlock, toBlock, dates] = await preload(fromDate, toDate);
 
+        // TODO: if (res.every( val => (val !== 400 ))) {
         // Reload transfers, balances & net results
         if (fromBlock > 0 && toBlock > 0 && dates) {
             const [
@@ -203,6 +204,7 @@ const load = async (
     // Truncates TMP tables and calculate dates & blocks to be processed
     const [fromBlock, toBlock] = await preload(fromDate, toDate);
 
+    // TODO: if (res.every( val => (val !== 400 ))) {
     // Reload transfers, balances & net results
     if (fromBlock > 0 && toBlock > 0) {
         const [

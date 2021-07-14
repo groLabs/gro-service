@@ -316,6 +316,7 @@ const loadTempUserTransfers = async (
 const preloadCache = async (account) => {
     try {
         const params = [account];
+        // TODO: if (res.every( val => (val !== 400 ))) {
         const [
             tmpApprovals,
             tmpDeposits,
@@ -365,7 +366,7 @@ const preloadCache = async (account) => {
                 .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
                 .add(1, 'days');
         }
-        
+
         // Calculate starting date, starting block and dates range to be processed
         // const fromDate = moment
         //     .utc(_fromDate.rows[0].max_balance_date)
@@ -387,7 +388,7 @@ const loadCache = async (account) => {
     try {
         const [fromBlock, toDate] = await preloadCache(account);
         const fromDate = toDate;
-
+        // TODO: if (res.every( val => (val !== 400 ))) {
         if (fromBlock > 0) {
             const [
                 deposits,
