@@ -94,10 +94,12 @@ async function initVaultStrategyLabel(
     vaultAdapter,
     strategyLength,
     vaultNameConfig = 'vault_name',
-    strategyNameConfig = 'strategy_name'
+    strategyNameConfig = 'strategy_name',
+    strategyDisplayNameConfig = 'strategy_display_name'
 ) {
     const yearnVaultAddress = await vaultAdapter.vault();
     const strategyName = getConfig(strategyNameConfig);
+    const strategyDisplayName = getConfig(strategyDisplayNameConfig);
     const vaultName = getConfig(vaultNameConfig);
     logger.info(
         `adapterIndex: ${adapterIndex}, strategyLength: ${strategyLength}`
@@ -122,6 +124,7 @@ async function initVaultStrategyLabel(
     for (let j = 0; j < strategyLength; j += 1) {
         vaultAndStrategyLabels[vaultAdapter.address].strategies.push({
             name: strategyName[adapterIndex * 2 + j],
+            displayName: strategyDisplayName[adapterIndex * 2 + j],
             address: strategyAddresses[j],
             strategy: new ethers.Contract(
                 strategyAddresses[j],
