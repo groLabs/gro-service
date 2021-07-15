@@ -1,6 +1,7 @@
-const { query } = require('./queryHandler');
-// const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
+const { query } = require('./queryHandler');
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const {
     QUERY_ERROR,
 } = require('../common/personalUtil');
@@ -42,8 +43,8 @@ const getTimestamps = async (targetTimestamp, table, filter) => {
             query(`select_all_${table}.sql`, [delta.MAX_1w, delta.MIN_1w, ...filter]),
         ]);
 
-        if (current === QUERY_ERROR || diff_5m === QUERY_ERROR || diff_1h === QUERY_ERROR
-            || diff_1d === QUERY_ERROR || diff_1w === QUERY_ERROR)
+        if (current.status === QUERY_ERROR || diff_5m.status === QUERY_ERROR || diff_1h.status === QUERY_ERROR
+            || diff_1d.status === QUERY_ERROR || diff_1w.status === QUERY_ERROR)
             throw `Query error in getTimestamps [targetTimestamp: ${targetTimestamp}]`;
 
         return {
@@ -54,18 +55,18 @@ const getTimestamps = async (targetTimestamp, table, filter) => {
             "diff_1w": diff_1w.rows[0],
         }
     } catch (err) {
-        console.log(err);
+        logger.error(`**DB: Error in groStatsHandler.js->getTimestamps(): ${err}`);
     }
 }
 
 const getDistincts = async (targetTimestamp, table) => {
     try {
         const res = await query(`select_distinct_${table}.sql`, [targetTimestamp, targetTimestamp]);
-        if (res === QUERY_ERROR)
+        if (res.status === QUERY_ERROR)
             throw `Query error in getTimestamps [targetTimestamp: ${targetTimestamp}]`;
         return res.rows;
     } catch (err) {
-        console.log(err);
+        logger.error(`**DB: Error in groStatsHandler.js->getDistincts(): ${err}`);
     }
 }
 

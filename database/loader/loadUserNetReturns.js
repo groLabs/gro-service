@@ -28,7 +28,7 @@ const loadUserNetReturns = async (
             /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
             const day = moment(date).format('MM/DD/YYYY');
             const result = await query('insert_user_net_returns.sql', [day]);
-            if (result === QUERY_ERROR) return false;
+            if (result.status === QUERY_ERROR) return false;
             const numResults = result.rowCount;
             let msg = `**DB: ${numResults} record${isPlural(numResults)} added into `;
             msg += `USER_NET_RETURNS for date ${moment(date).format('DD/MM/YYYY')}`;

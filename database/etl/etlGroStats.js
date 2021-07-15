@@ -10,20 +10,25 @@ const {
 
 /* TEST VALUES */
 // const { stats_new } = require('./sample_new');
-// const stats2 = stats_new.gro_stats;
+// const stats = stats_new;
 
-// checks last timestamp stored in DB and compares to current statsBot timestamp
+
 const etlGroStats = async () => {
     try {
-        const lastTimestamp = await checkLastTimestamp();
-        if (lastTimestamp) {
+        let lastTimestamp;
+        const res = await checkLastTimestamp();
+        if (res.status === 204) {
+            logger.error('**DB: No timestamp found in table SYS_PROTOCOL_LOAD');
+        } else if (res.status === 200) {
+            lastTimestamp = res.rows[0].last_timestamp;
             const stats = JSON.parse(await groStatsCall());
-            // TODO: pre-check grostats format is OK
-            const currentTimestamp = parseInt(stats.gro_stats.current_timestamp);
-            if (currentTimestamp > lastTimestamp)
-                await loadAllTables(stats.gro_stats);
-        } else {
-            logger.warn('**DB: No timestamp found in DB!');
+            if (stats.gro_stats && 'current_timestamp' in stats.gro_stats) {
+                const currentTimestamp = parseInt(stats.gro_stats.current_timestamp);
+                if (currentTimestamp > lastTimestamp)
+                    await loadAllTables(stats.gro_stats);
+            } else {
+                logger.error('**DB: No timestamp found in JSON API call');
+            }
         }
     } catch (err) {
         logger.error(`**DB: Error in etlGroStats.js->etlGroStats(): ${err}`);

@@ -41,7 +41,7 @@ const loadTableUpdates = async (tableName, _fromDate, _toDate) => {
                 return false;
         }
         const result = await query(q, params);
-        return (result !== QUERY_ERROR) ? true : false;
+        return (result.status !== QUERY_ERROR) ? true : false;
     } catch (err) {
         const params = `table: ${tableName}, fromDate: ${_fromDate}, toDate: ${_toDate}`;
         handleErr(`personalHandler->updateLastTableLoad() ${params}`, err);

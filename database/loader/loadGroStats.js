@@ -23,16 +23,11 @@ const QUERY_ERROR = 400;
 
 
 const checkLastTimestamp = async () => {
-    const lastTimestamp = await query('select_last_protocol_load.sql', []);
-    if (lastTimestamp === QUERY_ERROR) {
-        throw `Query error in checkLastTimestamp()`; //TODO
-    } else {
-        return lastTimestamp.rows[0].last_timestamp;
-    }
+    return await query('select_last_protocol_load.sql', []);
 }
 
 const checkQueryResult = (result, table) => {
-    if (result === QUERY_ERROR) {
+    if (result.status === QUERY_ERROR) {
         throw `Query error with table ${table}`;
     } else if (table !== 'PROTOCOL_VAULTS'
         && table !== 'PROTOCOL_RESERVES'

@@ -38,7 +38,7 @@ const loadTmpUserApprovals = async (
             for (const item of approvals) {
                 const params = (Object.values(item));
                 const res = await query('insert_tmp_user_approvals.sql', params);
-                if (res === QUERY_ERROR) return false;
+                if (res.status === QUERY_ERROR) return false;
             }
         // TODO: missing N records added into table X
         return true;
@@ -54,7 +54,7 @@ const loadUserApprovals = async (fromDate, toDate) => {
         if (await loadEthBlocks('loadUserApprovals')) {
             // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
             const res = await query('insert_user_approvals.sql', []);
-            if (res === QUERY_ERROR) return false;
+            if (res.status === QUERY_ERROR) return false;
             const numTransfers = res.rowCount;
             logger.info(`**DB: ${numTransfers} record${isPlural(numTransfers)} added into USER_APPROVALS`);
         } else {

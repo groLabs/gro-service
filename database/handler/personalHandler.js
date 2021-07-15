@@ -29,13 +29,13 @@ const getTransfers = async (account) => {
             query(qApprovals, [account]),
         ]);
 
-        if (deposits !== QUERY_ERROR
-            && withdrawals !== QUERY_ERROR
-            && ext_gvt_deposit !== QUERY_ERROR
-            && ext_pwrd_deposit !== QUERY_ERROR
-            && ext_gvt_withdrawal !== QUERY_ERROR
-            && ext_pwrd_withdrawal !== QUERY_ERROR
-            && approvals !== QUERY_ERROR) {
+        if (deposits.status !== QUERY_ERROR
+            && withdrawals.status !== QUERY_ERROR
+            && ext_gvt_deposit.status !== QUERY_ERROR
+            && ext_pwrd_deposit.status !== QUERY_ERROR
+            && ext_gvt_withdrawal.status !== QUERY_ERROR
+            && ext_pwrd_withdrawal.status !== QUERY_ERROR
+            && approvals.status !== QUERY_ERROR) {
             return {
                 "deposits": deposits.rows,
                 "withdrawals": withdrawals.rows,
@@ -55,7 +55,7 @@ const getNetAmounts = async (account) => {
     try {
         const qNetAmounts = 'select_fe_user_net_amounts.sql';
         const result = await query(qNetAmounts, [account]);
-        if (result !== QUERY_ERROR) {
+        if (result.status !== QUERY_ERROR) {
             const res = result.rows[0];
             return {
                 "amount_added": {
@@ -86,7 +86,7 @@ const getNetBalances = async (account) => {
     try {
         const qBalance = 'select_fe_user_net_balances.sql';
         const result = await query(qBalance, [account]);
-        if (result !== QUERY_ERROR) {
+        if (result.status !== QUERY_ERROR) {
             const res = result.rows[0];
             console.log('res:', res)
             return {
@@ -108,7 +108,7 @@ const getNetReturns = async (account) => {
     try {
         const qBalance = 'select_fe_user_net_returns.sql';
         const result = await query(qBalance, [account]);
-        if (result !== QUERY_ERROR) {
+        if (result.status !== QUERY_ERROR) {
             const res = result.rows[0];
             console.log('res:', res)
             return {
