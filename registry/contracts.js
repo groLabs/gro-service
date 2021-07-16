@@ -1,5 +1,6 @@
 /* eslint-disable import/no-dynamic-require */
 const { ethers } = require('ethers');
+const { getConfig } = require('../common/configUtil');
 const {
     getWalletNonceManager,
     getAlchemyRpcProvider,
@@ -9,6 +10,8 @@ const {
     getLatestContractsAddressByAddress,
 } = require('./registryLoader');
 const { ContractNames, ContractABIMapping } = require('./registry');
+
+const strategyDisplayName = getConfig('strategy_display_name');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -116,7 +119,7 @@ async function newSystemLatestVaultStrategyContracts(signerInfo) {
             signerInfo
         );
         vault.contract = vaultInstance;
-        vault.strategies = {};
+        vault.strategies = [];
     }
 
     // init strategy for every vault
@@ -127,14 +130,17 @@ async function newSystemLatestVaultStrategyContracts(signerInfo) {
         // eslint-disable-next-line no-await-in-loop
         const strategyLength = await vaultAdapter.getStrategiesLength();
         result[vaultAdapterAddresses[i]].strategyLength = strategyLength;
-        for (let i = 0; i < strategyLength; i += 1) {
+        for (let j = 0; j < strategyLength; j += 1) {
             // eslint-disable-next-line no-await-in-loop
-            const strategyAddress = await vaultInstance.withdrawalQueue(i);
+            const strategyAddress = await vaultInstance.withdrawalQueue(j);
             const strategy = newLatestContractByAddress(
                 strategyAddress,
                 signerInfo
             );
-            strategies[strategyAddress] = { contract: strategy };
+            strategies.push({
+                contract: strategy,
+                displayName: strategyDisplayName[i * 2 + j],
+            });
         }
     }
     return result;
