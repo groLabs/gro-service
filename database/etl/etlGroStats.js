@@ -17,17 +17,19 @@ const etlGroStats = async () => {
     try {
         let lastTimestamp;
         const res = await checkLastTimestamp();
-        if (res.status === 204) {
-            logger.error('**DB: No timestamp found in table SYS_PROTOCOL_LOAD');
-        } else if (res.status === 200) {
+        if (res.status === 200) {
             lastTimestamp = res.rows[0].last_timestamp;
-            const stats = JSON.parse(await groStatsCall());
-            if (stats.gro_stats && 'current_timestamp' in stats.gro_stats) {
-                const currentTimestamp = parseInt(stats.gro_stats.current_timestamp);
-                if (currentTimestamp > lastTimestamp)
-                    await loadAllTables(stats.gro_stats);
+            if (lastTimestamp) {
+                const stats = JSON.parse(await groStatsCall());
+                if (stats.gro_stats && 'current_timestamp' in stats.gro_stats) {
+                    const currentTimestamp = parseInt(stats.gro_stats.current_timestamp);
+                    if (currentTimestamp > lastTimestamp)
+                        await loadAllTables(stats.gro_stats);
+                } else {
+                    logger.error('**DB: No timestamp found in JSON API call');
+                }
             } else {
-                logger.error('**DB: No timestamp found in JSON API call');
+                logger.error('**DB: No timestamp found in table SYS_PROTOCOL_LOAD');
             }
         }
     } catch (err) {

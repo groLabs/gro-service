@@ -35,20 +35,20 @@ const NO_DATA = {
 const query = async (file, params) => {
     try {
         let option;
-        switch (file.slice(0, 1)) {
-            case 'i':
+        switch (file.slice(0, 4)) {
+            case 'inse':
                 option = 'insert';
                 break;
-            case 's':
+            case 'sele':
                 option = 'select';
                 break;
-            case 't':
+            case 'trun':
                 option = 'truncate';
                 break;
-            case 'd':
+            case 'dele':
                 option = 'delete';
                 break;
-            case 'u':
+            case 'upda':
                 option = 'update';
                 break;
             // default: return QUERY_ERROR;

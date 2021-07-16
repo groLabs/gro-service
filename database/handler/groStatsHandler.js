@@ -308,7 +308,7 @@ const groStatsHandler = async (targetTimestamp, productId) => {
     // const res = await getStrategies(1624827717);
     // const res = await getExposureStables(1624827717);
     // const res = await getExposureProtocols(1624827717);
-    const res = await getReserves(1624827717);
+    const res = await getReserves(1626366983);
     console.log(res);
     process.exit();
 }
