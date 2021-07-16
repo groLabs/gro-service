@@ -1,5 +1,5 @@
 module.exports = {
-    registry_address: '0x65347b86e427458acEAf93db4dDa294a9ea1AaB7',
+    registry_address: '0x49a380067ac8d31713b4be6ee5123c5b3712fe5c',
     deposit_handler_history: {
         '0x4246529D7168FE98F0530d99d93d346092bf50F1': {},
         '0xB2a9B574cD0ABD2E24E7F2B412B21d49B87a3CD1': {},
@@ -62,7 +62,7 @@ module.exports = {
         harvest: '15 20 * * * *',
         pnl: '30 30 * * * *',
         rebalance: '45 40 * * * *',
-        generate_stats: '*/10 * * * *',
+        generate_stats: '*/5 * * * *',
         remove_stats_file: '00 00 * * * *',
         bot_curve_check: '00 */5 * * * *',
         deposit_withdraw_event: '30 */5 * * * *',

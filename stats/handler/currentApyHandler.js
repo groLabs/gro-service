@@ -59,11 +59,10 @@ async function getStrategies() {
     const vaultstrategies = [];
     for (let i = 0; i < adapterAddresses.length; i += 1) {
         const { strategies } = vaultAdaptersInfo[adapterAddresses[i]].vault;
-        const strategyAddresses = Object.keys(strategies);
         const everyAdapterStrategies = [];
-        for (let j = 0; j < strategyAddresses.length; j += 1) {
+        for (let j = 0; j < strategies.length; j += 1) {
             everyAdapterStrategies.push({
-                strategy: strategies[strategyAddresses[j]].contract,
+                strategy: strategies[j].contract,
             });
         }
         vaultstrategies.push({ strategies: everyAdapterStrategies });
