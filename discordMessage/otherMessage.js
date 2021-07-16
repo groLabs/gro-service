@@ -54,7 +54,17 @@ function updatePriceTransactionMessage(content) {
     sendMessageToChannel(DISCORD_CHANNELS.critActionEvents, discordMessage);
 }
 
+function safetyCheckMessage() {
+    const discordMessage = {
+        message: 'Price safety check is false, please check it.',
+        type: MESSAGE_TYPES.other,
+        description: `${MESSAGE_EMOJI.company} Price safety check is false, please check it.`,
+    };
+    sendMessageToChannel(DISCORD_CHANNELS.botAlerts, discordMessage);
+}
+
 module.exports = {
     updateChainlinkPriceMessage,
     updatePriceTransactionMessage,
+    safetyCheckMessage,
 };

@@ -4,13 +4,15 @@ const {
     getVaults,
     getVaultAndStrategyLabels,
     getCurveVault,
+    getBuoy,
 } = require('../../contract/allContracts');
 const { addPendingTransaction } = require('../../common/storage');
-const { ContractSendError } = require('../../common/error');
+const { ContractSendError, ContractCallError } = require('../../common/error');
 const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { investMessage } = require('../../discordMessage/investMessage');
 const { rebalanceMessage } = require('../../discordMessage/rebalanceMessage');
 const { harvestMessage } = require('../../discordMessage/harvestMessage');
+const { safetyCheckMessage } = require('../../discordMessage/otherMessage');
 const { wrapSendTransaction } = require('../../gasPrice/transaction');
 const logger = require('../regularLogger');
 
@@ -205,10 +207,27 @@ async function execActions(blockNumber, triggerResult) {
     }
 }
 
+async function priceSafetyCheck(providerKey) {
+    const isSafety = await getBuoy(providerKey)
+        .safetyCheck()
+        .catch((error) => {
+            logger.error(error);
+            throw new ContractCallError(
+                'safetyCheck call failed',
+                MESSAGE_TYPES.other
+            );
+        });
+    logger.info(`Price safe check : ${isSafety}`);
+    if (!isSafety) {
+        safetyCheckMessage();
+    }
+}
+
 module.exports = {
     invest,
     curveInvest,
     harvest,
     rebalance,
     execActions,
+    priceSafetyCheck,
 };
