@@ -135,8 +135,10 @@ async function getStrategiesStatsOld(
 }
 
 async function getVaultStatsOld(blockTag) {
-    const vaults = getVaults(providerKey);
-    const strategyLength = getStrategyLength();
+    const vaults = await getLatestVaultAdapters();
+    const vaultStrategyContracts = await getLatestVaultsAndStrategies(
+        providerKey
+    );
     const vaultAssets = [];
     //
     for (let vaultIndex = 0; vaultIndex < vaults.length - 1; vaultIndex += 1) {
@@ -147,10 +149,11 @@ async function getVaultStatsOld(blockTag) {
             vaultTotalAsset,
             blockTag
         );
+        const { strategyLength } = vaultStrategyContracts[vault.address];
         const strategyStats = await getStrategiesStatsOld(
             vault,
             vaultIndex,
-            strategyLength[vaultIndex],
+            strategyLength,
             vaultTotalAsset,
             blockTag
         );
@@ -333,6 +336,7 @@ async function getTvlStats(blockTag) {
 
 async function getSystemStats(totalAssetsUsd, blockTag) {
     logger.info('SystemStats');
+    const vaultAdaptersInfo = await getLatestVaultsAndStrategies(providerKey);
     const vaults = await getLatestVaultAdapters();
     const lifeGuardStats = await getLifeguardStats(blockTag);
     lifeGuardStats.share = calculateSharePercent(
@@ -347,17 +351,21 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
     const vaultAssets = await getVaultStats(blockTag);
     const currentApy = await getCurrentApy();
     const vaultStats = vaultAssets.map((vaultAsset, vaultIndex) => {
-        logger.info(`vaule address: ${vaults[vaultIndex].address}`);
+        const vaultAddress = vaults[vaultIndex].address;
+        logger.info(`vault address: ${vaultAddress}`);
+        const strategyInfos = vaultAdaptersInfo[vaultAddress].vault.strategies;
         const vaultStrategyApy = currentApy[vaultIndex];
-        logger.info(`vaultStrategyApy: ${vaultStrategyApy}`);
         let vaultApy = BigNumber.from(0);
         let vaultPercent = BigNumber.from(0);
         const strategies = vaultAsset.strategies.map(
             (strategy, strategyIndex) => {
+                const strategyInfo = strategyInfos[strategyIndex];
                 const strat = vaultStrategyApy.strategies[strategyIndex];
                 let stratApy = BigNumber.from(0);
                 if (strat !== undefined) {
-                    logger.info(`strat apy ${strat.address} ${strat.apy}`);
+                    logger.info(
+                        `strat apy ${strategyInfo.contract.address} ${strat.apy}`
+                    );
                     stratApy = strat.apy;
                 }
                 const strategyPercent = calculateSharePercent(
@@ -369,12 +377,11 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
                 );
                 vaultApy = vaultApy.add(stratApy.mul(strategyPercent));
                 vaultPercent = vaultPercent.add(strategyPercent);
-                const strategyInfo = vaultLabel.strategies[strategyIndex];
                 return {
                     name: strategy.name,
                     display_name: strategyInfo ? strategyInfo.displayName : '',
                     address: strategyInfo
-                        ? strategyInfo.strategy.address
+                        ? strategyInfo.contract.address
                         : undefined,
                     amount: strategy.amount,
                     last3d_apy: stratApy,
@@ -407,15 +414,23 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
     });
     const vaultAssetsOld = await getVaultStatsOld(blockTag);
     const oldVaultStats = vaultAssetsOld.map((vaultAsset, vaultIndex) => {
-        const vaultStrategyApy = currentApy[vaults[vaultIndex].address];
+        const vaultStrategyApy = currentApy[vaultIndex];
         let vaultApy = BigNumber.from(0);
         let vaultPercent = BigNumber.from(0);
+        const vaultAddress = vaults[vaultIndex].address;
+        logger.info(`vaule address: ${vaultAddress}`);
         const strategies = vaultAsset.strategies.map(
             (strategy, strategyIndex) => {
+                const strategyInfo =
+                    vaultAdaptersInfo[vaultAddress].vault.strategies[
+                        strategyIndex
+                    ];
                 const strat = vaultStrategyApy.strategies[strategyIndex];
                 let stratApy = BigNumber.from(0);
                 if (strat !== undefined) {
-                    logger.info(`strat apy ${strat.address} ${strat.apy}`);
+                    logger.info(
+                        `strat apy ${strategyInfo.contract.address} ${strat.apy}`
+                    );
                     stratApy = strat.apy;
                 }
                 const strategyPercent = calculateSharePercent(
