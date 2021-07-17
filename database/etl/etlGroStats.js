@@ -12,7 +12,7 @@ const {
 // const { stats_new } = require('./sample_new');
 // const stats = stats_new;
 
-
+//TODO: replace '200' by SUCCESS in global var
 const etlGroStats = async () => {
     try {
         let lastTimestamp;
@@ -20,13 +20,18 @@ const etlGroStats = async () => {
         if (res.status === 200) {
             lastTimestamp = res.rows[0].last_timestamp;
             if (lastTimestamp) {
-                const stats = JSON.parse(await groStatsCall());
-                if (stats.gro_stats && 'current_timestamp' in stats.gro_stats) {
-                    const currentTimestamp = parseInt(stats.gro_stats.current_timestamp);
-                    if (currentTimestamp > lastTimestamp)
-                        await loadAllTables(stats.gro_stats);
+                const call = await groStatsCall();
+                if (call.status === 200) {
+                    const stats = JSON.parse(call.data);
+                    if (stats.gro_stats && 'current_timestamp' in stats.gro_stats) {
+                        const currentTimestamp = parseInt(stats.gro_stats.current_timestamp);
+                        if (currentTimestamp > lastTimestamp)
+                            await loadAllTables(stats.gro_stats);
+                    } else {
+                        logger.error('**DB: No timestamp found in JSON API call');
+                    }
                 } else {
-                    logger.error('**DB: No timestamp found in JSON API call');
+                    logger.error(`**DB: Error with API call: \n Error code ${call.status} \n Error description: ${call.data}`);
                 }
             } else {
                 logger.error('**DB: No timestamp found in table SYS_PROTOCOL_LOAD');

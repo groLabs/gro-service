@@ -195,14 +195,14 @@ module.exports = {
     },
     route: {
         gro_stats: {
-            hostname: 'ajj49or3nh.execute-api.eu-west-2.amazonaws.com',
+            hostname: process.env.BOT_DEV_HOST,
             path: '/stats/gro_stats?network=ropsten',
-            port: 443,
+            port: process.env.BOT_DEV_PORT,
         },
         personal_stats: {
-            hostname: 'ajj49or3nh.execute-api.eu-west-2.amazonaws.com',
+            hostname: process.env.BOT_DEV_HOST,
             path: '/stats/gro_personal_position?network=ropsten&address=',
-            port: 443,
+            port: process.env.BOT_DEV_PORT,
         },
     },
 };
