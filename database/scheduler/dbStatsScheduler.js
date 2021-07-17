@@ -2,7 +2,7 @@ const schedule = require('node-schedule');
 const { getConfig } = require('../../common/configUtil');
 const { etlGroStats } = require('../etl/etlGroStats');
 const groStatsJobSetting =
-    // getConfig('trigger_scheduler.db_gro_stats', false) || '*/10 * * * * *';  // 5 seconds
+    // getConfig('trigger_scheduler.db_gro_stats', false) || '*/10 * * * * *';  // 10 seconds
     getConfig('trigger_scheduler.db_gro_stats', false) || '*/3 * * * *'; // 3 min
 const personalStatsJobSetting =
     getConfig('trigger_scheduler.db_personal_stats', false) || '0 3 * * *'; //TODO: TBC every day at 3:00 AM
