@@ -7,6 +7,7 @@ module.exports = {
             ],
         },
         '0x9da6ad743F4F2A247A56350703A4B501c7f2C224': {},
+        '0xB7207Ea9446DcA1dEC1c1FC93c6Fcdf8B4a44F40': {},
     },
     withdraw_handler_history: {
         '0xd89512Bdf570476310DE854Ef69D715E0e85B09F': {
@@ -16,8 +17,12 @@ module.exports = {
             ],
         },
         '0x59B6b763509198d07cF8F13a2dc6F2df98CB0a1d': {},
+        '0x641bEFA4dB601578A64F0Fc1f4E89E9869268Fe7': {},
     },
-    old_pnl: ['0x4C4A81298CC85c5BBF8092bd241fCc5dD6Ec3f74'],
+    old_pnl: [
+        '0x4C4A81298CC85c5BBF8092bd241fCc5dD6Ec3f74',
+        '0xc94dDeACff69bd206CEDdFe2b601a277225D23D6',
+    ],
     blockchain: {
         network: 'mainnet',
         start_block: 12522788,
@@ -105,6 +110,13 @@ module.exports = {
         rebalance: ':scales:',
         curveCheck: ':loudspeaker:',
     },
+    transaction_long_pending: {
+        invest: 120000,
+        investToCurveVault: 120000,
+        strategyHarvest: 120000,
+        execPnL: 60000,
+        rebalance: 60000,
+    },
     keep_stats_file_number: 250,
     stats_folder: '../stats',
     log_folder: '../logs',
@@ -174,7 +186,7 @@ module.exports = {
     fail_percentage_total: 1000,
     fail_percentage_pre_price: 500,
     contracts: {
-        controller: '0x514c3230F0b1C93e29Ea59fe8da3cEf0d4f1e0b7',
+        controller: '0xCC5c60A319D33810b9EaB9764717EeF84deFB8F4',
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
