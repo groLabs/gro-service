@@ -67,6 +67,7 @@ module.exports = {
         deposit_withdraw_event: '30 */5 * * * *',
         event_summary: '00 * * * *',
         bot_chainlink_check: '00 00 * * * *',
+        safety_check: '*/2 * * * *',
     },
     emoji: {
         company: '<:GRO:834796096685211689>',

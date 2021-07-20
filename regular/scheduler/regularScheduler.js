@@ -20,6 +20,7 @@ const {
     rebalance,
     harvest,
     curveInvest,
+    priceSafetyCheck,
 } = require('../handler/actionHandler');
 
 const { getVaults, getStrategyLength } = require('../../contract/allContracts');
@@ -50,6 +51,8 @@ const harvestTriggerSchedulerSetting =
     getConfig('trigger_scheduler.harvest', false) || '15 * * * *';
 const rebalanceTriggerSchedulerSetting =
     getConfig('trigger_scheduler.rebalance', false) || '45 * * * *';
+const safetyCheckSetting =
+    getConfig('trigger_scheduler.safety_check', false) || '*/5 * * * *';
 const longPendingTransactionSetting = getConfig('transaction_long_pending');
 
 const botBalanceWarnVault =
@@ -60,6 +63,18 @@ function checkBotAccountBalance() {
         logger.info(`checkBotAccountBalance running at ${Date.now()}`);
         try {
             await checkAccountsBalance(botBalanceWarnVault);
+        } catch (error) {
+            sendMessageToAlertChannel(error);
+        }
+    });
+}
+
+function safetyCheckScheduler() {
+    const providerKey = 'default';
+    schedule.scheduleJob(safetyCheckSetting, async () => {
+        logger.info(`priceSafetyCheck running at ${Date.now()}`);
+        try {
+            await priceSafetyCheck(providerKey);
         } catch (error) {
             sendMessageToAlertChannel(error);
         }
@@ -258,6 +273,7 @@ function startRegularJobs() {
     investTriggerScheduler();
     harvestTriggerScheduler();
     rebalanceTriggerScheduler();
+    safetyCheckScheduler();
     longPendingTransactionsScheduler();
 }
 

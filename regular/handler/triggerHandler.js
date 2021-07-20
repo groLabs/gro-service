@@ -25,6 +25,7 @@ const {
 const logger = require('../regularLogger');
 
 const NONEED_TRIGGER = { needCall: false };
+const GAS_PRICE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(9));
 
 async function isEmergencyState(messageType, providerKey, walletKey) {
     const controller = getController(providerKey, walletKey);
@@ -78,6 +79,8 @@ async function sortStrategyByLastHarvested(vaults) {
 
     const vaultsStrategyLength = getStrategyLength();
     const strategiesStatus = [];
+    const gasPrice = await vaults[0].signer.getGasPrice();
+    logger.info(`gasPrice ${gasPrice}`);
     for (let i = 0; i < vaults.length; i += 1) {
         const adapterAddress = vaults[i].address;
         const vaultName = getVaultAndStrategyLabels()[adapterAddress].name;
@@ -91,8 +94,8 @@ async function sortStrategyByLastHarvested(vaults) {
         for (let j = 0; j < strategyLength; j += 1) {
             // Get harvest callCost
             const callCostKey = `harvest_callcost.vault_${i}.strategy_${j}`;
-            let callCost = getConfig(callCostKey, false) || 0;
-            callCost = BigNumber.from(callCost);
+            const baseCallCost = BigNumber.from(getConfig(callCostKey, false));
+            const callCost = baseCallCost.mul(gasPrice).div(GAS_PRICE_DECIMAL);
             logger.info(`callCost ${j} ${callCost}`);
 
             // eslint-disable-next-line no-await-in-loop
@@ -232,6 +235,8 @@ async function harvestOneTrigger(providerKey, walletKey) {
 
     const vaults = getVaults(providerKey, walletKey);
     const strategies = await sortStrategyByLastHarvested(vaults);
+    const gasPrice = await vaults[0].signer.getGasPrice();
+    logger.info(`gasPrice ${gasPrice}`);
     for (let i = 0; i < strategies.length; i += 1) {
         const { vaultIndex, strategyIndex, trigger } = strategies[i];
         logger.info(
@@ -240,8 +245,9 @@ async function harvestOneTrigger(providerKey, walletKey) {
         if (trigger) {
             // Get harvest callCost
             const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${strategyIndex}`;
-            let callCost = getConfig(callCostKey, false);
-            callCost = BigNumber.from(callCost);
+            const baseCallCost = BigNumber.from(getConfig(callCostKey, false));
+            const callCost = baseCallCost.mul(gasPrice).div(GAS_PRICE_DECIMAL);
+            logger.info(`callCost ${callCost}`);
             return {
                 needCall: true,
                 params: {

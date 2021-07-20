@@ -352,7 +352,6 @@ async function generateReport(account) {
     const launchTime = await getTimestampByBlockNumber(fromBlock, provider);
 
     const result = {
-        transactions,
         transaction,
         current_timestamp: latestBlock.timestamp.toString(),
         launch_timestamp: launchTime,
