@@ -6,10 +6,10 @@ const {
 } = require('../common/discord/discordService');
 
 function curvePriceMessage(content) {
-    const { needStop, abnormalIndex } = content;
-    let msg = `Curve price check is ${needStop}, no need stop`;
+    const { needStop, abnormalIndex, rootCause } = content;
+    let msg = `Price abnormal check is ${needStop} `;
     if (needStop) {
-        msg = `Curve price check is ${needStop}, abnormalIndex ${abnormalIndex} set system to **Stop** status`;
+        msg = `Price abnormal check is ${needStop}, root cause is ${rootCause}, abnormalIndex ${abnormalIndex} need to decide whether set system to **Emergency** status`;
     }
     const discordMessage = {
         message: msg,
