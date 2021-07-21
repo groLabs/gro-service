@@ -1,10 +1,6 @@
 const { BigNumber } = require('ethers');
 const { ethers } = require('ethers');
-const {
-    getBuoy,
-    getChainPrice,
-    getController,
-} = require('../../contract/allContracts');
+const { getBuoy, getController } = require('../../contract/allContracts');
 
 const { ContractCallError } = require('../../common/error');
 
@@ -29,6 +25,8 @@ const creamStrategies = getConfig('cream_strategy_dependency');
 const curvePoolStrategy = getConfig('curve_strategy_dependency');
 const ratioUpperBond = BigNumber.from(getConfig('ratioUpperBond'));
 const ratioLowerBond = BigNumber.from(getConfig('ratioLowerBond'));
+const curveRatioLowerBond = BigNumber.from(getConfig('curveRatioLowerBond'));
+const PERCENT_DECIAML = BigNumber.from(10).pow(BigNumber.from(4));
 
 const logger = require('../criticalLogger');
 
@@ -78,52 +76,19 @@ async function getStabeCoins(providerKey, walletKey) {
     return stabeCoins;
 }
 
-async function checkPriceUpdateInChainPrice(
-    stabeCoins,
-    providerKey,
-    walletKey
-) {
-    // Smart contracts change that removed ChainPrice contract need reconsider this logic
-    // TODO
-    // const chainPriceInstance = getChainPrice(providerKey, walletKey);
-    // for (let i = 0; i < stabeCoins.length; i += 1) {
-    //     // eslint-disable-next-line no-await-in-loop
-    //     const checkResult = await chainPriceInstance
-    //         .priceUpdateCheck(stabeCoins[i])
-    //         .catch((error) => {
-    //             handleError(error, {
-    //                 curveCheck: {
-    //                     message: 'Call priceUpdateCheck failed',
-    //                 },
-    //             });
-    //         });
-    //     logger.info(`stabeCoins ${i}, ${checkResult}`);
-    //     if (checkResult) {
-    //         // eslint-disable-next-line no-await-in-loop
-    //         await chainPriceInstance
-    //             .updateTokenRatios(stabeCoins[i])
-    //             .catch((error) => {
-    //                 handleError(error, {
-    //                     curveCheck: {
-    //                         message: 'Call updateTokenRatios failed',
-    //                     },
-    //                 });
-    //             });
-    //     }
-    // }
-}
-
-function outOfRange(value, decimal) {
-    const upperBond = decimal.mul(ratioUpperBond).div(BigNumber.from(10000));
-    const lowerBond = decimal.mul(ratioLowerBond).div(BigNumber.from(10000));
-    logger.info(`uppder ${upperBond} lower ${lowerBond}`);
-    return value.lt(lowerBond) || value.gt(upperBond);
+function outOfRange(value) {
+    // const upperBond = decimal.mul(ratioUpperBond).div(BigNumber.from(10000));
+    // const lowerBond = decimal.mul(ratioLowerBond).div(BigNumber.from(10000));
+    logger.info(
+        `value ${value} uppder ${ratioUpperBond} lower ${ratioLowerBond}`
+    );
+    return value.lt(ratioLowerBond) || value.gt(ratioUpperBond);
 }
 
 function findBrokenToken(price01, price02, price12) {
-    if (outOfRange(price01[0], price01[1])) {
+    if (outOfRange(price01)) {
         // one of 0,1 has issue
-        if (outOfRange(price02[0], price02[1])) {
+        if (outOfRange(price02)) {
             // one of 0,2 has issue
             return 0;
         }
@@ -131,44 +96,141 @@ function findBrokenToken(price01, price02, price12) {
         return 1;
     }
 
-    if (outOfRange(price02[0], price02[1])) {
+    if (outOfRange(price02)) {
         // 0,1 are close and 0,2 has issue => 2 has issue
         return 2;
     }
 
-    if (outOfRange(price12[0], price12[1])) {
+    if (outOfRange(price12)) {
         // 0,1 are close and 1,2 has issue => 2 has issue
         return 2;
     }
-    return 4;
+    return 3;
 }
 
 async function curvePriceCheck(providerKey, walletKey) {
-    const stabeCoins = await getStabeCoins(providerKey, walletKey);
-    await checkPriceUpdateInChainPrice(stabeCoins, providerKey, walletKey);
     const buoyInstance = getBuoy(providerKey, walletKey);
-    const price01 = await buoyInstance.getRatio(0, 1);
-    const price02 = await buoyInstance.getRatio(0, 2);
-    const price12 = await buoyInstance.getRatio(1, 2);
+    const price0 = await buoyInstance.getPriceFeed(0);
+    const price1 = await buoyInstance.getPriceFeed(1);
+    const price2 = await buoyInstance.getPriceFeed(2);
+    logger.info(`pricefeed ${price0} ${price1} ${price2}`);
+
+    const price01 = price0.mul(PERCENT_DECIAML).div(price1);
+    const price02 = price0.mul(PERCENT_DECIAML).div(price2);
+    const price12 = price1.mul(PERCENT_DECIAML).div(price2);
     logger.info(`price01 ${price01}`);
     logger.info(`price02 ${price02}`);
     logger.info(`price12 ${price12}`);
     const coinIndex = findBrokenToken(price01, price02, price12);
     logger.info(`coinIndex ${coinIndex}`);
+    let curvePrice = true;
     if (coinIndex < 3) {
-        await getController(providerKey, walletKey)
-            .emergency(coinIndex)
-            .catch((error) => {
-                handleError(error, {
-                    curveCheck: {
-                        message: 'Call stop function to stop system failed',
-                    },
-                });
-            });
+        logger.info(`set emergency status - coinIndex : ${coinIndex}`);
+        // await getController(providerKey, walletKey)
+        //     .emergency(coinIndex)
+        //     .catch((error) => {
+        //         handleError(error, {
+        //             curveCheck: {
+        //                 message: 'Call stop function to stop system failed',
+        //             },
+        //         });
+        //     });
+        curvePrice = false;
     }
-    curvePriceMessage({ needStop: coinIndex < 4, abnormalIndex: coinIndex });
-    const safetyCheck = true;
-    return safetyCheck;
+    curvePriceMessage({
+        needStop: coinIndex < 3,
+        abnormalIndex: coinIndex,
+        rootCause: 'Chainlink price out of range',
+    });
+    return curvePrice;
+}
+
+async function buoyHealthCheck(
+    providerKey,
+    walletKey,
+    currentBlockNumber,
+    previousHealth
+) {
+    try {
+        // const stabeCoins = await getStabeCoins(providerKey, walletKey);
+        const buoyInstance = getBuoy(providerKey, walletKey);
+        logger.info(`buoyInstance ${buoyInstance.address}`);
+        // any stable coin less than 10% in curve will return false;
+        const checkResult = await buoyInstance.healthCheck(
+            curveRatioLowerBond,
+            {
+                blockTag: currentBlockNumber,
+            }
+        );
+        const healthCheck = checkResult[0];
+        const coinIndex = checkResult[1];
+        const previousHealthCheck = previousHealth ? previousHealth[0] : true;
+        const previousCoinIndex = previousHealth ? previousHealth[1] : 3;
+        logger.info(
+            `curveRatioLowerBond ${curveRatioLowerBond} healthCheck ${currentBlockNumber} ${healthCheck} ${coinIndex}`
+        );
+
+        if (!previousHealthCheck) {
+            if (!healthCheck) {
+                logger.info(
+                    `buoy health check failed again, handle emergency: previousCoinIndex ${previousCoinIndex} coinindex ${coinIndex}`
+                );
+                if (previousCoinIndex.eq(coinIndex) && coinIndex < 3) {
+                    logger.info(
+                        `set emergency status - coinIndex : ${coinIndex}`
+                    );
+                    // await getController(providerKey, walletKey)
+                    //     .emergency(coinIndex)
+                    //     .catch((error) => {
+                    //         handleError(error, {
+                    //             curveCheck: {
+                    //                 message: 'Call stop function to stop system failed',
+                    //             },
+                    //         });
+                    //     });
+                }
+            }
+            curvePriceMessage({
+                needStop: coinIndex < 3,
+                abnormalIndex: coinIndex,
+                rootCause: 'Curve pool out of balance',
+            });
+        }
+        return checkResult;
+    } catch (e) {
+        logger.error(e);
+    }
+    return [false, undefined];
+}
+
+async function buoyHealthCheckAcrossBlocks(providerKey, walletKey) {
+    const currentBlockNumber = await getCurrentBlockNumber(providerKey).catch(
+        (error) => {
+            handleError(error, {
+                strategyCheck: {
+                    message: 'Get current block number failed',
+                },
+            });
+        }
+    );
+    const health = await buoyHealthCheck(
+        providerKey,
+        walletKey,
+        currentBlockNumber,
+        undefined
+    );
+    if (!health[0]) {
+        logger.info(`health check: ${health[0]}, check next block after 30s`);
+        setTimeout(
+            buoyHealthCheck,
+            30000,
+            providerKey,
+            walletKey,
+            currentBlockNumber + 1,
+            health
+        );
+    }
+    return health;
 }
 
 async function checkSingleStrategy(
@@ -300,15 +362,18 @@ async function strategyCheck(providerKey, walletKey) {
     }
 
     if (strategyFailedTotal > 0) {
-        await getController(providerKey, walletKey)
-            .pause()
-            .catch((error) => {
-                handleError(error, {
-                    strategyCheck: {
-                        message: 'Call pause function to pause system failed',
-                    },
-                });
-            });
+        logger.info(
+            `strategy dependenncy failed: strategyFailedTotal ${strategyFailedTotal}`
+        );
+        // await getController(providerKey, walletKey)
+        //     .pause()
+        //     .catch((error) => {
+        //         handleError(error, {
+        //             strategyCheck: {
+        //                 message: 'Call pause function to pause system failed',
+        //             },
+        //         });
+        //     });
     }
 
     strategyCheckMessage({ failedNumber: strategyFailedTotal });
@@ -318,4 +383,5 @@ async function strategyCheck(providerKey, walletKey) {
 module.exports = {
     curvePriceCheck,
     strategyCheck,
+    buoyHealthCheckAcrossBlocks,
 };
