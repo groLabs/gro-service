@@ -65,7 +65,7 @@ const getMaxTimestamp = async () => {
         if (res === QUERY_ERROR)
             throw `Query error in getMaxTimestamp`;
 
-        return res.rows[0].max_date;
+        return res.rows[0];
     } catch (err) {
         logger.error(`**DB: Error in groStatsHandler.js->getTimestamps(): ${err}`);
     }
@@ -358,7 +358,8 @@ const getExposureProtocols = async (targetTimestamp) => {
 
 const getAllStats = async () => {
     try {
-        const targetTimestamp = await getMaxTimestamp();
+        const res = await getMaxTimestamp();
+        const targetTimestamp = res.current_timestamp;
 
         if (targetTimestamp && targetTimestamp > 0)
             return {
@@ -371,7 +372,8 @@ const getAllStats = async () => {
                 reserves: await getReserves(targetTimestamp),
                 strategies: await getStrategies(targetTimestamp),
                 exposureStables: await getExposureStables(targetTimestamp),
-                getExposureProtocols: await getExposureProtocols(targetTimestamp),
+                exposureProtocols: await getExposureProtocols(targetTimestamp),
+                config: res,
             };
         return [];
     } catch (err) {
