@@ -242,7 +242,8 @@ async function harvestOneTrigger(providerKey, walletKey) {
         logger.info(
             `harvestOneTrigger ${vaultIndex} ${strategyIndex} ${trigger}`
         );
-        if (trigger) {
+        // TODO: skip curve vault adapter
+        if (vaultIndex < 3 && trigger) {
             // Get harvest callCost
             const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${strategyIndex}`;
             const baseCallCost = BigNumber.from(getConfig(callCostKey, false));
