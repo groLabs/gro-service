@@ -305,6 +305,8 @@ async function generateSummaryReport(fromBlock, toBlock) {
         },
     };
     logger.info(`result: ${JSON.stringify(result)}`);
+
+    await new Promise((resolve) => setTimeout(resolve, 5000));
     summaryMessage(result);
 }
 
