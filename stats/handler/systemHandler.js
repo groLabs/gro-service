@@ -31,6 +31,7 @@ const lifeguardNames = config.get('lifeguard_name');
 const strategyExposure = config.get('strategy_exposure');
 const strategyStablecoinExposure = config.get('strategy_stablecoin_exposure');
 const protocolDisplayName = config.get('protocol_display_name');
+const vaultDisplayName = config.get('vault_display_name');
 
 const providerKey = 'stats_gro';
 
@@ -383,7 +384,7 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
         systemTotal = systemTotal.add(vaultAsset.amount);
         return {
             name: vaultAsset.name,
-            display_name: reserves.name,
+            display_name: vaultDisplayName[vaultIndex],
             amount: vaultAsset.amount,
             share,
             last3d_apy: estimatedVaultApy,
