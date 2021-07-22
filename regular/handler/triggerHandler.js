@@ -157,7 +157,8 @@ async function investTrigger(providerKey, walletKey) {
         logger.info(
             `strategy ${vaultIndex}, ${strategyIndex}, ${lastHarvest}, ${result[vaultIndex]}`
         );
-        if (strategies[i].trigger) {
+        // TODO: skip xpool check at the beginning
+        if (strategies[i].trigger && vaultIndex < 3) {
             if (result[vaultIndex]) {
                 logger.info(
                     `vault trigger check ${needInvestIndex} ${result[vaultIndex]}`
