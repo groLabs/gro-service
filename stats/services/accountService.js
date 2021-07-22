@@ -76,7 +76,7 @@ function getContracts(contractName) {
         const contract = newContract(contractName, contractInfo, {
             providerKey,
         });
-        contracts[contractInfo.address] = contract;
+        contracts[contractInfo.address] = contract.contract;
     }
     return contracts;
 }
@@ -86,7 +86,7 @@ async function getStabeCoins() {
         const latestController = getLatestSystemContract(
             ContractNames.controller,
             providerKey
-        );
+        ).contract;
         const stabeCoinAddresses = await latestController
             .stablecoins()
             .catch((error) => {
@@ -154,15 +154,17 @@ function getPowerDContracts() {
 }
 
 function getLatestDepositHandler() {
-    return getLatestSystemContract(ContractNames.depositHandler, providerKey);
+    return getLatestSystemContract(ContractNames.depositHandler, providerKey)
+        .contract;
 }
 
 function getLatestGroVault() {
-    return getLatestSystemContract(ContractNames.groVault, providerKey);
+    return getLatestSystemContract(ContractNames.groVault, providerKey)
+        .contract;
 }
 
 function getLatestPowerD() {
-    return getLatestSystemContract(ContractNames.powerD, providerKey);
+    return getLatestSystemContract(ContractNames.powerD, providerKey).contract;
 }
 
 async function getHandlerEvents(account, contractName, eventName) {
@@ -478,7 +480,10 @@ async function getApprovalHistoryies(account, depositEventHashs) {
     const stableCoinInfo = await getStabeCoinsInfo();
     const result = [];
     const usdAmoutPromise = [];
-    const buoy = getLatestSystemContract(ContractNames.buoy3Pool, providerKey);
+    const buoy = getLatestSystemContract(
+        ContractNames.buoy3Pool,
+        providerKey
+    ).contract;
     for (let i = 0; i < approvalEventResult.length; i += 1) {
         const { address, transactionHash, blockNumber, args } =
             approvalEventResult[i];
@@ -574,7 +579,6 @@ async function generateReport(account) {
     const launchTime = await getTimestampByBlockNumber(fromBlock, provider);
 
     const result = {
-        transactions,
         transaction,
         current_timestamp: latestBlock.timestamp.toString(),
         launch_timestamp: launchTime,

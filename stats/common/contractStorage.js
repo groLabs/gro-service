@@ -30,9 +30,10 @@ async function reloadData(providerKey) {
     if (!providerKey || providerKey.trim() === '') {
         throw new Error('providerKey is empty.');
     }
-    latestSystemContracts[providerKey] = newSystemLatestContracts({
+    latestSystemContracts[providerKey] = await newSystemLatestContracts({
         providerKey,
     });
+
     latestVaultStrategyContracts[providerKey] =
         await newSystemLatestVaultStrategyContracts({
             providerKey,

@@ -28,10 +28,11 @@ function updateBlocksScanner(newProvider) {
 }
 
 function getLatestPowerD() {
-    return getLatestSystemContract(ContractNames.powerD, providerKey);
+    return getLatestSystemContract(ContractNames.powerD, providerKey).contract;
 }
 function getLatestGroVault() {
-    return getLatestSystemContract(ContractNames.groVault, providerKey);
+    return getLatestSystemContract(ContractNames.groVault, providerKey)
+        .contract;
 }
 
 function calculatePriceDiff(factorStart, factorEnd) {

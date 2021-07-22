@@ -53,7 +53,7 @@ async function generateDepositReport(fromBlock, toBlock) {
     const latestDepositHandler = getLatestSystemContract(
         ContractNames.depositHandler,
         providerKey
-    );
+    ).contract;
     const depositFilter = latestDepositHandler.filters.LogNewDeposit();
     depositFilter.fromBlock = fromBlock;
     depositFilter.toBlock = toBlock;
@@ -135,7 +135,7 @@ async function generateWithdrawReport(fromBlock, toBlock) {
     const latestWithdrawHandler = getLatestSystemContract(
         ContractNames.withdrawHandler,
         providerKey
-    );
+    ).contract;
     const withdrawFilter = latestWithdrawHandler.filters.LogNewWithdrawal();
     withdrawFilter.fromBlock = fromBlock;
     withdrawFilter.toBlock = toBlock;
@@ -288,11 +288,11 @@ async function generateSummaryReport(fromBlock, toBlock) {
     const latestGvt = getLatestSystemContract(
         ContractNames.groVault,
         providerKey
-    );
+    ).contract;
     const latestPWRD = getLatestSystemContract(
         ContractNames.powerD,
         providerKey
-    );
+    ).contract;
     const { originValue: originVaultValue, value: vaultTVL } =
         await getGTokenAsset(latestGvt, toBlock);
     const { originValue: originPwrdValue, value: pwrdTVL } =

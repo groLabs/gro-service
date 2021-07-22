@@ -33,32 +33,32 @@ const launchBlock = getConfig('blockchain.start_block');
 const defaultApy = getConfig('strategy_default_apy');
 
 async function getLatestVaultAdapters() {
-    const vaultAdaptersInfo = await getLatestVaultsAndStrategies(providerKey);
-    const adapterAddresses = Object.keys(vaultAdaptersInfo);
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { vaultsAddress: adapterAddresses, contracts } = vaultAndStrateyInfo;
     const vaultAdapters = [];
     for (let i = 0; i < adapterAddresses.length; i += 1) {
-        vaultAdapters.push(vaultAdaptersInfo[adapterAddresses[i]].contract);
+        vaultAdapters.push(contracts[adapterAddresses[i]].contract);
     }
     return vaultAdapters;
 }
 
 async function getLatestYearnVaults() {
-    const vaultAdaptersInfo = await getLatestVaultsAndStrategies(providerKey);
-    const adapterAddresses = Object.keys(vaultAdaptersInfo);
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { vaultsAddress: adapterAddresses, contracts } = vaultAndStrateyInfo;
     const vaults = [];
     for (let i = 0; i < adapterAddresses.length; i += 1) {
-        const { vault } = vaultAdaptersInfo[adapterAddresses[i]];
+        const { vault } = contracts[adapterAddresses[i]];
         vaults.push(vault.contract);
     }
     return vaults;
 }
 
 async function getStrategies() {
-    const vaultAdaptersInfo = await getLatestVaultsAndStrategies(providerKey);
-    const adapterAddresses = Object.keys(vaultAdaptersInfo);
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { vaultsAddress: adapterAddresses, contracts } = vaultAndStrateyInfo;
     const vaultstrategies = [];
     for (let i = 0; i < adapterAddresses.length; i += 1) {
-        const { strategies } = vaultAdaptersInfo[adapterAddresses[i]].vault;
+        const { strategies } = contracts[adapterAddresses[i]].vault;
         const everyAdapterStrategies = [];
         for (let j = 0; j < strategies.length; j += 1) {
             everyAdapterStrategies.push({
@@ -306,7 +306,7 @@ function getPnlEventFilters(latestBlock, block7DaysAgo) {
         if (!contractInfo.endBlock || contractInfo.endBlock > startBlock) {
             const pnlContract = newContract(ContractNames.pnl, contractInfo, {
                 providerKey,
-            });
+            }).contract;
             const filter = pnlContract.filters.LogPnLExecution();
             if (contractInfo.startBlock < startBlock) {
                 filter.fromBlock = startBlock;

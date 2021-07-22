@@ -1,5 +1,5 @@
 module.exports = {
-    registry_address: '0x49a380067ac8d31713b4be6ee5123c5b3712fe5c',
+    registry_address: '0x5dF979799065F9c10860Ce3E2ac3e62627c6A3A5',
     deposit_handler_history: {
         '0x4246529D7168FE98F0530d99d93d346092bf50F1': {},
         '0xB2a9B574cD0ABD2E24E7F2B412B21d49B87a3CD1': {},
@@ -109,30 +109,6 @@ module.exports = {
     stats_latest: '../stats/gro-latest.json',
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
-    protocol_display_name: {
-        Idle: 'Idle',
-        Compound: 'Compound',
-        Cream: 'CREAM',
-        Curve: 'Curve',
-    },
-    strategy_stablecoin_exposure: [
-        'DAI',
-        'DAI',
-        'USDC',
-        'USDC',
-        'USDT',
-        'USDT',
-        'USDN',
-    ],
-    strategy_exposure: [
-        ['Compound'],
-        ['Cream'],
-        ['Compound'],
-        ['Cream'],
-        ['Idle', 'Compound'],
-        ['Cream'],
-        ['Curve'],
-    ],
     strategy_name: [
         'Lev Comp',
         'Cream',
@@ -179,12 +155,12 @@ module.exports = {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
         retry: 3,
         channel: {
-            trades: '825998630828638239',
-            protocol_assets: '825998746696810536',
-            protocol_events: '825998886249168896',
-            crit_action_events: '825998966691987456',
-            bot_alerts: '825999025487609927',
-            bot_logs: '825999075971039283',
+            trades: '826415202160476201',
+            protocol_assets: '826415552355762208',
+            protocol_events: '826416102522355712',
+            crit_action_events: '826416230898466826',
+            bot_alerts: '826417081003671582',
+            bot_logs: '826416451744825404',
         },
     },
     database: {
