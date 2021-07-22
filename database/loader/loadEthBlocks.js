@@ -19,7 +19,7 @@ const loadEthBlocks = async (func) => {
             ? 'select_distinct_blocks_tmp_transfers.sql'
             : 'select_distinct_blocks_tmp_approvals.sql';
         const blocks = await query(q, []);
-        if (blocks === QUERY_ERROR) return false;
+        if (blocks.status === QUERY_ERROR) return false;
 
         // Insert new blocks into ETH_BLOCKS
         const numBlocks = blocks.rowCount;
@@ -37,7 +37,7 @@ const loadEthBlocks = async (func) => {
                     getNetworkId(),
                     moment.utc()];
                 const result = await query('insert_eth_blocks.sql', params);
-                if (result === QUERY_ERROR)
+                if (result.status === QUERY_ERROR)
                     return false;
             }
             logger.info(`**DB: ${numBlocks} block${isPlural(numBlocks)} added into ETH_BLOCKS`);

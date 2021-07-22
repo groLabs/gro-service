@@ -3,6 +3,7 @@ const { getConfig } = require('../../common/configUtil');
 const {
     curvePriceCheck,
     strategyCheck,
+    buoyHealthCheckAcrossBlocks,
 } = require('../handler/criticalHandler');
 const {
     sendMessageToAlertChannel,
@@ -25,9 +26,10 @@ function checkCurveHealth() {
         logger.info(`Run critical check on : ${new Date()}`);
         try {
             await curvePriceCheck(providerKey, walletKey);
-            if (process.env.NODE_ENV === 'mainnet') {
-                await strategyCheck(providerKey, walletKey);
-            }
+            await buoyHealthCheckAcrossBlocks(providerKey, walletKey);
+            // if (process.env.NODE_ENV === 'mainnet') {
+            //     await strategyCheck(providerKey, walletKey);
+            // }
         } catch (error) {
             sendMessageToAlertChannel(error);
         }

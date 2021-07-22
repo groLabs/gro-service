@@ -30,7 +30,7 @@ const loadUserTransfers = async (fromDate, toDate) => {
         if (await loadEthBlocks('loadUserTransfers')) {
             // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
             const res = await query('insert_user_transfers.sql', []);
-            if (res === QUERY_ERROR) return false;
+            if (res.status === QUERY_ERROR) return false;
             const numTransfers = res.rowCount;
             logger.info(`**DB: ${numTransfers} record${isPlural(numTransfers)} added into USER_TRANSFERS`);
         } else {

@@ -65,7 +65,7 @@ const preload = async (_fromDate, _toDate) => {
         const res1 = await query('truncate_tmp_user_approvals.sql', []);
         const res2 = await query('truncate_tmp_user_deposits.sql', []);
         const res3 = await query('truncate_tmp_user_withdrawals.sql', []);
-        if (res1 === QUERY_ERROR || res2 === QUERY_ERROR || res3 === QUERY_ERROR) return;
+        if (res1.status === QUERY_ERROR || res2.status === QUERY_ERROR || res3.status === QUERY_ERROR) return;
 
         // Calculate dates & blocks to process
         const dates = generateDateRange(_fromDate, _toDate);

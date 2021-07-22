@@ -164,7 +164,7 @@ const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
             ? 'select_cache_tmp_deposits.sql'
             : 'select_tmp_deposits.sql';
         const res = await query(q, []);
-        if (res === QUERY_ERROR) {
+        if (res.status === QUERY_ERROR) {
             return false;
         } else if (res.rows.length === 0) {
             logger.info(`**DB: Warning! 0 deposit transfers before processing approval events`);

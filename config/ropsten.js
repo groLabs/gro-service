@@ -68,6 +68,7 @@ module.exports = {
         deposit_withdraw_event: '30 */5 * * * *',
         event_summary: '*/10 * * * *',
         bot_chainlink_check: '00 00 * * * *',
+        safety_check: '*/2 * * * *',
     },
     emoji: {
         company: '<:GRO:834796096685211689>',
@@ -104,8 +105,8 @@ module.exports = {
     },
     keep_stats_file_number: 250,
     stats_folder: '../stats',
-    log_folder: './logs',
-    blockNumberFile: './stats/lastBlockNumber.json',
+    log_folder: '../logs',
+    blockNumberFile: '../stats/lastBlockNumber.json',
     stats_latest: '../stats/gro-latest.json',
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
@@ -144,6 +145,7 @@ module.exports = {
     },
     ratioUpperBond: 14000,
     ratioLowerBond: 7000,
+    curveRatioLowerBond: 1000,
     lifeguard_name: '3CRV',
     before_block: 30,
     fail_percentage_total: 1000,
@@ -172,14 +174,14 @@ module.exports = {
     },
     route: {
         gro_stats: {
-            hostname: 'ajj49or3nh.execute-api.eu-west-2.amazonaws.com',
+            hostname: process.env.BOT_DEV_HOST,
             path: '/stats/gro_stats?network=ropsten',
-            port: 443,
+            port: process.env.BOT_DEV_PORT,
         },
         personal_stats: {
-            hostname: 'ajj49or3nh.execute-api.eu-west-2.amazonaws.com',
+            hostname: process.env.BOT_DEV_HOST,
             path: '/stats/gro_personal_position?network=ropsten&address=',
-            port: 443,
+            port: process.env.BOT_DEV_PORT,
         },
     },
 };

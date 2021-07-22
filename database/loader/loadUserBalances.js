@@ -36,7 +36,7 @@ const loadUserBalances = async (
     try {
         // Get users with any transfer
         const users = await query('select_distinct_users_transfers.sql', []);
-        if (users === QUERY_ERROR) return false;
+        if (users.status === QUERY_ERROR) return false;
 
         // For each date, check gvt & pwrd balance and insert data into USER_BALANCES
         const dates = generateDateRange(fromDate, toDate);
@@ -65,7 +65,7 @@ const loadUserBalances = async (
                     moment.utc()
                 ];
                 const result = await query('insert_user_balances.sql', params);
-                if (result === QUERY_ERROR) return false;
+                if (result.status === QUERY_ERROR) return false;
                 rowCount += result.rowCount;
             }
             let msg = `**DB: ${rowCount} record${isPlural(rowCount)} added into `;

@@ -45,7 +45,7 @@ const loadEthBlocks2 = async (func) => {
             ? 'select_cache_distinct_blocks_tmp_transfers.sql'
             : 'select_cache_distinct_blocks_tmp_approvals.sql';
         const blocks = await query(q, []);
-        if (blocks === QUERY_ERROR) return false;
+        if (blocks.status === QUERY_ERROR) return false;
 
         // Insert new blocks into ETH_BLOCKS
         const numBlocks = blocks.rowCount;
@@ -63,7 +63,7 @@ const loadEthBlocks2 = async (func) => {
                     getNetworkId(),
                     moment.utc()];
                 const result = await query('insert_eth_blocks.sql', params);
-                if (result === QUERY_ERROR)
+                if (result.status === QUERY_ERROR)
                     return false;
             }
             logger.info(`**DB CACHE: ${numBlocks} block${isPlural(numBlocks)} added into ETH_BLOCKS`);
@@ -98,7 +98,7 @@ const loadUserNetReturns2 = async (
             //const day = moment(date).format('MM/DD/YYYY');
             //const result = await query('insert_user_net_returns.sql', [day]);
             const result = await query('insert_cache_user_net_returns.sql', [account]);
-            if (result === QUERY_ERROR) return false;
+            if (result.status === QUERY_ERROR) return false;
             const numResults = result.rowCount;
             let msg = `**DB CACHE: ${numResults} record${isPlural(numResults)} added into `;
             msg += `USER_NET_RETURNS for date ${moment(date).format('DD/MM/YYYY')}`;
@@ -134,7 +134,7 @@ const loadUserBalances2 = async (
             }
         } else {
             users = await query('select_distinct_users_transfers.sql', []);
-            if (users === QUERY_ERROR)
+            if (users.status === QUERY_ERROR)
                 return false;
         }
         // const users = await query('select_distinct_users_transfers.sql', []);
@@ -169,7 +169,7 @@ const loadUserBalances2 = async (
                 ];
                 // TODO: if wrong name in the query?
                 const result = await query('insert_cache_user_balances.sql', params);
-                if (result === QUERY_ERROR) return false;
+                if (result.status === QUERY_ERROR) return false;
                 rowCount += result.rowCount;
             }
             let msg = `**DB CACHE: ${rowCount} record${isPlural(rowCount)} added into `;
@@ -191,7 +191,7 @@ const loadUserApprovals2 = async (account) => {
         if (await loadEthBlocks2('loadUserApprovals')) {
             // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
             const res = await query('insert_cache_user_approvals.sql', [account]);
-            if (res === QUERY_ERROR) return false;
+            if (res.status === QUERY_ERROR) return false;
             const numTransfers = res.rowCount;
             logger.info(`**DB CACHE: ${numTransfers} record${isPlural(numTransfers)} added into USER_APPROVALS`);
             return true;
@@ -217,7 +217,7 @@ const loadUserTransfers2 = async (account) => {
         if (await loadEthBlocks2('loadUserTransfers')) {
             // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
             const res = await query('insert_cache_user_transfers.sql', [account]);
-            if (res === QUERY_ERROR) return false;
+            if (res.status === QUERY_ERROR) return false;
             const numTransfers = res.rowCount;
             logger.info(`**DB CACHE: ${numTransfers} record${isPlural(numTransfers)} added into USER_TRANSFERS`);
             return true;
@@ -251,7 +251,7 @@ const loadTempUserApprovals = async (
             for (const item of approvals) {
                 const params = (Object.values(item));
                 const res = await query('insert_cache_tmp_user_approvals.sql', params);
-                if (res === QUERY_ERROR) return false;
+                if (res.status === QUERY_ERROR) return false;
             }
         // TODO: missing N records added into table X
         return true;
@@ -337,14 +337,14 @@ const preloadCache = async (account) => {
             query('select_max_load_dates.sql', params),
         ]);
 
-        if (tmpApprovals === QUERY_ERROR ||
-            tmpDeposits === QUERY_ERROR ||
-            tmpWithdrawals === QUERY_ERROR ||
-            approvals === QUERY_ERROR ||
-            balances === QUERY_ERROR ||
-            netReturns === QUERY_ERROR ||
-            transfers === QUERY_ERROR ||
-            _fromDate === QUERY_ERROR)
+        if (tmpApprovals.status === QUERY_ERROR ||
+            tmpDeposits.status === QUERY_ERROR ||
+            tmpWithdrawals.status === QUERY_ERROR ||
+            approvals.status === QUERY_ERROR ||
+            balances.status === QUERY_ERROR ||
+            netReturns.status === QUERY_ERROR ||
+            transfers.status === QUERY_ERROR ||
+            _fromDate.status === QUERY_ERROR)
             return [];
 
         // User has no balance yet in USER_BALANCES

@@ -1,6 +1,5 @@
 /* eslint-disable import/no-dynamic-require */
 const { ethers } = require('ethers');
-const { getConfig } = require('../common/configUtil');
 const {
     getWalletNonceManager,
     getAlchemyRpcProvider,
@@ -10,8 +9,6 @@ const {
     getLatestContractsAddressByAddress,
 } = require('./registryLoader');
 const { ContractNames, ContractABIMapping } = require('./registry');
-
-const strategyDisplayName = getConfig('strategy_display_name');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -56,7 +53,7 @@ function newContract(contractName, contractInfo, signerInfo) {
     }
     contract = new ethers.Contract(contractAddress, abi, managerOrProvicer);
     logger.info(`Created new ${contractName} contract.`);
-    return contract;
+    return { contract, contractInfo };
 }
 
 function newLatestContract(contractName, signerInfo) {
@@ -88,24 +85,38 @@ function newSystemLatestContracts(signerInfo) {
 
 async function newSystemLatestVaultStrategyContracts(signerInfo) {
     const result = {};
-    const controller = newLatestContract(ContractNames.controller, signerInfo);
+    const vaultsAddress = [];
+    const controller = newLatestContract(
+        ContractNames.controller,
+        signerInfo
+    ).contract;
 
     const vaultAddresses = await controller.vaults();
     for (let i = 0; i < vaultAddresses.length; i += 1) {
         const vaultAdapterAddress = vaultAddresses[i];
+        vaultsAddress.push(vaultAdapterAddress);
         const vaultAdapter = newLatestContractByAddress(
             vaultAdapterAddress,
             signerInfo
         );
-        result[vaultAdapterAddress] = { contract: vaultAdapter, vault: {} };
+        result[vaultAdapterAddress] = {
+            contract: vaultAdapter.contract,
+            contractInfo: vaultAdapter.contractInfo,
+            vault: {},
+        };
     }
 
     const curveVaultAddress = await controller.curveVault();
+    vaultsAddress.push(curveVaultAddress);
     const curveVaultAdapter = newLatestContractByAddress(
         curveVaultAddress,
         signerInfo
     );
-    result[curveVaultAddress] = { contract: curveVaultAdapter, vault: {} };
+    result[curveVaultAddress] = {
+        contract: curveVaultAdapter.contract,
+        contractInfo: curveVaultAdapter.contractInfo,
+        vault: {},
+    };
 
     // init vault for every vault adapter
     const vaultAdapterAddresses = Object.keys(result);
@@ -118,7 +129,8 @@ async function newSystemLatestVaultStrategyContracts(signerInfo) {
             yearnVaultAddress,
             signerInfo
         );
-        vault.contract = vaultInstance;
+        vault.contract = vaultInstance.contract;
+        vault.contractInfo = vaultInstance.contractInfo;
         vault.strategies = [];
     }
 
@@ -138,12 +150,15 @@ async function newSystemLatestVaultStrategyContracts(signerInfo) {
                 signerInfo
             );
             strategies.push({
-                contract: strategy,
-                displayName: strategyDisplayName[i * 2 + j],
+                contract: strategy.contract,
+                contractInfo: strategy.contractInfo,
             });
         }
     }
-    return result;
+    return {
+        vaultsAddress,
+        contracts: result,
+    };
 }
 
 module.exports = {

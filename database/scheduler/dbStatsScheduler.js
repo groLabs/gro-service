@@ -2,7 +2,8 @@ const schedule = require('node-schedule');
 const { getConfig } = require('../../common/configUtil');
 const { etlGroStats } = require('../etl/etlGroStats');
 const groStatsJobSetting =
-    getConfig('trigger_scheduler.db_gro_stats', false) || '*/20 * * * * *'; //TODO: TBC every 5 mins. Now for testing, every 20"
+    // getConfig('trigger_scheduler.db_gro_stats', false) || '*/30 * * * * *';  // 30 seconds
+    getConfig('trigger_scheduler.db_gro_stats', false) || '*/3 * * * *'; // 3 min
 const personalStatsJobSetting =
     getConfig('trigger_scheduler.db_personal_stats', false) || '0 3 * * *'; //TODO: TBC every day at 3:00 AM
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -27,7 +28,7 @@ const personalStatsJob = () => {
     schedule.scheduleJob(personalStatsJobSetting, async () => {
         try {
             logger.info('**DB: personalStatsJob started');
-            await etlGroStats();
+            // ETL personal Stats
             logger.info('**DB: personalStatsJob finished');
         } catch (err) {
             logger.error(`**DB: Error in dbStatsScheduler.js->personalStatsJob(): ${err}`);

@@ -4,6 +4,7 @@ const logger = require('../statsLogger');
 const { getCurrentApy } = require('./currentApyHandler');
 const { ContractNames } = require('../../registry/registry');
 const {
+    getLatestStabeCoins,
     getLatestVaultsAndStrategies,
     getLatestSystemContract: getLatestContract,
 } = require('../common/contractStorage');
@@ -103,8 +104,7 @@ async function getStrategiesStatsOld(
     let reservedAssets = BigNumber.from(vaultTotalAsset);
     logger.info(`vta ${vaultTotalAsset} ra ${reservedAssets}`);
     const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
-    const { vaultsAddress: adapterAddresses, contracts: vaultAndStrategies } =
-        vaultAndStrateyInfo;
+    const { contracts: vaultAndStrategies } = vaultAndStrateyInfo;
     const { contractInfo: vaultInfo, vault: yearnVault } =
         vaultAndStrategies[vault.address];
     const { strategies: strategyInfos } = yearnVault;
@@ -135,10 +135,7 @@ async function getStrategiesStatsOld(
 async function getVaultStatsOld(blockTag) {
     const vaults = await getLatestVaultAdapters();
     const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
-    const {
-        vaultsAddress: adapterAddresses,
-        contracts: vaultStrategyContracts,
-    } = vaultAndStrateyInfo;
+    const { contracts: vaultStrategyContracts } = vaultAndStrateyInfo;
     const vaultAssets = [];
     //
     for (let vaultIndex = 0; vaultIndex < vaults.length - 1; vaultIndex += 1) {
@@ -181,8 +178,7 @@ async function getStrategiesStats(
     let reservedAssets = BigNumber.from(vaultTotalAsset);
     logger.info(`vta ${vaultTotalAsset} ra ${reservedAssets}`);
     const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
-    const { vaultsAddress: adapterAddresses, contracts: vaultAndStrategies } =
-        vaultAndStrateyInfo;
+    const { contracts: vaultAndStrategies } = vaultAndStrateyInfo;
     const { contractInfo: vaultInfo, vault: yearnVault } =
         vaultAndStrategies[vault.address];
     const { strategies: strategyInfos } = yearnVault;
@@ -213,10 +209,7 @@ async function getStrategiesStats(
 async function getVaultStats(blockTag) {
     const vaults = await getLatestVaultAdapters();
     const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
-    const {
-        vaultsAddress: adapterAddresses,
-        contracts: vaultStrategyContracts,
-    } = vaultAndStrateyInfo;
+    const { contracts: vaultStrategyContracts } = vaultAndStrateyInfo;
 
     const vaultAssets = [];
     for (let vaultIndex = 0; vaultIndex < vaults.length - 1; vaultIndex += 1) {
@@ -264,16 +257,18 @@ async function getLifeguardStats(blockTag) {
 }
 
 async function getExposureStats(blockTag, systemStats) {
-    const { contract: exposure, contractInfo: exposureInfo } =
-        getLatestSystemContract(ContractNames.exposure);
+    const { contract: exposure } = getLatestSystemContract(
+        ContractNames.exposure
+    );
     logger.info(`getExposureStats blockTag : ${JSON.stringify(blockTag)}`);
+    const stabeCoins = await getLatestStabeCoins(providerKey);
     const preCal = await getLatestSystemContract(
         ContractNames.insurance
     ).contract.prepareCalculation(blockTag);
     const riskResult = await exposure.getExactRiskExposure(preCal, blockTag);
     const exposureStableCoin = riskResult[0].map((concentration, i) => ({
-        name: exposureInfo.tokens[i],
-        display_name: exposureInfo.tokens[i],
+        name: stabeCoins[i],
+        display_name: stabeCoins[i],
         concentration: convertToSharePercentDecimal(concentration),
     }));
     const exposureProtocol = [];
@@ -311,14 +306,12 @@ async function getExposureStats(blockTag, systemStats) {
     }
     // curve's stabe coin
     const curveVaultIndex = adapterAddresses.length - 1;
-    const { contractInfo } =
-        vaultStrategies[adapterAddresses[curveVaultIndex]].vault.strategies[0];
 
     exposureProtocol.forEach((item) => {
         if (item.name === 'Curve') {
             exposureStableCoin.push({
-                name: contractInfo.tokens[0],
-                display_name: contractInfo.tokens[0],
+                name: stabeCoins[curveVaultIndex],
+                display_name: stabeCoins[curveVaultIndex],
                 concentration: item.concentration,
             });
             item.concentration = vaultsStats[3].share;
@@ -367,8 +360,7 @@ async function getTvlStats(blockTag) {
 async function getSystemStats(totalAssetsUsd, blockTag) {
     logger.info('SystemStats');
     const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
-    const { vaultsAddress: adapterAddresses, contracts: vaultAdaptersInfo } =
-        vaultAndStrateyInfo;
+    const { contracts: vaultAdaptersInfo } = vaultAndStrateyInfo;
     const vaults = await getLatestVaultAdapters();
     const lifeGuardStats = await getLifeguardStats(blockTag);
     lifeGuardStats.share = calculateSharePercent(
@@ -385,6 +377,8 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
     const vaultStats = vaultAssets.map((vaultAsset, vaultIndex) => {
         const vaultAddress = vaults[vaultIndex].address;
         logger.info(`vault address: ${vaultAddress}`);
+        const { contractInfo: vaultAdapterInfo } =
+            vaultAdaptersInfo[vaultAddress];
         const strategyInfos = vaultAdaptersInfo[vaultAddress].vault.strategies;
         const vaultStrategyApy = currentApy[vaultIndex];
         let vaultApy = BigNumber.from(0);
@@ -411,7 +405,9 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
                 vaultPercent = vaultPercent.add(strategyPercent);
                 return {
                     name: strategy.name,
-                    display_name: strategyInfo ? strategyInfo.displayName : '',
+                    display_name: strategyInfo
+                        ? strategyInfo.contractInfo.metaData.DN
+                        : '',
                     address: strategyInfo
                         ? strategyInfo.contract.address
                         : undefined,
@@ -436,7 +432,7 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
         systemTotal = systemTotal.add(vaultAsset.amount);
         return {
             name: vaultAsset.name,
-            display_name: reserves.name,
+            display_name: vaultAdapterInfo.metaData.DN,
             amount: vaultAsset.amount,
             share,
             last3d_apy: estimatedVaultApy,
