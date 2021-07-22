@@ -17,7 +17,7 @@ const {
 const customLogger = require('./databaseLogger');
 
 const statsRouter = require('./routes/database');
-// const scheduler = require('../stats/scheduler/statsScheduler');
+const scheduler = require('./scheduler/dbStatsScheduler');
 const { initAllContracts } = require('../contract/allContracts');
 
 const app = express();
@@ -80,8 +80,8 @@ app.use((error, req, res, next) => {
 
 // start the schedule task
 // initAllContracts().then(() => {
-//     scheduler.starStatsJobs();
+scheduler.startDbStatsJobs();
 // });
-console.log('start!');
+
 
 module.exports = app;

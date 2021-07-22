@@ -11,7 +11,7 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 
 const groStatsJob = async () => {
-    logger.info('**DB: groStatsJob called');
+    logger.info('**DB: groStatsJob initialised');
     schedule.scheduleJob(groStatsJobSetting, async () => {
         try {
             logger.info('**DB: groStatsJob started');
