@@ -141,6 +141,7 @@ const getAPY = async (targetTimestamp, productId) => {
                 ...calcKPI(apy, 'apy_weekly'),
                 ...calcKPI(apy, 'apy_monthly'),
                 ...calcKPI(apy, 'apy_all_time'),
+                ...calcKPI(apy, 'apy_current'),
             };
         } else {
             return {};
