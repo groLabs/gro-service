@@ -33,8 +33,10 @@ if (
 let defaultProvider;
 let socketProvider;
 let rpcProvider;
+let infruraRpcProvider;
 let defaultWalletManager;
 const rpcProviders = {};
+const infruraRpcProviders = {};
 const botWallets = {};
 
 const network = getConfig('blockchain.network');
@@ -53,14 +55,24 @@ function getSocketProvider() {
     return socketProvider;
 }
 
-function getRpcProvider() {
+function createAlchemyRpcProvider() {
     if (rpcProvider) {
         return rpcProvider;
     }
-    logger.info('Create default Rpc provider.');
+    logger.info('Create default Alchemy Rpc provider.');
     const apiKey = getConfig('blockchain.alchemy_api_keys.default');
     rpcProvider = new ethers.providers.AlchemyProvider(network, apiKey);
     return rpcProvider;
+}
+
+function createInfruraRpcProvider() {
+    if (infruraRpcProvider) {
+        return infruraRpcProvider;
+    }
+    logger.info('Create default Infrura Rpc provider.');
+    const apiKey = getConfig('blockchain.infura_api_keys.default');
+    infruraRpcProvider = new ethers.providers.InfuraProvider(network, apiKey);
+    return infruraRpcProvider;
 }
 
 function getDefaultProvider() {
@@ -89,7 +101,7 @@ function getAlchemyRpcProvider(providerKey) {
         if (process.env.NODE_ENV === 'develop') {
             result = getDefaultProvider();
         } else {
-            result = getRpcProvider();
+            result = createAlchemyRpcProvider();
         }
     } else {
         result = rpcProviders[providerKey];
@@ -107,6 +119,40 @@ function getAlchemyRpcProvider(providerKey) {
 
             logger.info(`Create a new ${providerKey} Rpc provider.`);
             rpcProviders[providerKey] = result;
+        }
+    }
+    return result;
+}
+
+function getInfruraRpcProvider(providerKey) {
+    // only for test
+    const providerKeys = Object.keys(infruraRpcProviders);
+    logger.info(`infrura provider Keys: ${JSON.stringify(providerKeys)}`);
+    // =====================
+    let result;
+    providerKey = providerKey || DEFAULT_PROVIDER_KEY;
+    if (providerKey === DEFAULT_PROVIDER_KEY) {
+        if (process.env.NODE_ENV === 'develop') {
+            result = getDefaultProvider();
+        } else {
+            result = createInfruraRpcProvider();
+        }
+    } else {
+        result = infruraRpcProviders[providerKey];
+        if (!result) {
+            const key = `blockchain.infura_api_keys.${providerKey}`;
+            const apiKeyValue = getConfig(key);
+            if (process.env.NODE_ENV === 'develop') {
+                result = ethers.providers.getDefaultProvider(network);
+            } else {
+                result = new ethers.providers.InfuraProvider(
+                    network,
+                    apiKeyValue
+                );
+            }
+
+            logger.info(`Create a new ${providerKey} Infrura Rpc provider.`);
+            infruraRpcProviders[providerKey] = result;
         }
     }
     return result;
@@ -317,7 +363,7 @@ async function getTimestampByBlockNumber(blockNumber, provider) {
 module.exports = {
     getDefaultProvider,
     getSocketProvider,
-    getRpcProvider,
+    getInfruraRpcProvider,
     getAlchemyRpcProvider,
     getWalletNonceManager,
     syncManagerNonce,
