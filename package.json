@@ -20,8 +20,8 @@
         "start:mainnet:stats": "cross-env NODE_ENV=mainnet BOT_ENV=STATS node ./stats/bin/www",
         "start:mainnet:regular": "cross-env NODE_ENV=mainnet BOT_ENV=REGULAR node ./regular/index.js",
         "start:mainnet:critic": "cross-env NODE_ENV=mainnet BOT_ENV=CRITICAL node ./critical/index.js",
-        "start:ropsten:database": "cross-env NODE_ENV=ropsten BOT_ENV=DATABASE node ./database/app.js",
-        "start:mainnet:database": "cross-env NODE_ENV=mainnet BOT_ENV=DATABASE node ./database/app.js"
+        "start:ropsten:database": "cross-env NODE_ENV=ropsten BOT_ENV=DATABASE node ./database/bin/www",
+        "start:mainnet:database": "cross-env NODE_ENV=mainnet BOT_ENV=DATABASE node ./database/bin/www"
     },
     "dependencies": {
         "@ethersproject/experimental": "^5.0.10",

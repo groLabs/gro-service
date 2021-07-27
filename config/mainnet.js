@@ -123,12 +123,16 @@ module.exports = {
     blockNumberFile: '../stats/lastBlockNumber.json',
     stats_latest: '../stats/gro-latest.json',
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
+    vault_display_name: ['DAI', 'USDC', 'USDT', '3CRVUSDx'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
     protocol_display_name: {
         Idle: 'Idle',
         Compound: 'Compound',
         Cream: 'CREAM',
         Curve: 'Curve',
+        Yearn: 'Yearn',
+        Convex: 'Convex',
+        Neutrino: 'Neutrino',
     },
     strategy_stablecoin_exposure: [
         'DAI',
@@ -146,7 +150,7 @@ module.exports = {
         ['Cream'],
         ['Idle', 'Compound'],
         ['Cream'],
-        ['Curve'],
+        ['Curve', 'Yearn', 'Convex', 'Neutrino'],
     ],
     strategy_name: [
         'Lev Comp',
