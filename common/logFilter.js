@@ -8,7 +8,7 @@ const {
     getUnderlyTokens,
 } = require('../contract/allContracts');
 const { ContractCallError } = require('./error');
-const { getDefaultProvider } = require('./chainUtil');
+const { getInfruraRpcProvider } = require('./chainUtil');
 const depositHandlerABI = require('../contract/abis/DepositHandler.json');
 const withdrawHandlerABI = require('../contract/abis/WithdrawHandler.json');
 // const depositHandlerABI = require((nodeEnv === 'mainnet')
@@ -19,7 +19,6 @@ const withdrawHandlerABI = require('../contract/abis/WithdrawHandler.json');
 //     ? '../contract/abis/WithdrawHandler-old.json'
 //     : '../contract/abis/WithdrawHandler.json'
 // );
-
 
 const { getConfig } = require('./configUtil');
 
@@ -202,7 +201,7 @@ async function getEventsByFilter(
     providerKey,
     specialEventFragment
 ) {
-    const provider = getDefaultProvider();
+    const provider = getInfruraRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(`Get ${eventType} logs failed.`);
@@ -328,7 +327,7 @@ async function getTransferEvents(
     }
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = getDefaultProvider();
+    const provider = getInfruraRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(
@@ -365,7 +364,7 @@ async function getStrategyHavestEvents(
     const filter = await strategy.filters.Harvested();
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = getDefaultProvider();
+    const provider = getInfruraRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(`Get StrategyHavest logs failed.`);
@@ -397,7 +396,7 @@ async function getVaultTransferEvents(
     );
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = getDefaultProvider();
+    const provider = getInfruraRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(`Get VaultTransfer logs failed.`);
@@ -419,7 +418,7 @@ async function getPnLEvents(pnl, fromBlock, toBlock = 'latest', providerKey) {
     const filter = await pnl.filters.LogPnLExecution();
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = getDefaultProvider();
+    const provider = getInfruraRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new ContractCallError(`Get getPnLEvents logs failed.`);

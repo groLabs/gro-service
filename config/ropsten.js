@@ -23,6 +23,25 @@ module.exports = {
             stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
             stats_gro: process.env.ALCHEMY_KEY_STATS_GRO,
         },
+        infura_api_keys: {
+            default: {
+                projectId:
+                    process.env[`INFURA_KEY_${process.env.BOT_ENV}_PROJECT_ID`],
+                projectSecret:
+                    process.env[
+                        `INFURA_KEY_${process.env.BOT_ENV}_PROJECT_SECRET`
+                    ],
+            },
+            stats_personal: {
+                projectId: process.env.INFURA_KEY_STATS_PERSONAL_PROJECT_ID,
+                projectSecret:
+                    process.env.INFURA_KEY_STATS_PERSONAL_PROJECT_SECRET,
+            },
+            stats_gro: {
+                projectId: process.env.INFURA_KEY_STATS_GRO_PROJECT_ID,
+                projectSecret: process.env.INFURA_KEY_STATS_GRO_PROJECT_SECRET,
+            },
+        },
         keystores: {
             default: {
                 file_path: process.env[`KEY_STORE_${process.env.BOT_ENV}`],
