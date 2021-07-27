@@ -1,6 +1,5 @@
 /* eslint-disable import/no-dynamic-require */
 const { ethers } = require('ethers');
-const { getConfig } = require('../common/configUtil');
 const {
     getWalletNonceManager,
     getAlchemyRpcProvider,
@@ -10,8 +9,6 @@ const {
     getLatestContractsAddressByAddress,
 } = require('./registryLoader');
 const { ContractNames, ContractABIMapping } = require('./registry');
-
-const strategyDisplayName = getConfig('strategy_display_name');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -155,7 +152,6 @@ async function newSystemLatestVaultStrategyContracts(signerInfo) {
             strategies.push({
                 contract: strategy.contract,
                 contractInfo: strategy.contractInfo,
-                displayName: strategyDisplayName[i * 2 + j],
             });
         }
     }
