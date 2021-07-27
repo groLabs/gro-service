@@ -11,6 +11,11 @@ const {
 } = require('../services/statsService');
 const { generateReport } = require('../services/accountService');
 const { getPersonalStats } = require('../../database/handler/personalHandler');
+const {
+    getGroPrice,
+    isValidBlockNumber,
+    getBuoyStartBlock,
+} = require('../handler/priceHandler');
 const { validate } = require('../common/validate');
 const { postDegenScore } = require('../services/degenscoreService');
 const { personalStatsMessage } = require('../../discordMessage/statsMessage');
@@ -122,13 +127,11 @@ router.get(
             .withMessage('address cannot be empty.')
             .matches(/^0x[A-Za-z0-9]{40}/)
             .withMessage('address should be a valid address start with "0x".'),
-        query('network')
-            .trim()
-            .notEmpty()
-            .withMessage('network can be empty.'),
-        query('date')
-            .matches(/^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/),
-            // .matches(/^\d{10}$/),  //if unix timestamp
+        query('network').trim().notEmpty().withMessage('network can be empty.'),
+        query('date').matches(
+            /^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/
+        ),
+        // .matches(/^\d{10}$/),  //if unix timestamp
     ]),
     wrapAsync(async (req, res) => {
         let { network } = req.query;
@@ -141,6 +144,26 @@ router.get(
             req.query.address
         );
         res.json(groStats);
+    })
+);
+
+router.get(
+    '/gro_price_check',
+    wrapAsync(async (req, res) => {
+        let { network, block } = req.query;
+        network = network || '';
+        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+            throw new ParameterError('Parameter network failed.');
+        }
+        block = block || 'latest';
+        if (!isValidBlockNumber(block)) {
+            const buoyStartBlock = getBuoyStartBlock();
+            throw new ParameterError(
+                `Parameter block should be bigger than ${buoyStartBlock}.`
+            );
+        }
+        const pricing = await getGroPrice(block);
+        res.json({ pricing });
     })
 );
 

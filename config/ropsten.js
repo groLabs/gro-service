@@ -9,6 +9,7 @@ module.exports = {
         '0xb8082aAeE3fC604FB5E09d895297B138973fA981': {},
     },
     old_pnl: ['0x6E50c4d3b3917a4aa4196F4F90C2533C2d2e1634'],
+    buoy_start_block: 10633347,
     blockchain: {
         network: 'ropsten',
         start_block: 10525267,
