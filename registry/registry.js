@@ -3,6 +3,7 @@ const { getConfig } = require('../common/configUtil');
 const { getAlchemyRpcProvider } = require('../common/chainUtil');
 const { SettingError } = require('../common/error');
 const registryABI = require('./Registry.json');
+const erc20ABI = require('../abi/ERC20.json');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -102,6 +103,51 @@ async function checkContractNameConfiguration() {
     logger.info(`contract name: ${JSON.stringify(registryAllContractNames)}`);
 }
 
+async function parseProtocolExposure(protocols, metaData) {
+    const protocolsDisplayName = [];
+    const protocolsName = [];
+    for (let i = 0; i < protocols.length; i += 1) {
+        const protocolIndex = parseInt(`${protocols[i]}`, 10);
+        // eslint-disable-next-line no-await-in-loop
+        const protocolName = await registry
+            .getProtocol(protocols[i])
+            .catch((error) => {
+                logger.error(error);
+                return '';
+            });
+        protocolsName.push(protocolName);
+        if (metaData.PDN && metaData.PDN[protocolIndex]) {
+            protocolsDisplayName.push(metaData.PDN[protocolIndex]);
+        } else {
+            protocolsDisplayName.push(protocolName);
+        }
+    }
+    return { protocolsDisplayName, protocolsName };
+}
+
+async function parseTokenExposure(tokens) {
+    const result = [];
+    for (let i = 0; i < tokens.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        const tokenAddress = await registry
+            .getToken(tokens[i])
+            .catch((error) => {
+                logger.error(error);
+            });
+        let tokenSymbol = '';
+        if (tokenAddress) {
+            const token = new ethers.Contract(tokenAddress, erc20ABI, provider);
+            // eslint-disable-next-line no-await-in-loop
+            tokenSymbol = await token.symbol().catch((error) => {
+                logger.error(error);
+                return '';
+            });
+        }
+        result.push(tokenSymbol);
+    }
+    return result;
+}
+
 async function getActiveContractInfoByName(contractName) {
     const contractAddress = await registry
         .getActive(contractName)
@@ -116,13 +162,25 @@ async function getActiveContractInfoByName(contractName) {
 
     const latestStartBlock =
         contractInfo.startBlock[contractInfo.startBlock.length - 1];
+    const metaData = contractInfo.metaData.trim().length
+        ? contractInfo.metaData
+        : '{}';
+    const metaDataObject = JSON.parse(metaData);
+    const protocolInfo = await parseProtocolExposure(
+        contractInfo.protocols,
+        metaDataObject
+    );
+    const tokenNames = await parseTokenExposure(contractInfo.tokens);
     return {
         address: contractAddress,
         deployedBlock: parseInt(`${contractInfo.deployedBlock}`, 10),
         startBlock: parseInt(`${latestStartBlock}`, 10),
         abiVersion: contractInfo.abiVersion,
         tag: contractInfo.tag,
-        metaData: contractInfo.metaData,
+        tokens: tokenNames,
+        protocols: protocolInfo.protocolsName,
+        protocolsDisplayName: protocolInfo.protocolsDisplayName,
+        metaData: metaDataObject,
         active: contractInfo.active,
     };
 }
@@ -143,6 +201,13 @@ async function getContractInfoByAddress(address) {
         return {};
     });
     const result = [];
+    const metaData = info.metaData.trim().length ? info.metaData : '{}';
+    const metaDataObject = JSON.parse(metaData);
+    const protocolInfo = await parseProtocolExposure(
+        info.protocols,
+        metaDataObject
+    );
+    const tokenNames = await parseTokenExposure(info.tokens);
     if (info.startBlock) {
         for (let i = 0; i < info.startBlock.length; i += 1) {
             result.push({
@@ -152,7 +217,10 @@ async function getContractInfoByAddress(address) {
                 endBlock: parseInt(`${info.endBlock[i]}`, 10),
                 abiVersion: info.abiVersion,
                 tag: info.tag,
-                metaData: info.metaData,
+                tokens: tokenNames,
+                protocols: protocolInfo.protocolsName,
+                protocolsDisplayName: protocolInfo.protocolsDisplayName,
+                metaData: metaDataObject,
                 active: info.active,
             });
         }
@@ -171,7 +239,6 @@ async function getContractHistory(contractName) {
     for (let i = 0; i < result.length; i += 1) {
         contractHistory.push(...result[i]);
     }
-    logger.info(`${contractName}: ${JSON.stringify(contractHistory)}`);
     return contractHistory;
 }
 
