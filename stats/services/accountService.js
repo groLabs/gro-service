@@ -3,6 +3,8 @@ const logger = require('../statsLogger');
 const {
     getGvt: getGroVault,
     getPwrd: getPowerD,
+    getDepositHandler,
+    getWithdrawHandler,
     getBuoy,
 } = require('../../contract/allContracts');
 const {
@@ -44,6 +46,9 @@ const withdrawHandlerHistory = Object.keys(withdrawHandlerHistoryConfig);
 const providerKey = 'stats_personal';
 const provider = getAlchemyRpcProvider(providerKey);
 
+const accountDepositHandlerHistories = {};
+const accountWithdrawHandlerHistories = {};
+
 function getFailedEmbedMessage(account) {
     const label = shortAccount(account);
     return {
@@ -67,17 +72,35 @@ function handleError(error, message, account) {
 }
 
 async function getDepositHistories(account, toBlock) {
+    let needWrited = false;
+    let handlerHistories;
+    // query history
+    const accountDepositHandlers = accountDepositHandlerHistories[account];
+    if (accountDepositHandlers) {
+        handlerHistories = accountDepositHandlers;
+    } else {
+        handlerHistories = depositHandlerHistory;
+        needWrited = true;
+    }
+
     const logs = await getDepositWithdrawEvents(
         EVENT_TYPE.deposit,
         fromBlock,
         toBlock,
         account,
         providerKey,
-        depositHandlerHistory
+        handlerHistories
     ).catch((error) => {
         handleError(error, `Get deposit logs of ${account} failed.`, account);
     });
 
+    // write data to history memory
+    if (needWrited) {
+        const handlers = new Set();
+        logs.forEach((log) => handlers.add(log.address));
+        handlers.add(getDepositHandler().address);
+        accountDepositHandlerHistories[account] = Array.from(handlers);
+    }
     // handle gtoken mint amount
     await AppendGTokenMintOrBurnAmountToLog(logs);
 
@@ -96,13 +119,23 @@ async function getDepositHistories(account, toBlock) {
 }
 
 async function getWithdrawHistories(account, toBlock) {
+    let needWrited = false;
+    let handlerHistories;
+    const accountHandlerHistories = accountWithdrawHandlerHistories[account];
+    if (accountHandlerHistories) {
+        handlerHistories = accountHandlerHistories;
+    } else {
+        handlerHistories = withdrawHandlerHistory;
+        needWrited = true;
+    }
+
     const logs = await getDepositWithdrawEvents(
         EVENT_TYPE.withdraw,
         fromBlock,
         toBlock,
         account,
         providerKey,
-        withdrawHandlerHistory
+        handlerHistories
     ).catch((error) => {
         handleError(
             error,
@@ -110,6 +143,15 @@ async function getWithdrawHistories(account, toBlock) {
             account
         );
     });
+
+    // write data to history memory
+    if (needWrited) {
+        const handlers = new Set();
+        logs.forEach((log) => handlers.add(log.address));
+        handlers.add(getWithdrawHandler().address);
+        accountWithdrawHandlerHistories[account] = Array.from(handlers);
+    }
+
     // handle gtoken burn amount
     await AppendGTokenMintOrBurnAmountToLog(logs);
 
@@ -331,6 +373,7 @@ async function getTransactionHistories(account, toBlock) {
 async function generateReport(account) {
     const latestBlock = await provider.getBlock();
     const promises = [];
+    account = account.toLowerCase();
     promises.push(getTransactionHistories(account, latestBlock.number));
     promises.push(getPowerD(providerKey).getAssets(account));
     promises.push(getGroVault(providerKey).getAssets(account));
