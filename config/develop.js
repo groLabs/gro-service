@@ -18,6 +18,7 @@ module.exports = {
         '0x59B6b763509198d07cF8F13a2dc6F2df98CB0a1d': {},
     },
     old_pnl: ['0x4C4A81298CC85c5BBF8092bd241fCc5dD6Ec3f74'],
+    buoy_start_block: 12837080,
     blockchain: {
         network: 'http://localhost:8545',
         start_block: 12522788,

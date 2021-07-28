@@ -23,6 +23,7 @@ module.exports = {
         '0x4C4A81298CC85c5BBF8092bd241fCc5dD6Ec3f74',
         '0xc94dDeACff69bd206CEDdFe2b601a277225D23D6',
     ],
+    buoy_start_block: 12837080,
     blockchain: {
         network: 'mainnet',
         start_block: 12522788,
