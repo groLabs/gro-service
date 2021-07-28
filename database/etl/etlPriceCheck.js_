@@ -6,8 +6,8 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const {
     loadAllTables,
-    checkLastTimestamp
-} = require('../loader/loadGroStats');
+    // checkLastTimestamp
+} = require('../loader/loadPriceCheck');
 
 const options = {
     hostname: route.gro_stats.hostname,
@@ -17,7 +17,7 @@ const options = {
 };
 
 //TODO: replace '200' by SUCCESS in global var
-const etlGroStats = async () => {
+const etlPriceCheck = async () => {
     try {
         let lastTimestamp;
         const res = await checkLastTimestamp();
@@ -38,7 +38,7 @@ const etlGroStats = async () => {
                     logger.error(`**DB: Error with API call: \n Error code ${call.status} \n Error description: ${call.data}`);
                 }
             } else {
-                logger.error('**DB: No timestamp found in table SYS_PROTOCOL_LOADS');
+                logger.error('**DB: No timestamp found in table SYS_PROTOCOL_LOAD');
             }
         }
     } catch (err) {

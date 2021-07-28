@@ -23,7 +23,7 @@ const QUERY_ERROR = 400;
 
 
 const checkLastTimestamp = async () => {
-    return await query('select_last_protocol_load.sql', []);
+    return await query('select_last_protocol_load.sql', ['GRO_STATS']);
 }
 
 const checkQueryResult = (result, table) => {
@@ -175,6 +175,7 @@ const updateTimeStamp = async (stats) => {
             stats.current_timestamp,
             moment().utc(),
             getNetworkId(),
+            'GRO_STATS',
         ];
         const res = await query('update_last_protocol_load.sql', params);
         if (res === QUERY_ERROR)
