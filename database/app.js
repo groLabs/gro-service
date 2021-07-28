@@ -3,15 +3,25 @@
 
 const { etlGroStats } = require('./etl/etlGroStats');
 const { groStatsHandler } = require('./handler/groStatsHandler');
+//const { goPrice } = require('./common/priceCheckParser');
 const scheduler = require('./scheduler/dbStatsScheduler');
 
 
+// *** TESTING ***
+(async () => {
+    try {
+        await etlGroStats();
+    } catch (err) {
+        console.log(err)
+    }
+})();
 //loadGroStatsDB();
 //loadGroStatsLiveDB('0xb5bE4d2510294d0BA77214F26F704d2956a99072');
-// etlGroStats();
-
 //groStatsHandler();
-scheduler.startDbStatsJobs();
+//goPrice();
+
+
+
 
 
 /*

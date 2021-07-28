@@ -1,6 +1,8 @@
 const { query } = require('../handler/queryHandler');
-const { groStatsCall } = require('../common/groStatsCall');
-const config = require('config');
+const { apiCaller } = require('../common/apiCaller');
+//const config = require('config');
+const { getConfig } = require('../../common/configUtil');
+const route = getConfig('route');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const {
@@ -8,9 +10,12 @@ const {
     checkLastTimestamp
 } = require('../loader/loadGroStats');
 
-/* TEST VALUES */
-// const { stats_new } = require('./sample_new');
-// const stats = stats_new;
+const options = {
+    hostname: route.gro_stats.hostname,
+    port: route.gro_stats.port,
+    path: route.gro_stats.path,
+    method: 'GET',
+};
 
 //TODO: replace '200' by SUCCESS in global var
 const etlGroStats = async () => {
@@ -20,13 +25,14 @@ const etlGroStats = async () => {
         if (res.status === 200) {
             lastTimestamp = res.rows[0].last_timestamp;
             if (lastTimestamp) {
-                const call = await groStatsCall();
+                const call = await apiCaller(options);
                 if (call.status === 200) {
                     const stats = JSON.parse(call.data);
                     if (stats.gro_stats && 'current_timestamp' in stats.gro_stats) {
                         const currentTimestamp = parseInt(stats.gro_stats.current_timestamp);
                         if (currentTimestamp > lastTimestamp)
                             await loadAllTables(stats.gro_stats);
+    else console.log('no need')
                     } else {
                         logger.error('**DB: No timestamp found in JSON API call');
                     }
