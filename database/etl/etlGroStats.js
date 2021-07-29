@@ -4,10 +4,8 @@ const { getConfig } = require('../../common/configUtil');
 const route = getConfig('route');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-const {
-    loadAllTables,
-    checkLastTimestamp
-} = require('../loader/loadGroStats');
+const { loadAllTables } = require('../loader/loadGroStats');
+const { checkLastTimestamp } = require('../common/protocolUtil');
 
 const options = {
     hostname: route.gro_stats.hostname,
@@ -20,7 +18,7 @@ const options = {
 const etlGroStats = async () => {
     try {
         let lastTimestamp;
-        const res = await checkLastTimestamp();
+        const res = await checkLastTimestamp('GRO_STATS');
         if (res.status === 200) {
             lastTimestamp = res.rows[0].last_timestamp;
             if (lastTimestamp) {

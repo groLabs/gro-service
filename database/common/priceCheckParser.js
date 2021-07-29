@@ -1,54 +1,76 @@
 const moment = require('moment');
-// const {
-//     getNetworkId
-// } = require('../common/personalUtil');
-const statsTemp = require('./sample');
-const stats = statsTemp.sample.pricing;
+const { getNetworkId } = require('../common/personalUtil');
 
-const defaultData = (stats2) => {
-    return {
-        "block_number": stats.block_number,
-        "block_timestamp": 1,   //TODO: block_timestamp
-        "block_date": moment(), //TODO: block_date   moment.unix(stats.current_timestamp).utc(),        
-        "network_id": 3, //getNetworkId(),
-    };
+
+const defaultData = (prices) => {
+    return [
+        prices.block_number,
+        prices.block_timestamp,
+        moment.unix(prices.block_timestamp),  
+        getNetworkId(),
+    ];
 }
 
-const getPriceGlobal = (stats2, kpi) => {
-    const result = {
-        ...defaultData(''),
+const getPair = (kpi) => {
+    switch (kpi) {
+        case 'dai_usdc':
+            return 1;
+        case 'dai_usdt':
+            return 2;
+        case 'usdt_usdc':
+            return 3;
+        default:
+            return 0;
+    }
+}
+
+const getPriceDetail = (prices, kpi) => {
+    const result2 = {
+        ...defaultData(prices),
         "pair": kpi,
-        "curve_price": stats.curve[kpi],
-        "curve_cache_price": stats.gro_cache[kpi],
-        "curve_cache_diff": stats.curve_cache_diff[kpi],
-        "curve_cache_check": stats.curve_cache_check[kpi],
-        "chainlink_price": stats.chainlink[kpi],
-        "curve_chainlink_diff": stats.curve_chainlink_diff[kpi],
-        "curve_chainlink_check": stats.curve_chainlink_check[kpi],
+        "curve_price": prices.curve[kpi],
+        "curve_cache_price": prices.gro_cache[kpi],
+        "curve_cache_diff": prices.curve_cache_diff[kpi],
+        "curve_cache_check": prices.curve_cache_check[kpi],
+        "chainlink_price": prices.chainlink[kpi],
+        "curve_chainlink_diff": prices.curve_chainlink_diff[kpi],
+        "curve_chainlink_check": prices.curve_chainlink_check[kpi],
         "creation_date": moment.utc(),
     }
-    console.log('result:', result);
+    console.log('result:', result2);
+    const result = [
+        ...defaultData(prices),
+        getPair(kpi),
+        prices.curve[kpi],
+        prices.gro_cache[kpi],
+        prices.curve_cache_diff[kpi],
+        prices.curve_cache_check[kpi],
+        prices.chainlink[kpi],
+        prices.curve_chainlink_diff[kpi],
+        prices.curve_chainlink_check[kpi],
+        moment.utc(),
+    ];
+    console.log(result);
+    return result;
 }
 
-const getPriceDetail = (stats2) => {
-    const result = {
-        ...defaultData(''),
-        "safety_check_bound": stats.safety_check_bound,
-        "safety_check": stats.safety_check,
-    }
-    console.log('result2:', result);
-
+const getPriceGlobal = (prices) => {
+    return [
+        ...defaultData(prices),
+        prices.safety_check_bound,
+        prices.safety_check,
+        moment.utc(),
+    ];
 }
 
-const goPrice = () => {
-    getPriceGlobal('', 'dai_usdc');
-    getPriceGlobal('', 'dai_usdt');
-    getPriceGlobal('', 'usdt_usdc');
-    getPriceDetail('');
-}
+// const goPrice = (prices) => {
+//     getPriceDetail(prices, 'dai_usdc');
+//     getPriceDetail(prices, 'dai_usdt');
+//     getPriceDetail(prices, 'usdt_usdc');
+//     getPriceGlobal(prices);
+// }
 
 module.exports = {
-    goPrice,
     getPriceGlobal,
     getPriceDetail,
 }

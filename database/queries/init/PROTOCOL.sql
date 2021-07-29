@@ -145,6 +145,7 @@ CREATE TABLE IF NOT EXISTS gro."PROTOCOL_VAULTS" (
 
 ALTER TABLE gro."PROTOCOL_VAULTS" OWNER to postgres;
 
+-- TODO: PKs
 CREATE TABLE IF NOT EXISTS gro."SYS_PROTOCOL_LOADS" (
     table_name character varying(256) NULL,
     last_timestamp integer NOT NULL,
@@ -179,7 +180,7 @@ CREATE TABLE gro."PROTOCOL_PRICE_CHECK_DETAILED" (
     block_timestamp INTEGER NULL,
     block_date TIMESTAMP (6) NULL,
     network_id SMALLINT NULL,
-    stablecoin_id SMALLINT NOT NULL,
+    stablecoin_pair_id SMALLINT NOT NULL,
     curve_price NUMERIC (20, 8) NULL,
     curve_cache_price NUMERIC (20, 8) NULL,
     curve_cache_diff NUMERIC (20, 8) NULL,
@@ -188,7 +189,7 @@ CREATE TABLE gro."PROTOCOL_PRICE_CHECK_DETAILED" (
     curve_chainlink_diff NUMERIC (20, 8) NULL,
     curve_chainlink_check BOOLEAN NULL,
     creation_date TIMESTAMP (6) NULL,
-    CONSTRAINT "PROTOCOL_PRICE_CHECK_DETAILED_pkey" PRIMARY KEY (block_number, stablecoin_id) NOT DEFERRABLE INITIALLY IMMEDIATE
+    CONSTRAINT "PROTOCOL_PRICE_CHECK_DETAILED_pkey" PRIMARY KEY (block_number, stablecoin_pair_id) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."PROTOCOL_PRICE_CHECK_DETAILED" OWNER to postgres;

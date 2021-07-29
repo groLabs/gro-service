@@ -2,8 +2,8 @@
 // const { loadGroStatsLiveDB } = require('./loader/personalLiveLoader');
 
 const { etlGroStats } = require('./etl/etlGroStats');
+const { etlPriceCheck } = require('./etl/etlPriceCheck');
 const { groStatsHandler } = require('./handler/groStatsHandler');
-const { goPrice } = require('./common/priceCheckParser');
 const scheduler = require('./scheduler/dbStatsScheduler');
 
 
@@ -11,6 +11,7 @@ const scheduler = require('./scheduler/dbStatsScheduler');
 (async () => {
     try {
         await etlGroStats();
+        // await etlPriceCheck();
     } catch (err) {
         console.log(err)
     }
@@ -19,6 +20,7 @@ const scheduler = require('./scheduler/dbStatsScheduler');
 //loadGroStatsLiveDB('0xb5bE4d2510294d0BA77214F26F704d2956a99072');
 //groStatsHandler();
 //goPrice();
+
 
 
 

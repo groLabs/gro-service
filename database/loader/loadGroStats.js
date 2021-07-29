@@ -1,5 +1,4 @@
 // TODO: error handler
-// TODO: loggers
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const {
@@ -19,23 +18,15 @@ const {
 } = require('../common/groStatsParser');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
+const {
+    checkQueryResult,
+    updateTimeStamp,
+} = require('../common/protocolUtil');
 const QUERY_ERROR = 400;
 
 
 const checkLastTimestamp = async () => {
     return await query('select_last_protocol_load.sql', ['GRO_STATS']);
-}
-
-const checkQueryResult = (result, table) => {
-    if (result.status === QUERY_ERROR) {
-        throw `Query error with table ${table}`;
-    } else if (table !== 'PROTOCOL_VAULTS'
-        && table !== 'PROTOCOL_RESERVES'
-        && table !== 'PROTOCOL_STRATEGIES'
-        && table !== 'PROTOCOL_EXPOSURE_STABLES'
-        && table !== 'PROTOCOL_EXPOSURE_PROTOCOLS') {
-        logger.info(`**DB: ${result.rowCount} records added into ${table}`);
-    }
 }
 
 const loadAPY = async (stats) => {
@@ -169,22 +160,6 @@ const loadExposureProtocols = async (stats) => {
     }
 }
 
-const updateTimeStamp = async (stats) => {
-    try {
-        const params = [
-            stats.current_timestamp,
-            moment().utc(),
-            getNetworkId(),
-            'GRO_STATS',
-        ];
-        const res = await query('update_last_protocol_load.sql', params);
-        if (res === QUERY_ERROR)
-            throw `Query error in updateTimeStamp()`; //TODO
-    } catch (err) {
-        logger.error(`**DB: Error in loadGroStats.js->updateTimeStamp(): ${err}`);
-    }
-}
-
 const loadAllTables = async (stats) => {
     try {
         if (stats.current_timestamp > 0) {
@@ -200,9 +175,9 @@ const loadAllTables = async (stats) => {
                 loadExposureProtocols(stats),
             ]);
             if (res.every(Boolean)) {
-                await updateTimeStamp(stats);
+                await updateTimeStamp(stats.current_timestamp, 'GRO_STATS');
             } else {
-                logger.warn(`**DB: Errors found in loadGroStats.js->Table SYS_PROTOCOL_LOAD not updated.`);
+                logger.warn(`**DB: Errors found in loadGroStats.js->Table SYS_PROTOCOL_LOADS not updated.`);
             }
         } else {
             logger.error(`**DB: Error in loadGroStats.js->loadAllTables(): stats JSON structure is not correct.`);
