@@ -137,7 +137,7 @@ function compareCurveToRef(curve, ref) {
         .mul(PERCENT_DECIMAL)
         .div(ref.dai_usdc);
     // dai/usdt
-    diff.dai_usdt = curve.dai_usdc
+    diff.dai_usdt = curve.dai_usdt
         .sub(ref.dai_usdt)
         .abs()
         .mul(PERCENT_DECIMAL)
