@@ -10,8 +10,8 @@ const scheduler = require('./scheduler/dbStatsScheduler');
 // *** TESTING ***
 (async () => {
     try {
-        await etlGroStats();
-        // await etlPriceCheck();
+        // await etlGroStats();
+        await etlPriceCheck();
     } catch (err) {
         console.log(err)
     }

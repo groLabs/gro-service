@@ -29,7 +29,26 @@ router.get(
         let { network } = req.query;
         network = network || '';
         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
-            throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats.');
+            throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats');
+        }
+        const groStats = await getAllStats();
+        res.json(groStats);
+    })
+);
+
+router.get(
+    '/price_check',
+    validate([
+        query('network')
+            .trim()
+            .notEmpty()
+            .withMessage(`network can't be empty.`),
+    ]),
+    wrapAsync(async (req, res) => {
+        let { network } = req.query;
+        network = network || '';
+        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+            throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats');
         }
         const groStats = await getAllStats();
         res.json(groStats);

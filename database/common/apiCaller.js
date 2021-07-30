@@ -18,7 +18,7 @@ const apiCaller = (options) => {
                     data: `Connection details not found: [hostname: ${options.hostname}]`
                 });
             } else {
-                // Use http when bot is running inside AWS VPC; use https otherwise
+                // Use http when bot is running inside AWS VPC and using msb* name; use https otherwise
                 const connection = (options.hostname.slice(0, 3) === 'msb')
                     ? http
                     : https;

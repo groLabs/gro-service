@@ -2,12 +2,9 @@
 const { query } = require('../handler/queryHandler');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-const {
-    getNetworkId,
-    // getBlockData,
-} = require('./personalUtil');
+const { getNetworkId } = require('./personalUtil');
 const moment = require('moment');
-const QUERY_ERROR = 400; //TODO: in constants file
+const QUERY_ERROR = require('../constants');
 
 
 const checkLastTimestamp = async (source) => {
@@ -17,13 +14,14 @@ const checkLastTimestamp = async (source) => {
 const checkQueryResult = (result, table) => {
     if (result.status === QUERY_ERROR) {
         throw `Query error with table ${table}`;
-    } else if (table !== 'PROTOCOL_VAULTS'
-    && table !== 'PROTOCOL_RESERVES'
-    && table !== 'PROTOCOL_STRATEGIES'
-    && table !== 'PROTOCOL_EXPOSURE_STABLES'
-    && table !== 'PROTOCOL_EXPOSURE_PROTOCOLS'
-    && table !== 'PROTOCOL_PRICE_CHECK_DETAILED') {
-    // } else if (table !== 'PROTOCOL_PRICE_CHECK_DETAILED') {
+    } else if (
+        table !== 'PROTOCOL_VAULTS'
+        && table !== 'PROTOCOL_RESERVES'
+        && table !== 'PROTOCOL_STRATEGIES'
+        && table !== 'PROTOCOL_EXPOSURE_STABLES'
+        && table !== 'PROTOCOL_EXPOSURE_PROTOCOLS'
+        && table !== 'PROTOCOL_PRICE_CHECK_DETAILED'
+    ) {
         logger.info(`**DB: ${result.rowCount} records added into ${table}`);
     }
 }

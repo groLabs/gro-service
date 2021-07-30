@@ -45,12 +45,11 @@ const loadPriceDetail = async (prices, pairs) => {
     }
 }
 
-
-//
 const loadAllTables = async (prices) => {
     try {
         if (prices.block_number) {
             // Get block timestamp
+            // TODO: the timestamp will be known, so this might be removed
             const block = await getBlockData(parseInt(prices.block_number));
             prices.block_timestamp = block.timestamp;
     

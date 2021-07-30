@@ -3,12 +3,13 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const {
-    QUERY_ERROR,
+    // QUERY_ERROR,
     getBlockData,
     getNetworkId,
     handleErr,
     isPlural,
 } = require('../common/personalUtil');
+const QUERY_ERROR = require('../constants');
 
 /// @notice Adds new blocks into table ETH_BLOCKS
 /// @return True if no exceptions found, false otherwise

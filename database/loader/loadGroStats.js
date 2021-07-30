@@ -22,7 +22,8 @@ const {
     checkQueryResult,
     updateTimeStamp,
 } = require('../common/protocolUtil');
-const QUERY_ERROR = 400;
+// const QUERY_ERROR = 400;
+const QUERY_ERROR = require('../constants');
 
 
 const checkLastTimestamp = async () => {

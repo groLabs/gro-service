@@ -3,9 +3,10 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const {
-    QUERY_ERROR,
+    // QUERY_ERROR,
     handleErr,
 } = require('../common/personalUtil');
+const QUERY_ERROR = require('../constants');
 
 /// @notice Stores the last load time and number of records loaded into a final table for 
 ///         each day of a given time period
