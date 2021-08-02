@@ -4,7 +4,7 @@ INSERT INTO gro."PROTOCOL_PRICE_CHECK_GLOBAL" (
         "block_date",
         "network_id",
         "safety_check_bound",
-        "safety_checkck",
+        "safety_check",
         "creation_date"
     )
 VALUES (

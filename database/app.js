@@ -3,7 +3,8 @@
 
 const { etlGroStats } = require('./etl/etlGroStats');
 const { etlPriceCheck } = require('./etl/etlPriceCheck');
-const { groStatsHandler } = require('./handler/groStatsHandler');
+// const { groStatsHandler } = require('./handler/groStatsHandler');
+const { getPriceCheck} = require('./handler/priceCheckHandler');
 const scheduler = require('./scheduler/dbStatsScheduler');
 
 
@@ -11,9 +12,10 @@ const scheduler = require('./scheduler/dbStatsScheduler');
 (async () => {
     try {
         // await etlGroStats();
-        await etlPriceCheck();
+        // await etlPriceCheck();
+        console.log(await getPriceCheck());
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 })();
 //loadGroStatsDB();

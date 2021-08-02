@@ -4,7 +4,8 @@ const router = express.Router();
 const { query } = require('express-validator');
 // const { wrapAsync } = require('../common/wrap');
 const { ParameterError } = require('../../common/error');
-const { getAllStats } = require('../handler/groStatsHandler')
+const { getAllStats } = require('../handler/groStatsHandler');
+const { getPriceCheck } = require('../handler/priceCheckHandler');
 const { validate } = require('../../stats/common/validate');
 const { personalStatsMessage } = require('../../discordMessage/statsMessage');
 
@@ -50,8 +51,8 @@ router.get(
         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
             throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats');
         }
-        const groStats = await getAllStats();
-        res.json(groStats);
+        const priceCheck = await getPriceCheck();
+        res.json(priceCheck);
     })
 );
 
