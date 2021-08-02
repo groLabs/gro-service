@@ -9,13 +9,11 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { loadAllTables } = require('../loader/loadPriceCheck');
 const { checkLastTimestamp } = require('../common/protocolUtil');
 const { findBlockByDate } = require('../common/personalUtil'); //TODO: generic file, not in personalUtil
+const { QUERY_SUCCESS } = require('../constants');
 
-// const statsTemp = require('./sample');
-// const stats = statsTemp.sample.pricing;
 
 const DIFF_2m = 120;
 const HALF_AN_HOUR = 1800 - DIFF_2m;
-
 //TODO: if calculation is in process, do not launch again this process!
 
 // Calculate number of 30' intervals from the latest process data until now
@@ -41,12 +39,11 @@ const calcTimestamps = (lastTimestamp) => {
     }
 }
 
-//TODO: replace '200' by SUCCESS in global var
 const etlPriceCheck = async () => {
     try {
         let lastTimestamp;
         const res = await checkLastTimestamp('PRICE_CHECK');
-        if (res.status === 200) {
+        if (res.status === QUERY_SUCCESS) {
             lastTimestamp = res.rows[0].last_timestamp;
             if (lastTimestamp) {
                 const intervals = calcTimestamps(lastTimestamp);  
@@ -59,10 +56,11 @@ const etlPriceCheck = async () => {
                         method: 'GET',
                     };
                     const call = await apiCaller(options);
-                    if (call.status === 200) {
+                    if (call.status === QUERY_SUCCESS) {
                         const prices = JSON.parse(call.data);
                         if (prices.pricing && 'block_number' in prices.pricing) {
                             logger.info(`**DB: Processing price check for block ${block}`);
+                            prices.pricing.current_timestamp = moment.utc(currentTimestamp).unix();
                             await loadAllTables(prices.pricing);
                         } else {
                             logger.error('**DB: No block number found in JSON API call');
@@ -72,7 +70,7 @@ const etlPriceCheck = async () => {
                     }
                 }
             } else {
-                logger.error('**DB: No timestamp found in table SYS_PROTOCOL_LOAD');
+                logger.error('**DB: No timestamp found in table SYS_PROTOCOL_LOADS');
             }
         }
     } catch (err) {

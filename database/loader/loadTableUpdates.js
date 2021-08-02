@@ -6,7 +6,7 @@ const {
     // QUERY_ERROR,
     handleErr,
 } = require('../common/personalUtil');
-const QUERY_ERROR = require('../constants');
+const { QUERY_ERROR } = require('../constants');
 
 /// @notice Stores the last load time and number of records loaded into a final table for 
 ///         each day of a given time period

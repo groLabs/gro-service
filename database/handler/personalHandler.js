@@ -4,7 +4,7 @@ const moment = require('moment');
 // const {
 //     QUERY_ERROR,
 // } = require('../common/personalUtil');
-const QUERY_ERROR = require('../constants');
+const { QUERY_ERROR } = require('../constants');
 
 const getTransfers = async (account) => {
     try {

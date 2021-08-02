@@ -5,8 +5,8 @@ const { getNetworkId } = require('../common/personalUtil');
 const defaultData = (prices) => {
     return [
         prices.block_number,
-        prices.block_timestamp,
-        moment.unix(prices.block_timestamp),  
+        prices.current_timestamp,
+        moment.unix(prices.current_timestamp),  
         getNetworkId(),
     ];
 }

@@ -1,28 +1,32 @@
-
 const { query } = require('../handler/queryHandler');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { getNetworkId } = require('./personalUtil');
 const moment = require('moment');
-const QUERY_ERROR = require('../constants');
+const { QUERY_ERROR } = require('../constants');
 
 
 const checkLastTimestamp = async (source) => {
     return await query('select_last_protocol_load.sql', [source]);
 }
-
 const checkQueryResult = (result, table) => {
-    if (result.status === QUERY_ERROR) {
-        throw `Query error with table ${table}`;
-    } else if (
-        table !== 'PROTOCOL_VAULTS'
-        && table !== 'PROTOCOL_RESERVES'
-        && table !== 'PROTOCOL_STRATEGIES'
-        && table !== 'PROTOCOL_EXPOSURE_STABLES'
-        && table !== 'PROTOCOL_EXPOSURE_PROTOCOLS'
-        && table !== 'PROTOCOL_PRICE_CHECK_DETAILED'
-    ) {
-        logger.info(`**DB: ${result.rowCount} records added into ${table}`);
+    try {
+        if (result.status === QUERY_ERROR) {
+            return false;
+        } else if (
+            table !== 'PROTOCOL_VAULTS'
+            && table !== 'PROTOCOL_RESERVES'
+            && table !== 'PROTOCOL_STRATEGIES'
+            && table !== 'PROTOCOL_EXPOSURE_STABLES'
+            && table !== 'PROTOCOL_EXPOSURE_PROTOCOLS'
+            && table !== 'PROTOCOL_PRICE_CHECK_DETAILED'
+        ) {
+            logger.info(`**DB: ${result.rowCount} records added into ${table}`);
+        }
+        return true;
+    } catch (err) {
+        logger.error(`**DB: Error in protocolUtil.js->checkQueryResult(): ${err}`);
+        return false;
     }
 }
 
@@ -35,13 +39,12 @@ const updateTimeStamp = async (block_timestamp, source) => {
             source,
         ];
         const res = await query('update_last_protocol_load.sql', params);
-        if (res === QUERY_ERROR)
-            throw `Query error in updateTimeStamp()`; //TODO
+        if (res.status === QUERY_ERROR)
+            logger.warn(`**DB: Error in protocolUtil.js->updateTimeStamp(): Table SYS_PROTOCOL_LOADS not updated.`);
     } catch (err) {
-        logger.error(`**DB: Error in loadGroStats.js->updateTimeStamp(): ${err}`);
+        logger.error(`**DB: Error in protocolUtil.js->updateTimeStamp(): ${err}`);
     }
 }
-
 
 module.exports = {
     checkLastTimestamp,

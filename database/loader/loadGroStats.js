@@ -22,8 +22,7 @@ const {
     checkQueryResult,
     updateTimeStamp,
 } = require('../common/protocolUtil');
-// const QUERY_ERROR = 400;
-const QUERY_ERROR = require('../constants');
+const { QUERY_ERROR } = require('../constants');
 
 
 const checkLastTimestamp = async () => {
@@ -39,9 +38,9 @@ const loadAPY = async (stats) => {
             query('insert_protocol_apy.sql', getAPY(stats, 'pwrd')),
             query('insert_protocol_apy.sql', getAPY(stats, 'gvt'))
         ]);
-        checkQueryResult(pwrd, 'PROTOCOL_APY');
-        checkQueryResult(gvt, 'PROTOCOL_APY');
-        return true;
+        return (checkQueryResult(pwrd, 'PROTOCOL_APY')
+            && checkQueryResult(gvt, 'PROTOCOL_APY'))
+            ? true : false;
     } catch (err) {
         logger.error(`**DB: Error in loadGroStats.js->loadAPY(): ${err}`);
         return false;
@@ -51,8 +50,7 @@ const loadAPY = async (stats) => {
 const loadTVL = async (stats) => {
     try {
         const tvl = await query('insert_protocol_tvl.sql', getTVL(stats));
-        checkQueryResult(tvl, 'PROTOCOL_TVL');
-        return true;
+        return (checkQueryResult(tvl, 'PROTOCOL_TVL')) ? true : false;
     } catch (err) {
         logger.error(`**DB: Error in loadGroStats.js->loadTVL(): ${err}`);
         return false;
@@ -62,8 +60,7 @@ const loadTVL = async (stats) => {
 const loadLifeguard = async (stats) => {
     try {
         const lifeguard = await query('insert_protocol_lifeguard.sql', getLifeguard(stats));
-        checkQueryResult(lifeguard, 'PROTOCOL_LIFEGUARD');
-        return true;
+        return (checkQueryResult(lifeguard, 'PROTOCOL_LIFEGUARD')) ? true : false;
     } catch (err) {
         logger.error(`**DB: Error in loadGroStats.js->loadLifeguard(): ${err}`);
         return false;
@@ -73,8 +70,7 @@ const loadLifeguard = async (stats) => {
 const loadSystem = async (stats) => {
     try {
         const system = await query('insert_protocol_system.sql', getSystem(stats));
-        checkQueryResult(system, 'PROTOCOL_SYSTEM');
-        return true;
+        return (checkQueryResult(system, 'PROTOCOL_SYSTEM')) ? true : false;
     } catch (err) {
         logger.error(`**DB: Error in loadGroStats.js->loadSystem(): ${err}`);
         return false;
@@ -86,8 +82,11 @@ const loadVaults = async (stats) => {
         let rows = 0;
         for (const vault of getVaults(stats)) {
             const vaults = await query('insert_protocol_vaults.sql', vault);
-            checkQueryResult(vaults, 'PROTOCOL_VAULTS');
-            rows += vaults.rowCount;
+            if (checkQueryResult(vaults, 'PROTOCOL_VAULTS')) {
+                rows += vaults.rowCount;
+            } else {
+                return false;
+            }
         }
         logger.info(`**DB: ${rows} records added into ${'PROTOCOL_VAULTS'}`);
         return true;
@@ -102,8 +101,11 @@ const loadReserves = async (stats) => {
         let rows = 0;
         for (const vault of getReserves(stats)) {
             const vaults = await query('insert_protocol_reserves.sql', vault);
-            checkQueryResult(vaults, 'PROTOCOL_RESERVES');
-            rows += vaults.rowCount;
+            if (checkQueryResult(vaults, 'PROTOCOL_RESERVES')) {
+                rows += vaults.rowCount;
+            } else {
+                return false;
+            }
         }
         logger.info(`**DB: ${rows} records added into ${'PROTOCOL_RESERVES'}`);
         return true;
@@ -118,8 +120,11 @@ const loadStrategies = async (stats) => {
         let rows = 0;
         for (const strategy of getStrategies(stats)) {
             const strategies = await query('insert_protocol_strategies.sql', strategy);
-            checkQueryResult(strategies, 'PROTOCOL_STRATEGIES');
-            rows += strategies.rowCount;
+            if (checkQueryResult(strategies, 'PROTOCOL_STRATEGIES')) {
+                rows += strategies.rowCount;
+            } else {
+                return false;
+            }
         }
         logger.info(`**DB: ${rows} records added into ${'PROTOCOL_STRATEGIES'}`);
         return true;
@@ -134,8 +139,11 @@ const loadExposureStables = async (stats) => {
         let rows = 0;
         for (const stable of getExposureStables(stats)) {
             const stables = await query('insert_protocol_exposure_stables.sql', stable);
-            checkQueryResult(stables, 'PROTOCOL_EXPOSURE_STABLES');
-            rows += stables.rowCount;
+            if (checkQueryResult(stables, 'PROTOCOL_EXPOSURE_STABLES')) {
+                rows += stables.rowCount;
+            } else {
+                return false;
+            }
         }
         logger.info(`**DB: ${rows} records added into ${'PROTOCOL_EXPOSURE_STABLES'}`);
         return true;
@@ -150,8 +158,11 @@ const loadExposureProtocols = async (stats) => {
         let rows = 0;
         for (const stable of getExposureProtocols(stats)) {
             const stables = await query('insert_protocol_exposure_protocols.sql', stable);
-            checkQueryResult(stables, 'PROTOCOL_EXPOSURE_PROTOCOLS');
-            rows += stables.rowCount;
+            if (checkQueryResult(stables, 'PROTOCOL_EXPOSURE_PROTOCOLS')) {
+                rows += stables.rowCount;
+            } else {
+                return false;
+            }
         }
         logger.info(`**DB: ${rows} records added into ${'PROTOCOL_EXPOSURE_PROTOCOLS'}`);
         return true;
@@ -178,7 +189,7 @@ const loadAllTables = async (stats) => {
             if (res.every(Boolean)) {
                 await updateTimeStamp(stats.current_timestamp, 'GRO_STATS');
             } else {
-                logger.warn(`**DB: Errors found in loadGroStats.js->Table SYS_PROTOCOL_LOADS not updated.`);
+                logger.warn(`**DB: Error/s found in loadGroStats.js->loadAllTables(): Table SYS_PROTOCOL_LOADS not updated.`);
             }
         } else {
             logger.error(`**DB: Error in loadGroStats.js->loadAllTables(): stats JSON structure is not correct.`);

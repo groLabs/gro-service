@@ -9,7 +9,7 @@ const {
     handleErr,
     isPlural,
 } = require('../common/personalUtil');
-const QUERY_ERROR = require('../constants');
+const { QUERY_ERROR } = require('../constants');
 
 /// @notice Adds new blocks into table ETH_BLOCKS
 /// @return True if no exceptions found, false otherwise

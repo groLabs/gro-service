@@ -5,7 +5,7 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 // const {
 //     QUERY_ERROR,
 // } = require('../common/personalUtil');
-const QUERY_ERROR = require('../constants');
+const { QUERY_ERROR } = require('../constants');
 
 const DIFF_5m = 300;
 const DIFF_1h = 3600;
