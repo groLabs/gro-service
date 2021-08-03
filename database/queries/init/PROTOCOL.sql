@@ -168,7 +168,7 @@ CREATE TABLE gro."PROTOCOL_PRICE_CHECK_GLOBAL" (
     block_date TIMESTAMP (6) NULL,
     network_id SMALLINT NULL,
     safety_check_bound NUMERIC (20, 8) NULL,
-    safety_checkck BOOLEAN NULL,
+    safety_check BOOLEAN NULL,
     creation_date TIMESTAMP (6) NULL,
     CONSTRAINT "PROTOCOL_PRICE_CHECK_GLOBAL_pkey" PRIMARY KEY (block_number) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
@@ -193,4 +193,26 @@ CREATE TABLE gro."PROTOCOL_PRICE_CHECK_DETAILED" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."PROTOCOL_PRICE_CHECK_DETAILED" OWNER to postgres;
+
+CREATE TABLE gro."MD_STABLECOIN_PAIRS" (
+    pair_id INTEGER NOT NULL,
+    "name" CHARACTER VARYING (20) NULL,
+    description CHARACTER VARYING (256) NULL,
+    creation_date TIMESTAMP (6) NULL,
+    CONSTRAINT "MD_STABLECOIN_PAIRS_pkey" PRIMARY KEY (pair_id) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."MD_STABLECOIN_PAIRS" OWNER to postgres;
+
+INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
+VALUES (0, 'undefined', 'Undefined', now()::timestamp);
+
+INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
+VALUES (1, 'dai_usdc', 'DAI - USDC', now()::timestamp);
+
+INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
+VALUES (2, 'dai_usdt', 'DAI - USDT', now()::timestamp);
+
+INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
+VALUES (3, 'usdt_usdc', 'USDT - USDC', now()::timestamp);
 
