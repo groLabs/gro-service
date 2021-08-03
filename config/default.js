@@ -1,6 +1,10 @@
 module.exports = {
     bot_balance_warn: '20000000000000000000',
     etherscan_api_key: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
+    pagerduty: {
+        token: process.env.PAGERDUTY_TOKEN,
+        from: process.env.PAGERDUTY_TRIGGER_FROM,
+    },
     harvest_callcost: {
         vault_0: {
             strategy_0: '1641125000000000',
