@@ -2,7 +2,14 @@
 SELECT apy."current_timestamp",
     apy."current_date",
     apy."network_id",
-    apy."apy_monthly"
+    apy."product_id",
+    apy."apy_last7d",
+    apy."apy_last24h",
+    apy."apy_daily",
+    apy."apy_weekly",
+    apy."apy_monthly",
+    apy."apy_all_time",
+    apy."apy_current"
 FROM gro."PROTOCOL_APY" apy,
     (
         SELECT max(ts."current_timestamp") as ts,
@@ -17,11 +24,4 @@ FROM gro."PROTOCOL_APY" apy,
         GROUP BY dates.days
     ) max_ts
 WHERE apy."current_timestamp" = max_ts.ts
-    AND extract(
-        isodow
-        from "current_date"
-    ) = extract(
-        isodow
-        from date $2
-    )
 ORDER BY apy."current_timestamp" DESC;

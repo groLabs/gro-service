@@ -27,6 +27,7 @@ module.exports = {
     blockchain: {
         network: 'mainnet',
         start_block: 12522788,
+        start_timestamp: 1622204347,
         default_api_keys: {
             alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',

@@ -3,7 +3,13 @@ SELECT apy."current_timestamp",
     apy."current_date",
     apy."network_id",
     apy."product_id",
-    apy."apy_last7d"
+    apy."apy_last7d",
+    apy."apy_last24h",
+    apy."apy_daily",
+    apy."apy_weekly",
+    apy."apy_monthly",
+    apy."apy_all_time",
+    apy."apy_current"
 FROM gro."PROTOCOL_APY" apy,
     (
         SELECT max(ts."current_timestamp") as ts,
@@ -23,7 +29,13 @@ SELECT apy."current_timestamp",
     apy."current_date",
     apy."network_id",
     apy."product_id",
-    apy."apy_last7d"
+    apy."apy_last7d",
+    apy."apy_last24h",
+    apy."apy_daily",
+    apy."apy_weekly",
+    apy."apy_monthly",
+    apy."apy_all_time",
+    apy."apy_current"
 FROM gro."PROTOCOL_APY" apy,
     (
         SELECT min(ts."current_timestamp") as ts,
