@@ -4,12 +4,13 @@ const {
     sendMessage,
     sendMessageToChannel,
 } = require('../common/discord/discordService');
+const { sendAlertMessage } = require('../common/alertMessageSender');
 
 function curvePriceMessage(content) {
-    const { needStop, abnormalIndex, rootCause } = content;
-    let msg = `Price abnormal check is ${needStop} `;
+    const { needStop, abnormalIndex, rootCause, type, label } = content;
+    let msg = `${type} price abnormal check is ${needStop} `;
     if (needStop) {
-        msg = `Price abnormal check is ${needStop}, root cause is ${rootCause}, abnormalIndex ${abnormalIndex} need to decide whether set system to **Emergency** status`;
+        msg = `[EMERG] ${label} - ${type} price is abnormal for ${rootCause}, abnormal coin index: ${abnormalIndex}, need to decide whether set system to **Emergency** status`;
     }
     const discordMessage = {
         message: msg,
@@ -20,7 +21,7 @@ function curvePriceMessage(content) {
     if (!needStop) {
         sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
     } else {
-        sendMessageToChannel(DISCORD_CHANNELS.critActionEvents, discordMessage);
+        sendAlertMessage({ discord: discordMessage });
     }
 }
 

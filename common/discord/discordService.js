@@ -222,6 +222,19 @@ function sendMessageToAlertChannel(error) {
     sendMessage(DISCORD_CHANNELS.botAlerts, msgObj);
 }
 
+function sendErrorMessageToLogChannel(error) {
+    logger.error(error);
+    const msgObj = {
+        icon: ':warning:',
+        message: error.message,
+        type: error.messageTag,
+        description: error.embedMessage,
+        emojis: [MESSAGE_EMOJI.error],
+        transactionHash: error.transactionHash,
+    };
+    sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
+}
+
 module.exports = {
     DISCORD_CHANNELS,
     MESSAGE_TYPES,
@@ -230,4 +243,5 @@ module.exports = {
     sendEmbedMessage,
     sendMessageToChannel,
     sendMessageToAlertChannel,
+    sendErrorMessageToLogChannel,
 };

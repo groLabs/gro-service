@@ -5,7 +5,8 @@ const { generateGroStatsFile } = require('../handler/statsHandler');
 const { getCurrentApy } = require('../handler/currentApyHandler');
 const { getConfig } = require('../../common/configUtil');
 const {
-    sendMessageToAlertChannel,
+    DISCORD_CHANNELS,
+    sendErrorMessageToLogChannel,
 } = require('../../common/discord/discordService');
 const {
     getLastBlockNumber,
@@ -14,6 +15,7 @@ const {
     generateSummaryReport,
 } = require('../handler/eventHandler');
 const { getCurrentBlockNumber } = require('../../common/chainUtil');
+const { sendAlertMessage } = require('../../common/alertMessageSender');
 const logger = require('../statsLogger.js');
 
 const statsDir = getConfig('stats_folder');
@@ -28,14 +30,27 @@ const depositWithdrawEventSchedulerSetting =
 const eventSummarySchedulerSetting =
     getConfig('trigger_scheduler.event_summary', false) || '00 * * * *';
 
+const failedAlertTimes = getConfig('call_failed_time', false) || 2;
+const failedTimes = { apyGenerator: 0, eventTrade: 0, eventSumary: 0 };
+
 async function generateStatsFile() {
     schedule.scheduleJob(generateStatsSchedulerSetting, async () => {
         try {
             logger.info('start generate stats');
             const statsFilename = await generateGroStatsFile();
             logger.info(`generate stats file: ${statsFilename}`);
+            failedTimes.apyGenerator = 0;
         } catch (error) {
-            sendMessageToAlertChannel(error);
+            sendErrorMessageToLogChannel(DISCORD_CHANNELS.botLogs, error);
+            failedTimes.apyGenerator += 1;
+            if (failedTimes.apyGenerator >= failedAlertTimes) {
+                sendAlertMessage({
+                    discord: {
+                        description:
+                            '[WARN] B5 - APY generation failed, didn’t produce APY json file',
+                    },
+                });
+            }
         }
     });
 }
@@ -111,8 +126,18 @@ function depositWithdrawEventScheduler() {
                 currectBlockNumber,
                 'lastDepositAndWithdrawBlockNumber'
             );
+            failedTimes.eventTrade = 0;
         } catch (error) {
-            sendMessageToAlertChannel(error);
+            failedTimes.eventTrade += 1;
+            sendErrorMessageToLogChannel(error);
+            if (failedTimes.eventTrade > failedAlertTimes) {
+                sendAlertMessage({
+                    discord: {
+                        description:
+                            "[WARN] B16 - Trade trace monitor txn failed, trade tree didn't generate",
+                    },
+                });
+            }
         }
     });
 }
@@ -129,8 +154,18 @@ function EventSummaryScheduler() {
                 generateSummaryReport(lastBlockNumber, currectBlockNumber),
             ]);
             updateLastBlockNumber(currectBlockNumber, 'lastSummaryBlockNumber');
+            failedTimes.eventSumary = 0;
         } catch (error) {
-            sendMessageToAlertChannel(error);
+            failedTimes.eventSumary += 1;
+            sendErrorMessageToLogChannel(error);
+            if (failedTimes.eventSumary > failedAlertTimes) {
+                sendAlertMessage({
+                    discord: {
+                        description:
+                            "[WARN] B17 - Trade summary monitor txn failed, summary didn't generate",
+                    },
+                });
+            }
         }
     });
 }

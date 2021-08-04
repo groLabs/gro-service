@@ -140,7 +140,9 @@ async function curvePriceCheck(providerKey, walletKey) {
     curvePriceMessage({
         needStop: coinIndex < 3,
         abnormalIndex: coinIndex,
-        rootCause: 'Chainlink price out of range',
+        rootCause: 'price out of range',
+        type: 'Chainlink',
+        label: 'B9',
     });
     return curvePrice;
 }
@@ -193,7 +195,9 @@ async function buoyHealthCheck(
             curvePriceMessage({
                 needStop: coinIndex < 3,
                 abnormalIndex: coinIndex,
-                rootCause: 'Curve pool out of balance',
+                rootCause: 'pool out of balance',
+                type: 'Curve',
+                label: 'B10',
             });
         }
         return checkResult;

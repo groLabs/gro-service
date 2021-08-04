@@ -10,6 +10,7 @@ const {
     DISCORD_CHANNELS,
 } = require('./discord/discordService');
 const { botBalanceMessage } = require('../discordMessage/botBalanceMessage');
+const { sendAlertMessage } = require('./alertMessageSender');
 const { getConfig } = require('./configUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -38,6 +39,8 @@ let defaultWalletManager;
 const rpcProviders = {};
 const infruraRpcProviders = {};
 const botWallets = {};
+const failedTimes = { accountBalance: 0 };
+const failedAlertTimes = getConfig('call_failed_time', false) || 2;
 
 const network = getConfig('blockchain.network');
 logger.info(`network: ${network}`);
@@ -293,24 +296,27 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
     const accountLabel = shortAccount(botAccount);
     const balance = await walletManager.getBalance().catch((error) => {
         logger.error(error);
+        failedTimes.accountBalance += 1;
+        const embedMessage = {
+            type: MESSAGE_TYPES[botType],
+            description: `[WARN] B7 - Call **${botType}** ${accountLabel}'s ETH balance txn failed, check balance didn't complate`,
+            urls: [
+                {
+                    label: accountLabel,
+                    type: 'account',
+                    value: botAccount,
+                },
+            ],
+        };
+        if (failedTimes.accountBalance > failedAlertTimes) {
+            sendAlertMessage({ discord: embedMessage });
+        }
         throw new BlockChainCallError(
             `Get ETH balance of bot:${botAccount} failed.`,
-            MESSAGE_TYPES[botType],
-            {
-                embedMessage: {
-                    type: MESSAGE_TYPES[botType],
-                    description: `**${botType}** get ${accountLabel}'s ETH balance failed`,
-                    urls: [
-                        {
-                            label: accountLabel,
-                            type: 'account',
-                            value: botAccount,
-                        },
-                    ],
-                },
-            }
+            MESSAGE_TYPES[botType]
         );
     });
+    failedTimes.accountBalance = 0;
     if (balance.lt(BigNumber.from(botBalanceWarnVault))) {
         botBalanceMessage({
             botAccount,
