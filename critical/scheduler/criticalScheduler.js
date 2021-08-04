@@ -6,9 +6,12 @@ const {
     buoyHealthCheckAcrossBlocks,
 } = require('../handler/criticalHandler');
 const {
-    sendMessageToAlertChannel,
+    DISCORD_CHANNELS,
+    sendErrorMessageToLogChannel,
 } = require('../../common/discord/discordService');
 const { checkAccountsBalance } = require('../../common/chainUtil');
+
+const { sendAlertMessage } = require('../../common/alertMessageSender');
 const logger = require('../criticalLogger');
 
 const botCurveSchedulerSetting =
@@ -18,6 +21,10 @@ const botBalanceSchedulerSetting =
 
 const botBalanceWarnVault =
     getConfig('bot_balance_warn', false) || '2000000000000000000';
+
+const failedAlertTimes = getConfig('call_failed_time', false) || 2;
+
+const failedTimes = { priceCheck: 0, accountBalance: 0 };
 
 function checkCurveHealth() {
     const providerKey = 'default';
@@ -30,8 +37,18 @@ function checkCurveHealth() {
             // if (process.env.NODE_ENV === 'mainnet') {
             //     await strategyCheck(providerKey, walletKey);
             // }
+            failedTimes.priceCheck = 0;
         } catch (error) {
-            sendMessageToAlertChannel(error);
+            sendErrorMessageToLogChannel(DISCORD_CHANNELS.botLogs, error);
+            failedTimes.priceCheck += 1;
+            if (failedTimes.priceCheck >= failedAlertTimes) {
+                sendAlertMessage({
+                    discord: {
+                        description:
+                            "[CRIT] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
+                    },
+                });
+            }
         }
     });
 }
@@ -42,7 +59,7 @@ function checkBotAccountBalance() {
         try {
             await checkAccountsBalance(botBalanceWarnVault);
         } catch (error) {
-            sendMessageToAlertChannel(error);
+            sendErrorMessageToLogChannel(DISCORD_CHANNELS.botLogs, error);
         }
     });
 }

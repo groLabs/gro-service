@@ -19,6 +19,7 @@ const customLogger = require('./statsLogger');
 const statsRouter = require('./routes/stats');
 const scheduler = require('./scheduler/statsScheduler');
 const { initAllContracts } = require('../contract/allContracts');
+const { sendAlertMessage } = require('../common/alertMessageSender');
 
 const app = express();
 
@@ -61,8 +62,13 @@ app.use((error, req, res, next) => {
     customLogger.error(error);
     if (error instanceof ContractCallError) {
         res.status(400).json({ message: `${error.name}: ${error.message}` });
-        sendMessage(DISCORD_CHANNELS.botLogs, {
-            message: `${error}, Url ${req.originalUrl}`,
+        // sendMessage(DISCORD_CHANNELS.botLogs, {
+        //     message: `${error}, Url ${req.originalUrl}`,
+        // });
+        sendAlertMessage({
+            discord: {
+                description: `[CRIT] B4 - Get personal stats failed for ${error.message} at ${req.originalUrl}`,
+            },
         });
     } else {
         next(error);

@@ -7,6 +7,7 @@ const {
 } = require('../common/discord/discordService');
 const { getVaultAndStrategyLabels } = require('../contract/allContracts');
 const { shortAccount } = require('../common/digitalUtil');
+const { sendAlertMessage } = require('../common/alertMessageSender');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -80,12 +81,16 @@ function investTransactionMessage(content) {
         if (!transactionReceipt) {
             discordMessage.message = `${type} transaction: ${hash} is still pending.`;
             discordMessage.description = undefined;
+            sendMessageToChannel(DISCORD_CHANNELS.botLogs, discordMessage);
         } else if (!transactionReceipt.status) {
-            discordMessage.message = `${type} transaction ${hash} reverted.`;
-            discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${action} action is reverted`;
+            discordMessage.description = `[WARN] B1 - ${label} ${action} action for ${vaultName} reverted`;
+            sendAlertMessage({ discord: discordMessage });
+        } else {
+            sendMessageToChannel(
+                DISCORD_CHANNELS.protocolEvents,
+                discordMessage
+            );
         }
-        logger.info(discordMessage.message);
-        sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
     }
 }
 
