@@ -7,12 +7,13 @@ const logger = require('../statsLogger.js');
 
 const Curve3PoolABI = require('../../abi/ICurve3Pool.json');
 
-const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(4));
+const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
 const USD_DECIMAL = BigNumber.from(10).pow(BigNumber.from(7));
 const USDC_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
 const DAI_DECIMAL = BigNumber.from(10).pow(BigNumber.from(18));
 const STABLECION_DECIMALS = [DAI_DECIMAL, USDC_DECIMAL, USDC_DECIMAL];
 const FIXED_USD = 7;
+const FIXED_PERCENT = 2;
 const USD_DECIAML_BN = BN(10).pow(BN(7));
 const buoyStartBlock = parseInt(config.get('buoy_start_block'), 10);
 
@@ -21,6 +22,10 @@ function printUsd(value) {
         .div(USD_DECIAML_BN)
         .toFixed(FIXED_USD)
         .toString();
+}
+
+function printPercent(value) {
+    return BN(value.toString()).div(BN(100)).toFixed(FIXED_PERCENT).toString();
 }
 
 function mapperToUsd(original, keys) {
@@ -43,7 +48,7 @@ function mapperToString(original, keys) {
         (key, value) => {
             let result = [key, value];
             if (keys.length > 0 && keys.includes(key)) {
-                result = [key, value.toString()];
+                result = [key, printPercent(value)];
             }
             return result;
         },
@@ -154,13 +159,14 @@ function compareCurveToRef(curve, ref) {
 }
 
 function checkTolerance(diff, tolerance) {
+    const adjustedTolerance = tolerance.mul(BigNumber.from(100));
     const check = {};
     // dai/usdc
-    check.dai_usdc = diff.dai_usdc.lte(tolerance);
+    check.dai_usdc = diff.dai_usdc.lte(adjustedTolerance);
     // dai/usdt
-    check.dai_usdt = diff.dai_usdt.lte(tolerance);
+    check.dai_usdt = diff.dai_usdt.lte(adjustedTolerance);
     // usdt/usdc
-    check.usdt_usdc = diff.usdt_usdc.lte(tolerance);
+    check.usdt_usdc = diff.usdt_usdc.lte(adjustedTolerance);
     logger.info(
         `ref check ${check.dai_usdc} ${check.dai_usdt} ${check.usdt_usdc}`
     );
@@ -222,24 +228,13 @@ async function getGroPrice(blockNumberStr) {
         curveVsChainlink,
         oracleCheckTolerance
     );
+    const mappingKeys = ['dai_usdc', 'dai_usdt', 'usdt_usdc'];
     const pricing = {
-        curve: mapperToUsd(curve, ['dai_usdc', 'dai_usdt', 'usdt_usdc']),
-        gro_cache: mapperToUsd(groCache, ['dai_usdc', 'dai_usdt', 'usdt_usdc']),
-        chainlink: mapperToUsd(chainlink, [
-            'dai_usdc',
-            'dai_usdt',
-            'usdt_usdc',
-        ]),
-        curve_cache_diff: mapperToString(curveVsCache, [
-            'dai_usdc',
-            'dai_usdt',
-            'usdt_usdc',
-        ]),
-        curve_chainlink_diff: mapperToString(curveVsChainlink, [
-            'dai_usdc',
-            'dai_usdt',
-            'usdt_usdc',
-        ]),
+        curve: mapperToUsd(curve, mappingKeys),
+        gro_cache: mapperToUsd(groCache, mappingKeys),
+        chainlink: mapperToUsd(chainlink, mappingKeys),
+        curve_cache_diff: mapperToString(curveVsCache, mappingKeys),
+        curve_chainlink_diff: mapperToString(curveVsChainlink, mappingKeys),
         curve_cache_check: curveVsCacheCheck,
         curve_chainlink_check: curveVsChainlinkCheck,
         safety_check_bound: oracleCheckTolerance.toString(),
