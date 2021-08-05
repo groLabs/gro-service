@@ -12,7 +12,7 @@ SELECT apy."current_timestamp",
     apy."apy_current"
 FROM gro."PROTOCOL_APY" apy,
     (
-        SELECT max(ts."current_timestamp") as ts,
+        SELECT PERCENTILE_DISC(0.50) WITHIN GROUP (ORDER BY ts."current_timestamp") as ts,
             dates.days
         FROM gro."PROTOCOL_APY" ts,
             (
