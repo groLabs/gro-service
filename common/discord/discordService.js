@@ -41,6 +41,7 @@ const MESSAGE_TYPES = {
     statsBot: 'Stats Bot',
     criticalBot: 'Critical Bot',
     chainPrice: 'Update Chain Price',
+    totalAssetsChange: 'Total Assets Change',
     other: 'Others',
 };
 
