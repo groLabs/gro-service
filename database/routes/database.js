@@ -57,6 +57,7 @@ router.get(
     })
 );
 
+//http://localhost:3010/database/historical_apy?network=ropsten&attr=apy_last7d,apy_last7d,apy_last7d&freq=twice_daily,daily,weekly&start=1625097600,1625097600,1625097600&end=1629936000,1629936000,1629936000
 router.get(
     '/historical_apy',
     validate([
@@ -64,12 +65,6 @@ router.get(
             .trim()
             .notEmpty()
             .withMessage(`network can't be empty`),
-        // query('start_date')
-        //     .notEmpty()
-        //     .matches(/^\d{10}$/),
-        // query('end_date')
-        //     .notEmpty()
-        //     .matches(/^\d{10}$/),
         query('attr')
             .notEmpty()
             .withMessage(`attr can't be empty`),
@@ -86,12 +81,6 @@ router.get(
     wrapAsync(async (req, res) => {
         // TODO: check data is correct
         let { network, attr, freq, start, end } = req.query;
-        console.log(network, attr, freq, start, end);
-        attr = attr.split(',');
-        freq = freq.split(',');
-        start = start.split(',');
-        end = end.split(',');
-        console.log(network, attr, freq, start, end);
         network = network || '';
         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
             throw new ParameterError('Parameter network failed in database.js->router.get->/historical_apy');
@@ -104,4 +93,3 @@ router.get(
 module.exports = router;
 
 
-//http://localhost:3010/database/historical_apy?network=ropsten&attr=apy_last7d,apy_last7d,apy_last7d&freq=twice_daily,daily,weekly&start=1625097600,1625097600,1625097600&end=1629936000,1629936000,1629936000

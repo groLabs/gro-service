@@ -60,23 +60,166 @@ const parseData = async (kpi, frequency, startDate, endDate) => {
     }
 }
 
-/* parameters:
-network=ropsten
-attr=[apy_last7d,apy_last7d,apy_last7d]
-freq=[twice_daily,daily,7day]
-start=[1625057600,1625092600,1625097000]
-end=[1629936000,1629936000,1629936000]
+const isArray = (attr, freq, start, end) => {
+    if (
+        attr.includes(',') &&
+        freq.includes(',') &&
+        start.includes(',') &&
+        end.includes(',')
+    ) return true;
+    return false;
+}
 
+const isAttr = (_attr) => {
+    for (const attr of _attr) {
+        if (
+            attr !== 'apy_last24h' &&
+            attr !== 'apy_last7d' &&
+            attr !== 'apy_daily' &&
+            attr !== 'apy_weekly' &&
+            attr !== 'apy_monthly' &&
+            attr !== 'apy_all_time' &&
+            attr !== 'apy_current'
+        ) return false;
+    }
+    return true;
+}
 
-*/
-const getHistoricalAPY = async (attr, freq, start, end) => {
+const isFreq = (_freq) => {
+    for (const freq of _freq) {
+        if (
+            freq !== 'twice_daily' &&
+            freq !== 'daily' &&
+            freq !== 'weekly'
+        ) return false;
+    }
+    return true;
+}
+
+const isTimestamp = (_ts) => {
+    const regexp = /^\d{10}$/;
+    for (const ts of _ts) {
+        if (!regexp.test(ts)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+const isLength = (attr, freq, start, end) => {
+    if (
+        attr.length !== freq.length ||
+        attr.length !== start.length ||
+        attr.length !== end.length
+    ) return false;
+    return true;
+}
+
+const ERROR_ATTR = {
+    status: 'KO',
+    msg: `Unrecognised attribute: should be 'apy_last24h', 'apy_last7d', 'apy_daily', 'apy_weekly', 'apy_monthly', 'apy_all_time' or 'apy_current'`,
+    data: [],
+}
+
+const ERROR_FREQ = {
+    status: 'KO',
+    msg: `Unrecognised frequency: should be 'twice_daily', 'daily' or 'weekly'`,
+    data: [],
+}
+
+const ERROR_TIMESTAMP = {
+    status: 'KO',
+    msg: `Unrecognised date: start & end dates must be a unix timestamp`,
+    data: [],
+}
+
+const ERROR_LENGTH = {
+    status: 'KO',
+    msg: `Wrong length: all parameters must have the same length of values`,
+    data: [],
+}
+
+const ERROR_VALUES = {
+    status: 'KO',
+    msg: `Wrong values: inconsistent values within the parameters`,
+    data: [],
+}
+
+const checkData = (attr, freq, start, end) => {
     try {
-        console.log('received:', attr, freq, start, end);
+        // Array of values
+        if (isArray(attr, freq, start, end)) {
+            if (
+                typeof attr === 'string' &&
+                typeof freq === 'string' &&
+                typeof start === 'string' &&
+                typeof end === 'string'
+            ) {
+                attr = attr.split(',');
+                freq = freq.split(',');
+                start = start.split(',');
+                end = end.split(',');
 
+                if (!isAttr(attr)) {
+                    return ERROR_ATTR;
+                } else if (!isFreq(freq)) {
+                    return ERROR_FREQ;
+                } else if (!isTimestamp(start) || !isTimestamp(end)) {
+                    return ERROR_TIMESTAMP;
+                } else if (!isLength(attr, freq, start, end)) {
+                    return ERROR_LENGTH;
+                } else {
+                    return {
+                        status: 'OK',
+                        msg: 'OK',
+                        data: [attr, freq, start, end],
+                    }
+                }
+            } else {
+                return ERROR_VALUES;
+            }
+            // No array of values
+        } else {
+            if (!isAttr([attr])) {
+                return ERROR_ATTR;
+            } else if (!isFreq([freq])) {
+                return ERROR_FREQ;
+            } else if (!isTimestamp([start]) || !isTimestamp([end])) {
+                return ERROR_TIMESTAMP;
+            } else {
+                return {
+                    status: 'OK',
+                    msg: 'OK',
+                    data: [[attr], [freq], [start], [end]],
+                }
+            }
+        }
+    } catch (err) {
+        logger.error(`**DB: Error in historicalAPY.js->checkData(): ${err}`);
+        return {
+            status: 'KO',
+            msg: `Unrecognised error in historicalAPY->checkData():${err}`,
+            data: [],
+        }
+    }
+}
+
+/* parameters example:
+    network=ropsten
+    attr=apy_last7d,apy_last7d,apy_last7d
+    freq=twice_daily,daily,7day
+    start=1625057600,1625092600,1625097000
+    end=1629936000,1629936000,1629936000
+*/
+const getHistoricalAPY = async (_attr, _freq, _start, _end) => {
+    try {
+        const res = checkData(_attr, _freq, _start, _end);
+        if (res.status === 'KO')
+            return { "errors": res.msg }
+        const [attr, freq, start, end] = res.data;
         const results = await Promise.all(
             attr.map((_, i) => parseData(attr[i], freq[i], start[i], end[i]))
         );
-
         let parsedResults = [];
         for (let i = 0; i < results.length; i++) {
             parsedResults.push({
@@ -90,10 +233,8 @@ const getHistoricalAPY = async (attr, freq, start, end) => {
                 }
             })
         }
-
         const object = parsedResults.reduce(
             (obj, item) => Object.assign(obj, { [item.key]: item.value }), {});
-
         const result = {
             "historical_stats": {
                 "current_timestamp": moment().unix(),
@@ -102,7 +243,6 @@ const getHistoricalAPY = async (attr, freq, start, end) => {
                 ...object,
             }
         }
-        
         return result;
     } catch (err) {
         logger.error(`**DB: Error in historicalAPY.js->getHistoricalAPY(): ${err}`);
