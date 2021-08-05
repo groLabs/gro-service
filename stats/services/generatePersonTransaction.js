@@ -44,7 +44,7 @@ function parseData(events, token, type, transferType) {
             ),
             block_number: event.blockNumber,
         };
-        if (event.name === 'LogTransfer') {
+        if (event.name.indexOf('Transfer') > -1) {
             item.transaction = transferType;
         }
         transactions.push(item);

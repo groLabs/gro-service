@@ -32,7 +32,9 @@ const EVENT_TYPE = {
     withdraw: 'withdraw',
     gvtTransfer: 'gvtTransfer',
     inGvtTransfer: 'transfer-gvt-in',
+    inGvtTransferFrom: 'transferFrom-gvt-in',
     outGvtTransfer: 'transfer-gvt-out',
+    outGvtTransferFrom: 'transferFrom-gvt-out',
     pwrdTransfer: 'pwrdTransfer',
     inPwrdTransfer: 'transfer-pwrd-in',
     outPwrdTransfer: 'transfer-pwrd-out',
@@ -64,13 +66,13 @@ EVENT_FRAGMENT[EVENT_TYPE.outGvtTransfer] = [
     'event LogTransfer(address indexed sender, address indexed recipient, uint256 indexed amount, uint256 factor)',
 ];
 EVENT_FRAGMENT[EVENT_TYPE.pwrdTransfer] = [
-    'event LogTransfer(address indexed sender, address indexed recipient, uint256 indexed amount)',
+    'event Transfer(address indexed sender, address indexed recipient, uint256 indexed amount)',
 ];
 EVENT_FRAGMENT[EVENT_TYPE.inPwrdTransfer] = [
-    'event LogTransfer(address indexed sender, address indexed recipient, uint256 indexed amount)',
+    'event Transfer(address indexed from, address indexed to, uint256 value)',
 ];
 EVENT_FRAGMENT[EVENT_TYPE.outPwrdTransfer] = [
-    'event LogTransfer(address indexed sender, address indexed recipient, uint256 indexed amount)',
+    'event Transfer(address indexed from, address indexed to, uint256 value)',
 ];
 EVENT_FRAGMENT[EVENT_TYPE.stabeCoinApprove] = [
     'event Approval(address indexed owner, address indexed spender, uint256 value)',
@@ -83,6 +85,14 @@ EVENT_FRAGMENT[EVENT_TYPE.vaultTransfer] = [
 ];
 EVENT_FRAGMENT[EVENT_TYPE.pnl] = [
     'event LogPnLExecution(uint256 deductedAssets,int256 totalPnL,int256 investPnL,int256 pricePnL,uint256 withdrawalBonus,uint256 performanceBonus,uint256 beforeGvtAssets,uint256 beforePwrdAssets,uint256 afterGvtAssets,uint256 afterPwrdAssets)',
+];
+
+// GToken transferFrom event
+EVENT_FRAGMENT[EVENT_TYPE.inGvtTransferFrom] = [
+    'event Transfer(address indexed from, address indexed to, uint256 value)',
+];
+EVENT_FRAGMENT[EVENT_TYPE.outGvtTransferFrom] = [
+    'event Transfer(address indexed from, address indexed to, uint256 value)',
 ];
 
 async function getStabeCoinApprovalFilters(account, providerKey) {
@@ -177,17 +187,23 @@ function getFilter(account, type, providerKey) {
         case EVENT_TYPE.inGvtTransfer:
             filter = groVault.filters.LogTransfer(null, account);
             break;
+        case EVENT_TYPE.inGvtTransferFrom:
+            filter = groVault.filters.Transfer(null, account);
+            break;
         case EVENT_TYPE.outGvtTransfer:
             filter = groVault.filters.LogTransfer(account);
             break;
+        case EVENT_TYPE.outGvtTransferFrom:
+            filter = groVault.filters.Transfer(account);
+            break;
         case EVENT_TYPE.pwrdTransfer:
-            filter = powerD.filters.LogTransfer(null, null);
+            filter = powerD.filters.Transfer(null, null);
             break;
         case EVENT_TYPE.inPwrdTransfer:
-            filter = powerD.filters.LogTransfer(null, account);
+            filter = powerD.filters.Transfer(null, account);
             break;
         case EVENT_TYPE.outPwrdTransfer:
-            filter = powerD.filters.LogTransfer(account);
+            filter = powerD.filters.Transfer(account);
             break;
         default:
             logger.error(`No type: ${type}`);
@@ -367,7 +383,7 @@ async function getStrategyHavestEvents(
     const provider = getInfruraRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
-        throw new ContractCallError(`Get StrategyHavest logs failed.`);
+        throw new ContractCallError('Get StrategyHavest logs failed.');
     });
     const logs = [];
     filterLogs.forEach((log) => {
@@ -399,7 +415,7 @@ async function getVaultTransferEvents(
     const provider = getInfruraRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
-        throw new ContractCallError(`Get VaultTransfer logs failed.`);
+        throw new ContractCallError('Get VaultTransfer logs failed.');
     });
     const logs = [];
     filterLogs.forEach((log) => {
@@ -421,7 +437,7 @@ async function getPnLEvents(pnl, fromBlock, toBlock = 'latest', providerKey) {
     const provider = getInfruraRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
-        throw new ContractCallError(`Get getPnLEvents logs failed.`);
+        throw new ContractCallError('Get getPnLEvents logs failed.');
     });
     const pnlInterface = new ethers.utils.Interface(
         EVENT_FRAGMENT[EVENT_TYPE.pnl]
