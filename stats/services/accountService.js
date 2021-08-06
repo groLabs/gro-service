@@ -40,6 +40,8 @@ const depositHandlerHistoryConfig =
 const withdrawHandlerHistoryConfig =
     getConfig('withdraw_handler_history', false) || {};
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
 const depositHandlerHistory = Object.keys(depositHandlerHistoryConfig);
 const withdrawHandlerHistory = Object.keys(withdrawHandlerHistoryConfig);
 
@@ -221,6 +223,16 @@ async function getGroVaultTransferHistories(account, toBlock) {
             .div(new BN(log.args[3].toString()));
         log.coin_amount = log.args[2].toString();
     });
+
+    return logs;
+}
+
+async function getGroVaultTransferFromHistories(account, toBlock) {
+    const logs = await getTransferHistories(
+        account,
+        [EVENT_TYPE.inGvtTransferFrom, EVENT_TYPE.outGvtTransferFrom],
+        toBlock
+    );
     return logs;
 }
 
@@ -230,15 +242,22 @@ async function getPowerDTransferHistories(account, toBlock) {
         [EVENT_TYPE.inPwrdTransfer, EVENT_TYPE.outPwrdTransfer],
         toBlock
     );
-    logs.deposit.forEach((log) => {
+    const transferIn = [];
+    const transferOut = [];
+    const { deposit, withdraw } = logs;
+    deposit.forEach((log) => {
+        if (log.args[0] === ZERO_ADDRESS) return;
         log.amount = new BN(log.args[2].toString());
         log.coin_amount = log.args[2].toString();
+        transferIn.push(log);
     });
-    logs.withdraw.forEach((log) => {
+    withdraw.forEach((log) => {
+        if (log.args[1] === ZERO_ADDRESS) return;
         log.amount = new BN(log.args[2].toString());
         log.coin_amount = log.args[2].toString();
+        transferOut.push(log);
     });
-    return logs;
+    return { deposit: transferIn, withdraw: transferOut };
 }
 
 function getStableCoinIndex(tokenSymbio) {
@@ -261,18 +280,14 @@ function isGToken(tokenSymbio) {
 
 async function getGTokenUSDAmount(tokenAddress, share, providerKey) {
     const groVault = getGroVault(providerKey);
-    const powerD = getPowerD(providerKey);
     let usdAmount = 0;
     if (groVault.address === tokenAddress) {
         usdAmount = await groVault.getShareAssets(share).catch((error) => {
             logger.error(error);
-            return 0;
+            return share;
         });
     } else {
-        usdAmount = await powerD.getShareAssets(share).catch((error) => {
-            logger.error(error);
-            return 0;
-        });
+        usdAmount = share;
     }
     return usdAmount;
 }
@@ -293,14 +308,20 @@ async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
 
     const stableCoinInfo = getVaultStabeCoins(providerKey);
     const result = [];
+    const gtokenAproval = [];
     const usdAmoutPromise = [];
     const buoy = getBuoy(providerKey);
     for (let i = 0; i < approvalEventResult.length; i += 1) {
         const { address, transactionHash, blockNumber, args } =
             approvalEventResult[i];
         const decimal = stableCoinInfo.decimals[address];
+        const tokenSymbio = stableCoinInfo.symbols[address];
+        const isGTokenFlag = isGToken(tokenSymbio);
+        if (isGTokenFlag) {
+            gtokenAproval.push(transactionHash);
+        }
+
         if (!depositEventHashs.includes(transactionHash)) {
-            const tokenSymbio = stableCoinInfo.symbols[address];
             result.push({
                 transaction: 'approval',
                 token: tokenSymbio,
@@ -309,7 +330,7 @@ async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
                 coin_amount: div(args[2], BN(10).pow(decimal), 2),
                 block_number: blockNumber,
             });
-            if (isGToken(tokenSymbio)) {
+            if (isGTokenFlag) {
                 usdAmoutPromise.push(
                     getGTokenUSDAmount(address, args[2], providerKey)
                 );
@@ -333,7 +354,67 @@ async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
     for (let i = 0; i < result.length; i += 1) {
         result[i].usd_amount = div(usdAmoutResult[i], BN(10).pow(18), 2);
     }
-    return result;
+    return { approvalEvents: result, gtokenApprovalTxn: gtokenAproval };
+}
+
+async function parseVaultTransferFromLogs(logs, gtokenApprovaltxns) {
+    const transferIn = [];
+    const transferOut = [];
+    const { deposit, withdraw } = logs;
+    const groVaultFactors = {};
+    deposit.forEach((log) => {
+        // skip mint gtoken
+        if (log.args[0] === ZERO_ADDRESS) return;
+        if (gtokenApprovaltxns.includes(log.transactionHash)) {
+            transferIn.push(log);
+            groVaultFactors[`${log.blockNumber}`] = 0;
+        }
+    });
+
+    withdraw.forEach((log) => {
+        // skip burn gtoken
+        if (log.args[1] === ZERO_ADDRESS) return;
+        if (gtokenApprovaltxns.includes(log.transactionHash)) {
+            transferOut.push(log);
+            groVaultFactors[`${log.blockNumber}`] = 0;
+        }
+    });
+
+    // handle vault's refactor
+    const blockNumbers = Object.keys(groVaultFactors);
+    const factorPromises = [];
+    for (let i = 0; i < blockNumbers.length; i += 1) {
+        factorPromises.push(
+            getGroVault(providerKey).factor({
+                blockTag: parseInt(blockNumbers[i], 10),
+            })
+        );
+    }
+    const factorPromiseResult = await Promise.all(factorPromises);
+    for (let i = 0; i < blockNumbers.length; i += 1) {
+        const blockNumber = blockNumbers[i];
+        groVaultFactors[blockNumber] = factorPromiseResult[i];
+    }
+
+    transferIn.forEach((log) => {
+        const factor = groVaultFactors[`${log.blockNumber}`];
+        log.amount = new BN(log.args[2].toString())
+            .multipliedBy(CONTRACT_ASSET_DECIMAL)
+            .div(BN(factor.toString()));
+        log.coin_amount = log.args[2].toString();
+    });
+    transferOut.forEach((log) => {
+        const factor = groVaultFactors[`${log.blockNumber}`];
+        log.amount = new BN(log.args[2].toString())
+            .multipliedBy(CONTRACT_ASSET_DECIMAL)
+            .div(BN(factor.toString()));
+        log.coin_amount = log.args[2].toString();
+    });
+
+    return {
+        deposit: transferIn,
+        withdraw: transferOut,
+    };
 }
 
 async function getTransactionHistories(account, toBlock) {
@@ -342,11 +423,14 @@ async function getTransactionHistories(account, toBlock) {
     promises.push(getPowerDTransferHistories(account, toBlock));
     promises.push(getDepositHistories(account, toBlock));
     promises.push(getWithdrawHistories(account, toBlock));
+    promises.push(getGroVaultTransferFromHistories(account, toBlock));
     const result = await Promise.all(promises);
     const powerD = result[1];
     const depositLogs = result[2];
     const groVault = result[0];
     const withdrawLogs = result[3];
+    const groVaultTransferFromLogs = result[4];
+
     groVault.deposit.push(...depositLogs.groVault);
     powerD.deposit.push(...depositLogs.powerD);
 
@@ -367,7 +451,17 @@ async function getTransactionHistories(account, toBlock) {
         toBlock,
         depositEventHashs
     );
-    return { groVault, powerD, approval };
+
+    const gtokenApprovalTxns = approval.gtokenApprovalTxn;
+    const transferFromEvents = await parseVaultTransferFromLogs(
+        groVaultTransferFromLogs,
+        gtokenApprovalTxns
+    );
+
+    groVault.deposit.push(...transferFromEvents.deposit);
+    groVault.withdraw.push(...transferFromEvents.withdraw);
+
+    return { groVault, powerD, approval: approval.approvalEvents };
 }
 
 async function generateReport(account) {
@@ -382,7 +476,7 @@ async function generateReport(account) {
     const pwrdBalance = new BN(results[1].toString());
     const gvtBalance = new BN(results[2].toString());
 
-    logger.info(`${account} historical: ${JSON.stringify(data)}`);
+    // logger.info(`${account} historical: ${JSON.stringify(data)}`);
     const { groVault, powerD, approval } = data;
     const failTransactions = await getAccountFailTransactions(account);
     const transactions = await getTransactions(groVault, powerD, provider);
