@@ -1,5 +1,5 @@
 module.exports = {
-    bot_balance_warn: '20000000000000000000',
+    bot_balance_warn: '2000000000000000000',
     etherscan_api_key: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
     harvest_callcost: {
         vault_0: {

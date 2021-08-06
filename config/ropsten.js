@@ -140,6 +140,7 @@ module.exports = {
         Yearn: 'Yearn',
         Convex: 'Convex',
         Neutrino: 'Neutrino',
+        Aave: 'Aave',
     },
     strategy_stablecoin_exposure: [
         'DAI',
@@ -155,7 +156,7 @@ module.exports = {
         ['Cream'],
         ['Compound'],
         ['Cream'],
-        ['Idle', 'Compound'],
+        ['Idle', 'Compound', 'Aave'],
         ['Cream'],
         ['Curve', 'Yearn', 'Convex', 'Neutrino'],
     ],
