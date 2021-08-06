@@ -12,6 +12,7 @@ const {
 } = require('../../common/chainUtil');
 const {
     curvePriceMessage,
+    chainlinkPriceMessage,
     strategyCheckMessage,
 } = require('../../discordMessage/criticalMessage');
 const dependencyStrategyABI = require('../abis/DependencyStrategy.json').abi;
@@ -137,12 +138,9 @@ async function curvePriceCheck(providerKey, walletKey) {
         //     });
         curvePrice = false;
     }
-    curvePriceMessage({
+    chainlinkPriceMessage({
         needStop: coinIndex < 3,
         abnormalIndex: coinIndex,
-        rootCause: 'price out of range',
-        type: 'Chainlink',
-        label: 'B9',
     });
     return curvePrice;
 }
@@ -195,9 +193,6 @@ async function buoyHealthCheck(
             curvePriceMessage({
                 needStop: coinIndex < 3,
                 abnormalIndex: coinIndex,
-                rootCause: 'pool out of balance',
-                type: 'Curve',
-                label: 'B10',
             });
         }
         return checkResult;

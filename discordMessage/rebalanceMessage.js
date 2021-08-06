@@ -88,7 +88,13 @@ function rebalanceTransactionMessage(content) {
         sendMessageToChannel(DISCORD_CHANNELS.botLogs, discordMessage);
     } else if (!transactionReceipt.status) {
         discordMessage.description = `[CRIT] B3 - ${label} ${action} txn reverted`;
-        sendAlertMessage({ discord: discordMessage });
+        sendAlertMessage({
+            discord: discordMessage,
+            pagerduty: {
+                title: '[CRIT] B3 - rebalance txn reverted',
+                description: discordMessage.description,
+            },
+        });
     } else {
         sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
     }

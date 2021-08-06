@@ -4,6 +4,18 @@ module.exports = {
     pagerduty: {
         token: process.env.PAGERDUTY_TOKEN,
         from: process.env.PAGERDUTY_TRIGGER_FROM,
+        service: 'PCYAPT2', // Gro
+        urgency: {
+            high: 'high',
+            low: 'low',
+        },
+        priority: {
+            p1: 'PM0DQIR',
+            p2: 'PIRSQ61',
+            p3: 'PEF4PTB',
+            p4: 'PB5GOEO',
+            p5: 'PXWVO1L',
+        },
     },
     harvest_callcost: {
         vault_0: {

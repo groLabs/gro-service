@@ -47,7 +47,13 @@ async function generateStatsFile() {
                 sendAlertMessage({
                     discord: {
                         description:
-                            '[WARN] B5 - APY generation failed, didn’t produce APY json file',
+                            '[WARN] B5 - Gro stats generation failed, didn’t produce json file',
+                    },
+                    pagerduty: {
+                        title: '[WARN] B5 - Gro stats generation failed',
+                        description:
+                            '[WARN] B5 - Gro stats generation failed, didn’t produce json file',
+                        urgency: 'low',
                     },
                 });
             }
@@ -134,7 +140,13 @@ function depositWithdrawEventScheduler() {
                 sendAlertMessage({
                     discord: {
                         description:
-                            "[WARN] B16 - Trade trace monitor txn failed, trade tree didn't generate",
+                            "[WARN] B16 - Trade trace monitor txn failed, trade update messages didn't generate",
+                    },
+                    pagerduty: {
+                        title: '[WARN] B16 - Trade trace monitor txn failed',
+                        description:
+                            "[WARN] B16 - Trade trace monitor txn failed, trade update messages didn't generate",
+                        urgency: 'low',
                     },
                 });
             }
@@ -162,7 +174,13 @@ function EventSummaryScheduler() {
                 sendAlertMessage({
                     discord: {
                         description:
-                            "[WARN] B17 - Trade summary monitor txn failed, summary didn't generate",
+                            "[WARN] B17 - Trade summary monitor txn failed, trade summary didn't generate",
+                    },
+                    pagerduty: {
+                        title: '[WARN] B17 - Trade summary monitor txn failed',
+                        description:
+                            "[WARN] B17 - Trade summary monitor txn failed, trade summary didn't generate",
+                        urgency: 'low',
                     },
                 });
             }

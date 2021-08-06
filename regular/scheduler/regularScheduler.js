@@ -87,7 +87,13 @@ function safetyCheckScheduler() {
                 sendAlertMessage({
                     discord: {
                         description:
-                            '[WARN] B8 - Call Buoy’s safetycheck failed, price safety check didn’t complete',
+                            '[WARN] B8 - Buoy’s safetycheck txn failed, price safety check didn’t complete',
+                    },
+                    pagerduty: {
+                        title: '[WARN] B8 - Buoy’s safetycheck txn failed',
+                        description:
+                            '[WARN] B8 - Buoy’s safetycheck txn failed, price safety check didn’t complete',
+                        urgency: 'low',
                     },
                 });
             }
@@ -216,9 +222,16 @@ function investTriggerScheduler() {
 
             const discordMessage = {
                 description:
-                    "[WARN] B1 - InvestTrigger | Invest execute failed, InvestTrigger action didn't complated",
+                    "[WARN] B1 - InvestTrigger | Invest txn failed, InvestTrigger action didn't complate",
             };
-            sendAlertMessage({ discord: discordMessage });
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[WARN] B1 - InvestTrigger | Invest txn failed',
+                    description: discordMessage.description,
+                    urgency: 'low',
+                },
+            });
         }
     });
 }
@@ -250,7 +263,14 @@ function rebalanceTriggerScheduler() {
                 description:
                     "[CRIT] B3 - RebalanceTrigger | Rebalance txn failed, RebalanceTrigger action didn't complate",
             };
-            sendAlertMessage({ discord: discordMessage });
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[CRIT] B3 - RebalanceTrigger | Rebalance txn failed',
+                    description: discordMessage.description,
+                    urgency: 'low',
+                },
+            });
         }
     });
 }
@@ -295,7 +315,14 @@ function harvestTriggerScheduler() {
                 description:
                     "[CRIT] B2 -  HarvestTrigger | Harvest txn failed, HarvestTrigger action didn't complate",
             };
-            sendAlertMessage({ discord: discordMessage });
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[CRIT] B2 -  HarvestTrigger | Harvest txn failed',
+                    description: discordMessage.description,
+                    urgency: 'low',
+                },
+            });
         }
     });
 }

@@ -2,6 +2,10 @@ const { api: pagerdutyAPI } = require('@pagerduty/pdjs');
 const { getIncidentBody } = require('./incidentBody');
 const { getConfig } = require('../common/configUtil');
 
+const botEnv = process.env.BOT_ENV.toLowerCase();
+// eslint-disable-next-line import/no-dynamic-require
+const logger = require(`../${botEnv}/${botEnv}Logger`);
+
 const pagerdutyToken = getConfig('pagerduty.token');
 const fromAccount = getConfig('pagerduty.from', false) || '';
 
@@ -15,9 +19,12 @@ async function createIncident(bodyParams) {
     });
     const { data } = result;
     if (data.error) {
+        logger.error(data.error.errors);
         throw new Error(data.error.message);
     } else {
-        console.log(`incident: ${data.incident.incident_number}`);
+        logger.info(
+            `trigger new incident ${bodyParams.title} : ${data.incident.incident_number}`
+        );
     }
 }
 

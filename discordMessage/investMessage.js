@@ -84,7 +84,14 @@ function investTransactionMessage(content) {
             sendMessageToChannel(DISCORD_CHANNELS.botLogs, discordMessage);
         } else if (!transactionReceipt.status) {
             discordMessage.description = `[WARN] B1 - ${label} ${action} action for ${vaultName} reverted`;
-            sendAlertMessage({ discord: discordMessage });
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[WARN] B1 - invest txn reverted',
+                    description: discordMessage.description,
+                    urgency: 'low',
+                },
+            });
         } else {
             sendMessageToChannel(
                 DISCORD_CHANNELS.protocolEvents,

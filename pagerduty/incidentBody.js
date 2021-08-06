@@ -1,42 +1,22 @@
 function getIncidentBody(bodyParams) {
     const botTemplate = {
         incident: {
-            title: 'TODO', // The incident's title
+            title: 'incident integration test',
             service: {
-                id: 'PCYAPT2', // Gro service
+                id: 'PCYAPT2',
                 type: 'service_reference',
             },
             body: {
-                details: 'TODO', // The incident's summary
+                details: 'for test',
             },
-            urgency: 'low',
+            urgency: 'high',
             escalation_policy: {
-                id: 'PSWO8ON', // policy's id, here is test policy - many responders
-                onCall: [],
-                escalationRules: [
-                    // responders list
-                    {
-                        id: 'PNJ22ZM',
-                        escalation_delay_in_minutes: 30,
-                        targets: [
-                            {
-                                id: 'P4J0RBD',
-                                type: 'user_reference',
-                                summary: 'Wei',
-                            },
-                            {
-                                id: 'PPGE4VZ',
-                                type: 'user_reference',
-                                summary: 'lily hu',
-                            },
-                        ],
-                    },
-                ],
-                type: 'escalation_policy',
-                summary: 'test policy - many responders',
+                id: 'P48J3J5',
+                type: 'escalation_policy_reference',
+                summary: 'test policy',
             },
             priority: {
-                id: 'PEF4PTB', // P3's id
+                id: 'PIRSQ61',
                 type: 'priority',
             },
         },
@@ -44,6 +24,13 @@ function getIncidentBody(bodyParams) {
     const incidentBody = botTemplate.incident;
     incidentBody.title = bodyParams.title;
     incidentBody.body.details = bodyParams.description;
+    if (bodyParams.urgency) {
+        incidentBody.urgency = bodyParams.urgency;
+    }
+    if (bodyParams.priority) {
+        incidentBody.priority.id = bodyParams.priority;
+    }
+
     return botTemplate;
 }
 

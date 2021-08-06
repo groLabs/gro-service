@@ -6,11 +6,13 @@ const {
 } = require('../common/discord/discordService');
 const { sendAlertMessage } = require('../common/alertMessageSender');
 
+const stableCoin = ['DAI', 'USDC', 'USDT'];
+
 function curvePriceMessage(content) {
-    const { needStop, abnormalIndex, rootCause, type, label } = content;
-    let msg = `${type} price abnormal check is ${needStop} `;
+    const { needStop, abnormalIndex } = content;
+    let msg = `Curve price check returned ${needStop} `;
     if (needStop) {
-        msg = `[EMERG] ${label} - ${type} price is abnormal for ${rootCause}, abnormal coin index: ${abnormalIndex}, need to decide whether set system to **Emergency** status`;
+        msg = `[EMERG] B10 - Curve price check returned false for ${stableCoin[abnormalIndex]}'s balance, need to decide whether set system to Emergency status`;
     }
     const discordMessage = {
         message: msg,
@@ -21,7 +23,37 @@ function curvePriceMessage(content) {
     if (!needStop) {
         sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
     } else {
-        sendAlertMessage({ discord: discordMessage });
+        const pagerdutyBody = {
+            title: '[EMERG] B10 - Curve price check returned false',
+            description: msg,
+        };
+
+        sendAlertMessage({ discord: discordMessage, pagerduty: pagerdutyBody });
+    }
+}
+
+function chainlinkPriceMessage(content) {
+    const { needStop, abnormalIndex } = content;
+    let msg = `Chainlink price check returned ${needStop} `;
+
+    if (needStop) {
+        msg = `[EMERG] B9 - Chainlink price check returned false for ${stableCoin[abnormalIndex]}'s price, need to decide whether set system to Emergency status`;
+    }
+    const discordMessage = {
+        message: msg,
+        type: MESSAGE_TYPES.curveCheck,
+        description: msg,
+    };
+
+    if (!needStop) {
+        sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
+    } else {
+        const pagerdutyBody = {
+            title: '[EMERG] B9 - Chainlink price check returned false',
+            description: msg,
+        };
+
+        sendAlertMessage({ discord: discordMessage, pagerduty: pagerdutyBody });
     }
 }
 
@@ -48,6 +80,7 @@ function strategyCheckMessage(content) {
 }
 
 module.exports = {
+    chainlinkPriceMessage,
     curvePriceMessage,
     strategyCheckMessage,
 };

@@ -47,6 +47,11 @@ function checkCurveHealth() {
                         description:
                             "[CRIT] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
                     },
+                    pagerduty: {
+                        title: '[CRIT] B15 - Chainlink | Curve price check txn failed',
+                        description:
+                            "[CRIT] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
+                    },
                 });
             }
         }
