@@ -13,6 +13,7 @@ module.exports = {
     blockchain: {
         network: 'ropsten',
         start_block: 10525267,
+        start_timestamp: 1624827717,
         default_api_keys: {
             alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
@@ -139,6 +140,7 @@ module.exports = {
         Yearn: 'Yearn',
         Convex: 'Convex',
         Neutrino: 'Neutrino',
+        Aave: 'Aave',
     },
     strategy_stablecoin_exposure: [
         'DAI',
@@ -154,7 +156,7 @@ module.exports = {
         ['Cream'],
         ['Compound'],
         ['Cream'],
-        ['Idle', 'Compound'],
+        ['Idle', 'Compound', 'Aave'],
         ['Cream'],
         ['Curve', 'Yearn', 'Convex', 'Neutrino'],
     ],

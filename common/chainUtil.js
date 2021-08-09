@@ -324,7 +324,6 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
         );
     });
     failedTimes.accountBalance = 0;
-    logger.info(`balance: ${balance}`);
     if (balance.lte(BigNumber.from(botBalanceWarnVault.warn))) {
         const level = balance.lte(BigNumber.from(botBalanceWarnVault.critial))
             ? '[CRIT]'

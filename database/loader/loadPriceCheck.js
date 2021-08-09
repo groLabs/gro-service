@@ -49,7 +49,7 @@ const loadPriceDetail = async (prices, pairs) => {
     }
 }
 
-const loadAllTables = async (prices) => {
+const loadAllTables = async (prices, isHDL) => {
     try {
         if (prices.block_number) {
             const pairs = ['dai_usdc', 'dai_usdt', 'usdt_usdc'];
@@ -58,9 +58,11 @@ const loadAllTables = async (prices) => {
                 loadPriceGlobal(prices),
             ]);
             if (res.every(Boolean)) {
-                await updateTimeStamp(prices.current_timestamp, 'PRICE_CHECK');
+                if (!isHDL)
+                    await updateTimeStamp(prices.current_timestamp, 'PRICE_CHECK');
             } else {
-                logger.warn(`**DB: Errors found in loadPriceCheck.js->Table SYS_PROTOCOL_LOADS not updated.`);
+                if (!isHDL)
+                    logger.warn(`**DB: Errors found in loadPriceCheck.js->Table SYS_PROTOCOL_LOADS not updated.`);
             }
         } else {
             logger.error(`**DB: Error in loadPriceCheck.js->block number not found in API call`);

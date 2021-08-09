@@ -9,10 +9,6 @@ const { getVaultAndStrategyLabels } = require('../contract/allContracts');
 const { shortAccount } = require('../common/digitalUtil');
 const { sendAlertMessage } = require('../common/alertMessageSender');
 
-const botEnv = process.env.BOT_ENV.toLowerCase();
-// eslint-disable-next-line import/no-dynamic-require
-const logger = require(`../${botEnv}/${botEnv}Logger`);
-
 function investTriggerMessage(content) {
     const { vaultName, vaultAddress, isInvested } = content;
     let msg = `${vaultName}'s investTrigger return false, doesn't need run invest`;
