@@ -2,15 +2,6 @@ const ethers = require('ethers');
 const { query } = require('../handler/queryHandler');
 const { getPersonalStats } = require('../handler/personalHandler');
 const {
-    initDatabaseContracts,
-    initAllContracts,
-    getGvt,
-    getPwrd,
-    // getBuoy,
-    // getDepositHandler,
-    //getVaultStabeCoins,
-} = require('../../contract/allContracts');
-const {
     getDefaultProvider,
     // getAlchemyRpcProvider,
 } = require('../../common/chainUtil');
@@ -53,19 +44,20 @@ const { loadUserNetReturns } = require('./loadUserNetReturns');
 const { loadGroStats } = require('./loadGroStats');
 
 
-
 /// @notice Truncates temporaty tables & calculates blocks and dates to be processed
 /// @param fromDate Start date to process data
 /// @param toDdate End date to process data
 /// @return Array with start block, end block and list of dates to be processed
 const preload = async (_fromDate, _toDate) => {
     try {
-        // Truncate temporary table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
-        // TODO *** Promise.all
-        const res1 = await query('truncate_tmp_user_approvals.sql', []);
-        const res2 = await query('truncate_tmp_user_deposits.sql', []);
-        const res3 = await query('truncate_tmp_user_withdrawals.sql', []);
-        if (res1.status === QUERY_ERROR || res2.status === QUERY_ERROR || res3.status === QUERY_ERROR) return;
+        // Truncate temporary tables
+        const res = await Promise.all([
+            query('truncate_tmp_user_approvals.sql', []),
+            query('truncate_tmp_user_deposits.sql', []),
+            query('truncate_tmp_user_withdrawals.sql', []),
+        ]);
+
+        if (res[0].status === QUERY_ERROR || res[1].status === QUERY_ERROR || res[2].status === QUERY_ERROR) return;
 
         // Calculate dates & blocks to process
         const dates = generateDateRange(_fromDate, _toDate);
@@ -150,17 +142,10 @@ const reload = async (
         // Truncates TMP tables and calculates dates & blocks to be processed
         const [fromBlock, toBlock, dates] = await preload(fromDate, toDate);
 
-        // TODO: if (res.every( val => (val !== 400 ))) {
         // Reload transfers, balances & net results
         if (fromBlock > 0 && toBlock > 0 && dates) {
-            const [
-                deposits,
-                withdrawals,
-                ext_gvt_deposit,
-                ext_pwrd_deposit,
-                ext_gvt_withdrawal,
-                ext_pwrd_withdrawal,
-            ] = await Promise.all([
+
+            const res = await Promise.all([
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL),
@@ -169,18 +154,15 @@ const reload = async (
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT),
             ]);
 
-            if (deposits
-                && withdrawals
-                && ext_gvt_deposit
-                && ext_pwrd_deposit
-                && ext_gvt_withdrawal
-                && ext_pwrd_withdrawal) {
+            if (res.every(Boolean)) {
                 if (await loadTmpUserApprovals(fromBlock, toBlock))
                     if (await remove(fromDate, toDate))
                         if (await loadUserTransfers(fromDate, toDate))
                             if (await loadUserApprovals(fromDate, toDate))
                                 if (await loadUserBalances(fromDate, toDate))
                                     await loadUserNetReturns(fromDate, toDate);
+            } else {
+                logger.warn(`**DB: Error/s found in loadPersonalStats.js->reload()`);
             }
         } else {
             const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
@@ -204,17 +186,10 @@ const load = async (
     // Truncates TMP tables and calculate dates & blocks to be processed
     const [fromBlock, toBlock] = await preload(fromDate, toDate);
 
-    // TODO: if (res.every( val => (val !== 400 ))) {
     // Reload transfers, balances & net results
     if (fromBlock > 0 && toBlock > 0) {
-        const [
-            deposits,
-            withdrawals,
-            ext_gvt_deposit,
-            ext_pwrd_deposit,
-            ext_gvt_withdrawal,
-            ext_pwrd_withdrawal,
-        ] = await Promise.all([
+
+        const res = await Promise.all([
             loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT),
             loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL),
             loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL),
@@ -223,17 +198,14 @@ const load = async (
             loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT),
         ]);
 
-        if (deposits
-            && withdrawals
-            && ext_gvt_deposit
-            && ext_pwrd_deposit
-            && ext_gvt_withdrawal
-            && ext_pwrd_withdrawal) {
+        if (res.every(Boolean)) {
             if (await loadTmpUserApprovals(fromBlock, toBlock))
                 if (await loadUserTransfers(fromDate, toDate))
                     if (await loadUserApprovals(fromDate, toDate))
                         if (await loadUserBalances(fromDate, toDate))
                             await loadUserNetReturns(fromDate, toDate);
+        } else {
+            logger.warn(`**DB: Error/s found in loadPersonalStats.js->load()`);
         }
     } else {
         const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
@@ -241,33 +213,30 @@ const load = async (
     }
 }
 
-const loadGroStatsDB = async () => {
+const loadPersonalStats = async () => {
     try {
-        initAllContracts().then(async () => {
-            //DEV Ropsten:
-            await reload('27/06/2021', '30/06/2021');
-            // await reload('27/06/2021', '30/06/2021');
-            // await load('27/06/2021', '30/06/2021');
+        console.log('in loadPersonalStats')
 
-            // PROD:
-            // await reload("02/07/2021", "04/07/2021");
+        //DEV Ropsten:
+        await reload('30/06/2021', '30/06/2021');
+        //await load('30/06/2021', '30/06/2021');
 
-            // Gro Stats
-            process.exit(); // for testing purposes
-        });
+        // PROD:
+        // await reload("02/07/2021", "04/07/2021");
+
         // Personal Stats
         // const res = await getPersonalStats('06/07/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
         // console.log(res);
-        // console.log('yo')
-        // process.exit();
 
+        // process.exit();
+        console.log('here3')
     } catch (err) {
         handleErr(`personalHandler->loadGroStatsDB()`, err);
     }
 }
 
 module.exports = {
-    loadGroStatsDB,
+    loadPersonalStats,
 };
 
 
