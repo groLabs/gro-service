@@ -1,12 +1,7 @@
 const BN = require('bignumber.js');
 const { shortAccount, div } = require('../common/digitalUtil');
-const {
-    MESSAGE_TYPES,
-    MESSAGE_EMOJI,
-    DISCORD_CHANNELS,
-    sendEmbedMessage,
-    sendMessage,
-} = require('../common/discord/discordService');
+const { MESSAGE_TYPES } = require('../common/discord/discordService');
+const { sendAlertMessage } = require('../common/alertMessageSender');
 
 const ETH_DECIMAL = BN(10).pow(18);
 
@@ -14,13 +9,8 @@ function botBalanceMessage(content) {
     const accountLabel = shortAccount(content.botAccount);
     const balance = div(content.balance, ETH_DECIMAL, 4);
     const discordMessage = {
-        icon: ':warning:',
         type: MESSAGE_TYPES[content.botType],
-        emojis: [],
-        message: `Bot:${content.botAccount}'s balance is ${balance}, need full up some balance`,
-        description: `${MESSAGE_EMOJI[MESSAGE_TYPES[content.botType]]} **${
-            content.botType
-        }** ${accountLabel} only has **${balance}** ETH balance, please recharge more`,
+        description: `${content.level} B6 - ${content.botType} ${accountLabel} only has ${balance} ETH, add more funds`,
         urls: [
             {
                 label: accountLabel,
@@ -29,8 +19,14 @@ function botBalanceMessage(content) {
             },
         ],
     };
-    sendEmbedMessage(DISCORD_CHANNELS.botLogs, discordMessage);
-    sendMessage(DISCORD_CHANNELS.botAlerts, discordMessage);
+    sendAlertMessage({
+        discord: discordMessage,
+        pagerduty: {
+            title: `${content.level} B6 - Bot balance is too low`,
+            description: `${content.level} B6 - ${content.botType} ${content.botAccount} only has ${balance} ETH, add more funds`,
+            urgency: 'low',
+        },
+    });
 }
 
 module.exports = {

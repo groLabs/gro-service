@@ -324,11 +324,16 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
         );
     });
     failedTimes.accountBalance = 0;
-    if (balance.lt(BigNumber.from(botBalanceWarnVault))) {
+    logger.info(`balance: ${balance}`);
+    if (balance.lte(BigNumber.from(botBalanceWarnVault.warn))) {
+        const level = balance.lte(BigNumber.from(botBalanceWarnVault.critial))
+            ? '[CRIT]'
+            : '[WARN]';
         botBalanceMessage({
             botAccount,
             botType,
             balance,
+            level,
         });
     }
 }

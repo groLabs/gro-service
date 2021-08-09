@@ -57,8 +57,7 @@ const safetyCheckSetting =
     getConfig('trigger_scheduler.safety_check', false) || '*/5 * * * *';
 const longPendingTransactionSetting = getConfig('transaction_long_pending');
 
-const botBalanceWarnVault =
-    getConfig('bot_balance_warn', false) || '2000000000000000000';
+const botBalanceWarnVault = getConfig('bot_balance', false) || {};
 
 const failedTimes = { safetyCheck: 0 };
 

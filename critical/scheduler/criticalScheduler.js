@@ -19,8 +19,7 @@ const botCurveSchedulerSetting =
 const botBalanceSchedulerSetting =
     getConfig('trigger_scheduler.bot_balance_check', false) || '20 * * * *';
 
-const botBalanceWarnVault =
-    getConfig('bot_balance_warn', false) || '2000000000000000000';
+const botBalanceWarnVault = getConfig('bot_balance', false) || {};
 
 const failedAlertTimes = getConfig('call_failed_time', false) || 2;
 
