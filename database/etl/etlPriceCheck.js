@@ -8,6 +8,7 @@ const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { loadAllTables } = require('../loader/loadPriceCheck');
 const { checkLastTimestamp } = require('../common/protocolUtil');
+const { calcRangeTimestamps } = require('../common/calcRangeTimestamps');
 const { findBlockByDate } = require('../common/personalUtil'); //TODO: generic file, not in personalUtil
 const { QUERY_SUCCESS } = require('../constants');
 
@@ -48,28 +49,6 @@ const calcLastTimestamps = (lastTimestamp) => {
     } else {
         iterations.push(moment.unix(now).utc());
         return iterations;
-    }
-}
-
-// Calculate number of 30' intervals from the start to end dates (in case an historical data load is needed)
-const calcRangeTimestamps = (start, end) => {
-    try {
-        let iterations = [];
-        if (start === end) {
-            iterations.push(moment.unix(start).utc());
-            return iterations;
-        }
-        const search = (start, end) => {
-            if (start < end) {
-                iterations.push(moment.unix(start).utc());
-                start = start + HALF_AN_HOUR_EXACT;
-                search(start, end);
-            }
-            return iterations;
-        }
-        return search(start, end);
-    } catch (err) {
-        logger.error(`**DB: Error in etlPriceCheck.js->calcRangeTimestamps(): ${err}`);
     }
 }
 
@@ -122,7 +101,7 @@ const etlPriceCheck = async () => {
 const etlPriceCheckHDL = async (start, end) => {
     try {
         if (isTimestamp([start, end])) {
-            const intervals = calcRangeTimestamps(start, end);
+            const intervals = calcRangeTimestamps(start, end, HALF_AN_HOUR_EXACT);
             logger.info(`**DB: Starting HDL for Price check on timestamps ${start} to ${end}`);
             await loadPriceCheck(intervals, true);
             logger.info(`**DB: Finished HDL for Price check on timestamps ${start} to ${end}`);
