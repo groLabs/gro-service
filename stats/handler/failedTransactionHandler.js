@@ -59,8 +59,12 @@ async function getTransactionsByAccount(accountAddress) {
     });
     if (res && res.data.status === '1') {
         result = res.data.result;
+    } else if (res && res.data.status === '0') {
+        logger.info(
+            `Not found account ${accountAddress}'s transactions for ${res.data.message} `
+        );
     } else {
-        logger.error(`Get account ${accountAddress} transactions failed`);
+        logger.error(`Get account ${accountAddress} transactions failed.`);
     }
     return result;
 }
