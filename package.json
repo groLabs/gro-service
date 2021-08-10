@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "@ethersproject/experimental": "^5.0.10",
+        "@pagerduty/pdjs": "^2.2.2",
         "axios": "^0.21.1",
         "bignumber.js": "^9.0.1",
         "config": "^3.3.6",

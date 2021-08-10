@@ -19,8 +19,7 @@ const botCurveSchedulerSetting =
 const botBalanceSchedulerSetting =
     getConfig('trigger_scheduler.bot_balance_check', false) || '20 * * * *';
 
-const botBalanceWarnVault =
-    getConfig('bot_balance_warn', false) || '2000000000000000000';
+const botBalanceWarnVault = getConfig('bot_balance', false) || {};
 
 const failedAlertTimes = getConfig('call_failed_time', false) || 2;
 
@@ -44,6 +43,11 @@ function checkCurveHealth() {
             if (failedTimes.priceCheck >= failedAlertTimes) {
                 sendAlertMessage({
                     discord: {
+                        description:
+                            "[CRIT] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
+                    },
+                    pagerduty: {
+                        title: '[CRIT] B15 - Chainlink | Curve price check txn failed',
                         description:
                             "[CRIT] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
                     },

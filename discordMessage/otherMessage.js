@@ -57,12 +57,20 @@ function updatePriceTransactionMessage(content) {
 
 function safetyCheckMessage() {
     const discordMessage = {
-        message: '[CRIT] B11 - Price safety check is false, please check it.',
+        message:
+            '[CRIT] B11 - Price safety check returned false, please check it.',
         type: MESSAGE_TYPES.other,
         description:
-            '[CRIT] B11 -  Price safety check is false, deposit & withdraw actions will be reverted.',
+            '[CRIT] B11 -  Price safety check returned false, deposit & withdraw actions will be reverted.',
     };
-    sendAlertMessage({ discord: discordMessage });
+    sendAlertMessage({
+        discord: discordMessage,
+        pagerduty: {
+            title: '[CRIT] B11 - Price safety check returned false',
+            description: discordMessage.description,
+            urgency: 'low',
+        },
+    });
 }
 
 module.exports = {

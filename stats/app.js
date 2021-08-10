@@ -69,6 +69,10 @@ app.use((error, req, res, next) => {
             discord: {
                 description: `[CRIT] B4 - Get personal stats failed for ${error.message} at ${req.originalUrl}`,
             },
+            pagerduty: {
+                title: '[CRIT] B4 - Get personal stats failed',
+                description: `[CRIT] B4 - Get personal stats failed for ${error.message} at ${req.originalUrl}`,
+            },
         });
     } else {
         next(error);

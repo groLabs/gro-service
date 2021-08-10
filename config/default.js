@@ -1,6 +1,25 @@
 module.exports = {
-    bot_balance_warn: '2000000000000000000',
+    bot_balance: {
+        warn: '1000000000000000000',
+        critial: '200000000000000000',
+    },
     etherscan_api_key: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
+    pagerduty: {
+        token: process.env.PAGERDUTY_TOKEN,
+        from: process.env.PAGERDUTY_TRIGGER_FROM,
+        service: 'PCYAPT2', // Gro
+        urgency: {
+            high: 'high',
+            low: 'low',
+        },
+        priority: {
+            p1: 'PM0DQIR',
+            p2: 'PIRSQ61',
+            p3: 'PEF4PTB',
+            p4: 'PB5GOEO',
+            p5: 'PXWVO1L',
+        },
+    },
     harvest_callcost: {
         vault_0: {
             strategy_0: '1641125000000000',

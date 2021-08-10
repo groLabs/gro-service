@@ -123,7 +123,13 @@ function harvestTransactionMessage(content) {
             sendMessageToChannel(DISCORD_CHANNELS.botLogs, discordMessage);
         } else if (!transactionReceipt.status) {
             discordMessage.description = `[CRIT] B2 - ${label} ${action} txn for ${vaultName}'s ${strategyName} reverted`;
-            sendAlertMessage({ discord: discordMessage });
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[CRIT] B2 - harvest txn reverted',
+                    description: discordMessage.description,
+                },
+            });
         } else {
             sendMessageToChannel(
                 DISCORD_CHANNELS.protocolEvents,

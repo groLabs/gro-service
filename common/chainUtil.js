@@ -299,7 +299,7 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
         failedTimes.accountBalance += 1;
         const embedMessage = {
             type: MESSAGE_TYPES[botType],
-            description: `[WARN] B7 - Call **${botType}** ${accountLabel}'s ETH balance txn failed, check balance didn't complate`,
+            description: `[WARN] B7 - Call ${botType} ${accountLabel}'s ETH balance txn failed, check balance didn't complate`,
             urls: [
                 {
                     label: accountLabel,
@@ -309,7 +309,14 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
             ],
         };
         if (failedTimes.accountBalance > failedAlertTimes) {
-            sendAlertMessage({ discord: embedMessage });
+            sendAlertMessage({
+                discord: embedMessage,
+                pagerduty: {
+                    title: '[WARN] B7 - bot balance check failed',
+                    description: `[WARN] B7 - Call ${botType} ${botAccount}'s ETH balance txn failed, check balance didn't complate`,
+                    urgency: 'low',
+                },
+            });
         }
         throw new BlockChainCallError(
             `Get ETH balance of bot:${botAccount} failed.`,
@@ -317,11 +324,15 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
         );
     });
     failedTimes.accountBalance = 0;
-    if (balance.lt(BigNumber.from(botBalanceWarnVault))) {
+    if (balance.lte(BigNumber.from(botBalanceWarnVault.warn))) {
+        const level = balance.lte(BigNumber.from(botBalanceWarnVault.critial))
+            ? '[CRIT]'
+            : '[WARN]';
         botBalanceMessage({
             botAccount,
             botType,
             balance,
+            level,
         });
     }
 }

@@ -9,10 +9,6 @@ const { getVaultAndStrategyLabels } = require('../contract/allContracts');
 const { shortAccount } = require('../common/digitalUtil');
 const { sendAlertMessage } = require('../common/alertMessageSender');
 
-const botEnv = process.env.BOT_ENV.toLowerCase();
-// eslint-disable-next-line import/no-dynamic-require
-const logger = require(`../${botEnv}/${botEnv}Logger`);
-
 function investTriggerMessage(content) {
     const { vaultName, vaultAddress, isInvested } = content;
     let msg = `${vaultName}'s investTrigger return false, doesn't need run invest`;
@@ -84,7 +80,14 @@ function investTransactionMessage(content) {
             sendMessageToChannel(DISCORD_CHANNELS.botLogs, discordMessage);
         } else if (!transactionReceipt.status) {
             discordMessage.description = `[WARN] B1 - ${label} ${action} action for ${vaultName} reverted`;
-            sendAlertMessage({ discord: discordMessage });
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[WARN] B1 - invest txn reverted',
+                    description: discordMessage.description,
+                    urgency: 'low',
+                },
+            });
         } else {
             sendMessageToChannel(
                 DISCORD_CHANNELS.protocolEvents,
