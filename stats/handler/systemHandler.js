@@ -4,7 +4,7 @@ const logger = require('../statsLogger');
 const { getCurrentApy } = require('./currentApyHandler');
 const { ContractNames } = require('../../registry/registry');
 const {
-    getLatestStabeCoins,
+    getLatestStableCoins,
     getLatestVaultsAndStrategies,
     getLatestSystemContract: getLatestContract,
 } = require('../common/contractStorage');
@@ -261,14 +261,14 @@ async function getExposureStats(blockTag, systemStats) {
         ContractNames.exposure
     );
     logger.info(`getExposureStats blockTag : ${JSON.stringify(blockTag)}`);
-    const stabeCoins = await getLatestStabeCoins(providerKey);
+    const stableCoins = await getLatestStableCoins(providerKey);
     const preCal = await getLatestSystemContract(
         ContractNames.insurance
     ).contract.prepareCalculation(blockTag);
     const riskResult = await exposure.getExactRiskExposure(preCal, blockTag);
     const exposureStableCoin = riskResult[0].map((concentration, i) => ({
-        name: stabeCoins[i],
-        display_name: stabeCoins[i],
+        name: stableCoins[i],
+        display_name: stableCoins[i],
         concentration: convertToSharePercentDecimal(concentration),
     }));
     const exposureProtocol = [];
@@ -304,14 +304,14 @@ async function getExposureStats(blockTag, systemStats) {
             }
         }
     }
-    // curve's stabe coin
+    // curve's stable coin
     const curveVaultIndex = adapterAddresses.length - 1;
 
     exposureProtocol.forEach((item) => {
         if (item.name === 'Curve') {
             exposureStableCoin.push({
-                name: stabeCoins[curveVaultIndex],
-                display_name: stabeCoins[curveVaultIndex],
+                name: stableCoins[curveVaultIndex],
+                display_name: stableCoins[curveVaultIndex],
                 concentration: item.concentration,
             });
             item.concentration = vaultsStats[3].share;

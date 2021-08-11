@@ -65,15 +65,15 @@ function handleError(error, content) {
     }
 }
 
-async function getStabeCoins(providerKey, walletKey) {
-    const stabeCoins = await getController(providerKey, walletKey)
+async function getStableCoins(providerKey, walletKey) {
+    const stableCoins = await getController(providerKey, walletKey)
         .stablecoins()
         .catch((error) => {
             handleError(error, {
                 curveCheck: { message: 'Get underlyingTokens failed' },
             });
         });
-    return stabeCoins;
+    return stableCoins;
 }
 
 function outOfRange(value) {
@@ -152,7 +152,7 @@ async function buoyHealthCheck(
     previousHealth
 ) {
     try {
-        // const stabeCoins = await getStabeCoins(providerKey, walletKey);
+        // const stableCoins = await getStableCoins(providerKey, walletKey);
         const buoyInstance = getBuoy(providerKey, walletKey);
         logger.info(`buoyInstance ${buoyInstance.address}`);
         // any stable coin less than 10% in curve will return false;

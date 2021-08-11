@@ -6,7 +6,7 @@ const { ContractNames } = require('../../registry/registry');
 
 const latestSystemContracts = {};
 const latestVaultStrategyContracts = {};
-const latestStabeCoins = {};
+const latestStableCoins = {};
 
 function getLatestSystemContract(contractName, providerKey) {
     providerKey = providerKey || 'stats_gro';
@@ -28,19 +28,19 @@ async function getLatestVaultsAndStrategies(providerKey) {
     return latestVaultStrategyContracts[providerKey];
 }
 
-async function getLatestStabeCoins(providerKey) {
+async function getLatestStableCoins(providerKey) {
     providerKey = providerKey || 'stats_gro';
-    if (!latestStabeCoins[providerKey]) {
-        latestStabeCoins[providerKey] = [];
+    if (!latestStableCoins[providerKey]) {
+        latestStableCoins[providerKey] = [];
         const { vaultsAddress, contracts: vaultAndStrategies } =
             await getLatestVaultsAndStrategies(providerKey);
         for (let i = 0; i < vaultsAddress.length; i += 1) {
             const { strategies } = vaultAndStrategies[vaultsAddress[i]].vault;
             const { contractInfo } = strategies[0];
-            latestStabeCoins[providerKey].push(contractInfo.tokens[0]);
+            latestStableCoins[providerKey].push(contractInfo.tokens[0]);
         }
     }
-    return latestStabeCoins[providerKey];
+    return latestStableCoins[providerKey];
 }
 
 async function reloadData(providerKey) {
@@ -56,12 +56,12 @@ async function reloadData(providerKey) {
             providerKey,
         });
 
-    latestStabeCoins[providerKey] = undefined;
+    latestStableCoins[providerKey] = undefined;
 }
 
 module.exports = {
     getLatestSystemContract,
     getLatestVaultsAndStrategies,
-    getLatestStabeCoins,
+    getLatestStableCoins,
     reloadData,
 };

@@ -20,7 +20,6 @@ const withdrawHandlerABI = require('../contract/abis/WithdrawHandler.json');
 //     : '../contract/abis/WithdrawHandler.json'
 // );
 
-
 const { getConfig } = require('./configUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -28,7 +27,7 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 const EVENT_TYPE = {
-    stabeCoinApprove: 'coin-approve',
+    stableCoinApprove: 'coin-approve',
     deposit: 'deposit',
     withdraw: 'withdraw',
     gvtTransfer: 'gvtTransfer',
@@ -73,7 +72,7 @@ EVENT_FRAGMENT[EVENT_TYPE.inPwrdTransfer] = [
 EVENT_FRAGMENT[EVENT_TYPE.outPwrdTransfer] = [
     'event LogTransfer(address indexed sender, address indexed recipient, uint256 indexed amount)',
 ];
-EVENT_FRAGMENT[EVENT_TYPE.stabeCoinApprove] = [
+EVENT_FRAGMENT[EVENT_TYPE.stableCoinApprove] = [
     'event Approval(address indexed owner, address indexed spender, uint256 value)',
 ];
 EVENT_FRAGMENT[EVENT_TYPE.strategyHarvest] = [
@@ -86,7 +85,7 @@ EVENT_FRAGMENT[EVENT_TYPE.pnl] = [
     'event LogPnLExecution(uint256 deductedAssets,int256 totalPnL,int256 investPnL,int256 pricePnL,uint256 withdrawalBonus,uint256 performanceBonus,uint256 beforeGvtAssets,uint256 beforePwrdAssets,uint256 afterGvtAssets,uint256 afterPwrdAssets)',
 ];
 
-async function getStabeCoinApprovalFilters(account, providerKey) {
+async function getStableCoinApprovalFilters(account, providerKey) {
     const stablecoins = getUnderlyTokens(providerKey);
     const spender = getDepositHandler(providerKey).address;
     const approvalFilters = [];
@@ -233,12 +232,12 @@ async function getApprovalEvents(
     toBlock = 'latest',
     providerKey
 ) {
-    const stabeCoinFilters = await getStabeCoinApprovalFilters(
+    const stableCoinFilters = await getStableCoinApprovalFilters(
         account,
         providerKey
     );
     const gtokenFilters = await getGTokenApprovalFilters(account, providerKey);
-    const filters = [...stabeCoinFilters, ...gtokenFilters];
+    const filters = [...stableCoinFilters, ...gtokenFilters];
     const logs = [];
     const approvalLogsPromise = [];
     for (let i = 0; i < filters.length; i += 1) {
@@ -246,7 +245,7 @@ async function getApprovalEvents(
         filter.fromBlock = fromBlock;
         filter.toBlock = toBlock;
         approvalLogsPromise.push(
-            getEventsByFilter(filter, EVENT_TYPE.stabeCoinApprove, providerKey)
+            getEventsByFilter(filter, EVENT_TYPE.stableCoinApprove, providerKey)
         );
     }
     const promiseResult = await Promise.all(approvalLogsPromise);

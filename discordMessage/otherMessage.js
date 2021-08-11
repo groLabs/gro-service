@@ -7,7 +7,7 @@ const {
 const { getConfig } = require('../common/configUtil');
 const { shortAccount } = require('../common/digitalUtil');
 
-const stabeCoinNames = getConfig('stable_coin', false) || [
+const stableCoinNames = getConfig('stable_coin', false) || [
     'DAI',
     'USDC',
     'USDT',
@@ -15,7 +15,7 @@ const stabeCoinNames = getConfig('stable_coin', false) || [
 
 function updateChainlinkPriceMessage(content) {
     const { stableCoinAddress, stableCoinIndex } = content;
-    const stableCoinName = stabeCoinNames[stableCoinIndex];
+    const stableCoinName = stableCoinNames[stableCoinIndex];
     const discordMessage = {
         message: `Update chainlink price for ${stableCoinName}: ${stableCoinAddress}`,
         type: MESSAGE_TYPES.chainPrice,

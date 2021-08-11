@@ -6,7 +6,7 @@ const { BlockChainCallError } = require('./error');
 const { MESSAGE_TYPES } = require('./discord/discordService');
 const { adjustDecimal, toSum } = require('./digitalUtil');
 const {
-    getVaultStabeCoins,
+    getVaultStableCoins,
     getInsurance,
     getExposure,
     getPwrd,
@@ -93,16 +93,16 @@ async function getPnlKeyData(transactionHash, transactionReceipt, providerKey) {
 }
 
 function handleCoinAmount(address, value) {
-    const decimals = getVaultStabeCoins().decimals[address];
+    const decimals = getVaultStableCoins().decimals[address];
     return adjustDecimal(value, decimals);
 }
 async function getInvestKeyData(
     transactionHash,
-    stabeCoins,
+    stableCoins,
     transactionReceipt,
     providerKey
 ) {
-    logger.info(`stabe coins: ${JSON.stringify(stabeCoins)}`);
+    logger.info(`stable coins: ${JSON.stringify(stableCoins)}`);
     const tempResult = {};
     transactionReceipt = await pretreatReceipt(
         MESSAGE_TYPES.invest,
@@ -119,7 +119,7 @@ async function getInvestKeyData(
                 const { topics, address, data } = logs[i];
                 if (
                     eventFragment.topic === topics[0] &&
-                    stabeCoins.includes(address)
+                    stableCoins.includes(address)
                 ) {
                     tempResult[address] = parseData(
                         erc20ABI,

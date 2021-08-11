@@ -10,7 +10,7 @@ const {
     getGvt,
     getPwrd,
     getBuoy,
-    getVaultStabeCoins,
+    getVaultStableCoins,
 } = require('../../contract/allContracts');
 const {
     getNetworkId,
@@ -21,18 +21,19 @@ const {
     transferType,
 } = require('./personalUtil');
 
-
 const parseAmount = (amount, coin) => {
     // try {
-        return parseFloat(div(
+    return parseFloat(
+        div(
             amount,
-            (coin === 'DAI' || coin === 'USD') ? BN(10).pow(18) : BN(10).pow(6),
+            coin === 'DAI' || coin === 'USD' ? BN(10).pow(18) : BN(10).pow(6),
             amountDecimal
-        ));
+        )
+    );
     // } catch (err) {
     //     console.log(err);
     // }
-}
+};
 
 const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
     try {
@@ -40,9 +41,11 @@ const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
         //const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
         //const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
         if (getGvt().address === tokenAddress) {
-            usdAmount = await getGvt().getShareAssets(amount).catch((error) => {
-                logger.error(error);
-            });
+            usdAmount = await getGvt()
+                .getShareAssets(amount)
+                .catch((error) => {
+                    logger.error(error);
+                });
         } else if (getPwrd().address === tokenAddress) {
             usdAmount = await getPwrd.getShareAssets(amount).catch((error) => {
                 logger.error(error);
@@ -51,18 +54,21 @@ const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
             usdAmount = await getBuoy().singleStableToUsd(
                 amount,
                 getStableCoinIndex(tokenSymbol)
-            )
+            );
         }
         return parseAmount(usdAmount, 'USD');
     } catch (err) {
-        handleErr(`personalHandler->getGTokenUSDAmount() [tokenAddress: ${tokenAddress}, amount: ${amount}, tokenSymbol: ${tokenSymbol}]`, err);
+        handleErr(
+            `personalHandler->getGTokenUSDAmount() [tokenAddress: ${tokenAddress}, amount: ${amount}, tokenSymbol: ${tokenSymbol}]`,
+            err
+        );
         return 0;
     }
-}
+};
 
 const parseApprovalEvents = async (logs) => {
     try {
-        const stableCoinInfo = getVaultStabeCoins();
+        const stableCoinInfo = getVaultStableCoins();
         const approvals = [];
         for (const log of logs) {
             const decimal = stableCoinInfo.decimals[log.address];
@@ -78,12 +84,19 @@ const parseApprovalEvents = async (logs) => {
                     sender_address: log.args[0],
                     spender_address: log.args[1],
                     coin_amount: div(log.args[2], BN(10).pow(decimal), 2),
-                    coin_usd: await getApprovalValue(log.address, log.args[2], tokenSymbol),
+                    coin_usd: await getApprovalValue(
+                        log.address,
+                        log.args[2],
+                        tokenSymbol
+                    ),
                     creation_date: moment.utc(),
                 });
                 // }
             } else {
-                handleErr(`personalHandler->parseApprovalEvents(): Wrong decimal in coin amount`, null);
+                handleErr(
+                    `personalHandler->parseApprovalEvents(): Wrong decimal in coin amount`,
+                    null
+                );
                 return false;
             }
         }
@@ -92,90 +105,100 @@ const parseApprovalEvents = async (logs) => {
         handleErr(`personalHandler->parseApprovalEvents()`, err);
         return false;
     }
-}
+};
 
 const parseTransferEvents = async (logs, side) => {
     try {
         let result = [];
         logs.forEach((log) => {
             const dai_amount =
-                (side === Transfer.DEPOSIT)
+                side === Transfer.DEPOSIT
                     ? parseAmount(log.args[4][0], 'DAI') // LogNewDeposit.tokens[0]
-                    : (side === Transfer.WITHDRAWAL)
-                        ? - parseAmount(log.args[8][0], 'DAI') // LogNewWithdrawal.tokenAmounts[0]
-                        : 0;
+                    : side === Transfer.WITHDRAWAL
+                    ? -parseAmount(log.args[8][0], 'DAI') // LogNewWithdrawal.tokenAmounts[0]
+                    : 0;
             const usdc_amount =
-                (side === Transfer.DEPOSIT)
+                side === Transfer.DEPOSIT
                     ? parseAmount(log.args[4][1], 'USDC') // LogNewDeposit.tokens[1]
-                    : (side === Transfer.WITHDRAWAL)
-                        ? - parseAmount(log.args[8][1], 'USDC') // LogNewWithdrawal.tokenAmounts[1]
-                        : 0;
+                    : side === Transfer.WITHDRAWAL
+                    ? -parseAmount(log.args[8][1], 'USDC') // LogNewWithdrawal.tokenAmounts[1]
+                    : 0;
             const usdt_amount =
-                (side === Transfer.DEPOSIT)
+                side === Transfer.DEPOSIT
                     ? parseAmount(log.args[4][2], 'USDT') // LogNewDeposit.tokens[2]
-                    : (side === Transfer.WITHDRAWAL)
-                        ? - parseAmount(log.args[8][2], 'USDT') // LogNewWithdrawal.tokenAmounts[2]
-                        : 0;
+                    : side === Transfer.WITHDRAWAL
+                    ? -parseAmount(log.args[8][2], 'USDT') // LogNewWithdrawal.tokenAmounts[2]
+                    : 0;
             const usd_deduct =
-                (side === Transfer.WITHDRAWAL)
-                    ? - parseAmount(log.args[5], 'USD') // LogNewWithdrawal.deductUsd
+                side === Transfer.WITHDRAWAL
+                    ? -parseAmount(log.args[5], 'USD') // LogNewWithdrawal.deductUsd
                     : 0;
             const lp_amount =
-                (side === Transfer.WITHDRAWAL)
-                    ? - parseAmount(log.args[7], 'USD') // LogNewWithdrawal.lpAmount
+                side === Transfer.WITHDRAWAL
+                    ? -parseAmount(log.args[7], 'USD') // LogNewWithdrawal.lpAmount
                     : 0;
             const usd_return =
-                (side === Transfer.WITHDRAWAL)
-                    ? - parseAmount(log.args[6], 'USD') // LogNewWithdrawal.returnUsd
-                    : (side === Transfer.EXTERNAL_GVT_WITHDRAWAL)
-                        ? - (parseAmount(log.args[2], 'USD') / parseAmount(log.args[3], 'USD')) // LogTransfer.amount /  LogTransfer.ratio (GVT)
-                        : (side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
-                            ? - parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
-                            : 0;
+                side === Transfer.WITHDRAWAL
+                    ? -parseAmount(log.args[6], 'USD') // LogNewWithdrawal.returnUsd
+                    : side === Transfer.EXTERNAL_GVT_WITHDRAWAL
+                    ? -(
+                          parseAmount(log.args[2], 'USD') /
+                          parseAmount(log.args[3], 'USD')
+                      ) // LogTransfer.amount /  LogTransfer.ratio (GVT)
+                    : side === Transfer.EXTERNAL_PWRD_WITHDRAWAL
+                    ? -parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
+                    : 0;
             const usd_value =
-                (side === Transfer.DEPOSIT)
+                side === Transfer.DEPOSIT
                     ? parseAmount(log.args[3], 'USD') // LogNewDeposit.usdAmount  ** TODO: retrieve the ratio!!!! **
-                    : (side === Transfer.WITHDRAWAL || side === Transfer.EXTERNAL_GVT_WITHDRAWAL || side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
-                        ? usd_return
-                        : (side === Transfer.EXTERNAL_GVT_DEPOSIT)
-                            ? parseAmount(log.args[2], 'USD') / parseAmount(log.args[3], 'USD') // LogTransfer.amount /  LogTransfer.ratio (GVT)
-                            : (side === Transfer.EXTERNAL_PWRD_DEPOSIT)
-                                ? parseAmount(log.args[2], 'USD') // // LogTransfer.amount (PWRD) ** TODO: retrieve the ratio!!!! **
-                                : 0;
+                    : side === Transfer.WITHDRAWAL ||
+                      side === Transfer.EXTERNAL_GVT_WITHDRAWAL ||
+                      side === Transfer.EXTERNAL_PWRD_WITHDRAWAL
+                    ? usd_return
+                    : side === Transfer.EXTERNAL_GVT_DEPOSIT
+                    ? parseAmount(log.args[2], 'USD') /
+                      parseAmount(log.args[3], 'USD') // LogTransfer.amount /  LogTransfer.ratio (GVT)
+                    : side === Transfer.EXTERNAL_PWRD_DEPOSIT
+                    ? parseAmount(log.args[2], 'USD') // // LogTransfer.amount (PWRD) ** TODO: retrieve the ratio!!!! **
+                    : 0;
             const stable_amount =
-                (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL)
+                side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
                     ? dai_amount + usdc_amount + usdt_amount
                     : 0;
             const isGVT =
-                (((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && !log.args[2])
-                    || side === Transfer.EXTERNAL_GVT_DEPOSIT
-                    || side === Transfer.EXTERNAL_GVT_WITHDRAWAL)
+                ((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) &&
+                    !log.args[2]) ||
+                side === Transfer.EXTERNAL_GVT_DEPOSIT ||
+                side === Transfer.EXTERNAL_GVT_WITHDRAWAL
                     ? true
                     : false;
             const gvt_amount =
-                ((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && isGVT)
+                (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) &&
+                isGVT
                     ? 1 // calculated afterwards for Transfer.DEPOSIT & Transfer.WITHDRAWAL
-                    : (side === Transfer.EXTERNAL_GVT_DEPOSIT)
-                        ? parseAmount(log.args[2], 'USD') // LogTransfer.amount (GVT)
-                        : (side === Transfer.EXTERNAL_GVT_WITHDRAWAL)
-                            ? - parseAmount(log.args[2], 'USD') // LogTransfer.amount (GVT)
-                            : 0;
+                    : side === Transfer.EXTERNAL_GVT_DEPOSIT
+                    ? parseAmount(log.args[2], 'USD') // LogTransfer.amount (GVT)
+                    : side === Transfer.EXTERNAL_GVT_WITHDRAWAL
+                    ? -parseAmount(log.args[2], 'USD') // LogTransfer.amount (GVT)
+                    : 0;
             const pwrd_amount =
-                ((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && !isGVT)
+                (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) &&
+                !isGVT
                     ? 1 // calculated afterwards for Transfer.DEPOSIT & Transfer.WITHDRAWAL
-                    : (side === Transfer.EXTERNAL_PWRD_DEPOSIT)
-                        ? parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
-                        : (side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
-                            ? - parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
-                            : 0;
+                    : side === Transfer.EXTERNAL_PWRD_DEPOSIT
+                    ? parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
+                    : side === Transfer.EXTERNAL_PWRD_WITHDRAWAL
+                    ? -parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
+                    : 0;
             const userAddress =
-                (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL)
+                side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
                     ? log.args[0] // LogNewDeposit.user or LogNewWithdrawal.user
-                    : (side === Transfer.EXTERNAL_GVT_WITHDRAWAL || side === Transfer.EXTERNAL_PWRD_WITHDRAWAL)
-                        ? log.args[0] // LogTransfer.sender
-                        : log.args[1]; // LogTransfer.receiver
+                    : side === Transfer.EXTERNAL_GVT_WITHDRAWAL ||
+                      side === Transfer.EXTERNAL_PWRD_WITHDRAWAL
+                    ? log.args[0] // LogTransfer.sender
+                    : log.args[1]; // LogTransfer.receiver
             const referralAddress =
-                (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL)
+                side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
                     ? log.args[1]
                     : '0x0000000000000000000000000000000000000000';
 
@@ -196,19 +219,22 @@ const parseTransferEvents = async (logs, side) => {
                 usdc_amount: usdc_amount,
                 usdt_amount: usdt_amount,
                 creation_date: moment.utc(),
-                ...(!isDeposit(side)) && { usd_deduct: usd_deduct },
-                ...(!isDeposit(side)) && { usd_return: usd_return },
-                ...(!isDeposit(side)) && { lp_amount: lp_amount },
+                ...(!isDeposit(side) && { usd_deduct: usd_deduct }),
+                ...(!isDeposit(side) && { usd_return: usd_return }),
+                ...(!isDeposit(side) && { lp_amount: lp_amount }),
             });
         });
         return result;
     } catch (err) {
-        handleErr(`personalHandler->parseTransferEvents() [side: ${side}]`, err);
+        handleErr(
+            `personalHandler->parseTransferEvents() [side: ${side}]`,
+            err
+        );
     }
-}
+};
 
 module.exports = {
     parseAmount,
     parseApprovalEvents,
     parseTransferEvents,
-}
+};

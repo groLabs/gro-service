@@ -43,8 +43,8 @@ let groVaultContracts;
 let powerDContracts;
 let depositHandlerContracts;
 let withdrawHandlerContracts;
-const stabeCoins = [];
-const stabeCoinsInfo = {};
+const stableCoins = [];
+const stableCoinsInfo = {};
 
 function getFailedEmbedMessage(account) {
     const label = shortAccount(account);
@@ -81,33 +81,33 @@ function getContracts(contractName) {
     return contracts;
 }
 
-async function getStabeCoins() {
-    if (!stabeCoins.length) {
+async function getStableCoins() {
+    if (!stableCoins.length) {
         const latestController = getLatestSystemContract(
             ContractNames.controller,
             providerKey
         ).contract;
-        const stabeCoinAddresses = await latestController
+        const stableCoinAddresses = await latestController
             .stablecoins()
             .catch((error) => {
                 logger.error(error);
                 return [];
             });
-        for (let i = 0; i < stabeCoinAddresses.length; i += 1) {
-            stabeCoins.push(
-                new ethers.Contract(stabeCoinAddresses[i], erc20ABI, provider)
+        for (let i = 0; i < stableCoinAddresses.length; i += 1) {
+            stableCoins.push(
+                new ethers.Contract(stableCoinAddresses[i], erc20ABI, provider)
             );
         }
     }
-    return stabeCoins;
+    return stableCoins;
 }
 
-async function getStabeCoinsInfo() {
-    const keys = Object.keys(stabeCoinsInfo);
+async function getStableCoinsInfo() {
+    const keys = Object.keys(stableCoinsInfo);
     if (!keys.length) {
-        stabeCoinsInfo.decimals = {};
-        stabeCoinsInfo.symbols = {};
-        const coins = await getStabeCoins();
+        stableCoinsInfo.decimals = {};
+        stableCoinsInfo.symbols = {};
+        const coins = await getStableCoins();
         const decimalPromise = [];
         const symbolPromise = [];
         for (let i = 0; i < coins.length; i += 1) {
@@ -118,11 +118,11 @@ async function getStabeCoinsInfo() {
         const symbols = await Promise.all(symbolPromise);
 
         for (let i = 0; i < coins.length; i += 1) {
-            stabeCoinsInfo.decimals[coins[i].address] = decimals[i].toString();
-            stabeCoinsInfo.symbols[coins[i].address] = symbols[i];
+            stableCoinsInfo.decimals[coins[i].address] = decimals[i].toString();
+            stableCoinsInfo.symbols[coins[i].address] = symbols[i];
         }
     }
-    return stabeCoinsInfo;
+    return stableCoinsInfo;
 }
 
 function getDepositHandlerContracts() {
@@ -415,8 +415,8 @@ async function getApproveEventFilters(account) {
     const depositHandlerAddress = getLatestDepositHandler().address;
     const depositContractInfo =
         getLatestContractsAddress()[ContractNames.depositHandler];
-    // stabe coin approve filter
-    const coins = await getStabeCoins();
+    // stable coin approve filter
+    const coins = await getStableCoins();
     for (let i = 0; i < coins.length; i += 1) {
         const coin = coins[i];
         const filter = coin.filters.Approval(account, depositHandlerAddress);
@@ -477,7 +477,7 @@ async function getApprovalHistoryies(account, depositEventHashs) {
         }
     );
 
-    const stableCoinInfo = await getStabeCoinsInfo();
+    const stableCoinInfo = await getStableCoinsInfo();
     const result = [];
     const usdAmoutPromise = [];
     const buoy = getLatestSystemContract(
