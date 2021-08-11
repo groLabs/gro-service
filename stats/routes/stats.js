@@ -16,6 +16,7 @@ const {
     isValidBlockNumber,
     getBuoyStartBlock,
 } = require('../handler/priceHandler');
+const { generateHistoricalStats } = require('../handler/statsHandler');
 const { validate } = require('../common/validate');
 const { postDegenScore } = require('../services/degenscoreService');
 const { personalStatsMessage } = require('../../discordMessage/statsMessage');
@@ -164,6 +165,28 @@ router.get(
         }
         const pricing = await getGroPrice(block);
         res.json({ pricing });
+    })
+);
+
+router.get(
+    '/historical_gro_stats',
+    wrapAsync(async (req, res) => {
+        let { network, attr, block } = req.query;
+        network = network || '';
+        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+            throw new ParameterError('Parameter network is invalid.');
+        }
+        if (attr === undefined || attr.toLowerCase() !== 'apy.last7d') {
+            throw new ParameterError('Parameter attr is invalid.');
+        }
+        if (block === undefined || block === '') {
+            throw new ParameterError('Parameter block is invalid.');
+        }
+        const groStats = await generateHistoricalStats(
+            parseInt(block, 10),
+            attr
+        );
+        res.json({ historical_gro_stats: groStats });
     })
 );
 

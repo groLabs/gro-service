@@ -313,6 +313,50 @@ async function getSystemApy(latestBlock, provider) {
     return apy;
 }
 
+async function getHistoricalSystemApy(block, provider) {
+    updateBlocksScanner(provider);
+    logger.info('HistoricalSystemApy');
+    const gvt = getGvt(providerKey);
+    const pwrd = getPwrd(providerKey);
+
+    const launchTimestamp = await getTimestampByBlockNumber(
+        launchBlock,
+        provider
+    );
+    const launchDate = dayjs.unix(launchTimestamp);
+
+    // last 24h and 7d apy uses shifting window
+    const endBlockTag = {
+        blockTag: block.number,
+    };
+    const latestGvtFactor = await gvt.factor(endBlockTag);
+    const latestPwrdFactor = await pwrd.factor(endBlockTag);
+
+    // last 7d
+    logger.info('----last 7d');
+    const startOf7DaysAgo = dayjs.unix(block.timestamp).subtract(7, 'day');
+    let apyLast7d;
+    if (startOf7DaysAgo.isBefore(launchDate)) {
+        apyLast7d = await calcApyOfInitDays(block, launchTimestamp);
+    } else {
+        apyLast7d = await calcApyByPeriod(
+            startOf7DaysAgo,
+            latestGvtFactor,
+            latestPwrdFactor,
+            WEEKS_IN_YEAR
+        );
+    }
+    logger.info(
+        `Historical last 7d ${block.number} ${apyLast7d.pwrd} ${apyLast7d.gvt}`
+    );
+    const apy = {
+        last7d: apyLast7d,
+    };
+
+    return apy;
+}
+
 module.exports = {
     getSystemApy,
+    getHistoricalSystemApy,
 };
