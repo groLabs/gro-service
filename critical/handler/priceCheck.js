@@ -1,22 +1,21 @@
 const { ethers, BigNumber } = require('ethers');
 
-const { getAlchemyRpcProvider } = require('../common/chainUtil');
-const { sendAlertMessage } = require('../common/alertMessageSender');
-const { getBuoy } = require('../contract/allContracts');
-const { formatNumber } = require('../common/digitalUtil');
+const { getAlchemyRpcProvider } = require('../../common/chainUtil');
+const { sendAlertMessage } = require('../../common/alertMessageSender');
+const { getBuoy } = require('../../contract/allContracts');
+const { formatNumber } = require('../../common/digitalUtil');
 const curve3PoolABI = require('./ICurve3Pool.json');
 
-const PERCENT_DECIAML = BigNumber.from(10000);
-const curve3PoolAddress = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7';
-const stabeCoin = ['DAI', 'USDC', 'USDT'];
-const stabeCoinDecimals = [
+const stableCoin = ['DAI', 'USDC', 'USDT'];
+const stableCoinDecimals = [
     BigNumber.from('1000000000000000000'),
     BigNumber.from('1000000'),
     BigNumber.from('1000000'),
 ];
 
-async function curveStabeCoinBalanceCheck(providerKey) {
+async function curveStableCoinBalanceCheck(providerKey) {
     const provider = getAlchemyRpcProvider(providerKey);
+    const curve3PoolAddress = await getBuoy().curvePool();
     const curve3Pool = new ethers.Contract(
         curve3PoolAddress,
         curve3PoolABI,
@@ -26,19 +25,19 @@ async function curveStabeCoinBalanceCheck(providerKey) {
     const coinRatios = [];
     let total = BigNumber.from(0);
     const balancePromises = [];
-    for (let i = 0; i < stabeCoin.length; i += 1) {
+    for (let i = 0; i < stableCoin.length; i += 1) {
         balancePromises.push(curve3Pool.balances(i));
     }
     const balancePromisesResult = await Promise.all(balancePromises);
-    for (let i = 0; i < stabeCoin.length; i += 1) {
+    for (let i = 0; i < stableCoin.length; i += 1) {
         const balance = balancePromisesResult[i].mul(
-            BigNumber.from('1000000000000000000').div(stabeCoinDecimals[i])
+            BigNumber.from('1000000000000000000').div(stableCoinDecimals[i])
         );
         total = total.add(balance);
         coinBalances.push(balance);
     }
 
-    for (let i = 0; i < stabeCoin.length; i += 1) {
+    for (let i = 0; i < stableCoin.length; i += 1) {
         const ratio = coinBalances[i].mul(BigNumber.from(10000)).div(total);
         coinRatios.push(ratio);
     }
@@ -46,7 +45,7 @@ async function curveStabeCoinBalanceCheck(providerKey) {
 }
 
 async function checkCurveCoinRatio(providerKey, configCoinRatios) {
-    const coinRatios = await curveStabeCoinBalanceCheck(providerKey);
+    const coinRatios = await curveStableCoinBalanceCheck(providerKey);
     const coinRatiosLenght = coinRatios.length;
     const ratioAbnormal = [];
     for (let i = 0; i < coinRatiosLenght; i += 1) {
@@ -56,7 +55,7 @@ async function checkCurveCoinRatio(providerKey, configCoinRatios) {
                 ratio,
                 configRatio: BigNumber.from(configCoinRatios.emery),
                 level: 'EMERG',
-                coin: stabeCoin[i],
+                coin: stableCoin[i],
             });
             break;
         } else if (ratio.lte(BigNumber.from(configCoinRatios.crit))) {
@@ -64,7 +63,7 @@ async function checkCurveCoinRatio(providerKey, configCoinRatios) {
                 ratio,
                 configRatio: BigNumber.from(configCoinRatios.crit),
                 level: 'CRIT',
-                coin: stabeCoin[i],
+                coin: stableCoin[i],
             });
             break;
         } else if (ratio.lte(BigNumber.from(configCoinRatios.warn))) {
@@ -72,7 +71,7 @@ async function checkCurveCoinRatio(providerKey, configCoinRatios) {
                 ratio,
                 configRatio: BigNumber.from(configCoinRatios.warn),
                 level: 'WARN',
-                coin: stabeCoin[i],
+                coin: stableCoin[i],
             });
             break;
         }

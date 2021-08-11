@@ -6,14 +6,13 @@ const {
     buoyHealthCheckAcrossBlocks,
 } = require('../handler/criticalHandler');
 const {
-    DISCORD_CHANNELS,
     sendErrorMessageToLogChannel,
 } = require('../../common/discord/discordService');
 const { checkAccountsBalance } = require('../../common/chainUtil');
 const {
     checkCurveCoinRatio,
     checkChainlinkPrice,
-} = require('../../pricecheck/priceCheck');
+} = require('../handler/priceCheck');
 
 const { sendAlertMessage } = require('../../common/alertMessageSender');
 const logger = require('../criticalLogger');
@@ -52,7 +51,7 @@ function checkCurveHealth() {
             );
             failedTimes.priceCheck = 0;
         } catch (error) {
-            sendErrorMessageToLogChannel(DISCORD_CHANNELS.botLogs, error);
+            sendErrorMessageToLogChannel(error);
             failedTimes.priceCheck += 1;
             if (failedTimes.priceCheck >= failedAlertTimes) {
                 sendAlertMessage({
@@ -79,7 +78,7 @@ function priceMonitor() {
             await checkCurveCoinRatio(providerKey, curveBalanceConfig);
             failedTimes.priceMonitor = 0;
         } catch (error) {
-            sendErrorMessageToLogChannel(DISCORD_CHANNELS.botLogs, error);
+            sendErrorMessageToLogChannel(error);
             failedTimes.priceMonitor += 1;
             if (failedTimes.priceMonitor >= failedAlertTimes) {
                 sendAlertMessage({
@@ -104,7 +103,7 @@ function checkBotAccountBalance() {
         try {
             await checkAccountsBalance(botBalanceWarnVault);
         } catch (error) {
-            sendErrorMessageToLogChannel(DISCORD_CHANNELS.botLogs, error);
+            sendErrorMessageToLogChannel(error);
         }
     });
 }

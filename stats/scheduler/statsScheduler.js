@@ -5,7 +5,6 @@ const { generateGroStatsFile } = require('../handler/statsHandler');
 const { getCurrentApy } = require('../handler/currentApyHandler');
 const { getConfig } = require('../../common/configUtil');
 const {
-    DISCORD_CHANNELS,
     sendErrorMessageToLogChannel,
 } = require('../../common/discord/discordService');
 const {
@@ -41,7 +40,7 @@ async function generateStatsFile() {
             logger.info(`generate stats file: ${statsFilename}`);
             failedTimes.apyGenerator = 0;
         } catch (error) {
-            sendErrorMessageToLogChannel(DISCORD_CHANNELS.botLogs, error);
+            sendErrorMessageToLogChannel(error);
             failedTimes.apyGenerator += 1;
             if (failedTimes.apyGenerator >= failedAlertTimes) {
                 sendAlertMessage({
