@@ -2,7 +2,7 @@ const moment = require('moment');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
-// Calculate number of 30' intervals from the start to end dates (in case an historical data load is needed)
+// Calculate number of N-second intervals from the start to end dates (in case an historical data load is needed)
 const calcRangeTimestamps = (start, end, interval) => {
     try {
         let iterations = [];

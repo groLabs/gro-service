@@ -242,6 +242,11 @@ module.exports = {
             path: '/stats/gro_stats?network=mainnet',
             port: 443,
         },
+        historical_gro_stats: {
+            hostname: 'h4sk4iwj75.execute-api.eu-west-2.amazonaws.com',
+            path: '/stats/historical_gro_stats',
+            port: 443,
+        },
         personal_stats: {
             hostname: 'h4sk4iwj75.execute-api.eu-west-2.amazonaws.com',
             path: '/stats/gro_personal_position?network=mainnet&address=',

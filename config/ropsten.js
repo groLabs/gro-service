@@ -228,6 +228,11 @@ module.exports = {
             path: '/stats/gro_stats?network=ropsten',
             port: process.env.BOT_DEV_PORT,
         },
+        historical_gro_stats: {
+            hostname: process.env.BOT_DEV_HOST,
+            path: '/stats/historical_gro_stats',
+            port: process.env.BOT_DEV_PORT,
+        },
         personal_stats: {
             hostname: process.env.BOT_DEV_HOST,
             path: '/stats/gro_personal_position?network=ropsten&address=',

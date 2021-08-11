@@ -3,24 +3,26 @@ const { apiCaller } = require('../common/apiCaller');
 const { getConfig } = require('../../common/configUtil');
 const route = getConfig('route');
 const botEnv = process.env.BOT_ENV.toLowerCase();
+const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-const { loadAllTables } = require('../loader/loadGroStats');
+const { loadAllTables, loadAPY } = require('../loader/loadGroStats');
 const { checkLastTimestamp } = require('../common/protocolUtil');
 const { calcRangeTimestamps } = require('../common/calcRangeTimestamps');
+const { findBlockByDate } = require('../common/personalUtil'); //TODO: generic file, not in personalUtil
 const { QUERY_SUCCESS } = require('../constants');
 
-const FIVE_MINITUES = 1800;
 
-const options = {
+let options = {
     hostname: route.gro_stats.hostname,
     port: route.gro_stats.port,
-    path: route.gro_stats.path,
+    path: '',
     method: 'GET',
 };
 
 const etlGroStats = async () => {
     try {
         let lastTimestamp;
+        options.path = route.gro_stats.path;
         const res = await checkLastTimestamp('GRO_STATS');
         if (res.status === QUERY_SUCCESS) {
             lastTimestamp = res.rows[0].last_timestamp;
@@ -47,35 +49,28 @@ const etlGroStats = async () => {
     }
 }
 
-const loadApyHDL = async (intervals, kpi) => {
+// This will be called on-demand, not by a cron
+const etlGroStatsHDL = async (start, end, kpi, interval) => {
     try {
-        //TBC
-        // const result = [
-        //     stats.current_timestamp,
-        //     moment.unix(stats.current_timestamp).utc(),
-        //     getNetworkId(),
-        //     getProductId(product),
-        //     0, //stats.apy.last24h[product],
-        //     kpi, //stats.apy.last7d[product],
-        //     0, //stats.apy.daily[product],
-        //     0, //stats.apy.weekly[product],
-        //     0, //stats.apy.monthly[product],
-        //     0, //stats.apy.all_time[product],
-        //     0, //stats.apy.current[product],
-        //     moment().utc(),
-        // ]
-        // console.log(result);
-    } catch (err) {
-        logger.error(`**DB: Error in etlGroStats.js->loadApyHDL(): ${err}`);
-    } 
-}
-
-const etlGroStatsHDL = async (start, end, kpi) => {
-    try {
-        const intervals = calcRangeTimestamps(start, end, FIVE_MINITUES);
+        const intervals = calcRangeTimestamps(start, end, interval);
         logger.info(`**DB: Starting HDL for ${kpi} on timestamps ${start} to ${end}`);
-        // if (kpi === 'last7d')
-        await loadApyHDL(intervals, kpi);
+        for (const currentTimestamp of intervals) {
+            const block = (await findBlockByDate(currentTimestamp)).block;
+            options.path = route.historical_gro_stats.path + `?network=${nodeEnv}&block=${block}&attr=${kpi}`;
+            const call = await apiCaller(options);
+            if (call.status === QUERY_SUCCESS) {
+                const stats = JSON.parse(call.data);
+                if (stats.historical_gro_stats) {
+                    const res = await loadAPY(stats.historical_gro_stats);
+                    if (!res)
+                        return;
+                } else {
+                    logger.error('**DB: No data found in JSON API call');
+                }
+            } else {
+                logger.error(`**DB: Error with API call: \n Error code ${call.status} \n Error description: ${call.data}`);
+            }
+        }
         logger.info(`**DB: Finished HDL for ${kpi} on timestamps ${start} to ${end}`);
     } catch (err) {
         logger.error(`**DB: Error in etlGroStats.js->etlGroStatsHDL(): ${err}`);

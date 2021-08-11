@@ -6,7 +6,6 @@ const scheduler = require('./scheduler/dbStatsScheduler');
 const { getHistoricalAPY } = require('./handler/historicalAPY');
 
 
-
 (async () => {
     try {
         const params = process.argv.slice(2);
@@ -15,27 +14,34 @@ const { getHistoricalAPY } = require('./handler/historicalAPY');
             switch (params[0]) {
                 case 'priceCheckHDL':
                     if (params.length === 3) {
-                        await etlPriceCheckHDL(parseInt(params[1]), parseInt(params[2]));
+                        await etlPriceCheckHDL(
+                            parseInt(params[1]),    // start timestamp
+                            parseInt(params[2]));   // end timestamp
                     } else {
                         console.log('Wrong parameters for Price Check HDL - e.g.: priceCheckHDL 1626825600 1626912000');
                     }
                     break;
-                case 'groStats':
-                    if (params.length === 3) {
-                        await etlGroStatsHDL(parseInt(params[1]), parseInt(params[2]));
+                case 'groStatsHDL':
+                    if (params.length === 5) {
+                        await etlGroStatsHDL(
+                            parseInt(params[1]),    // start timestamp
+                            parseInt(params[2]),    // end timestamp
+                            params[3],              // attribute
+                            parseInt(params[4]));   // interval (in seconds)
                     } else {
                         console.log('Wrong parameters for groStats HDL - e.g.: groStats 1626825600 1626912000');
                     }
                     break;
                 default:
-                    console.log('Unknown parameter');
+                    console.log(`Unknown parameter: ${params[0]}`);
                     break;
             }
             process.exit(0);
         }
 
         // Testing groStats
-        await etlGroStats();
+        //await etlGroStats();
+        await etlGroStatsHDL(1623844800,1623844800,'apy',1800);
 
         // Testing priceCheck
         // await etlPriceCheck();

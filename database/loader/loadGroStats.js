@@ -201,5 +201,6 @@ const loadAllTables = async (stats) => {
 
 module.exports = {
     loadAllTables,
+    loadAPY,
     checkLastTimestamp,
 }
