@@ -3,6 +3,16 @@ module.exports = {
         warn: '1000000000000000000',
         critial: '200000000000000000',
     },
+    curve_balance: {
+        emery: 1000,
+        crit: 1300,
+        warn: 1500,
+    },
+    chainlink_price_pair: {
+        emery: { high: 14000, low: 7000 },
+        crit: { high: 12500, low: 8000 },
+        warn: { high: 1100, low: 9000 },
+    },
     etherscan_api_key: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
     pagerduty: {
         token: process.env.PAGERDUTY_TOKEN,

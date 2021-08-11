@@ -11,7 +11,10 @@ const fromAccount = getConfig('pagerduty.from', false) || '';
 
 const pagerduty = new pagerdutyAPI({ token: pagerdutyToken });
 
+const nodeEnv = process.env.NODE_ENV;
+
 async function createIncident(bodyParams) {
+    if (nodeEnv !== 'mainnet') return; // only create pagerduty's incident on mainnet
     const incidentBody = getIncidentBody(bodyParams);
     const result = await pagerduty.post('/incidents', {
         data: incidentBody,
