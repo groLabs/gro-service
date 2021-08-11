@@ -11,14 +11,14 @@ const {
     getAlchemyRpcProvider,
     getTimestampByBlockNumber,
 } = require('../../common/chainUtil');
-const { getSystemApy } = require('./apyHandler');
+const { getSystemApy, getHistoricalSystemApy } = require('./apyHandler');
 const { getGtokenApy, getHodlBonusApy } = require('./currentApyHandler');
 const {
     getTvlStats,
     getSystemStats,
     getExposureStats,
 } = require('./systemHandler');
-
+const { ParameterError } = require('../../common/error');
 const { apyStatsMessage } = require('../../discordMessage/statsMessage');
 const logger = require('../statsLogger');
 
@@ -148,6 +148,33 @@ async function generateGroStatsFile() {
     return statsFilename;
 }
 
+async function generateHistoricalStats(blockNumber, attr) {
+    if (parseInt(blockNumber, 10) < parseInt(launchBlock, 10)) {
+        throw new ParameterError('blockNumber is before launch.');
+    }
+    const block = await provider.getBlock(blockNumber).catch((e) => {
+        logger.error(e);
+        throw new ParameterError('Get block info failed.');
+    });
+    logger.info(`generateHistoricalStats ${blockNumber}`);
+    const launchTimestamp = await getTimestampByBlockNumber(
+        launchBlock,
+        provider
+    );
+
+    const stats = {
+        current_timestamp: block.timestamp.toString(),
+        launch_timestamp: launchTimestamp,
+        network: process.env.NODE_ENV.toLowerCase(),
+        block: blockNumber.toString(),
+        attr,
+    };
+    const apy = await getHistoricalSystemApy(block, provider);
+    stats.apy = mapper(apy, ['pwrd', 'gvt'], []);
+    return stats;
+}
+
 module.exports = {
     generateGroStatsFile,
+    generateHistoricalStats,
 };
