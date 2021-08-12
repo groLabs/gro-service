@@ -8,7 +8,6 @@ const { checkPendingTransactions } = require('../../common/pendingTransaction');
 const { pendingTransactions } = require('../../common/storage');
 const {
     sendErrorMessageToLogChannel,
-    DISCORD_CHANNELS,
 } = require('../../common/discord/discordService');
 const { pendingTransactionResend } = require('../../gasPrice/transaction');
 const {
@@ -80,7 +79,7 @@ function safetyCheckScheduler() {
             await priceSafetyCheck(providerKey);
             failedTimes.safetyCheck = 0;
         } catch (error) {
-            sendErrorMessageToLogChannel(DISCORD_CHANNELS.botLogs, error);
+            sendErrorMessageToLogChannel(error);
             failedTimes.safetyCheck += 1;
             if (failedTimes.safetyCheck >= 2) {
                 sendAlertMessage({
