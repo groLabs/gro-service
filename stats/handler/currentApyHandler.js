@@ -15,7 +15,10 @@ const {
     getFilterEvents,
 } = require('../../common/logFilter-new');
 const { getConfig } = require('../../common/configUtil');
-const { getContractsHistory } = require('../../registry/registryLoader');
+const {
+    getContractsHistory,
+    getLatestContractsAddressByAddress,
+} = require('../../registry/registryLoader');
 const { ContractNames } = require('../../registry/registry');
 const { newContract } = require('../../registry/contracts');
 const { getLatestVaultsAndStrategies } = require('../common/contractStorage');
@@ -242,7 +245,7 @@ async function calcCurrentStrategyAPY(startBlock, endBlock) {
     logger.info(
         `calculate strategy apy ${startBlock.blockNumber}  ${endBlock.blockNumber}`
     );
-
+    const latestContractInfo = getLatestContractsAddressByAddress();
     const vaults = await getLatestVaultAdapters();
     const yearnVaults = await getLatestYearnVaults();
     const vaultStrategy = await getStrategies();
@@ -254,13 +257,14 @@ async function calcCurrentStrategyAPY(startBlock, endBlock) {
         for (let j = 0; j < strategies.length; j += 1) {
             logger.info(`strategy ${j}`);
             const { strategy } = strategies[j];
+            const { metaData } = latestContractInfo[strategy.address];
             // eslint-disable-next-line no-await-in-loop
             const apy = await calcStrategyAPY(
                 yearnVaults[i],
                 strategy,
                 startBlock,
                 endBlock,
-                BigNumber.from(defaultApy[i * 2 + j])
+                BigNumber.from(metaData.DY)
             );
             strategies[j].apy = apy;
         }
