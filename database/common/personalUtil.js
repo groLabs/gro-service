@@ -3,15 +3,15 @@ const moment = require('moment');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-const {
-    initDatabaseContracts,
-    initAllContracts,
-    getGvt,
-    getPwrd,
-    getBuoy,
-    getDepositHandler,
-    getVaultStabeCoins,
-} = require('../../contract/allContracts');
+// const {
+//     initDatabaseContracts,
+//     initAllContracts,
+//     getGvt,
+//     getPwrd,
+//     getBuoy,
+//     getDepositHandler,
+//     getVaultStabeCoins,
+// } = require('../../contract/allContracts');
 const {
     getDefaultProvider,
     getAlchemyRpcProvider,
@@ -22,12 +22,13 @@ const {
     getEvents: getTransferEV,
     getApprovalEvents: getApprovalEV,
 } = require('../../common/logFilter');
+const { QUERY_ERROR } = require('../constants');
 
 const BlocksScanner = require('../../stats/common/blockscanner');
 const provider = getAlchemyRpcProvider('stats_gro');
 const scanner = new BlocksScanner(provider);
 
-const QUERY_ERROR = 400;
+
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
 const ERC20_TRANSFER_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
@@ -245,10 +246,10 @@ async function findBlockByDate(scanDate) {
 }
 // TODO end: to be moved to /common. 
 
-const getGTokenFromTx = async (result, side) => {
+const getGTokenFromTx = async (result, side, account) => {
     try {
         const numTx = result.length;
-        logger.info(`**DB: Processing ${numTx} ${(side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'} transaction${isPlural(numTx)}...`);
+        logger.info(`**DB${account ? ' CACHE' : ''}: Processing ${numTx} ${(side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'} transaction${isPlural(numTx)}...`);
 
         // Interface for ERC20 token transfer
         const iface = new ethers.utils.Interface([
@@ -283,7 +284,7 @@ const getGTokenFromTx = async (result, side) => {
                 }
             }
         }
-        logger.info(`**DB: ${result.length} transaction${isPlural(numTx)} processed`);
+        logger.info(`**DB${account ? ' CACHE' : ''}: ${result.length} transaction${isPlural(numTx)} processed`);
         return result;
     } catch (err) {
         handleErr(`personalUtil->getGTokenFromTx() [transfer: ${side}]`, err);

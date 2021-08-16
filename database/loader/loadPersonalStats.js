@@ -9,16 +9,8 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const {
-    QUERY_ERROR,
-    getBlockData,
-    getNetworkId,
-    getStableCoinIndex,
     generateDateRange,
-    getApprovalEvents2,
-    getTransferEvents2,
-    getGTokenFromTx,
     handleErr,
-    isDeposit,
     isPlural,
     Transfer,
     transferType,
@@ -42,6 +34,7 @@ const {
 const { loadUserBalances } = require('./loadUserBalances');
 const { loadUserNetReturns } = require('./loadUserNetReturns');
 const { loadGroStats } = require('./loadGroStats');
+const { QUERY_ERROR } = require('../constants');
 
 
 /// @notice Truncates temporaty tables & calculates blocks and dates to be processed
@@ -74,7 +67,7 @@ const preload = async (_fromDate, _toDate) => {
         return [fromBlock, toBlock, dates];
 
     } catch (err) {
-        handleErr(`personalHandler->preload() [from: ${_fromDate}, to: ${_toDate}]`, err);
+        handleErr(`loadPersonalStats->preload() [from: ${_fromDate}, to: ${_toDate}]`, err);
         return [];
     }
 }
@@ -115,12 +108,12 @@ const remove = async (fromDate, toDate) => {
             logger.info(`**DB: ${loads.rowCount} record${isPlural(loads.rowCount)} deleted from SYS_TABLE_LOADS`);
         } else {
             const params = `Dates [${fromDate} - ${toDate}]`;
-            handleErr(`personalHandler->remove() Delete query didn't return results. Params: ${params}`, null);
+            handleErr(`loadPersonalStats->remove() Delete query didn't return results. Params: ${params}`, null);
             return false;
         }
         return true;
     } catch (err) {
-        handleErr(`personalHandler->remove() [from: ${fromDate}, to: ${toDate}]`, err);
+        handleErr(`loadPersonalStats->remove() [from: ${fromDate}, to: ${toDate}]`, err);
         return false;
     }
 }
@@ -155,21 +148,21 @@ const reload = async (
             ]);
 
             if (res.every(Boolean)) {
-                if (await loadTmpUserApprovals(fromBlock, toBlock))
+                if (await loadTmpUserApprovals(fromBlock, toBlock, null))
                     if (await remove(fromDate, toDate))
-                        if (await loadUserTransfers(fromDate, toDate))
-                            if (await loadUserApprovals(fromDate, toDate))
-                                if (await loadUserBalances(fromDate, toDate))
-                                    await loadUserNetReturns(fromDate, toDate);
+                        if (await loadUserTransfers(fromDate, toDate, null))
+                            if (await loadUserApprovals(fromDate, toDate, null))
+                                if (await loadUserBalances(fromDate, toDate, null))
+                                    await loadUserNetReturns(fromDate, toDate, null);
             } else {
                 logger.warn(`**DB: Error/s found in loadPersonalStats.js->reload()`);
             }
         } else {
             const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
-            handleErr(`personalHandler->reload() Error with parameters: ${params}`, null);
+            handleErr(`loadPersonalStats->reload() Error with parameters: ${params}`, null);
         }
     } catch (err) {
-        handleErr(`personalHandler->reload() [from: ${fromDate}, to: ${toDate}]`, err);
+        handleErr(`loadPersonalStats->reload() [from: ${fromDate}, to: ${toDate}]`, err);
     }
 }
 
@@ -199,17 +192,17 @@ const load = async (
         ]);
 
         if (res.every(Boolean)) {
-            if (await loadTmpUserApprovals(fromBlock, toBlock))
-                if (await loadUserTransfers(fromDate, toDate))
-                    if (await loadUserApprovals(fromDate, toDate))
-                        if (await loadUserBalances(fromDate, toDate))
-                            await loadUserNetReturns(fromDate, toDate);
+            if (await loadTmpUserApprovals(fromBlock, toBlock, null))
+                if (await loadUserTransfers(fromDate, toDate, null))
+                    if (await loadUserApprovals(fromDate, toDate, null))
+                        if (await loadUserBalances(fromDate, toDate, null))
+                            await loadUserNetReturns(fromDate, toDate, null);
         } else {
             logger.warn(`**DB: Error/s found in loadPersonalStats.js->load()`);
         }
     } else {
         const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
-        handleErr(`personalHandler->reload() Error with parameters: ${params}`, null);
+        handleErr(`loadPersonalStats->load() Error with parameters: ${params}`, null);
     }
 }
 
@@ -218,7 +211,8 @@ const loadPersonalStats = async () => {
         console.log('in loadPersonalStats')
 
         //DEV Ropsten:
-        await reload('30/06/2021', '30/06/2021');
+        // await reload('28/06/2021', '28/06/2021');
+        await reload('16/08/2021', '16/08/2021');
         //await load('30/06/2021', '30/06/2021');
 
         // PROD:
@@ -231,7 +225,7 @@ const loadPersonalStats = async () => {
         // process.exit();
         console.log('here3')
     } catch (err) {
-        handleErr(`personalHandler->loadGroStatsDB()`, err);
+        handleErr(`loadPersonalStats->loadPersonalStats()`, err);
     }
 }
 
@@ -240,95 +234,3 @@ module.exports = {
 };
 
 
-
-
-
-// Calculate the PWRD value based on the ratio in the block when the deposit/withdrawal was performed
-// Note from Kristian: pwrds factor is not applied to price, only GVT. So no need to apply this conversion
-// const getPwrdValue = async (result) => {
-//     try {
-//         for (const item of result) {
-//             if (item.pwrd_amount !== 0) {
-//                 const blockTag = {
-//                     blockTag: item.block_number
-//                 };
-//                 const factor = parseAmount(await getPwrd().factor(blockTag), 'USD');
-//                 if (factor > 0) { 
-//                     item.pwrd_value = item.pwrd_amount / factor;
-//                 } else {
-//                     handleErr(`personalHandler->getPwrdValue(): factor for PWRD is 0`, null);
-//                 }
-//                 console.log(factor, item)
-//             }
-//         }
-//     } catch(err) {
-//         handleErr(`personalHandler->getPwrdValue():`, null);
-//     }
-// }
-
-// const isGToken = (tokenSymbol) => {
-//     return (['DAI', 'USDC', 'USDT'].includes(tokenSymbol)) ? false : true;
-// }
-
-/* EXPERIMENTAL */
-/*
-const showBalanceHourBlock = async (date, account) => {
-    try {
-        // let start = moment.utc("19/06/2021", "DD/MM/YYYY");
-        // //const days = moment.duration(end.diff(start)).asDays();
-
-        // let dates = [];
-        // for (let i = 0; i <= 23; i++) {
-        //     let newDate = moment(start).add(i, 'hours');
-        //     //let newDateStr = moment(newDate).format('DD/MM/YYYY HH24:MI:SS');
-        //     //console.log(newDateStr);
-        //     //await reload(newDateStr, newDateStr, null);
-        //     dates.push(newDate);
-        // }
-
-        // for (const date of dates) {
-        //     const blockTag = {
-        //         blockTag: (await findBlockByDate(date)).block
-        //     }
-        //     console.log(blockTag.blockTag)
-
-        //     const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-        //     const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
-        //     const totalValue = gvtValue + pwrdValue;
-        //     const block = blockTag.blockTag;
-        //     const params = {
-        //         block: block,
-        //         date : date,
-        //         networkid: getNetworkId(),
-        //         account: account,
-        //         totalValue: totalValue,
-        //         gvtValue: gvtValue,
-        //         pwrdValue: pwrdValue,
-        //     };
-        //     // const result = await query('insert_user_balances.sql', params);
-        //     // if (result === QUERY_ERROR) return false;
-        //     // rowCount += result.rowCount;
-        //     console.log(params);
-        // }
-
-        const blockTag = {
-            blockTag: 25582733
-        };
-        const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-        const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
-        const totalValue = gvtValue + pwrdValue;
-        const params = {
-            block: blockTag.blockTag,
-            date: date,
-            networkid: getNetworkId(),
-            account: account,
-            totalValue: totalValue,
-            gvtValue: gvtValue,
-            pwrdValue: pwrdValue,
-        };
-        console.log(params);
-    } catch (err) {
-        handleErr(`personalHandler->showBalanceHourBlock()`, err);
-    }
-}
-*/

@@ -5,7 +5,6 @@ const { query } = require('../handler/queryHandler');
 const { loadEthBlocks } = require('./loadEthBlocks');
 const { loadTableUpdates } = require('./loadTableUpdates');
 const {
-    QUERY_ERROR,
     handleErr,
     isPlural,
     getApprovalEvents2,
@@ -13,7 +12,40 @@ const {
 const {
     parseApprovalEvents,
 } = require('../common/personalParser');
+const { QUERY_ERROR } = require('../constants');
 
+
+const loadUserApprovals = async (fromDate, toDate, account) => {
+    try {
+        // Add new blocks into ETH_BLOCKS (incl. block timestamp)
+        if (await loadEthBlocks('loadUserApprovals', account)) {
+            // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
+            const q = (account)
+                ? 'insert_cache_user_approvals.sql'
+                : 'insert_user_approvals.sql';
+            const params = (account)
+                ? [account]
+                : [];
+            const res = await query(q, params);
+            if (res.status === QUERY_ERROR)
+                return false;
+            const numTransfers = res.rowCount;
+            logger.info(`**DB${account ? ' CACHE' : ''}: ${numTransfers} record${isPlural(numTransfers)} added into USER_APPROVALS`);
+        } else {
+            return false;
+        }
+        
+        if (account) {
+            return true;
+        } else {
+            const res = await loadTableUpdates('USER_APPROVALS', fromDate, toDate);
+            return (res) ? true : false;
+        }
+    } catch (err) {
+        handleErr('loadUserApprovals->loadUserApprovals()', err);
+        return false;
+    }
+}
 
 // @dev: STRONG DEPENDENCY with deposit transfers (related events have to be ignored) 
 // @DEV: Table TMP_USER_DEPOSITS must be loaded before
@@ -21,15 +53,18 @@ const {
 const loadTmpUserApprovals = async (
     fromBlock,
     toBlock,
+    account,
 ) => {
     try {
         // Get all approval events for a given block range
-        const logs = await getApprovalEvents2(null, fromBlock, toBlock);
+        if (account)
+            toBlock = 'latest';
+        const logs = await getApprovalEvents2(account, fromBlock, toBlock);
         if (!logs)
             return false;
 
         // Parse approval events
-        logger.info(`**DB: Processing ${logs.length} approval event${isPlural(logs.length)}...`);
+        logger.info(`**DB${account ? ' CACHE' : ''}: Processing ${logs.length} approval event${isPlural(logs.length)}...`);
         const approvals = await parseApprovalEvents(logs);
 
         // Insert approvals into USER_APPROVALS
@@ -37,33 +72,17 @@ const loadTmpUserApprovals = async (
         if (approvals)
             for (const item of approvals) {
                 const params = (Object.values(item));
-                const res = await query('insert_tmp_user_approvals.sql', params);
-                if (res.status === QUERY_ERROR) return false;
+                const q = (account)
+                    ? 'insert_cache_tmp_user_approvals.sql'
+                    : 'insert_tmp_user_approvals.sql'
+                const res = await query(q, params);
+                if (res.status === QUERY_ERROR)
+                    return false;
             }
         // TODO: missing N records added into table X
         return true;
     } catch (err) {
-        handleErr(`personalHandler->loadTmpUserApprovals() [blocks: ${fromBlock} to: ${toBlock}]`, err);
-        return false;
-    }
-}
-
-const loadUserApprovals = async (fromDate, toDate) => {
-    try {
-        // Add new blocks into ETH_BLOCKS (incl. block timestamp)
-        if (await loadEthBlocks('loadUserApprovals')) {
-            // Load deposits & withdrawals from temporary tables into USER_TRANSFERS
-            const res = await query('insert_user_approvals.sql', []);
-            if (res.status === QUERY_ERROR) return false;
-            const numTransfers = res.rowCount;
-            logger.info(`**DB: ${numTransfers} record${isPlural(numTransfers)} added into USER_APPROVALS`);
-        } else {
-            return false;
-        }
-        const res = await loadTableUpdates('USER_APPROVALS', fromDate, toDate);
-        return (res) ? true : false;
-    } catch (err) {
-        handleErr('personalHandler->loadUserApprovals()', err);
+        handleErr(`loadUserApprovals->loadTmpUserApprovals() [blocks: ${fromBlock} to: ${toBlock}]`, err);
         return false;
     }
 }

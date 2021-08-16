@@ -3,7 +3,6 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const {
-    // QUERY_ERROR,
     handleErr,
 } = require('../common/personalUtil');
 const { QUERY_ERROR } = require('../constants');
@@ -38,14 +37,14 @@ const loadTableUpdates = async (tableName, _fromDate, _toDate) => {
                 q = 'insert_sys_load_user_approvals.sql';
                 break;
             default:
-                handleErr(`personalHandler->updateLastTableLoad(): table name '${tableName}' not found`, null);
+                handleErr(`loadTableUpdates->loadTableUpdates(): table name '${tableName}' not found`, null);
                 return false;
         }
         const result = await query(q, params);
         return (result.status !== QUERY_ERROR) ? true : false;
     } catch (err) {
         const params = `table: ${tableName}, fromDate: ${_fromDate}, toDate: ${_toDate}`;
-        handleErr(`personalHandler->updateLastTableLoad() ${params}`, err);
+        handleErr(`loadTableUpdates->loadTableUpdates() ${params}`, err);
         return false;
     }
 }

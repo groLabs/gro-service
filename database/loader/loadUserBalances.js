@@ -5,14 +5,11 @@ const { query } = require('../handler/queryHandler');
 const { loadEthBlocks } = require('./loadEthBlocks');
 const { loadTableUpdates } = require('./loadTableUpdates');
 const {
-    QUERY_ERROR,
     findBlockByDate,
     generateDateRange,
     getNetworkId,
     handleErr,
-    isDeposit,
     isPlural,
-    getTransferEvents2,
 } = require('../common/personalUtil');
 const {
     parseAmount,
@@ -21,6 +18,7 @@ const {
     getGvt,
     getPwrd,
 } = require('../../contract/allContracts');
+const { QUERY_ERROR } = require('../constants');
 
 
 /// @notice Loads balances into USER_BALANCES
@@ -32,15 +30,27 @@ const {
 const loadUserBalances = async (
     fromDate,
     toDate,
+    account,
 ) => {
     try {
         // Get users with any transfer
-        const users = await query('select_distinct_users_transfers.sql', []);
-        if (users.status === QUERY_ERROR) return false;
+        let users;
+        if (account) {
+            users = {
+                rowCount: 1,
+                rows: [{
+                    user_address: account
+                }],
+            }
+        } else {
+            users = await query('select_distinct_users_transfers.sql', []);
+            if (users.status === QUERY_ERROR)
+                return false;
+        }
 
         // For each date, check gvt & pwrd balance and insert data into USER_BALANCES
         const dates = generateDateRange(fromDate, toDate);
-        logger.info(`**DB: Processing ${users.rowCount} user balance${isPlural(users.rowCount)}...`);
+        logger.info(`**DB${account ? ' CACHE' : ''}: Processing ${users.rowCount} user balance${isPlural(users.rowCount)}...`);
         for (const date of dates) {
             const day = moment.utc(date, "DD/MM/YYYY")
                 .add(23, 'hours')
@@ -64,16 +74,25 @@ const loadUserBalances = async (
                     pwrdValue,
                     moment.utc()
                 ];
-                const result = await query('insert_user_balances.sql', params);
-                if (result.status === QUERY_ERROR) return false;
+                const q = (account)
+                    ? 'insert_cache_user_balances.sql'
+                    : 'insert_user_balances.sql';
+                const result = await query(q, params);
+                if (result.status === QUERY_ERROR)
+                    return false;
                 rowCount += result.rowCount;
             }
-            let msg = `**DB: ${rowCount} record${isPlural(rowCount)} added into `;
+            let msg = `**DB${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} added into `;
             msg += `USER_BALANCES for date ${moment(date).format('DD/MM/YYYY')}`;
             logger.info(msg);
         }
-        const res = await loadTableUpdates('USER_BALANCES', fromDate, toDate);
-        return (res) ? true : false;
+
+        if (account) {
+            return true;
+        } else {
+            const res = await loadTableUpdates('USER_BALANCES', fromDate, toDate);
+            return (res) ? true : false;
+        }
     } catch (err) {
         handleErr(`loadUserBalances->loadUserBalances() [from: ${fromDate}, to: ${toDate}]`, err);
         return false;
