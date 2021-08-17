@@ -42,6 +42,7 @@ const MESSAGE_TYPES = {
     criticalBot: 'Critical Bot',
     chainPrice: 'Update Chain Price',
     totalAssetsChange: 'Total Assets Change',
+    strategyAssets: 'Strategy Assets',
     other: 'Others',
 };
 
