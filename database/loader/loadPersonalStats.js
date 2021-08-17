@@ -1,6 +1,6 @@
 const ethers = require('ethers');
 const { query } = require('../handler/queryHandler');
-const { getPersonalStats } = require('../handler/personalHandler');
+const { getPersonalStats } = require('../handler/personalStatsHandler');
 const {
     getDefaultProvider,
     // getAlchemyRpcProvider,
@@ -139,12 +139,12 @@ const reload = async (
         if (fromBlock > 0 && toBlock > 0 && dates) {
 
             const res = await Promise.all([
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT, null),
             ]);
 
             if (res.every(Boolean)) {
@@ -183,12 +183,12 @@ const load = async (
     if (fromBlock > 0 && toBlock > 0) {
 
         const res = await Promise.all([
-            loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT),
-            loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL),
-            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL),
-            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT),
-            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL),
-            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT, null),
         ]);
 
         if (res.every(Boolean)) {

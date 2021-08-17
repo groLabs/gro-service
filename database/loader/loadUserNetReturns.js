@@ -14,6 +14,7 @@ const { QUERY_ERROR } = require('../constants');
 /// @dev Data sourced from USER_DEPOSITS & USER_TRANSACTIONS (full load w/o filters)
 /// @param fromDate Start date to load net results
 /// @param toDdate End date to load net results
+/// @param account User address for cache loading; null for daily loads
 const loadUserNetReturns = async (
     fromDate,
     toDate,

@@ -129,7 +129,7 @@ const getNetReturns = async (account) => {
     }
 }
 
-const getPersonalStats = async (toDate, account) => {
+const getPersonalStats = async (/*toDate,*/ account) => {
     try {
         // if (!(/^\d{10}$/).test(_toDate))
         //     return {
@@ -147,6 +147,7 @@ const getPersonalStats = async (toDate, account) => {
             getNetReturns(account)
         ]);
 
+        const toDate = moment.utc();
         const launchDate = moment
             .utc(toDate, "DD/MM/YYYY")
             .unix();

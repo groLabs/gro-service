@@ -15,6 +15,14 @@ const {
 const { QUERY_ERROR } = require('../constants');
 
 
+/// @notice Loads approvals into USER_APPROVALS
+///         Data is sourced from TMP_USER_APPROVALS (full load w/o filters)
+///         All blocks from such transactions are stored into ETH_BLOCKS (incl. timestamp)
+///         Latest block & time processed are stored into SYS_TABLE_LOADS
+/// @param fromDate
+/// @param toDate
+/// @param account
+/// @return True if no exceptions found, false otherwise
 const loadUserApprovals = async (fromDate, toDate, account) => {
     try {
         // Add new blocks into ETH_BLOCKS (incl. block timestamp)

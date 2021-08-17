@@ -26,6 +26,7 @@ const { QUERY_ERROR } = require('../constants');
 ///      according to the dates provided
 /// @param fromDate Start date to load balances
 /// @param toDdate End date to load balances
+/// @param account User address for cache loading; null for daily loads
 /// @return True if no exceptions found, false otherwise
 const loadUserBalances = async (
     fromDate,
