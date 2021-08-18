@@ -4,6 +4,7 @@ const {
     checkAccountsBalance,
     getCurrentBlockNumber,
 } = require('../../common/chainUtil');
+const { checkServerHealth } = require('../../common/checkBotHealth');
 const { checkPendingTransactions } = require('../../common/pendingTransaction');
 const { pendingTransactions } = require('../../common/storage');
 const {
@@ -325,6 +326,24 @@ function harvestTriggerScheduler() {
     });
 }
 
+function botLiveCheckScheduler() {
+    schedule.scheduleJob(safetyCheckSetting, async () => {
+        logger.info(`bot live check running at ${Date.now()}`);
+        try {
+            const statsUrl = getConfig('health_endpoint.stats', false);
+            checkServerHealth('stats', [statsUrl], logger).catch((e) => {
+                logger.error(e);
+            });
+            const criticUrl = getConfig('health_endpoint.critic', false);
+            checkServerHealth('critic', [criticUrl], logger).catch((e) => {
+                logger.error(e);
+            });
+        } catch (error) {
+            logger.error(error);
+        }
+    });
+}
+
 function startRegularJobs() {
     checkBotAccountBalance();
     investTriggerScheduler();
@@ -332,6 +351,7 @@ function startRegularJobs() {
     rebalanceTriggerScheduler();
     safetyCheckScheduler();
     longPendingTransactionsScheduler();
+    botLiveCheckScheduler();
 }
 
 module.exports = {

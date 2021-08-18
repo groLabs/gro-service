@@ -5,6 +5,7 @@ const {
     strategyCheck,
     buoyHealthCheckAcrossBlocks,
 } = require('../handler/criticalHandler');
+const { checkServerHealth } = require('../../common/checkBotHealth');
 const {
     sendErrorMessageToLogChannel,
 } = require('../../common/discord/discordService');
@@ -108,10 +109,29 @@ function checkBotAccountBalance() {
     });
 }
 
+function botLiveCheckScheduler() {
+    schedule.scheduleJob(botCurveSchedulerSetting, async () => {
+        logger.info(`bot live check running at ${Date.now()}`);
+        try {
+            const statsUrl = getConfig('health_endpoint.stats', false);
+            checkServerHealth('stats', [statsUrl], logger).catch((e) => {
+                logger.error(e);
+            });
+            const harvestUrl = getConfig('health_endpoint.harvest', false);
+            checkServerHealth('harvest', [harvestUrl], logger).catch((e) => {
+                logger.error(e);
+            });
+        } catch (error) {
+            logger.error(error);
+        }
+    });
+}
+
 function startCriticalJobs() {
     checkCurveHealth();
     checkBotAccountBalance();
     priceMonitor();
+    botLiveCheckScheduler();
 }
 
 module.exports = {
