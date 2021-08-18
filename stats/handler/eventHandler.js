@@ -7,6 +7,7 @@ const { ContractCallError } = require('../../common/error');
 const { MESSAGE_TYPES } = require('../../common/discord/discordService');
 const { getConfig } = require('../../common/configUtil');
 const { formatNumber } = require('../../common/digitalUtil');
+const { sendAlertMessage } = require('../../common/alertMessageSender');
 const { calculateDelta } = require('../../common/digitalUtil');
 const {
     depositEventMessage,
@@ -22,6 +23,7 @@ const logger = require('../statsLogger');
 let blockNumberFile = '../lastBlockNumber.json';
 
 const providerKey = 'stats_gro';
+const USD_DECIMAL = BigNumber.from(10).pow(BigNumber.from(18));
 
 if (config.has('blockNumberFile')) {
     blockNumberFile = config.get('blockNumberFile');
@@ -46,6 +48,106 @@ async function updateLastBlockNumber(blockNumber, type) {
     const blockObj = JSON.parse(content);
     blockObj[type] = blockNumber + 1;
     fs.writeFileSync(blockNumberFile, JSON.stringify(blockObj));
+}
+
+async function checkTvlChange(
+    fromBlock,
+    toBlock,
+    depositEventResult,
+    withdrawEventResult
+) {
+    try {
+        const controller = getLatestSystemContract(
+            ContractNames.controller,
+            providerKey
+        ).contract;
+        const startTvl = await controller.totalAssets({ blockTag: fromBlock });
+        const endTvl = await controller.totalAssets({ blockTag: toBlock });
+        const depositTotal = depositEventResult.total.pwrd.usdAmount.add(
+            depositEventResult.total.gvt.usdAmount
+        );
+        const withdrawTotal = withdrawEventResult.total.pwrd.returnUsd.add(
+            withdrawEventResult.total.gvt.returnUsd
+        );
+
+        const pnl = getLatestSystemContract(
+            ContractNames.pnl,
+            providerKey
+        ).contract;
+
+        const pnlFilter = pnl.filters.LogPnLExecution();
+        pnlFilter.fromBlock = fromBlock;
+        pnlFilter.toBlock = toBlock;
+        const pnlLogs = await getFilterEvents(
+            pnlFilter,
+            pnl.interface,
+            providerKey
+        ).catch((error) => {
+            logger.error(error);
+            throw new ContractCallError(
+                `Get pnl events from block ${fromBlock} to ${toBlock} failed.`,
+                MESSAGE_TYPES.other
+            );
+        });
+
+        let totalHarvest = BigNumber.from(0);
+        pnlLogs.forEach((log) => {
+            const investPnL = log.args[2];
+            totalHarvest = totalHarvest.add(investPnL);
+            logger.info(
+                `checkTotalAssets pnlLogs ${log.blockNumber} investPnL ${investPnL} totalHarvest ${totalHarvest}`
+            );
+        });
+        const tvlDiff = endTvl.sub(startTvl);
+        const totalDepositAndWithdraw = depositTotal.sub(withdrawTotal);
+        const different = tvlDiff
+            .sub(totalDepositAndWithdraw)
+            .sub(totalHarvest);
+        const differentRatio = different
+            .mul(BigNumber.from(10000))
+            .div(startTvl);
+        const msg = `checkTotalAssets change fromBlock ${fromBlock} toBlock ${toBlock} startTvl ${startTvl.div(
+            USD_DECIMAL
+        )} endTvl ${endTvl.div(USD_DECIMAL)} depositTotal ${depositTotal.div(
+            USD_DECIMAL
+        )} withdrawTotal ${withdrawTotal.div(
+            USD_DECIMAL
+        )} tvlDiff ${tvlDiff.div(
+            USD_DECIMAL
+        )} totalDepositAndWithdraw ${totalDepositAndWithdraw.div(
+            USD_DECIMAL
+        )} totalHarvest ${totalHarvest.div(
+            USD_DECIMAL
+        )} \ndifferent = (tvlDiff - totalDepositAndWithdraw - totalHarvest) ${different.div(
+            USD_DECIMAL
+        )} differentRatio ${differentRatio}`;
+        logger.info(msg);
+
+        const emergencyThreshold = BigNumber.from(100);
+        const criticalThreshold = BigNumber.from(50);
+        const warningThreshold = BigNumber.from(25);
+        const diff = differentRatio.abs();
+        // const diff = BigNumber.from(109);
+        const discordMessage = {
+            message: msg,
+            type: MESSAGE_TYPES.totalAssetsChange,
+            description: '',
+        };
+        if (diff.gte(emergencyThreshold)) {
+            discordMessage.description = `[EMERG] P1 - System’s asset change | Assets change from ${fromBlock} to ${toBlock} is ${diff} bp, threshold is ${emergencyThreshold} bp`;
+            sendAlertMessage({ discord: discordMessage });
+        } else if (diff.gte(criticalThreshold)) {
+            discordMessage.description = `[CRIT] P1 - System’s asset change | Assets change from ${fromBlock} to ${toBlock} is ${diff} bp, threshold is ${emergencyThreshold} bp`;
+            sendAlertMessage({ discord: discordMessage });
+        } else if (diff.gte(warningThreshold)) {
+            discordMessage.description = `[WARN] P1 - System’s asset change | Assets change from ${fromBlock} to ${toBlock} is ${diff} bp, threshold is ${warningThreshold} bp`;
+            sendAlertMessage({ discord: discordMessage });
+        }
+        // sendMessageToChannel(DISCORD_CHANNELS.botLogs, discordMessage);
+        logger.info(`totalAssets check ${discordMessage.description}`);
+    } catch (e) {
+        logger.error(e);
+    }
 }
 
 async function generateDepositReport(fromBlock, toBlock) {
@@ -245,10 +347,15 @@ async function generateDepositAndWithdrawReport(fromBlock, toBlock) {
         fromBlock,
         toBlock
     );
-
     depositEventMessage(depositEventResult.items);
 
     withdrawEventMessage(withdrawEventResult.items);
+    await checkTvlChange(
+        fromBlock,
+        toBlock,
+        depositEventResult,
+        withdrawEventResult
+    );
 }
 
 function getTVLDelta(deposintTotalContent, withdrawTotalContent, currentTVL) {

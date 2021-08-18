@@ -4,39 +4,46 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { query } = require('../handler/queryHandler');
 const { loadTableUpdates } = require('./loadTableUpdates');
 const {
-    QUERY_ERROR,
-    getBlockData,
-    getNetworkId,
     generateDateRange,
     handleErr,
-    isDeposit,
     isPlural,
 } = require('../common/personalUtil');
+const { QUERY_ERROR } = require('../constants');
 
 /// @notice Loads net results into USER_NET_RETURNS
 /// @dev Data sourced from USER_DEPOSITS & USER_TRANSACTIONS (full load w/o filters)
 /// @param fromDate Start date to load net results
 /// @param toDdate End date to load net results
+/// @param account User address for cache loading; null for daily loads
 const loadUserNetReturns = async (
     fromDate,
     toDate,
+    account,
 ) => {
     try {
         const dates = generateDateRange(fromDate, toDate);
-        logger.info(`**DB: Processing user net result/s...`);
+        logger.info(`**DB${account ? ' CACHE' : ''}: Processing user net returns...`);
         for (const date of dates) {
             /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
-            const day = moment(date).format('MM/DD/YYYY');
-            const result = await query('insert_user_net_returns.sql', [day]);
-            if (result.status === QUERY_ERROR) return false;
+            const q = (account)
+                ? 'insert_cache_user_net_returns.sql'
+                : 'insert_user_net_returns.sql';
+            const params = (account)
+                ? [account]
+                : [moment(date).format('MM/DD/YYYY')];
+            const result = await query(q, params);
+            if (result.status === QUERY_ERROR)
+                return false;
             const numResults = result.rowCount;
-            let msg = `**DB: ${numResults} record${isPlural(numResults)} added into `;
+            let msg = `**DB${account ? ' CACHE' : ''}: ${numResults} record${isPlural(numResults)} added into `;
             msg += `USER_NET_RETURNS for date ${moment(date).format('DD/MM/YYYY')}`;
             logger.info(msg);
         }
-        await loadTableUpdates('USER_NET_RETURNS', fromDate, toDate);
+
+        if (!account)
+            await loadTableUpdates('USER_NET_RETURNS', fromDate, toDate);
     } catch (err) {
-        handleErr(`personalHandler->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}]`, err);
+        handleErr(`loadUserNetReturns->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}]`, err);
     }
 }
 

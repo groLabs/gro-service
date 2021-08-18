@@ -11,7 +11,13 @@ const {
     reloadContractsFromRegistry,
 } = require('../services/statsService');
 const { generateReport } = require('../services/accountService');
-const { getPersonalStats } = require('../../database/handler/personalHandler');
+// const { getPersonalStats } = require('../../database/handler/personalHandler');
+const {
+    getGroPrice,
+    isValidBlockNumber,
+    getBuoyStartBlock,
+} = require('../handler/priceHandler');
+const { generateHistoricalStats } = require('../handler/statsHandler');
 const { validate } = require('../common/validate');
 const { postDegenScore } = require('../services/degenscoreService');
 const { personalStatsMessage } = require('../../discordMessage/statsMessage');
@@ -112,34 +118,76 @@ router.get(
     })
 );
 
+// router.get(
+//     '/gro_personal_position_db',
+//     validate([
+//         query('address')
+//             .isString()
+//             .withMessage('address must be string.')
+//             .trim()
+//             .notEmpty()
+//             .withMessage('address cannot be empty.')
+//             .matches(/^0x[A-Za-z0-9]{40}/)
+//             .withMessage('address should be a valid address start with "0x".'),
+//         query('network').trim().notEmpty().withMessage('network can be empty.'),
+//         query('date').matches(
+//             /^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/
+//         ),
+//         // .matches(/^\d{10}$/),  //if unix timestamp
+//     ]),
+//     wrapAsync(async (req, res) => {
+//         let { network } = req.query;
+//         network = network || '';
+//         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+//             throw new ParameterError('Parameter network failed.');
+//         }
+//         const groStats = await getPersonalStats(
+//             req.query.date,
+//             req.query.address
+//         );
+//         res.json(groStats);
+//     })
+// );
+
 router.get(
-    '/gro_personal_position_db',
-    validate([
-        query('address')
-            .isString()
-            .withMessage('address must be string.')
-            .trim()
-            .notEmpty()
-            .withMessage('address cannot be empty.')
-            .matches(/^0x[A-Za-z0-9]{40}/)
-            .withMessage('address should be a valid address start with "0x".'),
-        query('network').trim().notEmpty().withMessage('network can be empty.'),
-        query('date').matches(
-            /^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{4}$/
-        ),
-        // .matches(/^\d{10}$/),  //if unix timestamp
-    ]),
+    '/gro_price_check',
     wrapAsync(async (req, res) => {
-        let { network } = req.query;
+        let { network, block } = req.query;
         network = network || '';
         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
             throw new ParameterError('Parameter network failed.');
         }
-        const groStats = await getPersonalStats(
-            req.query.date,
-            req.query.address
+        block = block || 'latest';
+        if (!isValidBlockNumber(block)) {
+            const buoyStartBlock = getBuoyStartBlock();
+            throw new ParameterError(
+                `Parameter block should be bigger than ${buoyStartBlock}.`
+            );
+        }
+        const pricing = await getGroPrice(block);
+        res.json({ pricing });
+    })
+);
+
+router.get(
+    '/historical_gro_stats',
+    wrapAsync(async (req, res) => {
+        let { network, attr, block } = req.query;
+        network = network || '';
+        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+            throw new ParameterError('Parameter network is invalid.');
+        }
+        if (attr === undefined || attr.toLowerCase() !== 'apy.last7d') {
+            throw new ParameterError('Parameter attr is invalid.');
+        }
+        if (block === undefined || block === '') {
+            throw new ParameterError('Parameter block is invalid.');
+        }
+        const groStats = await generateHistoricalStats(
+            parseInt(block, 10),
+            attr
         );
-        res.json(groStats);
+        res.json({ historical_gro_stats: groStats });
     })
 );
 

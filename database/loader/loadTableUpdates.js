@@ -3,13 +3,13 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const {
-    QUERY_ERROR,
     handleErr,
 } = require('../common/personalUtil');
+const { QUERY_ERROR } = require('../constants');
 
-/// @notice Stores the last load time and number of records loaded into a final table for 
-///         each day of a given time period
-/// @param tableName Name of the table
+/// @notice Stores the last load time and number of records loaded into SYS_TABLE_LOADS
+///         for each day of a given time range
+/// @param tableName Name of the table that has been loaded
 /// @param _fromDate Start date of loading process
 /// @param _toDate End date of loading process
 /// @return True if no exceptions found, false otherwise
@@ -37,14 +37,14 @@ const loadTableUpdates = async (tableName, _fromDate, _toDate) => {
                 q = 'insert_sys_load_user_approvals.sql';
                 break;
             default:
-                handleErr(`personalHandler->updateLastTableLoad(): table name '${tableName}' not found`, null);
+                handleErr(`loadTableUpdates->loadTableUpdates(): table name '${tableName}' not found`, null);
                 return false;
         }
         const result = await query(q, params);
         return (result.status !== QUERY_ERROR) ? true : false;
     } catch (err) {
         const params = `table: ${tableName}, fromDate: ${_fromDate}, toDate: ${_toDate}`;
-        handleErr(`personalHandler->updateLastTableLoad() ${params}`, err);
+        handleErr(`loadTableUpdates->loadTableUpdates() ${params}`, err);
         return false;
     }
 }

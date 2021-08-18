@@ -10,6 +10,7 @@ const {
     DISCORD_CHANNELS,
 } = require('./discord/discordService');
 const { botBalanceMessage } = require('../discordMessage/botBalanceMessage');
+const { sendAlertMessage } = require('./alertMessageSender');
 const { getConfig } = require('./configUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -33,9 +34,13 @@ if (
 let defaultProvider;
 let socketProvider;
 let rpcProvider;
+let infruraRpcProvider;
 let defaultWalletManager;
 const rpcProviders = {};
+const infruraRpcProviders = {};
 const botWallets = {};
+const failedTimes = { accountBalance: 0 };
+const failedAlertTimes = getConfig('call_failed_time', false) || 2;
 
 const network = getConfig('blockchain.network');
 logger.info(`network: ${network}`);
@@ -53,14 +58,24 @@ function getSocketProvider() {
     return socketProvider;
 }
 
-function getRpcProvider() {
+function createAlchemyRpcProvider() {
     if (rpcProvider) {
         return rpcProvider;
     }
-    logger.info('Create default Rpc provider.');
+    logger.info('Create default Alchemy Rpc provider.');
     const apiKey = getConfig('blockchain.alchemy_api_keys.default');
     rpcProvider = new ethers.providers.AlchemyProvider(network, apiKey);
     return rpcProvider;
+}
+
+function createInfruraRpcProvider() {
+    if (infruraRpcProvider) {
+        return infruraRpcProvider;
+    }
+    logger.info('Create default Infrura Rpc provider.');
+    const apiKey = getConfig('blockchain.infura_api_keys.default');
+    infruraRpcProvider = new ethers.providers.InfuraProvider(network, apiKey);
+    return infruraRpcProvider;
 }
 
 function getDefaultProvider() {
@@ -89,7 +104,7 @@ function getAlchemyRpcProvider(providerKey) {
         if (process.env.NODE_ENV === 'develop') {
             result = getDefaultProvider();
         } else {
-            result = getRpcProvider();
+            result = createAlchemyRpcProvider();
         }
     } else {
         result = rpcProviders[providerKey];
@@ -107,6 +122,40 @@ function getAlchemyRpcProvider(providerKey) {
 
             logger.info(`Create a new ${providerKey} Rpc provider.`);
             rpcProviders[providerKey] = result;
+        }
+    }
+    return result;
+}
+
+function getInfruraRpcProvider(providerKey) {
+    // only for test
+    const providerKeys = Object.keys(infruraRpcProviders);
+    logger.info(`infrura provider Keys: ${JSON.stringify(providerKeys)}`);
+    // =====================
+    let result;
+    providerKey = providerKey || DEFAULT_PROVIDER_KEY;
+    if (providerKey === DEFAULT_PROVIDER_KEY) {
+        if (process.env.NODE_ENV === 'develop') {
+            result = getDefaultProvider();
+        } else {
+            result = createInfruraRpcProvider();
+        }
+    } else {
+        result = infruraRpcProviders[providerKey];
+        if (!result) {
+            const key = `blockchain.infura_api_keys.${providerKey}`;
+            const apiKeyValue = getConfig(key);
+            if (process.env.NODE_ENV === 'develop') {
+                result = ethers.providers.getDefaultProvider(network);
+            } else {
+                result = new ethers.providers.InfuraProvider(
+                    network,
+                    apiKeyValue
+                );
+            }
+
+            logger.info(`Create a new ${providerKey} Infrura Rpc provider.`);
+            infruraRpcProviders[providerKey] = result;
         }
     }
     return result;
@@ -247,29 +296,43 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
     const accountLabel = shortAccount(botAccount);
     const balance = await walletManager.getBalance().catch((error) => {
         logger.error(error);
+        failedTimes.accountBalance += 1;
+        const embedMessage = {
+            type: MESSAGE_TYPES[botType],
+            description: `[WARN] B7 - Call ${botType} ${accountLabel}'s ETH balance txn failed, check balance didn't complate`,
+            urls: [
+                {
+                    label: accountLabel,
+                    type: 'account',
+                    value: botAccount,
+                },
+            ],
+        };
+        if (failedTimes.accountBalance > failedAlertTimes) {
+            sendAlertMessage({
+                discord: embedMessage,
+                pagerduty: {
+                    title: '[WARN] B7 - bot balance check failed',
+                    description: `[WARN] B7 - Call ${botType} ${botAccount}'s ETH balance txn failed, check balance didn't complate`,
+                    urgency: 'low',
+                },
+            });
+        }
         throw new BlockChainCallError(
             `Get ETH balance of bot:${botAccount} failed.`,
-            MESSAGE_TYPES[botType],
-            {
-                embedMessage: {
-                    type: MESSAGE_TYPES[botType],
-                    description: `**${botType}** get ${accountLabel}'s ETH balance failed`,
-                    urls: [
-                        {
-                            label: accountLabel,
-                            type: 'account',
-                            value: botAccount,
-                        },
-                    ],
-                },
-            }
+            MESSAGE_TYPES[botType]
         );
     });
-    if (balance.lt(BigNumber.from(botBalanceWarnVault))) {
+    failedTimes.accountBalance = 0;
+    if (balance.lte(BigNumber.from(botBalanceWarnVault.warn))) {
+        const level = balance.lte(BigNumber.from(botBalanceWarnVault.critial))
+            ? '[CRIT]'
+            : '[WARN]';
         botBalanceMessage({
             botAccount,
             botType,
             balance,
+            level,
         });
     }
 }
@@ -317,7 +380,7 @@ async function getTimestampByBlockNumber(blockNumber, provider) {
 module.exports = {
     getDefaultProvider,
     getSocketProvider,
-    getRpcProvider,
+    getInfruraRpcProvider,
     getAlchemyRpcProvider,
     getWalletNonceManager,
     syncManagerNonce,

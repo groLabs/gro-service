@@ -145,14 +145,74 @@ CREATE TABLE IF NOT EXISTS gro."PROTOCOL_VAULTS" (
 
 ALTER TABLE gro."PROTOCOL_VAULTS" OWNER to postgres;
 
-CREATE TABLE IF NOT EXISTS gro."SYS_PROTOCOL_LOAD" (
+-- TODO: PKs
+CREATE TABLE IF NOT EXISTS gro."SYS_PROTOCOL_LOADS" (
+    table_name character varying(256) NULL,
     last_timestamp integer NOT NULL,
     network_id smallint,
     update_date timestamp(6) without time zone
 ) TABLESPACE pg_default;
 
-ALTER TABLE gro."SYS_PROTOCOL_LOAD" OWNER to postgres;
+ALTER TABLE gro."SYS_PROTOCOL_LOADS" OWNER to postgres;
 
 -- TODO: Send network by parameter
-INSERT INTO gro."SYS_PROTOCOL_LOAD"(last_timestamp, network_id, update_date)
-VALUES (1, 3, now()::timestamp);
+INSERT INTO gro."SYS_PROTOCOL_LOADS"(table_name, last_timestamp, network_id, update_date)
+VALUES ('GRO_STATS', 1, 3, now()::timestamp);
+
+INSERT INTO gro."SYS_PROTOCOL_LOADS"(table_name, last_timestamp, network_id, update_date)
+VALUES ('PRICE_CHECK', 1, 3, now()::timestamp);
+
+CREATE TABLE gro."PROTOCOL_PRICE_CHECK_GLOBAL" (
+    block_number INTEGER NOT NULL,
+    block_timestamp INTEGER NULL,
+    block_date TIMESTAMP (6) NULL,
+    network_id SMALLINT NULL,
+    safety_check_bound NUMERIC (20, 8) NULL,
+    safety_check BOOLEAN NULL,
+    creation_date TIMESTAMP (6) NULL,
+    CONSTRAINT "PROTOCOL_PRICE_CHECK_GLOBAL_pkey" PRIMARY KEY (block_number) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."PROTOCOL_PRICE_CHECK_GLOBAL" OWNER to postgres;
+
+CREATE TABLE gro."PROTOCOL_PRICE_CHECK_DETAILED" (
+    block_number INTEGER NOT NULL,
+    block_timestamp INTEGER NULL,
+    block_date TIMESTAMP (6) NULL,
+    network_id SMALLINT NULL,
+    stablecoin_pair_id SMALLINT NOT NULL,
+    curve_price NUMERIC (20, 8) NULL,
+    curve_cache_price NUMERIC (20, 8) NULL,
+    curve_cache_diff NUMERIC (20, 8) NULL,
+    curve_cache_check BOOLEAN NULL,
+    chainlink_price NUMERIC (20, 8) NULL,
+    curve_chainlink_diff NUMERIC (20, 8) NULL,
+    curve_chainlink_check BOOLEAN NULL,
+    creation_date TIMESTAMP (6) NULL,
+    CONSTRAINT "PROTOCOL_PRICE_CHECK_DETAILED_pkey" PRIMARY KEY (block_number, stablecoin_pair_id) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."PROTOCOL_PRICE_CHECK_DETAILED" OWNER to postgres;
+
+CREATE TABLE gro."MD_STABLECOIN_PAIRS" (
+    pair_id INTEGER NOT NULL,
+    "name" CHARACTER VARYING (20) NULL,
+    description CHARACTER VARYING (256) NULL,
+    creation_date TIMESTAMP (6) NULL,
+    CONSTRAINT "MD_STABLECOIN_PAIRS_pkey" PRIMARY KEY (pair_id) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."MD_STABLECOIN_PAIRS" OWNER to postgres;
+
+INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
+VALUES (0, 'undefined', 'Undefined', now()::timestamp);
+
+INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
+VALUES (1, 'dai_usdc', 'DAI - USDC', now()::timestamp);
+
+INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
+VALUES (2, 'dai_usdt', 'DAI - USDT', now()::timestamp);
+
+INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
+VALUES (3, 'usdt_usdc', 'USDT - USDC', now()::timestamp);
+

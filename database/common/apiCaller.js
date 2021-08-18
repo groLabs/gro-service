@@ -6,18 +6,11 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 
-const groStatsCall = () => {
+const apiCaller = (options) => {
     return new Promise(async (resolve) => {
         try {
             let payload = "";
             let result;
-
-            const options = {
-                hostname: route.gro_stats.hostname,
-                port: route.gro_stats.port,
-                path: route.gro_stats.path,
-                method: 'GET',
-            };
 
             if (!options.hostname || !options.port || !options.path) {
                 resolve({
@@ -25,7 +18,7 @@ const groStatsCall = () => {
                     data: `Connection details not found: [hostname: ${options.hostname}]`
                 });
             } else {
-                // Use http when bot is running inside AWS VPC; use https otherwise
+                // Use http when bot is running inside AWS VPC and using msb* name; use https otherwise
                 const connection = (options.hostname.slice(0, 3) === 'msb')
                     ? http
                     : https;
@@ -43,7 +36,7 @@ const groStatsCall = () => {
                 });
 
                 req.on('error', (err) => {
-                    logger.error('**DB: Error in groStatsCall.js:', err);
+                    logger.error('**DB: Error in apiCaller.js:', err);
                     resolve({
                         status: 400,
                         data: err,
@@ -53,12 +46,12 @@ const groStatsCall = () => {
                 req.end();
             }
         } catch (err) {
-            logger.error('**DB: Error in groStatsCall.js:', err);
+            logger.error('**DB: Error in apiCaller.js:', err);
         }
     });
 }
 
 module.exports = {
-    groStatsCall,
+    apiCaller,
 }
 

@@ -247,7 +247,7 @@
             "metaData": {
                 "N": "Curve yVault",
                 "CN": "3CRV",
-                "DN": "3CRV"
+                "DN": "3CRVUSDx"
             },
             "active": true
         },
@@ -290,7 +290,7 @@
         "DAIPrimary": {
             "address": "0x63D3376aabdDd618DAAFbb29D8f27Ce47a28a952",
             "deployedBlock": 12856494,
-            "startBlock": 12856494,
+            "startBlock": 12857465,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
             "tokens": ["DAI"],
@@ -325,7 +325,7 @@
         "USDCPrimary": {
             "address": "0x6a23a7c1fA98728E7F57989a79EF555690F1426e",
             "deployedBlock": 12856496,
-            "startBlock": 12856496,
+            "startBlock": 12857475,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
             "tokens": ["USDC"],
@@ -1015,7 +1015,7 @@
                 "metaData": {
                     "N": "Curve yVault",
                     "CN": "3CRV",
-                    "DN": "3CRV"
+                    "DN": "3CRVUSDx"
                 },
                 "active": true
             }
@@ -1172,9 +1172,9 @@
             },
             {
                 "address": "0xe274ecf4aB31363a1AD7dACB663cBb4FDeeE49b9",
-                "deployedBlock": 12738038,
+                "deployedBlock": 12833580,
                 "startBlock": 12836674,
-                "endBlock": 12836674,
+                "endBlock": 12857465,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
                 "tokens": [],
@@ -1186,7 +1186,7 @@
             {
                 "address": "0x63D3376aabdDd618DAAFbb29D8f27Ce47a28a952",
                 "deployedBlock": 12856494,
-                "startBlock": 12836674,
+                "startBlock": 12857465,
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
@@ -1267,7 +1267,7 @@
                 "address": "0x0EEE1Ef4B178262b0C7e95400Dc110e84871488d",
                 "deployedBlock": 12833591,
                 "startBlock": 12836674,
-                "endBlock": 12836674,
+                "endBlock": 12857475,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
                 "tokens": [],
@@ -1279,7 +1279,7 @@
             {
                 "address": "0x6a23a7c1fA98728E7F57989a79EF555690F1426e",
                 "deployedBlock": 12856496,
-                "startBlock": 12836674,
+                "startBlock": 12857475,
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",

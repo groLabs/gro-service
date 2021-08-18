@@ -41,6 +41,8 @@ const MESSAGE_TYPES = {
     statsBot: 'Stats Bot',
     criticalBot: 'Critical Bot',
     chainPrice: 'Update Chain Price',
+    totalAssetsChange: 'Total Assets Change',
+    strategyAssets: 'Strategy Assets',
     other: 'Others',
 };
 
@@ -222,6 +224,19 @@ function sendMessageToAlertChannel(error) {
     sendMessage(DISCORD_CHANNELS.botAlerts, msgObj);
 }
 
+function sendErrorMessageToLogChannel(error) {
+    logger.error(error);
+    const msgObj = {
+        icon: ':warning:',
+        message: error.message,
+        type: error.messageTag,
+        description: error.embedMessage,
+        emojis: [MESSAGE_EMOJI.error],
+        transactionHash: error.transactionHash,
+    };
+    sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
+}
+
 module.exports = {
     DISCORD_CHANNELS,
     MESSAGE_TYPES,
@@ -230,4 +245,5 @@ module.exports = {
     sendEmbedMessage,
     sendMessageToChannel,
     sendMessageToAlertChannel,
+    sendErrorMessageToLogChannel,
 };

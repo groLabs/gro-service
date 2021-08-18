@@ -16,17 +16,33 @@ const defaultData = (stats) => {
     ];
 };
 
+// const getAPY = (stats, product) => {
+//     const result = [
+//         ...defaultData(stats),
+//         getProductId(product),
+//         stats.apy.last24h[product],
+//         stats.apy.last7d[product],
+//         stats.apy.daily[product],
+//         stats.apy.weekly[product],
+//         stats.apy.monthly[product],
+//         stats.apy.all_time[product],
+//         stats.apy.current[product],
+//         moment().utc(),
+//     ];
+//     return result;
+// }
+
 const getAPY = (stats, product) => {
     const result = [
         ...defaultData(stats),
         getProductId(product),
-        stats.apy.last24h[product],
-        stats.apy.last7d[product],
-        stats.apy.daily[product],
-        stats.apy.weekly[product],
-        stats.apy.monthly[product],
-        stats.apy.all_time[product],
-        stats.apy.current[product],
+        (stats.apy.last24h) ? stats.apy.last24h[product] : null,
+        (stats.apy.last7d) ? stats.apy.last7d[product] : null,
+        (stats.apy.daily) ? stats.apy.daily[product] : null,
+        (stats.apy.weekly) ? stats.apy.weekly[product] : null,
+        (stats.apy.monthly) ? stats.apy.monthly[product] : null,
+        (stats.apy.all_time) ? stats.apy.all_time[product] : null,
+        (stats.apy.current) ? stats.apy.current[product] : null,
         moment().utc(),
     ];
     return result;

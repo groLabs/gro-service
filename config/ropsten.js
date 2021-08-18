@@ -9,9 +9,11 @@ module.exports = {
         '0xb8082aAeE3fC604FB5E09d895297B138973fA981': {},
     },
     old_pnl: ['0x6E50c4d3b3917a4aa4196F4F90C2533C2d2e1634'],
+    buoy_start_block: 10633347,
     blockchain: {
         network: 'ropsten',
         start_block: 10525267,
+        start_timestamp: 1624827717,
         default_api_keys: {
             alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
@@ -22,6 +24,25 @@ module.exports = {
             default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
             stats_gro: process.env.ALCHEMY_KEY_STATS_GRO,
+        },
+        infura_api_keys: {
+            default: {
+                projectId:
+                    process.env[`INFURA_KEY_${process.env.BOT_ENV}_PROJECT_ID`],
+                projectSecret:
+                    process.env[
+                        `INFURA_KEY_${process.env.BOT_ENV}_PROJECT_SECRET`
+                    ],
+            },
+            stats_personal: {
+                projectId: process.env.INFURA_KEY_STATS_PERSONAL_PROJECT_ID,
+                projectSecret:
+                    process.env.INFURA_KEY_STATS_PERSONAL_PROJECT_SECRET,
+            },
+            stats_gro: {
+                projectId: process.env.INFURA_KEY_STATS_GRO_PROJECT_ID,
+                projectSecret: process.env.INFURA_KEY_STATS_GRO_PROJECT_SECRET,
+            },
         },
         keystores: {
             default: {
@@ -177,6 +198,11 @@ module.exports = {
         gro_stats: {
             hostname: process.env.BOT_DEV_HOST,
             path: '/stats/gro_stats?network=ropsten',
+            port: process.env.BOT_DEV_PORT,
+        },
+        historical_gro_stats: {
+            hostname: process.env.BOT_DEV_HOST,
+            path: '/stats/historical_gro_stats',
             port: process.env.BOT_DEV_PORT,
         },
         personal_stats: {

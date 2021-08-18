@@ -22,7 +22,8 @@ const pool = new pg.Pool(dbConnection);
 
 const QUERY_OK = 200;
 const QUERY_NO_DATA = 204;
-const QUERY_ERROR = 400;
+// const QUERY_ERROR = 400;
+const { QUERY_ERROR } = require('../constants');
 
 
 const ERROR = {

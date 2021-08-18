@@ -7,6 +7,7 @@ const {
 } = require('../common/discord/discordService');
 
 const { shortAccount, formatNumber } = require('../common/digitalUtil');
+const { sendAlertMessage } = require('../common/alertMessageSender');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -84,12 +85,19 @@ function rebalanceTransactionMessage(content) {
     if (!transactionReceipt) {
         discordMessage.message = `${type} transaction: ${hash} is still pending.`;
         discordMessage.description = undefined;
+        sendMessageToChannel(DISCORD_CHANNELS.botLogs, discordMessage);
     } else if (!transactionReceipt.status) {
-        discordMessage.message = `${type} transaction ${hash} reverted.`;
-        discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${action} action is reverted`;
+        discordMessage.description = `[CRIT] B3 - ${label} ${action} txn reverted`;
+        sendAlertMessage({
+            discord: discordMessage,
+            pagerduty: {
+                title: '[CRIT] B3 - rebalance txn reverted',
+                description: discordMessage.description,
+            },
+        });
+    } else {
+        sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
     }
-    logger.info(discordMessage.message);
-    sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
 }
 
 module.exports = {

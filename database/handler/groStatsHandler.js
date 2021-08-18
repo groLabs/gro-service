@@ -2,9 +2,10 @@ const moment = require('moment');
 const { query } = require('./queryHandler');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-const {
-    QUERY_ERROR,
-} = require('../common/personalUtil');
+// const {
+//     QUERY_ERROR,
+// } = require('../common/personalUtil');
+const { QUERY_ERROR } = require('../constants');
 
 const DIFF_5m = 300;
 const DIFF_1h = 3600;
@@ -381,24 +382,6 @@ const getAllStats = async () => {
     }
 }
 
-// const groStatsHandler = async () => {
-//     // const res = await getTVL(1626686510);
-//     // const res = await getAPY(1626686510, 1);
-//     // const res = await getAPY(1626686510, 2);
-//     // const res = await getLifeguard(1626686510);
-//     // const res = await getSystem(1626686510);
-//     // const res = await getVaults(1626686510);
-//     // const res = await getStrategies(1626686510);
-//     // const res = await getExposureStables(1626686510);
-//     // const res = await getExposureProtocols(1626686510);
-//     // const res = await getReserves(1626686510);
-//     // console.log(res);
-//     const res = await getAllStats();
-//     console.log(res);
-//     process.exit();
-// }
-
 module.exports = {
-    // groStatsHandler,
     getAllStats,
 }

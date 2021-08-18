@@ -23,9 +23,11 @@ module.exports = {
         '0x4C4A81298CC85c5BBF8092bd241fCc5dD6Ec3f74',
         '0xc94dDeACff69bd206CEDdFe2b601a277225D23D6',
     ],
+    buoy_start_block: 12837080,
     blockchain: {
         network: 'mainnet',
         start_block: 12522788,
+        start_timestamp: 1622204347,
         default_api_keys: {
             alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
@@ -36,6 +38,25 @@ module.exports = {
             default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
             stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
             stats_gro: process.env.ALCHEMY_KEY_STATS_GRO,
+        },
+        infura_api_keys: {
+            default: {
+                projectId:
+                    process.env[`INFURA_KEY_${process.env.BOT_ENV}_PROJECT_ID`],
+                projectSecret:
+                    process.env[
+                        `INFURA_KEY_${process.env.BOT_ENV}_PROJECT_SECRET`
+                    ],
+            },
+            stats_personal: {
+                projectId: process.env.INFURA_KEY_STATS_PERSONAL_PROJECT_ID,
+                projectSecret:
+                    process.env.INFURA_KEY_STATS_PERSONAL_PROJECT_SECRET,
+            },
+            stats_gro: {
+                projectId: process.env.INFURA_KEY_STATS_GRO_PROJECT_ID,
+                projectSecret: process.env.INFURA_KEY_STATS_GRO_PROJECT_SECRET,
+            },
         },
         keystores: {
             default: {
@@ -125,33 +146,6 @@ module.exports = {
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     vault_display_name: ['DAI', 'USDC', 'USDT', '3CRVUSDx'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
-    protocol_display_name: {
-        Idle: 'Idle',
-        Compound: 'Compound',
-        Cream: 'CREAM',
-        Curve: 'Curve',
-        Yearn: 'Yearn',
-        Convex: 'Convex',
-        Neutrino: 'Neutrino',
-    },
-    strategy_stablecoin_exposure: [
-        'DAI',
-        'DAI',
-        'USDC',
-        'USDC',
-        'USDT',
-        'USDT',
-        'USDN',
-    ],
-    strategy_exposure: [
-        ['Compound'],
-        ['Cream'],
-        ['Compound'],
-        ['Cream'],
-        ['Idle', 'Compound'],
-        ['Cream'],
-        ['Curve', 'Yearn', 'Convex', 'Neutrino'],
-    ],
     strategy_name: [
         'Lev Comp',
         'Cream',
@@ -218,6 +212,11 @@ module.exports = {
         gro_stats: {
             hostname: 'h4sk4iwj75.execute-api.eu-west-2.amazonaws.com',
             path: '/stats/gro_stats?network=mainnet',
+            port: 443,
+        },
+        historical_gro_stats: {
+            hostname: 'h4sk4iwj75.execute-api.eu-west-2.amazonaws.com',
+            path: '/stats/historical_gro_stats',
             port: 443,
         },
         personal_stats: {

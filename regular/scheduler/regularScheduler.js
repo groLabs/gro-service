@@ -7,7 +7,7 @@ const {
 const { checkPendingTransactions } = require('../../common/pendingTransaction');
 const { pendingTransactions } = require('../../common/storage');
 const {
-    sendMessageToAlertChannel,
+    sendErrorMessageToLogChannel,
 } = require('../../common/discord/discordService');
 const { pendingTransactionResend } = require('../../gasPrice/transaction');
 const {
@@ -38,6 +38,7 @@ const {
 const {
     updatePriceTransactionMessage,
 } = require('../../discordMessage/otherMessage');
+const { sendAlertMessage } = require('../../common/alertMessageSender');
 const logger = require('../regularLogger');
 
 const pendingTransactionSchedulerSetting =
@@ -55,8 +56,9 @@ const safetyCheckSetting =
     getConfig('trigger_scheduler.safety_check', false) || '*/5 * * * *';
 const longPendingTransactionSetting = getConfig('transaction_long_pending');
 
-const botBalanceWarnVault =
-    getConfig('bot_balance_warn', false) || '2000000000000000000';
+const botBalanceWarnVault = getConfig('bot_balance', false) || {};
+
+const failedTimes = { safetyCheck: 0 };
 
 function checkBotAccountBalance() {
     schedule.scheduleJob(botBalanceSchedulerSetting, async () => {
@@ -64,7 +66,7 @@ function checkBotAccountBalance() {
         try {
             await checkAccountsBalance(botBalanceWarnVault);
         } catch (error) {
-            sendMessageToAlertChannel(error);
+            sendErrorMessageToLogChannel(error);
         }
     });
 }
@@ -75,8 +77,24 @@ function safetyCheckScheduler() {
         logger.info(`priceSafetyCheck running at ${Date.now()}`);
         try {
             await priceSafetyCheck(providerKey);
+            failedTimes.safetyCheck = 0;
         } catch (error) {
-            sendMessageToAlertChannel(error);
+            sendErrorMessageToLogChannel(error);
+            failedTimes.safetyCheck += 1;
+            if (failedTimes.safetyCheck >= 2) {
+                sendAlertMessage({
+                    discord: {
+                        description:
+                            '[WARN] B8 - Buoy’s safetycheck txn failed, price safety check didn’t complete',
+                    },
+                    pagerduty: {
+                        title: '[WARN] B8 - Buoy’s safetycheck txn failed',
+                        description:
+                            '[WARN] B8 - Buoy’s safetycheck txn failed, price safety check didn’t complete',
+                        urgency: 'low',
+                    },
+                });
+            }
         }
     });
 }
@@ -155,7 +173,7 @@ function longPendingTransactionsScheduler() {
         try {
             await checkLongPendingTransactions();
         } catch (error) {
-            sendMessageToAlertChannel(error);
+            sendErrorMessageToLogChannel(error);
         }
     });
 }
@@ -198,7 +216,20 @@ function investTriggerScheduler() {
                 await curveInvest(currectBlockNumber, providerKey, walletKey);
             }
         } catch (error) {
-            sendMessageToAlertChannel(error);
+            sendErrorMessageToLogChannel(error);
+
+            const discordMessage = {
+                description:
+                    "[WARN] B1 - InvestTrigger | Invest txn failed, InvestTrigger action didn't complate",
+            };
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[WARN] B1 - InvestTrigger | Invest txn failed',
+                    description: discordMessage.description,
+                    urgency: 'low',
+                },
+            });
         }
     });
 }
@@ -224,7 +255,20 @@ function rebalanceTriggerScheduler() {
             await syncManagerNonce(providerKey, walletKey);
             await rebalance(currectBlockNumber, providerKey, walletKey);
         } catch (error) {
-            sendMessageToAlertChannel(error);
+            sendErrorMessageToLogChannel(error);
+
+            const discordMessage = {
+                description:
+                    "[CRIT] B3 - RebalanceTrigger | Rebalance txn failed, RebalanceTrigger action didn't complate",
+            };
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[CRIT] B3 - RebalanceTrigger | Rebalance txn failed',
+                    description: discordMessage.description,
+                    urgency: 'low',
+                },
+            });
         }
     });
 }
@@ -263,7 +307,20 @@ function harvestTriggerScheduler() {
                 walletKey
             );
         } catch (error) {
-            sendMessageToAlertChannel(error);
+            sendErrorMessageToLogChannel(error);
+
+            const discordMessage = {
+                description:
+                    "[CRIT] B2 -  HarvestTrigger | Harvest txn failed, HarvestTrigger action didn't complate",
+            };
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[CRIT] B2 -  HarvestTrigger | Harvest txn failed',
+                    description: discordMessage.description,
+                    urgency: 'low',
+                },
+            });
         }
     });
 }

@@ -1,11 +1,11 @@
-const { getDefaultProvider } = require('./chainUtil');
+const { getInfruraRpcProvider } = require('./chainUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 async function getFilterEvents(filter, contractInterface, providerKey) {
-    const provider = getDefaultProvider(providerKey);
+    const provider = getInfruraRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         return [];
@@ -30,7 +30,7 @@ async function getFilterEvents(filter, contractInterface, providerKey) {
 }
 
 async function getSimpleFilterEvents(filter, providerKey) {
-    const provider = getDefaultProvider(providerKey);
+    const provider = getInfruraRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         return [];

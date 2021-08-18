@@ -12,6 +12,7 @@ const {
 } = require('../../common/chainUtil');
 const {
     curvePriceMessage,
+    chainlinkPriceMessage,
     strategyCheckMessage,
 } = require('../../discordMessage/criticalMessage');
 const dependencyStrategyABI = require('../abis/DependencyStrategy.json').abi;
@@ -108,12 +109,54 @@ function findBrokenToken(price01, price02, price12) {
     return 3;
 }
 
+function chainlinkPricePairCheck(coinPrices) {
+    const { daiPrice, usdcPrice, usdtPrice } = coinPrices;
+
+    const daiToUsdcPrice = daiPrice.mul(PERCENT_DECIAML).div(usdcPrice);
+    const daiToUSDTPrice = daiPrice.mul(PERCENT_DECIAML).div(usdtPrice);
+    const usdcToDAIPrice = usdcPrice.mul(PERCENT_DECIAML).div(daiPrice);
+    const usdcToUSDTPrice = usdcPrice.mul(PERCENT_DECIAML).div(usdtPrice);
+    const udstToDAIPrice = usdtPrice.mul(PERCENT_DECIAML).div(daiPrice);
+    const udstToUSDCPrice = usdtPrice.mul(PERCENT_DECIAML).div(usdcPrice);
+
+    const pricePairs = {
+        daiTousdc: daiToUsdcPrice,
+        daiTousdt: daiToUSDTPrice,
+        usdcTodai: usdcToDAIPrice,
+        usdcTousdt: usdcToUSDTPrice,
+        usdtTodai: udstToDAIPrice,
+        usdtTousdc: udstToUSDCPrice,
+    };
+
+    const keys = Object.keys(pricePairs);
+    let high = { key: keys[0], value: pricePairs[keys[0]] };
+    let low = { key: keys[0], value: pricePairs[keys[0]] };
+    for (let i = 1; i < keys.length; i += 1) {
+        const key = keys[i];
+        const value = pricePairs[key];
+        if (value.gt(high.value)) {
+            high = { key, value };
+        }
+        if (value.lt(low.value)) {
+            low = { key, value };
+        }
+    }
+
+    return { high, low };
+}
+
 async function curvePriceCheck(providerKey, walletKey) {
     const buoyInstance = getBuoy(providerKey, walletKey);
     const price0 = await buoyInstance.getPriceFeed(0);
     const price1 = await buoyInstance.getPriceFeed(1);
     const price2 = await buoyInstance.getPriceFeed(2);
     logger.info(`pricefeed ${price0} ${price1} ${price2}`);
+
+    const chainlinkPricePair = chainlinkPricePairCheck({
+        daiPrice: price0,
+        usdcPrice: price1,
+        usdtPrice: price2,
+    });
 
     const price01 = price0.mul(PERCENT_DECIAML).div(price1);
     const price02 = price0.mul(PERCENT_DECIAML).div(price2);
@@ -137,12 +180,11 @@ async function curvePriceCheck(providerKey, walletKey) {
         //     });
         curvePrice = false;
     }
-    curvePriceMessage({
+    chainlinkPriceMessage({
         needStop: coinIndex < 3,
         abnormalIndex: coinIndex,
-        rootCause: 'Chainlink price out of range',
     });
-    return curvePrice;
+    return { curvePrice, chainlinkPricePair };
 }
 
 async function buoyHealthCheck(
@@ -193,7 +235,6 @@ async function buoyHealthCheck(
             curvePriceMessage({
                 needStop: coinIndex < 3,
                 abnormalIndex: coinIndex,
-                rootCause: 'Curve pool out of balance',
             });
         }
         return checkResult;

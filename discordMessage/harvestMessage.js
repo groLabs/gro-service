@@ -10,12 +10,9 @@ const {
     getVaultAndStrategyLabels,
     getVaultStableCoins,
 } = require('../contract/allContracts');
+const { sendAlertMessage } = require('../common/alertMessageSender');
 
 const { shortAccount, formatNumber } = require('../common/digitalUtil');
-
-const botEnv = process.env.BOT_ENV.toLowerCase();
-// eslint-disable-next-line import/no-dynamic-require
-const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 function harvestTriggerMessage(content) {
     const discordMessage = {
@@ -123,12 +120,22 @@ function harvestTransactionMessage(content) {
         if (!transactionReceipt) {
             discordMessage.message = `${type} transaction: ${hash} is still pending.`;
             discordMessage.description = undefined;
+            sendMessageToChannel(DISCORD_CHANNELS.botLogs, discordMessage);
         } else if (!transactionReceipt.status) {
-            discordMessage.message = `${type} transaction ${hash} reverted.`;
-            discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${action} action for ${vaultName}'s ${strategyName} is reverted`;
+            discordMessage.description = `[CRIT] B2 - ${label} ${action} txn for ${vaultName}'s ${strategyName} reverted`;
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[CRIT] B2 - harvest txn reverted',
+                    description: discordMessage.description,
+                },
+            });
+        } else {
+            sendMessageToChannel(
+                DISCORD_CHANNELS.protocolEvents,
+                discordMessage
+            );
         }
-        logger.info(discordMessage.message);
-        sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
     }
 }
 

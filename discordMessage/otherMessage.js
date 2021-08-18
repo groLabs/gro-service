@@ -6,6 +6,7 @@ const {
 } = require('../common/discord/discordService');
 const { getConfig } = require('../common/configUtil');
 const { shortAccount } = require('../common/digitalUtil');
+const { sendAlertMessage } = require('../common/alertMessageSender');
 
 const stableCoinNames = getConfig('stable_coin', false) || [
     'DAI',
@@ -56,11 +57,20 @@ function updatePriceTransactionMessage(content) {
 
 function safetyCheckMessage() {
     const discordMessage = {
-        message: 'Price safety check is false, please check it.',
+        message:
+            '[CRIT] B11 - Price safety check returned false, please check it.',
         type: MESSAGE_TYPES.other,
-        description: `${MESSAGE_EMOJI.company} Price safety check is false, please check it.`,
+        description:
+            '[CRIT] B11 -  Price safety check returned false, deposit & withdraw actions will be reverted.',
     };
-    sendMessageToChannel(DISCORD_CHANNELS.botAlerts, discordMessage);
+    sendAlertMessage({
+        discord: discordMessage,
+        pagerduty: {
+            title: '[CRIT] B11 - Price safety check returned false',
+            description: discordMessage.description,
+            urgency: 'low',
+        },
+    });
 }
 
 module.exports = {

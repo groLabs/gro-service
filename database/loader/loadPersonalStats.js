@@ -10,6 +10,7 @@ const {
     // getDepositHandler,
     //getVaultStableCoins,
 } = require('../../contract/allContracts');
+const { getPersonalStats } = require('../handler/personalStatsHandler');
 const {
     getDefaultProvider,
     // getAlchemyRpcProvider,
@@ -18,16 +19,8 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const {
-    QUERY_ERROR,
-    getBlockData,
-    getNetworkId,
-    getStableCoinIndex,
     generateDateRange,
-    getApprovalEvents2,
-    getTransferEvents2,
-    getGTokenFromTx,
     handleErr,
-    isDeposit,
     isPlural,
     Transfer,
     transferType,
@@ -51,6 +44,7 @@ const {
 const { loadUserBalances } = require('./loadUserBalances');
 const { loadUserNetReturns } = require('./loadUserNetReturns');
 const { loadGroStats } = require('./loadGroStats');
+const { QUERY_ERROR } = require('../constants');
 
 /// @notice Truncates temporaty tables & calculates blocks and dates to be processed
 /// @param fromDate Start date to process data
@@ -58,15 +52,17 @@ const { loadGroStats } = require('./loadGroStats');
 /// @return Array with start block, end block and list of dates to be processed
 const preload = async (_fromDate, _toDate) => {
     try {
-        // Truncate temporary table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
-        // TODO *** Promise.all
-        const res1 = await query('truncate_tmp_user_approvals.sql', []);
-        const res2 = await query('truncate_tmp_user_deposits.sql', []);
-        const res3 = await query('truncate_tmp_user_withdrawals.sql', []);
+        // Truncate temporary tables
+        const res = await Promise.all([
+            query('truncate_tmp_user_approvals.sql', []),
+            query('truncate_tmp_user_deposits.sql', []),
+            query('truncate_tmp_user_withdrawals.sql', []),
+        ]);
+
         if (
-            res1.status === QUERY_ERROR ||
-            res2.status === QUERY_ERROR ||
-            res3.status === QUERY_ERROR
+            res[0].status === QUERY_ERROR ||
+            res[1].status === QUERY_ERROR ||
+            res[2].status === QUERY_ERROR
         )
             return;
 
@@ -85,7 +81,7 @@ const preload = async (_fromDate, _toDate) => {
         return [fromBlock, toBlock, dates];
     } catch (err) {
         handleErr(
-            `personalHandler->preload() [from: ${_fromDate}, to: ${_toDate}]`,
+            `loadPersonalStats->preload() [from: ${_fromDate}, to: ${_toDate}]`,
             err
         );
         return [];
@@ -142,7 +138,7 @@ const remove = async (fromDate, toDate) => {
         } else {
             const params = `Dates [${fromDate} - ${toDate}]`;
             handleErr(
-                `personalHandler->remove() Delete query didn't return results. Params: ${params}`,
+                `loadPersonalStats->remove() Delete query didn't return results. Params: ${params}`,
                 null
             );
             return false;
@@ -150,7 +146,7 @@ const remove = async (fromDate, toDate) => {
         return true;
     } catch (err) {
         handleErr(
-            `personalHandler->remove() [from: ${fromDate}, to: ${toDate}]`,
+            `loadPersonalStats->remove() [from: ${fromDate}, to: ${toDate}]`,
             err
         );
         return false;
@@ -169,66 +165,79 @@ const reload = async (fromDate, toDate) => {
         // Truncates TMP tables and calculates dates & blocks to be processed
         const [fromBlock, toBlock, dates] = await preload(fromDate, toDate);
 
-        // TODO: if (res.every( val => (val !== 400 ))) {
         // Reload transfers, balances & net results
         if (fromBlock > 0 && toBlock > 0 && dates) {
-            const [
-                deposits,
-                withdrawals,
-                ext_gvt_deposit,
-                ext_pwrd_deposit,
-                ext_gvt_withdrawal,
-                ext_pwrd_withdrawal,
-            ] = await Promise.all([
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL),
+            const res = await Promise.all([
                 loadTmpUserTransfers(
                     fromBlock,
                     toBlock,
-                    Transfer.EXTERNAL_GVT_WITHDRAWAL
+                    Transfer.DEPOSIT,
+                    null
                 ),
                 loadTmpUserTransfers(
                     fromBlock,
                     toBlock,
-                    Transfer.EXTERNAL_GVT_DEPOSIT
+                    Transfer.WITHDRAWAL,
+                    null
                 ),
                 loadTmpUserTransfers(
                     fromBlock,
                     toBlock,
-                    Transfer.EXTERNAL_PWRD_WITHDRAWAL
+                    Transfer.EXTERNAL_GVT_WITHDRAWAL,
+                    null
                 ),
                 loadTmpUserTransfers(
                     fromBlock,
                     toBlock,
-                    Transfer.EXTERNAL_PWRD_DEPOSIT
+                    Transfer.EXTERNAL_GVT_DEPOSIT,
+                    null
+                ),
+                loadTmpUserTransfers(
+                    fromBlock,
+                    toBlock,
+                    Transfer.EXTERNAL_PWRD_WITHDRAWAL,
+                    null
+                ),
+                loadTmpUserTransfers(
+                    fromBlock,
+                    toBlock,
+                    Transfer.EXTERNAL_PWRD_DEPOSIT,
+                    null
                 ),
             ]);
 
-            if (
-                deposits &&
-                withdrawals &&
-                ext_gvt_deposit &&
-                ext_pwrd_deposit &&
-                ext_gvt_withdrawal &&
-                ext_pwrd_withdrawal
-            ) {
-                if (await loadTmpUserApprovals(fromBlock, toBlock))
+            if (res.every(Boolean)) {
+                if (await loadTmpUserApprovals(fromBlock, toBlock, null))
                     if (await remove(fromDate, toDate))
-                        if (await loadUserTransfers(fromDate, toDate))
-                            if (await loadUserApprovals(fromDate, toDate))
-                                if (await loadUserBalances(fromDate, toDate))
-                                    await loadUserNetReturns(fromDate, toDate);
+                        if (await loadUserTransfers(fromDate, toDate, null))
+                            if (await loadUserApprovals(fromDate, toDate, null))
+                                if (
+                                    await loadUserBalances(
+                                        fromDate,
+                                        toDate,
+                                        null
+                                    )
+                                )
+                                    await loadUserNetReturns(
+                                        fromDate,
+                                        toDate,
+                                        null
+                                    );
+            } else {
+                logger.warn(
+                    `**DB: Error/s found in loadPersonalStats.js->reload()`
+                );
             }
         } else {
             const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
             handleErr(
-                `personalHandler->reload() Error with parameters: ${params}`,
+                `loadPersonalStats->reload() Error with parameters: ${params}`,
                 null
             );
         }
     } catch (err) {
         handleErr(
-            `personalHandler->reload() [from: ${fromDate}, to: ${toDate}]`,
+            `loadPersonalStats->reload() [from: ${fromDate}, to: ${toDate}]`,
             err
         );
     }
@@ -244,178 +253,78 @@ const load = async (fromDate, toDate) => {
     // Truncates TMP tables and calculate dates & blocks to be processed
     const [fromBlock, toBlock] = await preload(fromDate, toDate);
 
-    // TODO: if (res.every( val => (val !== 400 ))) {
     // Reload transfers, balances & net results
     if (fromBlock > 0 && toBlock > 0) {
-        const [
-            deposits,
-            withdrawals,
-            ext_gvt_deposit,
-            ext_pwrd_deposit,
-            ext_gvt_withdrawal,
-            ext_pwrd_withdrawal,
-        ] = await Promise.all([
-            loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT),
-            loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL),
+        const res = await Promise.all([
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null),
             loadTmpUserTransfers(
                 fromBlock,
                 toBlock,
-                Transfer.EXTERNAL_GVT_WITHDRAWAL
+                Transfer.EXTERNAL_GVT_WITHDRAWAL,
+                null
             ),
             loadTmpUserTransfers(
                 fromBlock,
                 toBlock,
-                Transfer.EXTERNAL_GVT_DEPOSIT
+                Transfer.EXTERNAL_GVT_DEPOSIT,
+                null
             ),
             loadTmpUserTransfers(
                 fromBlock,
                 toBlock,
-                Transfer.EXTERNAL_PWRD_WITHDRAWAL
+                Transfer.EXTERNAL_PWRD_WITHDRAWAL,
+                null
             ),
             loadTmpUserTransfers(
                 fromBlock,
                 toBlock,
-                Transfer.EXTERNAL_PWRD_DEPOSIT
+                Transfer.EXTERNAL_PWRD_DEPOSIT,
+                null
             ),
         ]);
 
-        if (
-            deposits &&
-            withdrawals &&
-            ext_gvt_deposit &&
-            ext_pwrd_deposit &&
-            ext_gvt_withdrawal &&
-            ext_pwrd_withdrawal
-        ) {
-            if (await loadTmpUserApprovals(fromBlock, toBlock))
-                if (await loadUserTransfers(fromDate, toDate))
-                    if (await loadUserApprovals(fromDate, toDate))
-                        if (await loadUserBalances(fromDate, toDate))
-                            await loadUserNetReturns(fromDate, toDate);
+        if (res.every(Boolean)) {
+            if (await loadTmpUserApprovals(fromBlock, toBlock, null))
+                if (await loadUserTransfers(fromDate, toDate, null))
+                    if (await loadUserApprovals(fromDate, toDate, null))
+                        if (await loadUserBalances(fromDate, toDate, null))
+                            await loadUserNetReturns(fromDate, toDate, null);
+        } else {
+            logger.warn(`**DB: Error/s found in loadPersonalStats.js->load()`);
         }
     } else {
         const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
         handleErr(
-            `personalHandler->reload() Error with parameters: ${params}`,
+            `loadPersonalStats->load() Error with parameters: ${params}`,
             null
         );
     }
 };
 
-const loadGroStatsDB = async () => {
+const loadPersonalStats = async () => {
     try {
-        initAllContracts().then(async () => {
-            //DEV Ropsten:
-            await reload('27/06/2021', '30/06/2021');
-            // await reload('27/06/2021', '30/06/2021');
-            // await load('27/06/2021', '30/06/2021');
+        console.log('in loadPersonalStats');
 
-            // PROD:
-            // await reload("02/07/2021", "04/07/2021");
+        //DEV Ropsten:
+        // await reload('28/06/2021', '28/06/2021');
+        await reload('16/08/2021', '16/08/2021');
+        //await load('30/06/2021', '30/06/2021');
 
-            // Gro Stats
-            process.exit(); // for testing purposes
-        });
+        // PROD:
+        // await reload("02/07/2021", "04/07/2021");
+
         // Personal Stats
         // const res = await getPersonalStats('06/07/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
         // console.log(res);
-        // console.log('yo')
+
         // process.exit();
+        console.log('here3');
     } catch (err) {
-        handleErr(`personalHandler->loadGroStatsDB()`, err);
+        handleErr(`loadPersonalStats->loadPersonalStats()`, err);
     }
 };
 
 module.exports = {
-    loadGroStatsDB,
+    loadPersonalStats,
 };
-
-// Calculate the PWRD value based on the ratio in the block when the deposit/withdrawal was performed
-// Note from Kristian: pwrds factor is not applied to price, only GVT. So no need to apply this conversion
-// const getPwrdValue = async (result) => {
-//     try {
-//         for (const item of result) {
-//             if (item.pwrd_amount !== 0) {
-//                 const blockTag = {
-//                     blockTag: item.block_number
-//                 };
-//                 const factor = parseAmount(await getPwrd().factor(blockTag), 'USD');
-//                 if (factor > 0) {
-//                     item.pwrd_value = item.pwrd_amount / factor;
-//                 } else {
-//                     handleErr(`personalHandler->getPwrdValue(): factor for PWRD is 0`, null);
-//                 }
-//                 console.log(factor, item)
-//             }
-//         }
-//     } catch(err) {
-//         handleErr(`personalHandler->getPwrdValue():`, null);
-//     }
-// }
-
-// const isGToken = (tokenSymbol) => {
-//     return (['DAI', 'USDC', 'USDT'].includes(tokenSymbol)) ? false : true;
-// }
-
-/* EXPERIMENTAL */
-/*
-const showBalanceHourBlock = async (date, account) => {
-    try {
-        // let start = moment.utc("19/06/2021", "DD/MM/YYYY");
-        // //const days = moment.duration(end.diff(start)).asDays();
-
-        // let dates = [];
-        // for (let i = 0; i <= 23; i++) {
-        //     let newDate = moment(start).add(i, 'hours');
-        //     //let newDateStr = moment(newDate).format('DD/MM/YYYY HH24:MI:SS');
-        //     //console.log(newDateStr);
-        //     //await reload(newDateStr, newDateStr, null);
-        //     dates.push(newDate);
-        // }
-
-        // for (const date of dates) {
-        //     const blockTag = {
-        //         blockTag: (await findBlockByDate(date)).block
-        //     }
-        //     console.log(blockTag.blockTag)
-
-        //     const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-        //     const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
-        //     const totalValue = gvtValue + pwrdValue;
-        //     const block = blockTag.blockTag;
-        //     const params = {
-        //         block: block,
-        //         date : date,
-        //         networkid: getNetworkId(),
-        //         account: account,
-        //         totalValue: totalValue,
-        //         gvtValue: gvtValue,
-        //         pwrdValue: pwrdValue,
-        //     };
-        //     // const result = await query('insert_user_balances.sql', params);
-        //     // if (result === QUERY_ERROR) return false;
-        //     // rowCount += result.rowCount;
-        //     console.log(params);
-        // }
-
-        const blockTag = {
-            blockTag: 25582733
-        };
-        const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-        const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
-        const totalValue = gvtValue + pwrdValue;
-        const params = {
-            block: blockTag.blockTag,
-            date: date,
-            networkid: getNetworkId(),
-            account: account,
-            totalValue: totalValue,
-            gvtValue: gvtValue,
-            pwrdValue: pwrdValue,
-        };
-        console.log(params);
-    } catch (err) {
-        handleErr(`personalHandler->showBalanceHourBlock()`, err);
-    }
-}
-*/

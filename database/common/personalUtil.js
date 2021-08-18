@@ -3,15 +3,15 @@ const moment = require('moment');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-const {
-    initDatabaseContracts,
-    initAllContracts,
-    getGvt,
-    getPwrd,
-    getBuoy,
-    getDepositHandler,
-    getVaultStableCoins,
-} = require('../../contract/allContracts');
+// const {
+//     initDatabaseContracts,
+//     initAllContracts,
+//     getGvt,
+//     getPwrd,
+//     getBuoy,
+//     getDepositHandler,
+//     getVaultStableCoins,
+// } = require('../../contract/allContracts');
 const {
     getDefaultProvider,
     getAlchemyRpcProvider,
@@ -22,12 +22,12 @@ const {
     getEvents: getTransferEV,
     getApprovalEvents: getApprovalEV,
 } = require('../../common/logFilter');
+const { QUERY_ERROR } = require('../constants');
 
 const BlocksScanner = require('../../stats/common/blockscanner');
 const provider = getAlchemyRpcProvider('stats_gro');
 const scanner = new BlocksScanner(provider);
 
-const QUERY_ERROR = 400;
 const ZERO_ADDRESS =
     '0x0000000000000000000000000000000000000000000000000000000000000000';
 const ERC20_TRANSFER_SIGNATURE =
@@ -266,11 +266,11 @@ async function findBlockByDate(scanDate) {
 }
 // TODO end: to be moved to /common.
 
-const getGTokenFromTx = async (result, side) => {
+const getGTokenFromTx = async (result, side, account) => {
     try {
         const numTx = result.length;
         logger.info(
-            `**DB: Processing ${numTx} ${
+            `**DB${account ? ' CACHE' : ''}: Processing ${numTx} ${
                 side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
             } transaction${isPlural(numTx)}...`
         );
@@ -319,7 +319,9 @@ const getGTokenFromTx = async (result, side) => {
             }
         }
         logger.info(
-            `**DB: ${result.length} transaction${isPlural(numTx)} processed`
+            `**DB${account ? ' CACHE' : ''}: ${
+                result.length
+            } transaction${isPlural(numTx)} processed`
         );
         return result;
     } catch (err) {
