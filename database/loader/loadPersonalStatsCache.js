@@ -4,10 +4,10 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { getConfig } = require('../../common/configUtil');
 const { getTimestampByBlockNumber } = require('../../common/chainUtil');
+const { findBlockByDate } = require('../common/globalUtil');
 const {
     handleErr,
     Transfer,
-    findBlockByDate,
 } = require('../common/personalUtil');
 const {
     loadUserTransfers,
@@ -86,7 +86,7 @@ const preloadCache = async (account) => {
         //     .utc(_fromDate.rows[0].max_balance_date)
         //     .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
         //     .add(1, 'days');
-        const fromBlock = (await findBlockByDate(fromDate)).block;
+        const fromBlock = (await findBlockByDate(fromDate, true)).block;
         const toDate = moment
             .utc()
             .format('DD/MM/YYYY');

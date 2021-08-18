@@ -231,23 +231,6 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
     }
 }
 
-// TODO start: to be moved to /common. 
-// Files currently using findBlockByDate(): statsDBHandler.js, apyHandler.js and currentApyHandler.js
-async function findBlockByDate(scanDate) {
-    try {
-        const blockFound = await scanner
-            .getDate(scanDate.toDate())
-            .catch((err) => {
-                logger.error(err);
-                logger.error(`Could not get block ${scanDate}`);
-            });
-        return blockFound;
-    } catch (err) {
-        console.log(err);
-    }
-}
-// TODO end: to be moved to /common. 
-
 const getGTokenFromTx = async (result, side, account) => {
     try {
         const numTx = result.length;
@@ -307,5 +290,4 @@ module.exports = {
     isPlural,
     Transfer,
     transferType,
-    findBlockByDate,
 }

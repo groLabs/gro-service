@@ -8,7 +8,7 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { loadAllTables, loadAPY } = require('../loader/loadGroStats');
 const { checkLastTimestamp } = require('../common/protocolUtil');
 const { calcRangeTimestamps } = require('../common/calcRangeTimestamps');
-const { findBlockByDate } = require('../common/personalUtil'); //TODO: generic file, not in personalUtil
+const { findBlockByDate } = require('../common/globalUtil');
 const { QUERY_SUCCESS } = require('../constants');
 
 
@@ -55,7 +55,7 @@ const etlGroStatsHDL = async (start, end, kpi, interval) => {
         const intervals = calcRangeTimestamps(start, end, interval);
         logger.info(`**DB: Starting HDL for ${kpi} on timestamps ${start} to ${end}`);
         for (const currentTimestamp of intervals) {
-            const block = (await findBlockByDate(currentTimestamp)).block;
+            const block = (await findBlockByDate(currentTimestamp, true)).block;
             options.path = route.historical_gro_stats.path + `?network=${nodeEnv}&block=${block}&attr=${kpi}`;
             const call = await apiCaller(options);
             if (call.status === QUERY_SUCCESS) {

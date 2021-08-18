@@ -9,7 +9,7 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { loadAllTables } = require('../loader/loadPriceCheck');
 const { checkLastTimestamp } = require('../common/protocolUtil');
 const { calcRangeTimestamps } = require('../common/calcRangeTimestamps');
-const { findBlockByDate } = require('../common/personalUtil'); //TODO: generic file, not in personalUtil
+const { findBlockByDate } = require('../common/globalUtil');
 const { QUERY_SUCCESS } = require('../constants');
 
 
@@ -55,7 +55,7 @@ const calcLastTimestamps = (lastTimestamp) => {
 const loadPriceCheck = async (intervals, isHDL) => {
     try {
         for (const currentTimestamp of intervals) {
-            const block = (await findBlockByDate(currentTimestamp)).block;
+            const block = (await findBlockByDate(currentTimestamp, true)).block;
             let options = {
                 hostname: route.gro_stats.hostname,
                 port: route.gro_stats.port,
