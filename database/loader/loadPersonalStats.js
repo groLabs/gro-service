@@ -20,7 +20,7 @@ const {
     parseAmount,
     parseApprovalEvents,
     parseTransferEvents,
-} = require('../common/personalParser');
+} = require('../parser/personalStatsParser');
 const { loadEthBlocks } = require('./loadEthBlocks');
 const { loadTableUpdates } = require('./loadTableUpdates');
 const {

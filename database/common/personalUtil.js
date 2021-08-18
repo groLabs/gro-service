@@ -3,15 +3,6 @@ const moment = require('moment');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-// const {
-//     initDatabaseContracts,
-//     initAllContracts,
-//     getGvt,
-//     getPwrd,
-//     getBuoy,
-//     getDepositHandler,
-//     getVaultStabeCoins,
-// } = require('../../contract/allContracts');
 const {
     getDefaultProvider,
     getAlchemyRpcProvider,
@@ -21,12 +12,23 @@ const {
     EVENT_TYPE,
     getEvents: getTransferEV,
     getApprovalEvents: getApprovalEV,
+    // getDepositWithdrawEvents, // TESTING
 } = require('../../common/logFilter');
 const { QUERY_ERROR } = require('../constants');
-
 const BlocksScanner = require('../../stats/common/blockscanner');
-const provider = getAlchemyRpcProvider('stats_gro');
+const provider = getAlchemyRpcProvider('stats_personal');
 const scanner = new BlocksScanner(provider);
+
+
+// TESTING
+// const { getConfig } = require('../../common/configUtil');
+// const depositHandlerHistoryConfig = getConfig('deposit_handler_history', false) || {};
+// const withdrawHandlerHistoryConfig = getConfig('withdraw_handler_history', false) || {};
+// const depositHandlerHistory = Object.keys(depositHandlerHistoryConfig);
+// const withdrawHandlerHistory = Object.keys(withdrawHandlerHistoryConfig);
+// console.log('depositHandlerHistory:', depositHandlerHistory);
+// console.log('withdrawHandlerHistory:', withdrawHandlerHistory);
+
 
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';

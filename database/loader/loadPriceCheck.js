@@ -7,7 +7,7 @@ const {
 const {
     getPriceGlobal,
     getPriceDetail,
-} = require('../common/priceCheckParser');
+} = require('../parser/priceCheckParser');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const {

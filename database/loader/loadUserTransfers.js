@@ -15,7 +15,7 @@ const {
 } = require('../common/personalUtil');
 const {
     parseTransferEvents,
-} = require('../common/personalParser');
+} = require('../parser/personalStatsParser');
 const { QUERY_ERROR } = require('../constants');
 
 

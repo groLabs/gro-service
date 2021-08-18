@@ -13,7 +13,7 @@ const {
 } = require('../common/personalUtil');
 const {
     parseAmount,
-} = require('../common/personalParser');
+} = require('../parser/personalStatsParser');
 const {
     getGvt,
     getPwrd,
