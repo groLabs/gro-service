@@ -4,8 +4,8 @@ const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const { loadEthBlocks } = require('./loadEthBlocks');
 const { loadTableUpdates } = require('./loadTableUpdates');
+const { findBlockByDate } = require('../common/globalUtil');
 const {
-    findBlockByDate,
     generateDateRange,
     getNetworkId,
     handleErr,
@@ -13,7 +13,7 @@ const {
 } = require('../common/personalUtil');
 const {
     parseAmount,
-} = require('../common/personalParser');
+} = require('../parser/personalStatsParser');
 const {
     getGvt,
     getPwrd,
@@ -58,7 +58,7 @@ const loadUserBalances = async (
                 .add(59, 'minutes')
                 .add(59, 'seconds');
             const blockTag = {
-                blockTag: (await findBlockByDate(day)).block
+                blockTag: (await findBlockByDate(day, false)).block
             }
             let rowCount = 0;
             for (const user of users.rows) {

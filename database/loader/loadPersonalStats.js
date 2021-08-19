@@ -18,19 +18,19 @@ const {
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
+const { findBlockByDate } = require('../common/globalUtil');
 const {
     generateDateRange,
     handleErr,
     isPlural,
     Transfer,
     transferType,
-    findBlockByDate,
 } = require('../common/personalUtil');
 const {
     parseAmount,
     parseApprovalEvents,
     parseTransferEvents,
-} = require('../common/personalParser');
+} = require('../parser/personalStatsParser');
 const { loadEthBlocks } = require('./loadEthBlocks');
 const { loadTableUpdates } = require('./loadTableUpdates');
 const {
@@ -75,8 +75,8 @@ const preload = async (_fromDate, _toDate) => {
             .add(23, 'hours')
             .add(59, 'seconds')
             .add(59, 'minutes');
-        const fromBlock = (await findBlockByDate(fromDate)).block;
-        const toBlock = (await findBlockByDate(toDate)).block;
+        const fromBlock = (await findBlockByDate(fromDate, true)).block;
+        const toBlock = (await findBlockByDate(toDate, false)).block;
 
         return [fromBlock, toBlock, dates];
     } catch (err) {

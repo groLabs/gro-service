@@ -11,7 +11,7 @@ const {
 } = require('../common/personalUtil');
 const {
     parseApprovalEvents,
-} = require('../common/personalParser');
+} = require('../parser/personalStatsParser');
 const { QUERY_ERROR } = require('../constants');
 
 

@@ -3,15 +3,6 @@ const moment = require('moment');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-// const {
-//     initDatabaseContracts,
-//     initAllContracts,
-//     getGvt,
-//     getPwrd,
-//     getBuoy,
-//     getDepositHandler,
-//     getVaultStableCoins,
-// } = require('../../contract/allContracts');
 const {
     getDefaultProvider,
     getAlchemyRpcProvider,
@@ -21,12 +12,26 @@ const {
     EVENT_TYPE,
     getEvents: getTransferEV,
     getApprovalEvents: getApprovalEV,
+    // getDepositWithdrawEvents, // TESTING
 } = require('../../common/logFilter');
 const { QUERY_ERROR } = require('../constants');
-
 const BlocksScanner = require('../../stats/common/blockscanner');
-const provider = getAlchemyRpcProvider('stats_gro');
+const provider = getAlchemyRpcProvider('stats_personal');
 const scanner = new BlocksScanner(provider);
+
+const ZERO_ADDRESS =
+    '0x0000000000000000000000000000000000000000000000000000000000000000';
+const ERC20_TRANSFER_SIGNATURE =
+    '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+
+// TESTING
+// const { getConfig } = require('../../common/configUtil');
+// const depositHandlerHistoryConfig = getConfig('deposit_handler_history', false) || {};
+// const withdrawHandlerHistoryConfig = getConfig('withdraw_handler_history', false) || {};
+// const depositHandlerHistory = Object.keys(depositHandlerHistoryConfig);
+// const withdrawHandlerHistory = Object.keys(withdrawHandlerHistoryConfig);
+// console.log('depositHandlerHistory:', depositHandlerHistory);
+// console.log('withdrawHandlerHistory:', withdrawHandlerHistory);
 
 const ZERO_ADDRESS =
     '0x0000000000000000000000000000000000000000000000000000000000000000';
@@ -249,23 +254,6 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
     }
 };
 
-// TODO start: to be moved to /common.
-// Files currently using findBlockByDate(): statsDBHandler.js, apyHandler.js and currentApyHandler.js
-async function findBlockByDate(scanDate) {
-    try {
-        const blockFound = await scanner
-            .getDate(scanDate.toDate())
-            .catch((err) => {
-                logger.error(err);
-                logger.error(`Could not get block ${scanDate}`);
-            });
-        return blockFound;
-    } catch (err) {
-        console.log(err);
-    }
-}
-// TODO end: to be moved to /common.
-
 const getGTokenFromTx = async (result, side, account) => {
     try {
         const numTx = result.length;
@@ -343,5 +331,4 @@ module.exports = {
     isPlural,
     Transfer,
     transferType,
-    findBlockByDate,
 };

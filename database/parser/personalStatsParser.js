@@ -19,7 +19,7 @@ const {
     isDeposit,
     Transfer,
     transferType,
-} = require('./personalUtil');
+} = require('../common/personalUtil');
 
 const parseAmount = (amount, coin) => {
     // try {
@@ -59,7 +59,7 @@ const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
         return parseAmount(usdAmount, 'USD');
     } catch (err) {
         handleErr(
-            `personalHandler->getGTokenUSDAmount() [tokenAddress: ${tokenAddress}, amount: ${amount}, tokenSymbol: ${tokenSymbol}]`,
+            `personalStatsParser->getApprovalValue() [tokenAddress: ${tokenAddress}, amount: ${amount}, tokenSymbol: ${tokenSymbol}]`,
             err
         );
         return 0;
@@ -94,7 +94,7 @@ const parseApprovalEvents = async (logs) => {
                 // }
             } else {
                 handleErr(
-                    `personalHandler->parseApprovalEvents(): Wrong decimal in coin amount`,
+                    `personalStatsParser->parseApprovalEvents(): Wrong decimal in coin amount`,
                     null
                 );
                 return false;
@@ -102,7 +102,7 @@ const parseApprovalEvents = async (logs) => {
         }
         return approvals;
     } catch (err) {
-        handleErr(`personalHandler->parseApprovalEvents()`, err);
+        handleErr(`personalStatsParser->parseApprovalEvents()`, err);
         return false;
     }
 };
@@ -227,7 +227,7 @@ const parseTransferEvents = async (logs, side) => {
         return result;
     } catch (err) {
         handleErr(
-            `personalHandler->parseTransferEvents() [side: ${side}]`,
+            `personalStatsParser->parseTransferEvents() [side: ${side}]`,
             err
         );
     }
