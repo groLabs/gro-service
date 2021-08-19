@@ -1,5 +1,5 @@
 const { BigNumber } = require('ethers');
-const { getPriceObject } = require('./priceManager');
+const { getPriceObject, getAlchemyPriorityPrice } = require('./priceManager');
 const { getWalletNonceManager } = require('../common/chainUtil');
 const { addPendingTransaction } = require('../common/storage');
 const { BlockChainCallError } = require('../common/error');
@@ -40,16 +40,28 @@ async function increaseGasPrice(methodName, oldGasPrice, resendTimes) {
 
 async function wrapSendTransaction(contract, methodName, params = []) {
     const method = contract[methodName];
-    if (runEnv === 'mainnet') {
-        const gasPrice = await getGasPrice(methodName);
-        logger.info(`${methodName} gasPrice: ${gasPrice}`);
-        if (gasPrice) {
-            return method(...params, {
-                gasPrice: BigNumber.from(gasPrice),
-            });
-        }
-    }
-    return method(...params);
+    // if (runEnv === 'mainnet') {
+    //     const gasPrice = await getGasPrice(methodName);
+    //     logger.info(`${methodName} gasPrice: ${gasPrice}`);
+    //     if (gasPrice) {
+    //         return method(...params, {
+    //             gasPrice: BigNumber.from(gasPrice),
+    //         });
+    //     }
+    // }
+    const maxPriorityFeePerGas = BigNumber.from(
+        await getAlchemyPriorityPrice()
+    );
+    const block = await contract.provider.getBlock('latest');
+    const maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
+    logger.info(
+        `send tx maxPriorityFeePerGas ${maxPriorityFeePerGas} baseFeePerGas ${block.baseFeePerGas} maxFeePerGas ${maxFeePerGas}`
+    );
+    return method(...params, {
+        maxPriorityFeePerGas: maxPriorityFeePerGas,
+        maxFeePerGas: maxFeePerGas,
+    });
+    // return method(...params);
 }
 
 async function pendingTransactionResend(type, oldTransaction) {

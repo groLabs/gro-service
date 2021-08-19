@@ -40,7 +40,7 @@ function addPendingTransaction(typeKey, basicInfo, transactionResponse) {
         timestamp: Date.now(),
         transactionRequest: {
             nonce: transactionResponse.nonce,
-            gasPrice: transactionResponse.gasPrice.hex,
+            // gasPrice: transactionResponse.gasPrice.hex,
             gasLimit: transactionResponse.gasLimit.hex,
             to: transactionResponse.to,
             value: transactionResponse.value.hex,

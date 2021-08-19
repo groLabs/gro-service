@@ -58,14 +58,35 @@ function getSocketProvider() {
     return socketProvider;
 }
 
+// this function is to hack the alchemyprovider for EIP-1559
+// it call the perform in JsonPrcProvider to skip the check
+function createProxyForAlchemyRpcProvider(alchemyProvider) {
+    const handler = {
+        get(target, property) {
+            if (property === 'perform') {
+                const jsonProvider = Object.getPrototypeOf(
+                    target.constructor.prototype
+                );
+                return jsonProvider[property];
+            }
+            return target[property];
+        },
+    };
+    rpcProvider = new Proxy(alchemyProvider, handler);
+    return rpcProvider;
+}
+
 function createAlchemyRpcProvider() {
     if (rpcProvider) {
         return rpcProvider;
     }
     logger.info('Create default Alchemy Rpc provider.');
     const apiKey = getConfig('blockchain.alchemy_api_keys.default');
-    rpcProvider = new ethers.providers.AlchemyProvider(network, apiKey);
-    return rpcProvider;
+    const alchemyProvider = new ethers.providers.AlchemyProvider(
+        network,
+        apiKey
+    );
+    return createProxyForAlchemyRpcProvider(alchemyProvider);
 }
 
 function createInfruraRpcProvider() {
@@ -114,10 +135,11 @@ function getAlchemyRpcProvider(providerKey) {
             if (process.env.NODE_ENV === 'develop') {
                 result = ethers.providers.getDefaultProvider(network);
             } else {
-                result = new ethers.providers.AlchemyProvider(
+                const alchemyProvider = new ethers.providers.AlchemyProvider(
                     network,
                     apiKeyValue
                 );
+                result = createProxyForAlchemyRpcProvider(alchemyProvider);
             }
 
             logger.info(`Create a new ${providerKey} Rpc provider.`);
@@ -178,7 +200,7 @@ function getNonceManager() {
         const data = fs.readFileSync(
             getConfig('blockchain.keystores.default.file_path'),
             {
-                flag: 'a+',
+                flag: 'r',
             }
         );
         botWallet = ethers.Wallet.fromEncryptedJsonSync(data, keystorePassword);
@@ -211,7 +233,7 @@ function createWallet(providerKey, walletKey) {
             `blockchain.keystores.${botType}.${walletKey}_file_path`
         );
         const data = fs.readFileSync(keystore, {
-            flag: 'a+',
+            flag: 'r',
         });
         wallet = ethers.Wallet.fromEncryptedJsonSync(data, keystorePassword);
         wallet = wallet.connect(provider);
