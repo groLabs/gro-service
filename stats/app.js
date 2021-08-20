@@ -18,7 +18,7 @@ const customLogger = require('./statsLogger');
 
 const statsRouter = require('./routes/stats');
 const scheduler = require('./scheduler/statsScheduler');
-const { initAllContracts } = require('../contract/allContracts');
+const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 const { sendAlertMessage } = require('../common/alertMessageSender');
 
 const app = express();
@@ -89,7 +89,7 @@ app.use((error, req, res, next) => {
 });
 
 // start the schedule task
-initAllContracts().then(() => {
+loadContractInfoFromRegistry().then(() => {
     scheduler.starStatsJobs();
 });
 

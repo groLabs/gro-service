@@ -4,12 +4,6 @@ const utc = require('dayjs/plugin/utc');
 const { BigNumber } = require('ethers');
 
 dayjs.extend(utc);
-const {
-    getVaults,
-    getYearnVaults,
-    getVaultAndStrategyLabels,
-    getPnl,
-} = require('../../contract/allContracts');
 const BlocksScanner = require('../common/blockscanner');
 const logger = require('../statsLogger');
 const {
@@ -17,28 +11,67 @@ const {
     getTimestampByBlockNumber,
 } = require('../../common/chainUtil');
 const {
-    getStrategyHavestEvents,
-    getVaultTransferEvents,
-    getPnLEvents,
-} = require('../../common/logFilter');
+    getSimpleFilterEvents,
+    getFilterEvents,
+} = require('../../common/logFilter-new');
 const { getConfig } = require('../../common/configUtil');
+const {
+    getContractsHistory,
+    getLatestContractsAddressByAddress,
+} = require('../../registry/registryLoader');
+const { ContractNames } = require('../../registry/registry');
+const { newContract } = require('../../registry/contracts');
+const { getLatestVaultsAndStrategies } = require('../common/contractStorage');
 
 const providerKey = 'stats_gro';
 const provider = getAlchemyRpcProvider(providerKey);
 const scanner = new BlocksScanner(provider);
 
-const FACTOR_DECIMAL = BigNumber.from(10).pow(BigNumber.from(18));
 const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
 const SECONDS_IN_YEAR = BigNumber.from(31536000);
-const DAYS_IN_YEAR = BigNumber.from(365);
 const WEEKS_IN_YEAR = BigNumber.from(52);
-const MONTHS_IN_YEAR = BigNumber.from(12);
-const ZERO = BigNumber.from(0);
 
 // config
 const launchBlock = getConfig('blockchain.start_block');
 const defaultApy = getConfig('strategy_default_apy');
-const oldPnlAddresses = getConfig('old_pnl');
+
+async function getLatestVaultAdapters() {
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { vaultsAddress: adapterAddresses, contracts } = vaultAndStrateyInfo;
+    const vaultAdapters = [];
+    for (let i = 0; i < adapterAddresses.length; i += 1) {
+        vaultAdapters.push(contracts[adapterAddresses[i]].contract);
+    }
+    return vaultAdapters;
+}
+
+async function getLatestYearnVaults() {
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { vaultsAddress: adapterAddresses, contracts } = vaultAndStrateyInfo;
+    const vaults = [];
+    for (let i = 0; i < adapterAddresses.length; i += 1) {
+        const { vault } = contracts[adapterAddresses[i]];
+        vaults.push(vault.contract);
+    }
+    return vaults;
+}
+
+async function getStrategies() {
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { vaultsAddress: adapterAddresses, contracts } = vaultAndStrateyInfo;
+    const vaultstrategies = [];
+    for (let i = 0; i < adapterAddresses.length; i += 1) {
+        const { strategies } = contracts[adapterAddresses[i]].vault;
+        const everyAdapterStrategies = [];
+        for (let j = 0; j < strategies.length; j += 1) {
+            everyAdapterStrategies.push({
+                strategy: strategies[j].contract,
+            });
+        }
+        vaultstrategies.push({ strategies: everyAdapterStrategies });
+    }
+    return vaultstrategies;
+}
 
 async function findBlockByDate(scanDate, after = true) {
     const blockFound = await scanner
@@ -58,11 +91,17 @@ async function searchBlockDaysAgo(timestamp, days) {
 }
 
 async function getAssetsChangedEvents(vault, strategy, startBlock, endBlock) {
+    logger.info(
+        `getAssetsChangedEvents : startBlock: ${startBlock.blockNumber}, endBlock: ${endBlock.blockNumber}`
+    );
+    logger.info(`vault: ${vault.address} strategy: ${strategy.address}`);
     const assetChangedBlock = [];
-    const harvestedLogs = await getStrategyHavestEvents(
-        strategy,
-        startBlock.blockNumber,
-        endBlock.blockNumber,
+    // generate strategy harvest event filter
+    const harvestFilter = strategy.filters.Harvested();
+    harvestFilter.fromBlock = startBlock.blockNumber;
+    harvestFilter.toBlock = endBlock.blockNumber;
+    const harvestedLogs = await getSimpleFilterEvents(
+        harvestFilter,
         providerKey
     );
     if (harvestedLogs.length < 2) {
@@ -97,10 +136,17 @@ async function getAssetsChangedEvents(vault, strategy, startBlock, endBlock) {
         }
     });
     const startHarvest = reverseHarvestedEvents[startHarvestIndex];
-    const vaultTransferLogs = await getVaultTransferEvents(
-        vault,
-        startHarvest.blockNumber,
-        endHarvest.blockNumber,
+
+    // generate vault event filter
+    const vaultTransferFilter = vault.filters.Transfer(
+        null,
+        '0x0000000000000000000000000000000000000000'
+    );
+
+    vaultTransferFilter.fromBlock = startHarvest.blockNumber;
+    vaultTransferFilter.toBlock = endHarvest.blockNumber;
+    const vaultTransferLogs = await getSimpleFilterEvents(
+        vaultTransferFilter,
         providerKey
     );
 
@@ -116,6 +162,9 @@ async function getAssetsChangedEvents(vault, strategy, startBlock, endBlock) {
         assetChangedBlock[i].timestamp = block.timestamp;
 
         // eslint-disable-next-line no-await-in-loop
+        logger.info(
+            `assetChangedBlock[i].blockNumber: ${assetChangedBlock[i].blockNumber}`
+        );
         const strategyStatus = await vault.strategies(strategy.address, {
             blockTag: assetChangedBlock[i].blockNumber,
         });
@@ -196,39 +245,39 @@ async function calcCurrentStrategyAPY(startBlock, endBlock) {
     logger.info(
         `calculate strategy apy ${startBlock.blockNumber}  ${endBlock.blockNumber}`
     );
-
-    const vaults = getVaults(providerKey);
-    const yearnVaults = getYearnVaults(providerKey);
-    const vaultAndStrategy = getVaultAndStrategyLabels();
+    const latestContractInfo = getLatestContractsAddressByAddress();
+    const vaults = await getLatestVaultAdapters();
+    const yearnVaults = await getLatestYearnVaults();
+    const vaultStrategy = await getStrategies();
     for (let i = 0; i < vaults.length; i += 1) {
         logger.info(`vault ${i} ${vaults[i].address}`);
-        const vault = vaults[i];
-        const { strategies } = vaultAndStrategy[vault.address];
+        const { strategies } = vaultStrategy[i];
         logger.info(`strategies length ${strategies.length}`);
 
         for (let j = 0; j < strategies.length; j += 1) {
             logger.info(`strategy ${j}`);
             const { strategy } = strategies[j];
+            const { metaData } = latestContractInfo[strategy.address];
             // eslint-disable-next-line no-await-in-loop
             const apy = await calcStrategyAPY(
                 yearnVaults[i],
                 strategy,
                 startBlock,
                 endBlock,
-                BigNumber.from(defaultApy[i * 2 + j])
+                BigNumber.from(metaData.DY)
             );
             strategies[j].apy = apy;
         }
     }
     for (let i = 0; i < vaults.length; i += 1) {
-        const vault = vaults[i];
-        const vaultInfo = vaultAndStrategy[vault.address];
+        const vaultInfo = vaultStrategy[i];
         for (let j = 0; j < vaultInfo.strategies.length; j += 1) {
             const { apy } = vaultInfo.strategies[j];
-            logger.info(`vault ${vaultInfo.name} strategy ${j} apy ${apy}`);
+            // TODO vault & stategy name in metaData
+            logger.info(`vault ${i} strategy ${j} apy ${apy}`);
         }
     }
-    return vaultAndStrategy;
+    return vaultStrategy;
 }
 
 async function getGtokenApy(systemApy, utilRatio, hodlBonus) {
@@ -252,31 +301,54 @@ async function getGtokenApy(systemApy, utilRatio, hodlBonus) {
     };
 }
 
+function getPnlEventFilters(latestBlock, block7DaysAgo) {
+    const filters = [];
+    const startBlock = block7DaysAgo.block;
+    const contractHistory = getContractsHistory()[ContractNames.pnl];
+    for (let i = 0; i < contractHistory.length; i += 1) {
+        const contractInfo = contractHistory[i];
+        if (!contractInfo.endBlock || contractInfo.endBlock > startBlock) {
+            const pnlContract = newContract(ContractNames.pnl, contractInfo, {
+                providerKey,
+            }).contract;
+            const filter = pnlContract.filters.LogPnLExecution();
+            if (contractInfo.startBlock < startBlock) {
+                filter.fromBlock = startBlock;
+            } else {
+                filter.fromBlock = contractInfo.startBlock;
+            }
+
+            filter.toBlock = contractInfo.endBlock || latestBlock.number;
+            filters.push({
+                filter,
+                interface: pnlContract.interface,
+            });
+        }
+    }
+    return filters;
+}
+
 async function getHodlBonusApy() {
     const latestBlock = await provider.getBlock();
     const startOf7DaysAgo = dayjs
         .unix(latestBlock.timestamp)
         .subtract(7, 'day');
-    const pnl = getPnl(providerKey);
     const block7DaysAgo = await findBlockByDate(startOf7DaysAgo);
-    const pnlLogs = await getPnLEvents(
-        pnl,
-        block7DaysAgo.block,
-        latestBlock.number,
-        providerKey
-    );
-    for (let i = 0; i < oldPnlAddresses.length; i += 1) {
-        logger.info(`oldPnlAddresses ${i} ${oldPnlAddresses[i]}`);
-        const oldPnl = pnl.attach(oldPnlAddresses[i]);
-        const oldPnlLogs = await getPnLEvents(
-            oldPnl,
-            block7DaysAgo.block,
-            latestBlock.number,
-            providerKey
-        );
-        pnlLogs.push(...oldPnlLogs);
-    }
 
+    // handler pnl filters
+    const pnlFilters = getPnlEventFilters(latestBlock, block7DaysAgo);
+    const pnlFilterPromise = [];
+    for (let i = 0; i < pnlFilters.length; i += 1) {
+        const filter = pnlFilters[i];
+        pnlFilterPromise.push(
+            getFilterEvents(filter.filter, filter.interface, providerKey)
+        );
+    }
+    const pnlFilterPromiseResult = await Promise.all(pnlFilterPromise);
+    const pnlLogs = [];
+    for (let i = 0; i < pnlFilterPromiseResult.length; i += 1) {
+        pnlLogs.push(...pnlFilterPromiseResult[i]);
+    }
     let withdrawalBonus = BigNumber.from(0);
     let priceChanged = BigNumber.from(0);
     pnlLogs.forEach((log) => {

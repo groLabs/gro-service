@@ -8,7 +8,7 @@ const {
 } = require('../common/discord/discordService');
 const {
     getVaultAndStrategyLabels,
-    getVaultStabeCoins,
+    getVaultStableCoins,
 } = require('../contract/allContracts');
 const { sendAlertMessage } = require('../common/alertMessageSender');
 
@@ -93,8 +93,8 @@ function harvestTransactionMessage(content) {
         const typeItems = type.split('-');
         let action = typeItems[0];
         action = action.replace(action[0], action[0].toUpperCase());
-        const coin = getVaultStabeCoins().tokens[typeItems[1]];
-        const stabeCoinDecimal = getVaultStabeCoins().decimals[coin] || 18;
+        const coin = getVaultStableCoins().tokens[typeItems[1]];
+        const stableCoinDecimal = getVaultStableCoins().decimals[coin] || 18;
         const vaultName = getVaultAndStrategyLabels()[typeItems[1]].name;
         const strategyName =
             getVaultAndStrategyLabels()[typeItems[1]].strategies[typeItems[2]]
@@ -106,7 +106,7 @@ function harvestTransactionMessage(content) {
             description: `${
                 MESSAGE_EMOJI.company
             } ${label} ${action} action for ${vaultName}'s ${strategyName} confirmed to chain - $${formatHarvestAmount(
-                stabeCoinDecimal,
+                stableCoinDecimal,
                 additionalData
             )} harvested`,
             urls: [

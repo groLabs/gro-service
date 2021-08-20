@@ -1,5 +1,5 @@
 module.exports = {
-    registry_address: '0x49a380067ac8d31713b4be6ee5123c5b3712fe5c',
+    registry_address: '0x5dF979799065F9c10860Ce3E2ac3e62627c6A3A5',
     deposit_handler_history: {
         '0x4246529D7168FE98F0530d99d93d346092bf50F1': {},
         '0xB2a9B574cD0ABD2E24E7F2B412B21d49B87a3CD1': {},
@@ -132,34 +132,6 @@ module.exports = {
     vault_name: ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'],
     vault_display_name: ['DAI', 'USDC', 'USDT', '3CRVUSDx'],
     stable_coin: ['DAI', 'USDC', 'USDT'],
-    protocol_display_name: {
-        Idle: 'Idle',
-        Compound: 'Compound',
-        Cream: 'CREAM',
-        Curve: 'Curve',
-        Yearn: 'Yearn',
-        Convex: 'Convex',
-        Neutrino: 'Neutrino',
-        Aave: 'Aave',
-    },
-    strategy_stablecoin_exposure: [
-        'DAI',
-        'DAI',
-        'USDC',
-        'USDC',
-        'USDT',
-        'USDT',
-        'USDN',
-    ],
-    strategy_exposure: [
-        ['Compound'],
-        ['Cream'],
-        ['Compound'],
-        ['Cream'],
-        ['Idle', 'Compound', 'Aave'],
-        ['Cream'],
-        ['Curve', 'Yearn', 'Convex', 'Neutrino'],
-    ],
     strategy_name: [
         'Lev Comp',
         'Cream',

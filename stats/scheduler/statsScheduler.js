@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const schedule = require('node-schedule');
 const { generateGroStatsFile } = require('../handler/statsHandler');
-const { getCurrentApy } = require('../handler/currentApyHandler');
 const { getConfig } = require('../../common/configUtil');
 const {
     sendErrorMessageToLogChannel,

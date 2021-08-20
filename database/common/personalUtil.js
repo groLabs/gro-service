@@ -19,6 +19,10 @@ const BlocksScanner = require('../../stats/common/blockscanner');
 const provider = getAlchemyRpcProvider('stats_personal');
 const scanner = new BlocksScanner(provider);
 
+const ZERO_ADDRESS =
+    '0x0000000000000000000000000000000000000000000000000000000000000000';
+const ERC20_TRANSFER_SIGNATURE =
+    '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
 // TESTING
 // const { getConfig } = require('../../common/configUtil');
@@ -29,25 +33,25 @@ const scanner = new BlocksScanner(provider);
 // console.log('depositHandlerHistory:', depositHandlerHistory);
 // console.log('withdrawHandlerHistory:', withdrawHandlerHistory);
 
+const ZERO_ADDRESS =
+    '0x0000000000000000000000000000000000000000000000000000000000000000';
+const ERC20_TRANSFER_SIGNATURE =
+    '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
-
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
-const ERC20_TRANSFER_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-
-const isPlural = (count) => (count > 1) ? 's' : '';
+const isPlural = (count) => (count > 1 ? 's' : '');
 
 const handleErr = async (func, err) => {
     logger.error(`**DB: ${func} \n Message: ${err}`);
-}
+};
 
 const Transfer = Object.freeze({
-    "DEPOSIT": 1,
-    "WITHDRAWAL": 2,
-    "EXTERNAL_GVT_DEPOSIT": 3,
-    "EXTERNAL_PWRD_DEPOSIT": 4,
-    "EXTERNAL_GVT_WITHDRAWAL": 5,
-    "EXTERNAL_PWRD_WITHDRAWAL": 6,
-    "STABLECOIN_APPROVAL": 7,
+    DEPOSIT: 1,
+    WITHDRAWAL: 2,
+    EXTERNAL_GVT_DEPOSIT: 3,
+    EXTERNAL_PWRD_DEPOSIT: 4,
+    EXTERNAL_GVT_WITHDRAWAL: 5,
+    EXTERNAL_PWRD_WITHDRAWAL: 6,
+    STABLECOIN_APPROVAL: 7,
 });
 
 const transferType = (side) => {
@@ -69,15 +73,15 @@ const transferType = (side) => {
         default:
             break;
     }
-}
+};
 
 const isDeposit = (side) => {
-    return (side === Transfer.DEPOSIT
-        || side === Transfer.EXTERNAL_GVT_DEPOSIT
-        || side === Transfer.EXTERNAL_PWRD_DEPOSIT)
+    return side === Transfer.DEPOSIT ||
+        side === Transfer.EXTERNAL_GVT_DEPOSIT ||
+        side === Transfer.EXTERNAL_PWRD_DEPOSIT
         ? true
         : false;
-}
+};
 
 const getBlockData = async (blockNumber) => {
     const block = await getDefaultProvider()
@@ -86,14 +90,17 @@ const getBlockData = async (blockNumber) => {
             logger.error(err);
         });
     return block;
-}
+};
 
 const getNetworkId = () => {
     try {
         switch (process.env.NODE_ENV.toLowerCase()) {
-            case 'mainnet': return 1;
-            case 'ropsten': return 3;
-            case 'kovan': return 42;
+            case 'mainnet':
+                return 1;
+            case 'ropsten':
+                return 3;
+            case 'kovan':
+                return 42;
             //case 'develop': return TBC;
             //otherwise, raise exception
         }
@@ -101,7 +108,7 @@ const getNetworkId = () => {
     } catch (err) {
         logger.error(err);
     }
-}
+};
 
 // DUPLICATED: to be moved to /common
 function getStableCoinIndex(tokenSymbol) {
@@ -127,12 +134,14 @@ const generateDateRange = (_fromDate, _toDate) => {
     try {
         // Check format date
         if (_fromDate.length !== 10 || _toDate.length !== 10) {
-            logger.info('**DB: Date format is incorrect: should be "DD/MM/YYYY');
+            logger.info(
+                '**DB: Date format is incorrect: should be "DD/MM/YYYY'
+            );
             return;
         }
         // Build array of dates
-        const fromDate = moment.utc(_fromDate, "DD/MM/YYYY");
-        const toDate = moment.utc(_toDate, "DD/MM/YYYY");
+        const fromDate = moment.utc(_fromDate, 'DD/MM/YYYY');
+        const toDate = moment.utc(_toDate, 'DD/MM/YYYY');
         const days = toDate.diff(fromDate, 'days');
         let dates = [];
         let day;
@@ -144,33 +153,39 @@ const generateDateRange = (_fromDate, _toDate) => {
         }
         return dates;
     } catch (err) {
-        handleErr(`personalUtil->generateDateRange() [from: ${_fromDate}, to: ${_toDate}]`, err);
+        handleErr(
+            `personalUtil->generateDateRange() [from: ${_fromDate}, to: ${_toDate}]`,
+            err
+        );
     }
-}
+};
 
 // Get all approval events for a given block range
 // TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
 const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
     try {
-        const logs = await getApprovalEV(
-            account,
-            fromBlock,
-            toBlock,
-        ).catch((err) => {
-            handleErr(`personalUtil->getApprovalEvents()->getApprovalEvents(): `, err);
-            return false;
-        });
+        const logs = await getApprovalEV(account, fromBlock, toBlock).catch(
+            (err) => {
+                handleErr(
+                    `personalUtil->getApprovalEvents()->getApprovalEvents(): `,
+                    err
+                );
+                return false;
+            }
+        );
 
         // TODO/QUESTION: only deposits from the same period, or any previous deposit?
         const depositTx = [];
-        const q = (account)
+        const q = account
             ? 'select_cache_tmp_deposits.sql'
             : 'select_tmp_deposits.sql';
         const res = await query(q, []);
         if (res.status === QUERY_ERROR) {
             return false;
         } else if (res.rows.length === 0) {
-            logger.info(`**DB: Warning! 0 deposit transfers before processing approval events`);
+            logger.info(
+                `**DB: Warning! 0 deposit transfers before processing approval events`
+            );
         } else {
             for (const tx of res.rows) {
                 depositTx.push(tx.tx_hash);
@@ -178,14 +193,19 @@ const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
         }
 
         // Remove approvals referring to deposits (only get stablecoin approvals)
-        let logsFiltered = logs.filter((item) => !depositTx.includes(item.transactionHash));
+        let logsFiltered = logs.filter(
+            (item) => !depositTx.includes(item.transactionHash)
+        );
 
         return logsFiltered;
     } catch (err) {
-        handleErr(`personalUtil->getApprovalEvents() [blocks: from ${fromBlock} to: ${toBlock}, account: ${account}]`, err);
+        handleErr(
+            `personalUtil->getApprovalEvents() [blocks: from ${fromBlock} to: ${toBlock}, account: ${account}]`,
+            err
+        );
         return false;
     }
-}
+};
 
 const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
     try {
@@ -208,18 +228,21 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 eventType = EVENT_TYPE.outGvtTransfer;
                 break;
             case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
-                eventType = EVENT_TYPE.outPwrdTransfer
+                eventType = EVENT_TYPE.outPwrdTransfer;
                 break;
             default:
-                handleErr(`personalUtil->checkEventType()->switch: No valid event`, null);
+                handleErr(
+                    `personalUtil->checkEventType()->switch: No valid event`,
+                    null
+                );
                 return false;
-        };
+        }
         // Get all deposit or withdrawal events for a given block range
         const logs = await getTransferEV(
             eventType,
             fromBlock,
             toBlock,
-            account,
+            account
         ).catch((err) => {
             handleErr(`personalUtil->checkEventType()->getEvents(): `, err);
             return false;
@@ -229,16 +252,20 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
         handleErr(`personalUtil->checkEventType() [side: ${side}]`, err);
         return false;
     }
-}
+};
 
 const getGTokenFromTx = async (result, side, account) => {
     try {
         const numTx = result.length;
-        logger.info(`**DB${account ? ' CACHE' : ''}: Processing ${numTx} ${(side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'} transaction${isPlural(numTx)}...`);
+        logger.info(
+            `**DB${account ? ' CACHE' : ''}: Processing ${numTx} ${
+                side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
+            } transaction${isPlural(numTx)}...`
+        );
 
         // Interface for ERC20 token transfer
         const iface = new ethers.utils.Interface([
-            "event Transfer(address indexed from, address indexed to, uint256 amount)",
+            'event Transfer(address indexed from, address indexed to, uint256 amount)',
         ]);
 
         // For all transactions -> for all logs -> retrieve GToken
@@ -251,7 +278,7 @@ const getGTokenFromTx = async (result, side, account) => {
             for (const log of txReceipt.logs) {
                 // Only when signature is an ERC20 transfer: `Transfer(address from, address to, uint256 value)`
                 if (log.topics[0] === ERC20_TRANSFER_SIGNATURE) {
-                    const index = (side === Transfer.DEPOSIT) ? 1 : 2; // from is 0x0 : to is 0x0
+                    const index = side === Transfer.DEPOSIT ? 1 : 2; // from is 0x0 : to is 0x0
                     // Only when a token is minted (from: 0x)
                     if (log.topics[index] === ZERO_ADDRESS) {
                         const data = log.data;
@@ -259,17 +286,31 @@ const getGTokenFromTx = async (result, side, account) => {
                         const output = iface.parseLog({ data, topics });
                         // Update result array with the correct GTokens
                         if (item.gvt_amount !== 0) {
-                            item.gvt_amount = parseFloat(ethers.utils.formatEther(output.args[2]));
-                            item.gvt_amount = (side === Transfer.DEPOSIT) ? item.gvt_amount : -item.gvt_amount
+                            item.gvt_amount = parseFloat(
+                                ethers.utils.formatEther(output.args[2])
+                            );
+                            item.gvt_amount =
+                                side === Transfer.DEPOSIT
+                                    ? item.gvt_amount
+                                    : -item.gvt_amount;
                         } else {
-                            item.pwrd_amount = parseFloat(ethers.utils.formatEther(output.args[2]));
-                            item.pwrd_amount = (side === Transfer.DEPOSIT) ? item.pwrd_amount : -item.pwrd_amount
+                            item.pwrd_amount = parseFloat(
+                                ethers.utils.formatEther(output.args[2])
+                            );
+                            item.pwrd_amount =
+                                side === Transfer.DEPOSIT
+                                    ? item.pwrd_amount
+                                    : -item.pwrd_amount;
                         }
                     }
                 }
             }
         }
-        logger.info(`**DB${account ? ' CACHE' : ''}: ${result.length} transaction${isPlural(numTx)} processed`);
+        logger.info(
+            `**DB${account ? ' CACHE' : ''}: ${
+                result.length
+            } transaction${isPlural(numTx)} processed`
+        );
         return result;
     } catch (err) {
         handleErr(`personalUtil->getGTokenFromTx() [transfer: ${side}]`, err);
@@ -290,4 +331,4 @@ module.exports = {
     isPlural,
     Transfer,
     transferType,
-}
+};

@@ -1,18 +1,7 @@
 const BN = require('bignumber.js');
+const { ethers } = require('ethers');
 const logger = require('../statsLogger');
-const {
-    getGvt: getGroVault,
-    getPwrd: getPowerD,
-    getDepositHandler,
-    getWithdrawHandler,
-    getBuoy,
-} = require('../../contract/allContracts');
-const {
-    EVENT_TYPE,
-    getTransferEvents,
-    getApprovalEvents,
-    getDepositWithdrawEvents,
-} = require('../../common/logFilter');
+const { getFilterEvents } = require('../../common/logFilter-new');
 const {
     getAlchemyRpcProvider,
     getTimestampByBlockNumber,
@@ -26,30 +15,41 @@ const {
     getTransaction,
 } = require('./generatePersonTransaction');
 const { shortAccount } = require('../../common/digitalUtil');
-const { getVaultStabeCoins } = require('../../contract/allContracts');
 const { AppendGTokenMintOrBurnAmountToLog } = require('../common/tool');
 const {
     getAccountFailTransactions,
 } = require('../handler/failedTransactionHandler');
 
+const { ContractNames } = require('../../registry/registry');
+const { newContract } = require('../../registry/contracts');
+
+const {
+    getContractsHistory,
+    getLatestContractsAddress,
+} = require('../../registry/registryLoader');
+
+const { getLatestSystemContract } = require('../common/contractStorage');
+
+const erc20ABI = require('../../abi/ERC20.json');
+
 const fromBlock = getConfig('blockchain.start_block');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
-const depositHandlerHistoryConfig =
-    getConfig('deposit_handler_history', false) || {};
-const withdrawHandlerHistoryConfig =
-    getConfig('withdraw_handler_history', false) || {};
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-
-const depositHandlerHistory = Object.keys(depositHandlerHistoryConfig);
-const withdrawHandlerHistory = Object.keys(withdrawHandlerHistoryConfig);
 
 const providerKey = 'stats_personal';
 const provider = getAlchemyRpcProvider(providerKey);
 
 const accountDepositHandlerHistories = {};
 const accountWithdrawHandlerHistories = {};
+
+let groVaultContracts;
+let powerDContracts;
+let depositHandlerContracts;
+let withdrawHandlerContracts;
+const stableCoins = [];
+const stableCoinsInfo = {};
 
 function getFailedEmbedMessage(account) {
     const label = shortAccount(account);
@@ -73,7 +73,198 @@ function handleError(error, message, account) {
     });
 }
 
-async function getDepositHistories(account, toBlock) {
+function getContracts(contractName) {
+    const contracts = {};
+    const contractHistory = getContractsHistory()[contractName];
+    for (let i = 0; i < contractHistory.length; i += 1) {
+        const contractInfo = contractHistory[i];
+        const contract = newContract(contractName, contractInfo, {
+            providerKey,
+        });
+        contracts[contractInfo.address] = contract.contract;
+    }
+    return contracts;
+}
+
+async function getStableCoins() {
+    if (!stableCoins.length) {
+        const latestController = getLatestSystemContract(
+            ContractNames.controller,
+            providerKey
+        ).contract;
+        const stableCoinAddresses = await latestController
+            .stablecoins()
+            .catch((error) => {
+                logger.error(error);
+                return [];
+            });
+        for (let i = 0; i < stableCoinAddresses.length; i += 1) {
+            stableCoins.push(
+                new ethers.Contract(stableCoinAddresses[i], erc20ABI, provider)
+            );
+        }
+    }
+    return stableCoins;
+}
+
+async function getStableCoinsInfo() {
+    const keys = Object.keys(stableCoinsInfo);
+    if (!keys.length) {
+        stableCoinsInfo.decimals = {};
+        stableCoinsInfo.symbols = {};
+        const coins = await getStableCoins();
+        const decimalPromise = [];
+        const symbolPromise = [];
+        for (let i = 0; i < coins.length; i += 1) {
+            decimalPromise.push(coins[i].decimals());
+            symbolPromise.push(coins[i].symbol());
+        }
+        const decimals = await Promise.all(decimalPromise);
+        const symbols = await Promise.all(symbolPromise);
+
+        for (let i = 0; i < coins.length; i += 1) {
+            stableCoinsInfo.decimals[coins[i].address] = decimals[i].toString();
+            stableCoinsInfo.symbols[coins[i].address] = symbols[i];
+        }
+    }
+    return stableCoinsInfo;
+}
+
+function getDepositHandlerContracts(handlerHistories) {
+    if (!depositHandlerContracts) {
+        depositHandlerContracts = getContracts(ContractNames.depositHandler);
+    }
+    let depositHandlers;
+    if (handlerHistories) {
+        for (let i = 0; i < handlerHistories.length; i += 1) {
+            depositHandlers[handlerHistories[i]] =
+                depositHandlerContracts[handlerHistories[i]];
+        }
+    } else {
+        depositHandlers = depositHandlerContracts;
+    }
+    return depositHandlers;
+}
+
+function getWithdrawHandlerContracts(handlerHistories) {
+    if (!withdrawHandlerContracts) {
+        withdrawHandlerContracts = getContracts(ContractNames.withdrawHandler);
+    }
+    let withdrawHandlers;
+    if (handlerHistories) {
+        for (let i = 0; i < handlerHistories.length; i += 1) {
+            withdrawHandlers[handlerHistories[i]] =
+                withdrawHandlerContracts[handlerHistories[i]];
+        }
+    } else {
+        withdrawHandlers = withdrawHandlerContracts;
+    }
+    return withdrawHandlers;
+}
+
+function getGroVaultContracts() {
+    if (!groVaultContracts) {
+        groVaultContracts = getContracts(ContractNames.groVault);
+    }
+    return groVaultContracts;
+}
+
+function getPowerDContracts() {
+    if (!powerDContracts) {
+        powerDContracts = getContracts(ContractNames.powerD);
+    }
+    return powerDContracts;
+}
+
+function getLatestDepositHandler() {
+    return getLatestSystemContract(ContractNames.depositHandler, providerKey)
+        .contract;
+}
+
+function getLatestWithdrawHandler() {
+    return getLatestSystemContract(ContractNames.withdrawHandler, providerKey)
+        .contract;
+}
+
+function getLatestGroVault() {
+    return getLatestSystemContract(ContractNames.groVault, providerKey)
+        .contract;
+}
+
+function getLatestPowerD() {
+    return getLatestSystemContract(ContractNames.powerD, providerKey).contract;
+}
+
+function getContractInfosByAddresses(contractName, handlerHistories) {
+    const contractHistory = getContractsHistory()[contractName];
+    const contractInfos = [];
+    if (handlerHistories) {
+        for (let i = 0; i < contractHistory.length; i += 1) {
+            const contractInfo = contractHistory[i];
+            if (handlerHistories.includes(contractInfo.address.toLowerCase())) {
+                contractInfos.push(contractInfo);
+            }
+        }
+    } else {
+        contractInfos.push(...contractHistory);
+    }
+    return contractInfos;
+}
+
+async function getHandlerEvents(
+    account,
+    contractName,
+    eventName,
+    handlerHistories
+) {
+    const contractHistory = getContractInfosByAddresses(
+        contractName,
+        handlerHistories
+    );
+    let handlers;
+    switch (contractName) {
+        case ContractNames.depositHandler:
+            handlers = getDepositHandlerContracts(handlerHistories);
+            break;
+        case ContractNames.withdrawHandler:
+            handlers = getWithdrawHandlerContracts(handlerHistories);
+            break;
+        default:
+            logger.info(`Can't find handler for ${contractName}`);
+    }
+    const eventFilters = [];
+    const contractInterfaces = [];
+    for (let i = 0; i < contractHistory.length; i += 1) {
+        const contractInfo = contractHistory[i];
+        const { startBlock, address } = contractInfo;
+        const endBlock = contractInfo.endBlock
+            ? contractInfo.endBlock
+            : 'latest';
+        const contract = handlers[address];
+        const filter = contract.filters[eventName](account);
+        filter.fromBlock = startBlock;
+        filter.toBlock = endBlock;
+        eventFilters.push(filter);
+        contractInterfaces.push(contract.interface);
+    }
+
+    const eventPromise = [];
+    for (let i = 0; i < eventFilters.length; i += 1) {
+        eventPromise.push(
+            getFilterEvents(eventFilters[i], contractInterfaces[i], providerKey)
+        );
+    }
+    const logs = await Promise.all(eventPromise);
+
+    const resultLogs = [];
+    for (let i = 0; i < logs.length; i += 1) {
+        resultLogs.push(...logs[i]);
+    }
+
+    return resultLogs;
+}
+
+async function getDepositHistories(account) {
     let needWrited = false;
     let handlerHistories;
     // query history
@@ -81,16 +272,13 @@ async function getDepositHistories(account, toBlock) {
     if (accountDepositHandlers) {
         handlerHistories = accountDepositHandlers;
     } else {
-        handlerHistories = depositHandlerHistory;
         needWrited = true;
     }
 
-    const logs = await getDepositWithdrawEvents(
-        EVENT_TYPE.deposit,
-        fromBlock,
-        toBlock,
+    const logs = await getHandlerEvents(
         account,
-        providerKey,
+        ContractNames.depositHandler,
+        'LogNewDeposit',
         handlerHistories
     ).catch((error) => {
         handleError(error, `Get deposit logs of ${account} failed.`, account);
@@ -99,10 +287,11 @@ async function getDepositHistories(account, toBlock) {
     // write data to history memory
     if (needWrited) {
         const handlers = new Set();
-        logs.forEach((log) => handlers.add(log.address));
-        handlers.add(getDepositHandler().address);
+        logs.forEach((log) => handlers.add(log.address.toLowerCase()));
+        handlers.add(getLatestDepositHandler().address.toLowerCase());
         accountDepositHandlerHistories[account] = Array.from(handlers);
     }
+
     // handle gtoken mint amount
     await AppendGTokenMintOrBurnAmountToLog(logs);
 
@@ -120,23 +309,19 @@ async function getDepositHistories(account, toBlock) {
     return result;
 }
 
-async function getWithdrawHistories(account, toBlock) {
+async function getWithdrawHistories(account) {
     let needWrited = false;
     let handlerHistories;
     const accountHandlerHistories = accountWithdrawHandlerHistories[account];
     if (accountHandlerHistories) {
         handlerHistories = accountHandlerHistories;
     } else {
-        handlerHistories = withdrawHandlerHistory;
         needWrited = true;
     }
-
-    const logs = await getDepositWithdrawEvents(
-        EVENT_TYPE.withdraw,
-        fromBlock,
-        toBlock,
+    const logs = await getHandlerEvents(
         account,
-        providerKey,
+        ContractNames.withdrawHandler,
+        'LogNewWithdrawal',
         handlerHistories
     ).catch((error) => {
         handleError(
@@ -149,8 +334,8 @@ async function getWithdrawHistories(account, toBlock) {
     // write data to history memory
     if (needWrited) {
         const handlers = new Set();
-        logs.forEach((log) => handlers.add(log.address));
-        handlers.add(getWithdrawHandler().address);
+        logs.forEach((log) => handlers.add(log.address.toLowerCase()));
+        handlers.add(getLatestWithdrawHandler().address.toLowerCase());
         accountWithdrawHandlerHistories[account] = Array.from(handlers);
     }
 
@@ -171,46 +356,91 @@ async function getWithdrawHistories(account, toBlock) {
     return result;
 }
 
-async function getTransferHistories(account, filters, toBlock) {
-    const logs1 = await getTransferEvents(
-        filters[0],
-        fromBlock,
-        toBlock,
-        account,
-        providerKey
-    ).catch((error) => {
-        handleError(
-            error,
-            `Get ${filters[0]} logs of ${account} failed.`,
-            account
+async function getTransferHistories(
+    inGvtTransfers,
+    outGvtTransfers,
+    contractInterfaces
+) {
+    const inLogPromise = [];
+    const outLogPromise = [];
+    for (let i = 0; i < inGvtTransfers.length; i += 1) {
+        inLogPromise.push(
+            getFilterEvents(
+                inGvtTransfers[i],
+                contractInterfaces[i],
+                providerKey
+            )
         );
-    });
-
-    const logs2 = await getTransferEvents(
-        filters[1],
-        fromBlock,
-        toBlock,
-        account,
-        providerKey
-    ).catch((error) => {
-        handleError(
-            error,
-            `Get ${filters[1]} logs of ${account} failed.`,
-            account
+        outLogPromise.push(
+            getFilterEvents(
+                outGvtTransfers[i],
+                contractInterfaces[i],
+                providerKey
+            )
         );
-    });
+    }
+    const inLogs = await Promise.all(inLogPromise);
+    const outLogs = await Promise.all(outLogPromise);
+    const depositLogs = [];
+    const withdrawLogs = [];
+    for (let i = 0; i < inLogs.length; i += 1) {
+        depositLogs.push(...inLogs[i]);
+        withdrawLogs.push(...outLogs[i]);
+    }
     return {
-        deposit: logs1,
-        withdraw: logs2,
+        deposit: depositLogs,
+        withdraw: withdrawLogs,
     };
 }
 
-async function getGroVaultTransferHistories(account, toBlock) {
+async function getGTokenTransferEvents(
+    account,
+    isPWRD,
+    groVaultOriginalTransfer
+) {
+    const contractName = isPWRD ? ContractNames.powerD : ContractNames.groVault;
+    const tokenHistory = getContractsHistory()[contractName];
+    const gtokens = isPWRD ? getPowerDContracts() : getGroVaultContracts();
+    const inTransfers = [];
+    const outTransfers = [];
+    const contractInterfaces = [];
+    let logSign = isPWRD ? 'Transfer' : 'LogTransfer';
+    if (!isPWRD && groVaultOriginalTransfer) {
+        logSign = 'Transfer';
+    }
+    for (let i = 0; i < tokenHistory.length; i += 1) {
+        const contractInfo = tokenHistory[i];
+        const { startBlock, address } = contractInfo;
+        const endBlock = contractInfo.endBlock
+            ? contractInfo.endBlock
+            : 'latest';
+        const contract = gtokens[address];
+        const inFilter = contract.filters[logSign](null, account);
+        inFilter.fromBlock = startBlock;
+        inFilter.toBlock = endBlock;
+        const outFilter = contract.filters[logSign](account);
+        outFilter.fromBlock = startBlock;
+        outFilter.toBlock = endBlock;
+        inTransfers.push(inFilter);
+        outTransfers.push(outFilter);
+        contractInterfaces.push(contract.interface);
+    }
+
     const logs = await getTransferHistories(
-        account,
-        [EVENT_TYPE.inGvtTransfer, EVENT_TYPE.outGvtTransfer],
-        toBlock
-    );
+        inTransfers,
+        outTransfers,
+        contractInterfaces
+    ).catch((error) => {
+        logger.error(error);
+        handleError(error, `Get transfer logs of ${account} failed.`, account);
+    });
+
+    return logs;
+}
+
+async function getGroVaultTransferHistories(account) {
+    const logs = await getGTokenTransferEvents(account, false);
+
     logs.deposit.forEach((log) => {
         log.amount = new BN(log.args[2].toString())
             .multipliedBy(CONTRACT_ASSET_DECIMAL)
@@ -223,25 +453,17 @@ async function getGroVaultTransferHistories(account, toBlock) {
             .div(new BN(log.args[3].toString()));
         log.coin_amount = log.args[2].toString();
     });
-
     return logs;
 }
 
-async function getGroVaultTransferFromHistories(account, toBlock) {
-    const logs = await getTransferHistories(
-        account,
-        [EVENT_TYPE.inGvtTransferFrom, EVENT_TYPE.outGvtTransferFrom],
-        toBlock
-    );
+async function getGroVaultTransferFromHistories(account) {
+    const logs = await getGTokenTransferEvents(account, false, true);
     return logs;
 }
 
-async function getPowerDTransferHistories(account, toBlock) {
-    const logs = await getTransferHistories(
-        account,
-        [EVENT_TYPE.inPwrdTransfer, EVENT_TYPE.outPwrdTransfer],
-        toBlock
-    );
+async function getPowerDTransferHistories(account) {
+    const logs = await getGTokenTransferEvents(account, true);
+
     const transferIn = [];
     const transferOut = [];
     const { deposit, withdraw } = logs;
@@ -278,13 +500,13 @@ function isGToken(tokenSymbio) {
     return true;
 }
 
-async function getGTokenUSDAmount(tokenAddress, share, providerKey) {
-    const groVault = getGroVault(providerKey);
+async function getGTokenUSDAmount(tokenAddress, share) {
+    const groVault = getLatestGroVault();
     let usdAmount = 0;
     if (groVault.address === tokenAddress) {
         usdAmount = await groVault.getShareAssets(share).catch((error) => {
             logger.error(error);
-            return share;
+            return 0;
         });
     } else {
         usdAmount = share;
@@ -292,36 +514,92 @@ async function getGTokenUSDAmount(tokenAddress, share, providerKey) {
     return usdAmount;
 }
 
-async function getApprovalHistoryies(account, toBlock, depositEventHashs) {
-    const approvalEventResult = await getApprovalEvents(
-        account,
-        fromBlock,
-        toBlock,
-        providerKey
-    ).catch((error) => {
-        handleError(
-            error,
-            `Get approval filter for account:${account} failed.`,
-            account
-        );
-    });
+async function getApproveEventFilters(account) {
+    const filters = [];
+    const contractInterfaces = [];
+    const depositHandlerAddress = getLatestDepositHandler().address;
+    const depositContractInfo =
+        getLatestContractsAddress()[ContractNames.depositHandler];
+    // stable coin approve filter
+    const coins = await getStableCoins();
+    for (let i = 0; i < coins.length; i += 1) {
+        const coin = coins[i];
+        const filter = coin.filters.Approval(account, depositHandlerAddress);
+        filter.fromBlock = depositContractInfo.startBlock;
+        filter.toBlock = 'latest';
+        filters.push(filter);
+        contractInterfaces.push(coin.interface);
+    }
 
-    const stableCoinInfo = getVaultStabeCoins(providerKey);
+    // gtoken approve filter
+    const groVault = getLatestGroVault();
+    const groVaultContractInfo =
+        getLatestContractsAddress()[ContractNames.groVault];
+    const groVaultApprovalFilter = groVault.filters.Approval(account, null);
+    groVaultApprovalFilter.fromBlock = groVaultContractInfo.startBlock;
+    groVaultContractInfo.toBlock = 'latest';
+    filters.push(groVaultApprovalFilter);
+    contractInterfaces.push(groVault.interface);
+
+    const pwrd = getLatestPowerD();
+    const pwrdContractInfo = getLatestContractsAddress()[ContractNames.powerD];
+    const pwrdApprovalFilter = pwrd.filters.Approval(account, null);
+    pwrdApprovalFilter.fromBlock = pwrdContractInfo.startBlock;
+    pwrdApprovalFilter.toBlock = 'latest';
+    filters.push(pwrdApprovalFilter);
+    contractInterfaces.push(pwrd.interface);
+
+    return { filters, contractInterfaces };
+}
+
+async function getApprovalEvents(account) {
+    const { filters: eventFilters, contractInterfaces } =
+        await getApproveEventFilters(account);
+
+    const eventPromise = [];
+    for (let i = 0; i < eventFilters.length; i += 1) {
+        eventPromise.push(
+            getFilterEvents(eventFilters[i], contractInterfaces[i], providerKey)
+        );
+    }
+    const logs = await Promise.all(eventPromise);
+    const resultLogs = [];
+    for (let i = 0; i < logs.length; i += 1) {
+        resultLogs.push(...logs[i]);
+    }
+
+    return resultLogs;
+}
+
+async function getApprovalHistoryies(account, depositEventHashs) {
+    const approvalEventResult = await getApprovalEvents(account).catch(
+        (error) => {
+            handleError(
+                error,
+                `Get approval filter for account:${account} failed.`,
+                account
+            );
+        }
+    );
+
+    const stableCoinInfo = await getStableCoinsInfo();
     const result = [];
     const gtokenAproval = [];
     const usdAmoutPromise = [];
-    const buoy = getBuoy(providerKey);
+    const buoy = getLatestSystemContract(
+        ContractNames.buoy3Pool,
+        providerKey
+    ).contract;
     for (let i = 0; i < approvalEventResult.length; i += 1) {
         const { address, transactionHash, blockNumber, args } =
             approvalEventResult[i];
         const decimal = stableCoinInfo.decimals[address];
-        const tokenSymbio = stableCoinInfo.symbols[address];
-        const isGTokenFlag = isGToken(tokenSymbio);
-        if (isGTokenFlag) {
-            gtokenAproval.push(transactionHash);
-        }
-
         if (!depositEventHashs.includes(transactionHash)) {
+            const tokenSymbio = stableCoinInfo.symbols[address];
+            const isGTokenFlag = isGToken(tokenSymbio);
+            if (isGTokenFlag) {
+                gtokenAproval.push(transactionHash);
+            }
             result.push({
                 transaction: 'approval',
                 token: tokenSymbio,
@@ -385,7 +663,7 @@ async function parseVaultTransferFromLogs(logs, gtokenApprovaltxns) {
     const factorPromises = [];
     for (let i = 0; i < blockNumbers.length; i += 1) {
         factorPromises.push(
-            getGroVault(providerKey).factor({
+            getLatestGroVault().factor({
                 blockTag: parseInt(blockNumbers[i], 10),
             })
         );
@@ -417,13 +695,13 @@ async function parseVaultTransferFromLogs(logs, gtokenApprovaltxns) {
     };
 }
 
-async function getTransactionHistories(account, toBlock) {
+async function getTransactionHistories(account) {
     const promises = [];
-    promises.push(getGroVaultTransferHistories(account, toBlock));
-    promises.push(getPowerDTransferHistories(account, toBlock));
-    promises.push(getDepositHistories(account, toBlock));
-    promises.push(getWithdrawHistories(account, toBlock));
-    promises.push(getGroVaultTransferFromHistories(account, toBlock));
+    promises.push(getGroVaultTransferHistories(account));
+    promises.push(getPowerDTransferHistories(account));
+    promises.push(getDepositHistories(account));
+    promises.push(getWithdrawHistories(account));
+    promises.push(getGroVaultTransferFromHistories(account));
     const result = await Promise.all(promises);
     const powerD = result[1];
     const depositLogs = result[2];
@@ -446,11 +724,7 @@ async function getTransactionHistories(account, toBlock) {
         depositEventHashs.push(pwrdDepositLogs[i].transactionHash);
     }
 
-    const approval = await getApprovalHistoryies(
-        account,
-        toBlock,
-        depositEventHashs
-    );
+    const approval = await getApprovalHistoryies(account, depositEventHashs);
 
     const gtokenApprovalTxns = approval.gtokenApprovalTxn;
     const transferFromEvents = await parseVaultTransferFromLogs(
@@ -468,9 +742,9 @@ async function generateReport(account) {
     const latestBlock = await provider.getBlock();
     const promises = [];
     account = account.toLowerCase();
-    promises.push(getTransactionHistories(account, latestBlock.number));
-    promises.push(getPowerD(providerKey).getAssets(account));
-    promises.push(getGroVault(providerKey).getAssets(account));
+    promises.push(getTransactionHistories(account));
+    promises.push(getLatestPowerD().getAssets(account));
+    promises.push(getLatestGroVault().getAssets(account));
     const results = await Promise.all(promises);
     const data = results[0];
     const pwrdBalance = new BN(results[1].toString());

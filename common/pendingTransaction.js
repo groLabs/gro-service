@@ -1,5 +1,5 @@
 const { pendingTransactions } = require('./storage');
-const { getVaultStabeCoins } = require('../contract/allContracts');
+const { getVaultStableCoins } = require('../contract/allContracts');
 const { getAlchemyRpcProvider } = require('./chainUtil');
 const { BlockChainCallError } = require('./error');
 const {
@@ -14,7 +14,7 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
-const vaultStabeCoins = getVaultStabeCoins();
+const vaultStableCoins = getVaultStableCoins();
 
 async function parseAdditionalData(type, hash, transactionReceipt) {
     const typeSplit = type.split('-');
@@ -28,7 +28,7 @@ async function parseAdditionalData(type, hash, transactionReceipt) {
         case 'invest':
             result = await getInvestKeyData(
                 hash,
-                vaultStabeCoins.tokens[typeSplit[1]],
+                vaultStableCoins.tokens[typeSplit[1]],
                 transactionReceipt
             );
             break;

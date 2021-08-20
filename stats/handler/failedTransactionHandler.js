@@ -1,13 +1,11 @@
 const axios = require('axios');
 const logger = require('../statsLogger');
 const { getConfig } = require('../../common/configUtil');
-const { getController } = require('../../contract/allContracts');
+const { getContractsHistory } = require('../../registry/registryLoader');
+const { ContractNames } = require('../../registry/registry');
 
 const apiKey = getConfig('etherscan_api_key');
 const startBlock = getConfig('blockchain.start_block');
-const depositHandlerHistory = getConfig('deposit_handler_history', false) || {};
-const withdrawHandlerHistory =
-    getConfig('withdraw_handler_history', false) || {};
 const runEnv = process.env.NODE_ENV;
 
 let etherScanEndPoint;
@@ -17,37 +15,44 @@ if (runEnv === 'mainnet') {
     etherScanEndPoint = `https://api-${runEnv}.etherscan.io/api?module=account&action=txlist&sort=asc&apikey=${apiKey}`;
 }
 
-async function getDistAddresses() {
-    const controller = getController();
-    const gvtAddress = await controller.gvt();
-    const pwrdAddress = await controller.pwrd();
+function getDistAddresses() {
+    const gvtAddresses = [];
+    const pwrdAddresses = [];
     const depositHandlerAddresses = [];
     const withdrawHandlerAddresses = [];
 
-    const depositHandlers = Object.keys(depositHandlerHistory);
-    if (depositHandlers.length > 0) {
-        for (let i = 0; i < depositHandlers.length; i += 1) {
-            depositHandlerAddresses.push(depositHandlers[i].toLowerCase());
-        }
-    } else {
-        const depositHandlerAddress = await controller.depositHandler();
-        depositHandlerAddresses.push(depositHandlerAddress.toLowerCase());
-    }
-    const withdrawHandlers = Object.keys(withdrawHandlerHistory);
-    if (withdrawHandlers.length > 0) {
-        for (let i = 0; i < withdrawHandlers.length; i += 1) {
-            withdrawHandlerAddresses.push(withdrawHandlers[i].toLowerCase());
-        }
-    } else {
-        const withdrawHandlerAddress = await controller.withdrawHandler();
-        withdrawHandlerAddresses.push(withdrawHandlerAddress.toLowerCase());
+    const contractsHistory = getContractsHistory();
+
+    const gvtHistory = contractsHistory[ContractNames.groVault];
+    for (let i = 0; i < gvtHistory.length; i += 1) {
+        gvtAddresses.push(gvtHistory[i].address.toLowerCase());
     }
 
+    const pwrdHistory = contractsHistory[ContractNames.powerD];
+    for (let i = 0; i < pwrdHistory.length; i += 1) {
+        pwrdAddresses.push(pwrdHistory[i].address.toLowerCase());
+    }
+
+    const depositHandlerHistory =
+        contractsHistory[ContractNames.depositHandler];
+    for (let i = 0; i < depositHandlerHistory.length; i += 1) {
+        depositHandlerAddresses.push(
+            depositHandlerHistory[i].address.toLowerCase()
+        );
+    }
+
+    const withdrawHandlerHistory =
+        contractsHistory[ContractNames.withdrawHandler];
+    for (let i = 0; i < withdrawHandlerHistory.length; i += 1) {
+        withdrawHandlerAddresses.push(
+            withdrawHandlerHistory[i].address.toLowerCase()
+        );
+    }
     return {
+        gvtAddresses,
+        pwrdAddresses,
         withdrawHandlerAddresses,
         depositHandlerAddresses,
-        gvtAddress: gvtAddress.toLowerCase(),
-        pwrdAddress: pwrdAddress.toLowerCase(),
     };
 }
 
@@ -71,22 +76,26 @@ async function getTransactionsByAccount(accountAddress) {
 
 async function getAccountFailTransactions(accountAddress) {
     const transactions = await getTransactionsByAccount(accountAddress);
-    logger.info(`transactions: ${JSON.stringify(transactions)}`);
-    const distAddresses = await getDistAddresses();
+    const {
+        gvtAddresses,
+        pwrdAddresses,
+        withdrawHandlerAddresses,
+        depositHandlerAddresses,
+    } = getDistAddresses();
     const failedTransactions = [];
     for (let i = 0; i < transactions.length; i += 1) {
         const { to, isError } = transactions[i];
         if (isError === '1') {
-            if (to === distAddresses.gvtAddress) {
+            if (gvtAddresses.includes(to)) {
                 transactions[i].contractName = 'GVT';
                 failedTransactions.push(transactions[i]);
-            } else if (to === distAddresses.pwrdAddress) {
+            } else if (pwrdAddresses.includes(to)) {
                 transactions[i].contractName = 'PWRD';
                 failedTransactions.push(transactions[i]);
-            } else if (distAddresses.withdrawHandlerAddresses.includes(to)) {
+            } else if (withdrawHandlerAddresses.includes(to)) {
                 transactions[i].contractName = 'WithdrawHandler';
                 failedTransactions.push(transactions[i]);
-            } else if (distAddresses.depositHandlerAddresses.includes(to)) {
+            } else if (depositHandlerAddresses.includes(to)) {
                 transactions[i].contractName = 'DepositHandler';
                 failedTransactions.push(transactions[i]);
             }

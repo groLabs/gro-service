@@ -54,7 +54,7 @@ const vaults = [];
 const underlyTokens = [];
 const strategyLength = [];
 const vaultAndStrategyLabels = {};
-const vaultStabeCoins = { tokens: {}, decimals: {}, symbols: {} };
+const vaultStableCoins = { tokens: {}, decimals: {}, symbols: {} };
 const yearnVaults = [];
 const providerConnectedContracts = {};
 const managerConnectedContracts = {};
@@ -207,8 +207,8 @@ async function initGvt() {
     );
     const symbio = await gvt.symbol();
     const decimals = await gvt.decimals();
-    vaultStabeCoins.decimals[gvtAddresses] = decimals.toString();
-    vaultStabeCoins.symbols[gvtAddresses] = symbio;
+    vaultStableCoins.decimals[gvtAddresses] = decimals.toString();
+    vaultStableCoins.symbols[gvtAddresses] = symbio;
 }
 
 async function initPwrd() {
@@ -221,8 +221,8 @@ async function initPwrd() {
     );
     const symbio = await pwrd.symbol();
     const decimals = await pwrd.decimals();
-    vaultStabeCoins.decimals[pwrdAddresses] = decimals.toString();
-    vaultStabeCoins.symbols[pwrdAddresses] = symbio;
+    vaultStableCoins.decimals[pwrdAddresses] = decimals.toString();
+    vaultStableCoins.symbols[pwrdAddresses] = symbio;
 }
 
 async function initDepositHandler() {
@@ -259,25 +259,25 @@ async function initLifeguard() {
     buoy = new ethers.Contract(buoyAddresses, buoyABI, nonceManager);
 }
 
-async function initVaultStabeCoins() {
+async function initVaultStableCoins() {
     const lastIndex = vaults.length - 1;
     if (lastIndex < 0) return;
-    vaultStabeCoins.tokens[vaults[lastIndex].address] = [];
+    vaultStableCoins.tokens[vaults[lastIndex].address] = [];
     for (let i = 0; i < lastIndex; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         const token = await vaults[i].token();
-        vaultStabeCoins.tokens[vaults[i].address] = [token];
-        vaultStabeCoins.tokens[vaults[lastIndex].address].push(token);
-        const stabeCoin = new ethers.Contract(token, erc20ABI, nonceManager);
-        underlyTokens.push(stabeCoin);
+        vaultStableCoins.tokens[vaults[i].address] = [token];
+        vaultStableCoins.tokens[vaults[lastIndex].address].push(token);
+        const stableCoin = new ethers.Contract(token, erc20ABI, nonceManager);
+        underlyTokens.push(stableCoin);
         // eslint-disable-next-line no-await-in-loop
-        const decimals = await stabeCoin.decimals();
+        const decimals = await stableCoin.decimals();
         // eslint-disable-next-line no-await-in-loop
-        const symbio = await stabeCoin.symbol();
-        vaultStabeCoins.decimals[token] = decimals.toString();
-        vaultStabeCoins.symbols[token] = symbio;
+        const symbio = await stableCoin.symbol();
+        vaultStableCoins.decimals[token] = decimals.toString();
+        vaultStableCoins.symbols[token] = symbio;
     }
-    logger.info(`Vault's stabe coins: ${JSON.stringify(vaultStabeCoins)}`);
+    logger.info(`Vault's stable coins: ${JSON.stringify(vaultStableCoins)}`);
 }
 
 async function initAllContracts() {
@@ -300,9 +300,9 @@ async function initAllContracts() {
     //     `Vault and strategy label: ${JSON.stringify(vaultAndStrategyLabels)}`
     // );
 
-    await initVaultStabeCoins().catch((error) => {
+    await initVaultStableCoins().catch((error) => {
         logger.error(error);
-        throw new ContractCallError("Initilize vaults' stabe coins failed");
+        throw new ContractCallError("Initilize vaults' stable coins failed");
     });
     logger.info('Init contracts done!.');
 }
@@ -487,8 +487,8 @@ function getVaultAndStrategyLabels() {
     return vaultAndStrategyLabels;
 }
 
-function getVaultStabeCoins() {
-    return vaultStabeCoins;
+function getVaultStableCoins() {
+    return vaultStableCoins;
 }
 
 function getUnderlyTokens(providerKey, signerKey) {
@@ -528,7 +528,7 @@ module.exports = {
     getStrategyLength,
     getBuoy,
     getVaultAndStrategyLabels,
-    getVaultStabeCoins,
+    getVaultStableCoins,
     getUnderlyTokens,
     getYearnVaults,
 };

@@ -1,29 +1,23 @@
 /* eslint-disable no-await-in-loop */
-const config = require('config');
 const { BigNumber } = require('ethers');
 const {
-    getController,
-    getGvt,
-    getPwrd,
-    getInsurance,
-    getExposure,
-    getLifeguard,
-    getVaults,
-    getCurveVault,
-    getStrategyLength,
-    getVaultAndStrategyLabels,
-    getBuoy,
-    getYearnVaults,
-} = require('../../contract/allContracts');
-const logger = require('../statsLogger');
-const { sendAlertMessage } = require('../../common/alertMessageSender');
-const { getCurrentApy } = require('./currentApyHandler');
-const {
     MESSAGE_TYPES,
-    MESSAGE_EMOJI,
     DISCORD_CHANNELS,
     sendMessageToChannel,
 } = require('../../common/discord/discordService');
+const logger = require('../statsLogger');
+const { getCurrentApy } = require('./currentApyHandler');
+const { ContractNames } = require('../../registry/registry');
+const { sendAlertMessage } = require('../../common/alertMessageSender');
+const {
+    getLatestStableCoins,
+    getLatestVaultsAndStrategies,
+    getLatestSystemContract: getLatestContract,
+} = require('../common/contractStorage');
+const {
+    getLatestContractsAddressByAddress,
+} = require('../../registry/registryLoader');
+
 // constant
 const SHARE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
 const THRESHOLD_DECIMAL = BigNumber.from(10).pow(BigNumber.from(4));
@@ -35,29 +29,61 @@ const DECIMALS = [
     BigNumber.from(10).pow(BigNumber.from(18)),
 ];
 
-// config
-const stabeCoinNames = config.get('stable_coin');
-const vaultNames = config.get('vault_name');
-const strategyNames = config.get('strategy_name');
-const lifeguardNames = config.get('lifeguard_name');
-const strategyExposure = config.get('strategy_exposure');
-const strategyStablecoinExposure = config.get('strategy_stablecoin_exposure');
-const protocolDisplayName = config.get('protocol_display_name');
-const vaultDisplayName = config.get('vault_display_name');
-
 const providerKey = 'stats_gro';
 
+function getLatestSystemContract(contractName) {
+    return getLatestContract(contractName, providerKey);
+}
+
+async function getLatestVaultAdapters() {
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { vaultsAddress: adapterAddresses, contracts } = vaultAndStrateyInfo;
+    const vaultAdapters = [];
+    for (let i = 0; i < adapterAddresses.length; i += 1) {
+        vaultAdapters.push(contracts[adapterAddresses[i]].contract);
+    }
+    return vaultAdapters;
+}
+
+async function getLatestYearnVaults() {
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { vaultsAddress: adapterAddresses, contracts } = vaultAndStrateyInfo;
+    const vaults = [];
+    for (let i = 0; i < adapterAddresses.length; i += 1) {
+        const { vault } = contracts[adapterAddresses[i]];
+        vaults.push(vault.contract);
+    }
+    return vaults;
+}
+
+async function getStrategies() {
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { vaultsAddress: adapterAddresses, contracts } = vaultAndStrateyInfo;
+    const vaultstrategies = [];
+    for (let i = 0; i < adapterAddresses.length; i += 1) {
+        const { strategies } = contracts[adapterAddresses[i]].vault;
+        const everyAdapterStrategies = [];
+        for (let j = 0; j < strategies.length; j += 1) {
+            everyAdapterStrategies.push({
+                strategy: strategies[j].contract,
+            });
+        }
+        vaultstrategies.push({ strategies: everyAdapterStrategies });
+    }
+    return vaultstrategies;
+}
+
 async function getUsdValue(i, amount, blockTag) {
-    const usdValue = await getBuoy(providerKey).singleStableToUsd(
-        amount,
-        i,
-        blockTag
-    );
+    const usdValue = getLatestSystemContract(
+        ContractNames.buoy3Pool
+    ).contract.singleStableToUsd(amount, i, blockTag);
     return usdValue;
 }
 
 async function getUsdValueForLP(amount, blockTag) {
-    const usdValue = await getBuoy(providerKey).lpToUsd(amount, blockTag);
+    const usdValue = getLatestSystemContract(
+        ContractNames.buoy3Pool
+    ).contract.lpToUsd(amount, blockTag);
     return usdValue;
 }
 
@@ -71,9 +97,10 @@ function convertToSharePercentDecimal(value) {
 
 async function checkStrategyChange(blockTag) {
     try {
-        const vaults = getVaults();
-        const vaultAndStrategyLabels = getVaultAndStrategyLabels();
-        const yearnVaults = getYearnVaults(providerKey);
+        const vaults = await getLatestVaultAdapters();
+        const vaultStrategy = await getStrategies();
+        const latestContractInfo = getLatestContractsAddressByAddress();
+        const yearnVaults = await getLatestYearnVaults();
         const emergencyThreshold = BigNumber.from(500);
         const criticalThreshold = BigNumber.from(300);
         const warningThreshold = BigNumber.from(150);
@@ -83,16 +110,15 @@ async function checkStrategyChange(blockTag) {
             vaultIndex < vaults.length - 1;
             vaultIndex += 1
         ) {
-            const vaultLabel =
-                vaultAndStrategyLabels[vaults[vaultIndex].address];
-            const { strategies } = vaultLabel;
+            const { strategies } = vaultStrategy[vaultIndex];
             for (
                 let strategyIndex = 0;
                 strategyIndex < strategies.length;
                 strategyIndex += 1
             ) {
                 const strat = strategies[strategyIndex].strategy;
-                const strategyName = strategies[strategyIndex].displayName;
+                const { metaData } = latestContractInfo[strat.address];
+                const strategyName = metaData.DN;
                 const strategyStatus = await yearnVaults[vaultIndex].strategies(
                     strat.address,
                     blockTag
@@ -173,7 +199,9 @@ async function getCurveStrategyStats(vault, vaultTotalAsset, blockTag) {
 }
 
 async function getCurveVaultStats(blockTag) {
-    const curveVault = getCurveVault(providerKey);
+    const curveVault = getLatestSystemContract(
+        ContractNames.CRVVaultAdaptor
+    ).contract;
     const vaultTotalAsset = await curveVault.totalAssets(blockTag);
     const assetUsd = await getUsdValueForLP(vaultTotalAsset, blockTag);
     const strategyStats = await getCurveStrategyStats(
@@ -198,7 +226,13 @@ async function getStrategiesStats(
     const strategies = [];
     let reservedAssets = BigNumber.from(vaultTotalAsset);
     logger.info(`vta ${vaultTotalAsset} ra ${reservedAssets}`);
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { contracts: vaultAndStrategies } = vaultAndStrateyInfo;
+    const { contractInfo: vaultInfo, vault: yearnVault } =
+        vaultAndStrategies[vault.address];
+    const { strategies: strategyInfos } = yearnVault;
     for (let j = 0; j < length; j += 1) {
+        const { contractInfo } = strategyInfos[j];
         const strategyAssets = await vault.getStrategyAssets(j, blockTag);
         reservedAssets = reservedAssets.sub(strategyAssets);
         const strategyAssetsUsd = await getUsdValue(
@@ -207,14 +241,14 @@ async function getStrategiesStats(
             blockTag
         );
         strategies.push({
-            name: strategyNames[index * 2 + j],
+            name: contractInfo.metaData.N,
             amount: strategyAssetsUsd,
             assets: strategyAssets,
         });
     }
     const reservedUSD = await getUsdValue(index, reservedAssets, blockTag);
     strategies.push({
-        name: stabeCoinNames[index],
+        name: vaultInfo.metaData.CN,
         amount: reservedUSD,
         assets: reservedAssets,
     });
@@ -222,10 +256,11 @@ async function getStrategiesStats(
 }
 
 async function getVaultStats(blockTag) {
-    const vaults = getVaults(providerKey);
-    const strategyLength = getStrategyLength();
+    const vaults = await getLatestVaultAdapters();
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { contracts: vaultStrategyContracts } = vaultAndStrateyInfo;
+
     const vaultAssets = [];
-    //
     for (let vaultIndex = 0; vaultIndex < vaults.length - 1; vaultIndex += 1) {
         const vault = vaults[vaultIndex];
         const vaultTotalAsset = await vault.totalAssets(blockTag);
@@ -234,15 +269,17 @@ async function getVaultStats(blockTag) {
             vaultTotalAsset,
             blockTag
         );
+        const { strategyLength, contractInfo: vaultInfo } =
+            vaultStrategyContracts[vault.address];
         const strategyStats = await getStrategiesStats(
             vault,
             vaultIndex,
-            strategyLength[vaultIndex],
+            strategyLength,
             vaultTotalAsset,
             blockTag
         );
         vaultAssets.push({
-            name: vaultNames[vaultIndex],
+            name: vaultInfo.metaData.N,
             amount: assetUsd,
             strategies: strategyStats,
         });
@@ -254,35 +291,50 @@ async function getVaultStats(blockTag) {
 }
 
 async function getLifeguardStats(blockTag) {
-    const lifeGuard = getLifeguard(providerKey);
+    const lifeGuard = getLatestSystemContract(ContractNames.lifeguard);
+    const { contract: lifeguardContract, contractInfo: lifeguardContractInfo } =
+        lifeGuard;
+    const displayName = lifeguardContractInfo.metaData.DN
+        ? lifeguardContractInfo.metaData.DN
+        : lifeguardContractInfo.metaData.N;
     const lifeGuardStats = {
-        name: lifeguardNames,
-        display_name: lifeguardNames,
-        amount: await lifeGuard.totalAssetsUsd(blockTag),
+        name: lifeguardContractInfo.metaData.N,
+        display_name: displayName,
+        amount: await lifeguardContract.totalAssetsUsd(blockTag),
     };
     return lifeGuardStats;
 }
 
 async function getExposureStats(blockTag, systemStats) {
-    const exposure = getExposure(providerKey);
+    const { contract: exposure } = getLatestSystemContract(
+        ContractNames.exposure
+    );
     logger.info(`getExposureStats blockTag : ${JSON.stringify(blockTag)}`);
-    const preCal = await getInsurance(providerKey).prepareCalculation(blockTag);
+    const stableCoins = await getLatestStableCoins(providerKey);
+    const preCal = await getLatestSystemContract(
+        ContractNames.insurance
+    ).contract.prepareCalculation(blockTag);
     const riskResult = await exposure.getExactRiskExposure(preCal, blockTag);
     const exposureStableCoin = riskResult[0].map((concentration, i) => ({
-        name: stabeCoinNames[i],
-        display_name: stabeCoinNames[i],
+        name: stableCoins[i],
+        display_name: stableCoins[i],
         concentration: convertToSharePercentDecimal(concentration),
     }));
     const exposureProtocol = [];
     const protocols = [];
     const vaultsStats = systemStats.vault;
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { vaultsAddress: adapterAddresses, contracts: vaultStrategies } =
+        vaultAndStrateyInfo;
     for (let i = 0; i < vaultsStats.length; i += 1) {
         const vault = vaultsStats[i];
+        const { strategies } = vaultStrategies[adapterAddresses[i]].vault;
         const strategyList = vault.strategies;
         for (let j = 0; j < strategyList.length; j += 1) {
-            const propertyIndex = i * 2 + j;
+            const { contractInfo } = strategies[j];
             const strategy = strategyList[j];
-            const strategyProtocols = strategyExposure[propertyIndex];
+            const { protocols: strategyProtocols, protocolsDisplayName } =
+                contractInfo;
             for (let k = 0; k < strategyProtocols.length; k += 1) {
                 const index = protocols.indexOf(strategyProtocols[k]);
                 if (index >= 0) {
@@ -294,18 +346,21 @@ async function getExposureStats(blockTag, systemStats) {
                     protocols.push(strategyProtocols[k]);
                     exposureProtocol.push({
                         name: strategyProtocols[k],
-                        display_name: protocolDisplayName[strategyProtocols[k]],
+                        display_name: protocolsDisplayName[k],
                         concentration: strategy.share,
                     });
                 }
             }
         }
     }
+    // curve's stable coin
+    const curveVaultIndex = adapterAddresses.length - 1;
+
     exposureProtocol.forEach((item) => {
         if (item.name === 'Curve') {
             exposureStableCoin.push({
-                name: strategyStablecoinExposure[6],
-                display_name: strategyStablecoinExposure[6],
+                name: stableCoins[curveVaultIndex],
+                display_name: stableCoins[curveVaultIndex],
                 concentration: item.concentration,
             });
             item.concentration = vaultsStats[3].share;
@@ -322,11 +377,17 @@ async function getExposureStats(blockTag, systemStats) {
 
 async function getTvlStats(blockTag) {
     logger.info('TvlStats');
-    const gvtAssets = await getGvt(providerKey).totalAssets(blockTag);
-    const prwdAssets = await getPwrd(providerKey).totalSupply(blockTag);
+    const gvtAssets = await getLatestSystemContract(
+        ContractNames.groVault
+    ).contract.totalAssets(blockTag);
+    const prwdAssets = await getLatestSystemContract(
+        ContractNames.powerD
+    ).contract.totalSupply(blockTag);
     const totalAssetsUsd = gvtAssets.add(prwdAssets);
     const utilRatio = calculateSharePercent(prwdAssets, gvtAssets);
-    const controller = getController(providerKey);
+    const controller = getLatestSystemContract(
+        ContractNames.controller
+    ).contract;
     const utilRatioLimitPD = await controller.utilisationRatioLimitPwrd(
         blockTag
     );
@@ -349,7 +410,9 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
     logger.info('check strategy expected return');
     await checkStrategyChange(blockTag);
     logger.info('SystemStats');
-    const vaults = getVaults();
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { contracts: vaultAdaptersInfo } = vaultAndStrateyInfo;
+    const vaults = await getLatestVaultAdapters();
     const lifeGuardStats = await getLifeguardStats(blockTag);
     lifeGuardStats.share = calculateSharePercent(
         lifeGuardStats.amount,
@@ -362,18 +425,24 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
     let systemApy = BigNumber.from(0);
     const vaultAssets = await getVaultStats(blockTag);
     const currentApy = await getCurrentApy();
-    const vaultAndStrategyLabels = getVaultAndStrategyLabels();
     const vaultStats = vaultAssets.map((vaultAsset, vaultIndex) => {
-        const vaultLabel = vaultAndStrategyLabels[vaults[vaultIndex].address];
-        const vaultStrategyApy = currentApy[vaults[vaultIndex].address];
+        const vaultAddress = vaults[vaultIndex].address;
+        logger.info(`vault address: ${vaultAddress}`);
+        const { contractInfo: vaultAdapterInfo } =
+            vaultAdaptersInfo[vaultAddress];
+        const strategyInfos = vaultAdaptersInfo[vaultAddress].vault.strategies;
+        const vaultStrategyApy = currentApy[vaultIndex];
         let vaultApy = BigNumber.from(0);
         let vaultPercent = BigNumber.from(0);
         const strategies = vaultAsset.strategies.map(
             (strategy, strategyIndex) => {
+                const strategyInfo = strategyInfos[strategyIndex];
                 const strat = vaultStrategyApy.strategies[strategyIndex];
                 let stratApy = BigNumber.from(0);
                 if (strat !== undefined) {
-                    logger.info(`strat apy ${strat.address} ${strat.apy}`);
+                    logger.info(
+                        `strat apy ${strategyInfo.contract.address} ${strat.apy}`
+                    );
                     stratApy = strat.apy;
                 }
                 const strategyPercent = calculateSharePercent(
@@ -385,12 +454,13 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
                 );
                 vaultApy = vaultApy.add(stratApy.mul(strategyPercent));
                 vaultPercent = vaultPercent.add(strategyPercent);
-                const strategyInfo = vaultLabel.strategies[strategyIndex];
                 return {
                     name: strategy.name,
-                    display_name: strategyInfo ? strategyInfo.displayName : '',
+                    display_name: strategyInfo
+                        ? strategyInfo.contractInfo.metaData.DN
+                        : '',
                     address: strategyInfo
-                        ? strategyInfo.strategy.address
+                        ? strategyInfo.contract.address
                         : undefined,
                     amount: strategy.amount,
                     last3d_apy: stratApy,
@@ -413,7 +483,7 @@ async function getSystemStats(totalAssetsUsd, blockTag) {
         systemTotal = systemTotal.add(vaultAsset.amount);
         return {
             name: vaultAsset.name,
-            display_name: vaultDisplayName[vaultIndex],
+            display_name: vaultAdapterInfo.metaData.DN,
             amount: vaultAsset.amount,
             share,
             last3d_apy: estimatedVaultApy,

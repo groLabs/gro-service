@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { ethers } = require('ethers');
 const { getConfig } = require('../common/configUtil');
 const { getAlchemyRpcProvider } = require('../common/chainUtil');
@@ -9,11 +10,17 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
+const configFileFolder = `${__dirname}/config`;
+
 const registryAddress = getConfig('registry_address', false);
 const provider = getAlchemyRpcProvider();
 
-const registry = new ethers.Contract(registryAddress, registryABI, provider);
+let registry;
+if (registryAddress) {
+    registry = new ethers.Contract(registryAddress, registryABI, provider);
+}
 const activeContractNames = [];
+let localContractConfig;
 
 const ContractNames = {
     groVault: 'GroVault',
@@ -74,16 +81,39 @@ ContractABIMapping[ContractNames.CRVVault] = 'Vault';
 ContractABIMapping[ContractNames.CRVVaultAdaptor] = 'VaultAdaptorYearnV2_032';
 ContractABIMapping[ContractNames.CRVPrimary] = 'BaseStrategy';
 
+function readLocalContractConfig(isReload = false) {
+    if (isReload || !localContractConfig) {
+        const filePath = `${configFileFolder}/${process.env.NODE_ENV}_contractConfig.json`;
+        const data = fs.readFileSync(filePath, { flag: 'a+' });
+        let content = data.toString();
+        if (content.length === 0) {
+            content = '{}';
+        }
+        localContractConfig = JSON.parse(content);
+        logger.info(
+            `Load config file from : ${filePath}:\n${JSON.stringify(
+                localContractConfig
+            )}`
+        );
+    }
+    return localContractConfig;
+}
+
 async function getActiveContractNames() {
     if (!activeContractNames.length) {
-        const result = await registry.getKeys().catch((error) => {
-            logger.error(error);
-            return [];
-        });
+        const localConfig = readLocalContractConfig();
+        if (localConfig.contractNames) {
+            activeContractNames.push(...localConfig.contractNames);
+        } else {
+            const result = await registry.getKeys().catch((error) => {
+                logger.error(error);
+                return [];
+            });
 
-        for (let i = 0; i < result.length; i += 1) {
-            if (result[i] !== '') {
-                activeContractNames.push(result[i]);
+            for (let i = 0; i < result.length; i += 1) {
+                if (result[i] !== '') {
+                    activeContractNames.push(result[i]);
+                }
             }
         }
     }
@@ -149,40 +179,50 @@ async function parseTokenExposure(tokens) {
 }
 
 async function getActiveContractInfoByName(contractName) {
-    const contractAddress = await registry
-        .getActive(contractName)
-        .catch((error) => {
-            throw error;
-        });
-    const contractInfo = await registry
-        .getActiveData(contractName)
-        .catch((error) => {
-            throw error;
-        });
+    const localConfig = readLocalContractConfig();
+    let result = {};
+    if (
+        localConfig.latestContracts &&
+        localConfig.latestContracts[contractName]
+    ) {
+        result = localConfig.latestContracts[contractName];
+    } else {
+        const contractAddress = await registry
+            .getActive(contractName)
+            .catch((error) => {
+                throw error;
+            });
+        const contractInfo = await registry
+            .getActiveData(contractName)
+            .catch((error) => {
+                throw error;
+            });
 
-    const latestStartBlock =
-        contractInfo.startBlock[contractInfo.startBlock.length - 1];
-    const metaData = contractInfo.metaData.trim().length
-        ? contractInfo.metaData
-        : '{}';
-    const metaDataObject = JSON.parse(metaData);
-    const protocolInfo = await parseProtocolExposure(
-        contractInfo.protocols,
-        metaDataObject
-    );
-    const tokenNames = await parseTokenExposure(contractInfo.tokens);
-    return {
-        address: contractAddress,
-        deployedBlock: parseInt(`${contractInfo.deployedBlock}`, 10),
-        startBlock: parseInt(`${latestStartBlock}`, 10),
-        abiVersion: contractInfo.abiVersion,
-        tag: contractInfo.tag,
-        tokens: tokenNames,
-        protocols: protocolInfo.protocolsName,
-        protocolsDisplayName: protocolInfo.protocolsDisplayName,
-        metaData: metaDataObject,
-        active: contractInfo.active,
-    };
+        const latestStartBlock =
+            contractInfo.startBlock[contractInfo.startBlock.length - 1];
+        const metaData = contractInfo.metaData.trim().length
+            ? contractInfo.metaData
+            : '{}';
+        const metaDataObject = JSON.parse(metaData);
+        const protocolInfo = await parseProtocolExposure(
+            contractInfo.protocols,
+            metaDataObject
+        );
+        const tokenNames = await parseTokenExposure(contractInfo.tokens);
+        result = {
+            address: contractAddress,
+            deployedBlock: parseInt(`${contractInfo.deployedBlock}`, 10),
+            startBlock: parseInt(`${latestStartBlock}`, 10),
+            abiVersion: contractInfo.abiVersion,
+            tag: contractInfo.tag,
+            tokens: tokenNames,
+            protocols: protocolInfo.protocolsName,
+            protocolsDisplayName: protocolInfo.protocolsDisplayName,
+            metaData: metaDataObject,
+            active: contractInfo.active,
+        };
+    }
+    return result;
 }
 
 async function getContracts(contractName) {
@@ -196,48 +236,61 @@ async function getContracts(contractName) {
 }
 
 async function getContractInfoByAddress(address) {
-    const info = await registry.getContractData(address).catch((error) => {
-        logger.error(error);
-        return {};
-    });
+    const localConfig = readLocalContractConfig();
     const result = [];
-    const metaData = info.metaData.trim().length ? info.metaData : '{}';
-    const metaDataObject = JSON.parse(metaData);
-    const protocolInfo = await parseProtocolExposure(
-        info.protocols,
-        metaDataObject
-    );
-    const tokenNames = await parseTokenExposure(info.tokens);
-    if (info.startBlock) {
-        for (let i = 0; i < info.startBlock.length; i += 1) {
-            result.push({
-                address,
-                deployedBlock: parseInt(`${info.deployedBlock}`, 10),
-                startBlock: parseInt(`${info.startBlock[i]}`, 10),
-                endBlock: parseInt(`${info.endBlock[i]}`, 10),
-                abiVersion: info.abiVersion,
-                tag: info.tag,
-                tokens: tokenNames,
-                protocols: protocolInfo.protocolsName,
-                protocolsDisplayName: protocolInfo.protocolsDisplayName,
-                metaData: metaDataObject,
-                active: info.active,
-            });
+    if (localConfig.contractInfo && localConfig.contractInfo[address]) {
+        result.push(...localConfig.contractInfo[address]);
+    } else {
+        const info = await registry.getContractData(address).catch((error) => {
+            logger.error(error);
+            return {};
+        });
+        const metaData = info.metaData.trim().length ? info.metaData : '{}';
+        const metaDataObject = JSON.parse(metaData);
+        const protocolInfo = await parseProtocolExposure(
+            info.protocols,
+            metaDataObject
+        );
+        const tokenNames = await parseTokenExposure(info.tokens);
+        if (info.startBlock) {
+            for (let i = 0; i < info.startBlock.length; i += 1) {
+                result.push({
+                    address,
+                    deployedBlock: parseInt(`${info.deployedBlock}`, 10),
+                    startBlock: parseInt(`${info.startBlock[i]}`, 10),
+                    endBlock: parseInt(`${info.endBlock[i]}`, 10),
+                    abiVersion: info.abiVersion,
+                    tag: info.tag,
+                    tokens: tokenNames,
+                    protocols: protocolInfo.protocolsName,
+                    protocolsDisplayName: protocolInfo.protocolsDisplayName,
+                    metaData: metaDataObject,
+                    active: info.active,
+                });
+            }
         }
     }
     return result;
 }
 
 async function getContractHistory(contractName) {
-    const contracts = await getContracts(contractName);
-    const resultPromise = [];
-    for (let i = 0; i < contracts.length; i += 1) {
-        resultPromise.push(getContractInfoByAddress(contracts[i]));
-    }
-    const result = await Promise.all(resultPromise);
-    const contractHistory = [];
-    for (let i = 0; i < result.length; i += 1) {
-        contractHistory.push(...result[i]);
+    const localConfig = readLocalContractConfig();
+    let contractHistory = [];
+    if (
+        localConfig.contractHistories &&
+        localConfig.contractHistories[contractName]
+    ) {
+        contractHistory = localConfig.contractHistories[contractName];
+    } else {
+        const contracts = await getContracts(contractName);
+        const resultPromise = [];
+        for (let i = 0; i < contracts.length; i += 1) {
+            resultPromise.push(getContractInfoByAddress(contracts[i]));
+        }
+        const result = await Promise.all(resultPromise);
+        for (let i = 0; i < result.length; i += 1) {
+            contractHistory.push(...result[i]);
+        }
     }
     return contractHistory;
 }
@@ -280,6 +333,7 @@ async function getContractsHistory() {
 module.exports = {
     ContractNames,
     ContractABIMapping,
+    readLocalContractConfig,
     getLatestContracts,
     getContractsHistory,
     checkContractNameConfiguration,
