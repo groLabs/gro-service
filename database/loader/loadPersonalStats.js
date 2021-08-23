@@ -1,20 +1,7 @@
 const ethers = require('ethers');
 const { query } = require('../handler/queryHandler');
-const { getPersonalStats } = require('../handler/personalHandler');
-const {
-    initDatabaseContracts,
-    initAllContracts,
-    getGvt,
-    getPwrd,
-    // getBuoy,
-    // getDepositHandler,
-    //getVaultStableCoins,
-} = require('../../contract/allContracts');
 const { getPersonalStats } = require('../handler/personalStatsHandler');
-const {
-    getDefaultProvider,
-    // getAlchemyRpcProvider,
-} = require('../../common/chainUtil');
+const { getDefaultProvider } = require('../../common/chainUtil');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
@@ -95,9 +82,7 @@ const preload = async (_fromDate, _toDate) => {
 const remove = async (fromDate, toDate) => {
     try {
         /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
-        const fromDateParsed = moment(fromDate, 'DD/MM/YYYY').format(
-            'MM/DD/YYYY'
-        );
+        const fromDateParsed = moment(fromDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
         const toDateParsed = moment(toDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
         const params = [fromDateParsed, toDateParsed];
         const [transfers, balances, netReturns, approvals, loads] =
@@ -154,7 +139,7 @@ const remove = async (fromDate, toDate) => {
 };
 
 // TODO (specially for mainnet)
-const reloadApprovals = async () => {};
+const reloadApprovals = async () => { };
 
 /// @notice Reloads user transfers, balances & net results for a given time interval
 /// @dev    - Previous data for the given time interval will be overwritten
@@ -168,42 +153,12 @@ const reload = async (fromDate, toDate) => {
         // Reload transfers, balances & net results
         if (fromBlock > 0 && toBlock > 0 && dates) {
             const res = await Promise.all([
-                loadTmpUserTransfers(
-                    fromBlock,
-                    toBlock,
-                    Transfer.DEPOSIT,
-                    null
-                ),
-                loadTmpUserTransfers(
-                    fromBlock,
-                    toBlock,
-                    Transfer.WITHDRAWAL,
-                    null
-                ),
-                loadTmpUserTransfers(
-                    fromBlock,
-                    toBlock,
-                    Transfer.EXTERNAL_GVT_WITHDRAWAL,
-                    null
-                ),
-                loadTmpUserTransfers(
-                    fromBlock,
-                    toBlock,
-                    Transfer.EXTERNAL_GVT_DEPOSIT,
-                    null
-                ),
-                loadTmpUserTransfers(
-                    fromBlock,
-                    toBlock,
-                    Transfer.EXTERNAL_PWRD_WITHDRAWAL,
-                    null
-                ),
-                loadTmpUserTransfers(
-                    fromBlock,
-                    toBlock,
-                    Transfer.EXTERNAL_PWRD_DEPOSIT,
-                    null
-                ),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT, null),
             ]);
 
             if (res.every(Boolean)) {
@@ -211,18 +166,8 @@ const reload = async (fromDate, toDate) => {
                     if (await remove(fromDate, toDate))
                         if (await loadUserTransfers(fromDate, toDate, null))
                             if (await loadUserApprovals(fromDate, toDate, null))
-                                if (
-                                    await loadUserBalances(
-                                        fromDate,
-                                        toDate,
-                                        null
-                                    )
-                                )
-                                    await loadUserNetReturns(
-                                        fromDate,
-                                        toDate,
-                                        null
-                                    );
+                                if (await loadUserBalances(fromDate, toDate, null))
+                                    await loadUserNetReturns(fromDate, toDate, null);
             } else {
                 logger.warn(
                     `**DB: Error/s found in loadPersonalStats.js->reload()`
@@ -258,30 +203,10 @@ const load = async (fromDate, toDate) => {
         const res = await Promise.all([
             loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null),
             loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null),
-            loadTmpUserTransfers(
-                fromBlock,
-                toBlock,
-                Transfer.EXTERNAL_GVT_WITHDRAWAL,
-                null
-            ),
-            loadTmpUserTransfers(
-                fromBlock,
-                toBlock,
-                Transfer.EXTERNAL_GVT_DEPOSIT,
-                null
-            ),
-            loadTmpUserTransfers(
-                fromBlock,
-                toBlock,
-                Transfer.EXTERNAL_PWRD_WITHDRAWAL,
-                null
-            ),
-            loadTmpUserTransfers(
-                fromBlock,
-                toBlock,
-                Transfer.EXTERNAL_PWRD_DEPOSIT,
-                null
-            ),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT, null),
         ]);
 
         if (res.every(Boolean)) {

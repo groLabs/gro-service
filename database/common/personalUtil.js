@@ -12,26 +12,11 @@ const {
     EVENT_TYPE,
     getEvents: getTransferEV,
     getApprovalEvents: getApprovalEV,
-    // getDepositWithdrawEvents, // TESTING
 } = require('../../common/logFilter');
 const { QUERY_ERROR } = require('../constants');
 const BlocksScanner = require('../../stats/common/blockscanner');
 const provider = getAlchemyRpcProvider('stats_personal');
 const scanner = new BlocksScanner(provider);
-
-const ZERO_ADDRESS =
-    '0x0000000000000000000000000000000000000000000000000000000000000000';
-const ERC20_TRANSFER_SIGNATURE =
-    '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-
-// TESTING
-// const { getConfig } = require('../../common/configUtil');
-// const depositHandlerHistoryConfig = getConfig('deposit_handler_history', false) || {};
-// const withdrawHandlerHistoryConfig = getConfig('withdraw_handler_history', false) || {};
-// const depositHandlerHistory = Object.keys(depositHandlerHistoryConfig);
-// const withdrawHandlerHistory = Object.keys(withdrawHandlerHistoryConfig);
-// console.log('depositHandlerHistory:', depositHandlerHistory);
-// console.log('withdrawHandlerHistory:', withdrawHandlerHistory);
 
 const ZERO_ADDRESS =
     '0x0000000000000000000000000000000000000000000000000000000000000000';
