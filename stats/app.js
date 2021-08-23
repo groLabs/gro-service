@@ -20,6 +20,10 @@ const statsRouter = require('./routes/stats');
 const scheduler = require('./scheduler/statsScheduler');
 const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 const { sendAlertMessage } = require('../common/alertMessageSender');
+const { contractCallFailedCount } = require('./common/contractStorage');
+const { getConfig } = require('../common/configUtil');
+
+const failedAlertTimes = getConfig('call_failed_time', false) || 3;
 
 const app = express();
 
@@ -65,15 +69,18 @@ app.use((error, req, res, next) => {
         // sendMessage(DISCORD_CHANNELS.botLogs, {
         //     message: `${error}, Url ${req.originalUrl}`,
         // });
-        sendAlertMessage({
-            discord: {
-                description: `[CRIT] B4 - Get personal stats failed for ${error.message} at ${req.originalUrl}`,
-            },
-            pagerduty: {
-                title: '[CRIT] B4 - Get personal stats failed',
-                description: `[CRIT] B4 - Get personal stats failed for ${error.message} at ${req.originalUrl}`,
-            },
-        });
+        contractCallFailedCount.personalStas += 1;
+        if (contractCallFailedCount.personalStas >= failedAlertTimes) {
+            sendAlertMessage({
+                discord: {
+                    description: `[CRIT] B4 - Get personal stats failed for ${error.message} at ${req.originalUrl}`,
+                },
+                pagerduty: {
+                    title: '[CRIT] B4 - Get personal stats failed',
+                    description: `[CRIT] B4 - Get personal stats failed for ${error.message} at ${req.originalUrl}`,
+                },
+            });
+        }
     } else {
         next(error);
     }

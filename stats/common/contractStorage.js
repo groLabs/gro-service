@@ -2,11 +2,11 @@ const {
     newSystemLatestContracts,
     newSystemLatestVaultStrategyContracts,
 } = require('../../registry/contracts');
-const { ContractNames } = require('../../registry/registry');
 
 const latestSystemContracts = {};
 const latestVaultStrategyContracts = {};
 const latestStableCoins = {};
+const contractCallFailedCount = { personalStas: 0 };
 
 function getLatestSystemContract(contractName, providerKey) {
     providerKey = providerKey || 'stats_gro';
@@ -60,6 +60,7 @@ async function reloadData(providerKey) {
 }
 
 module.exports = {
+    contractCallFailedCount,
     getLatestSystemContract,
     getLatestVaultsAndStrategies,
     getLatestStableCoins,
