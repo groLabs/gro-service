@@ -134,7 +134,7 @@ function getDepositHandlerContracts(handlerHistories) {
     if (!depositHandlerContracts) {
         depositHandlerContracts = getContracts(ContractNames.depositHandler);
     }
-    let depositHandlers;
+    let depositHandlers = [];
     if (handlerHistories) {
         for (let i = 0; i < handlerHistories.length; i += 1) {
             depositHandlers[handlerHistories[i]] =
@@ -150,7 +150,7 @@ function getWithdrawHandlerContracts(handlerHistories) {
     if (!withdrawHandlerContracts) {
         withdrawHandlerContracts = getContracts(ContractNames.withdrawHandler);
     }
-    let withdrawHandlers;
+    let withdrawHandlers = [];
     if (handlerHistories) {
         for (let i = 0; i < handlerHistories.length; i += 1) {
             withdrawHandlers[handlerHistories[i]] =
@@ -287,8 +287,8 @@ async function getDepositHistories(account) {
     // write data to history memory
     if (needWrited) {
         const handlers = new Set();
-        logs.forEach((log) => handlers.add(log.address.toLowerCase()));
-        handlers.add(getLatestDepositHandler().address.toLowerCase());
+        logs.forEach((log) => handlers.add(log.address));
+        handlers.add(getLatestDepositHandler().address);
         accountDepositHandlerHistories[account] = Array.from(handlers);
     }
 
@@ -334,8 +334,8 @@ async function getWithdrawHistories(account) {
     // write data to history memory
     if (needWrited) {
         const handlers = new Set();
-        logs.forEach((log) => handlers.add(log.address.toLowerCase()));
-        handlers.add(getLatestWithdrawHandler().address.toLowerCase());
+        logs.forEach((log) => handlers.add(log.address));
+        handlers.add(getLatestWithdrawHandler().address);
         accountWithdrawHandlerHistories[account] = Array.from(handlers);
     }
 

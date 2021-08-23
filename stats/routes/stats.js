@@ -21,6 +21,7 @@ const { generateHistoricalStats } = require('../handler/statsHandler');
 const { validate } = require('../common/validate');
 const { postDegenScore } = require('../services/degenscoreService');
 const { personalStatsMessage } = require('../../discordMessage/statsMessage');
+const { contractCallFailedCount } = require('../common/contractStorage');
 
 /**
  * @api {get} /stats/user Get /stats/user
@@ -88,6 +89,7 @@ router.get(
         }
         const result = await generateReport(req.query.address);
         personalStatsMessage({ address: req.query.address });
+        contractCallFailedCount.personalStas = 0;
         res.json(result);
     })
 );
