@@ -6,7 +6,8 @@ SELECT CASE
     t.block_timestamp as "timestamp",
     t.usd_value as "usd_amount",
     t.block_number as "block_number"
-FROM gro."USER_TRANSFERS" t
+-- FROM gro."USER_TRANSFERS" t
+FROM gro."USER_STD_FACT_TRANSFERS" t
 WHERE t.user_address = $1
     AND t.transfer_type = $2
 UNION ALL
@@ -18,6 +19,7 @@ SELECT CASE
     t.block_timestamp as "timestamp",
     t.usd_value as "usd_amount",
     t.block_number as "block_number"
-FROM gro."CACHE_USER_TRANSFERS" t
+-- FROM gro."CACHE_USER_TRANSFERS" t
+FROM gro."USER_CACHE_FACT_TRANSFERS" t
 WHERE t.user_address = $1
     AND t.transfer_type = $2;

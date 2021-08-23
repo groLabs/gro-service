@@ -1,5 +1,6 @@
--- Add union USER_TRANSFERS with CACHE_USER_TRANSFERS
-INSERT INTO gro."CACHE_USER_NET_RETURNS" (
+-- Add union USER_STD_FACT_TRANSFERS with CACHE_USER_TRANSFERS
+-- INSERT INTO gro."CACHE_USER_NET_RETURNS" (
+INSERT INTO gro."USER_CACHE_FACT_NET_RETURNS" (
         "balance_date",
         "network_id",
         "user_address",
@@ -49,7 +50,8 @@ FROM (
             b.user_address as user_address,
             b.balance_date as balance_date,
             b.network_id as network_id
-        FROM gro."CACHE_USER_BALANCES" b
+        -- FROM gro."CACHE_USER_BALANCES" b
+        FROM gro."USER_CACHE_FACT_BALANCES" b
         WHERE user_address = $1
     ) ub
     LEFT JOIN (
@@ -64,7 +66,8 @@ FROM (
        		  t.gvt_value as gvt_value,
        		  t.user_address as user_address,
               t.network_id as network_id
-        FROM gro."USER_TRANSFERS" t
+        -- FROM gro."USER_TRANSFERS" t
+        FROM gro."USER_STD_FACT_TRANSFERS" t
         WHERE t.user_address = $1
         UNION ALL
         SELECT ct.usd_value as usd_value,
@@ -72,7 +75,8 @@ FROM (
        		  ct.gvt_value as gvt_value,
        		  ct.user_address as user_address,
               ct.network_id as network_id
-        FROM gro."CACHE_USER_TRANSFERS" ct
+        -- FROM gro."CACHE_USER_TRANSFERS" ct
+        FROM gro."USER_CACHE_FACT_TRANSFERS" ct
         WHERE ct.user_address = $1) ctt
         GROUP BY ctt.user_address, ctt.network_id
     ) ut ON ub.user_address = ut.user_address

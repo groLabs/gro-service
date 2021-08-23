@@ -29,7 +29,8 @@ FROM (
             0 as "pwrd_out",
             0 as "gvt_out",
             0 as "total_out"
-        FROM gro."CACHE_USER_TRANSFERS" t_in
+        -- FROM gro."CACHE_USER_TRANSFERS" t_in
+        FROM gro."USER_CACHE_FACT_TRANSFERS" t_in
         WHERE t_in.user_address = $1
             AND t_in.transfer_type in (
                 'deposit',
@@ -53,7 +54,8 @@ FROM (
                 WHEN SUM(t_out.usd_value) IS NULL THEN 0
                 ELSE SUM(t_out.usd_value)
             END as "total_out"
-        FROM gro."CACHE_USER_TRANSFERS" t_out
+        -- FROM gro."CACHE_USER_TRANSFERS" t_out
+        FROM gro."USER_CACHE_FACT_TRANSFERS" t_out
         WHERE t_out.user_address = $1
             AND t_out.transfer_type in (
                 'withdrawal',
@@ -77,7 +79,8 @@ FROM (
             0 as "pwrd_out",
             0 as "gvt_out",
             0 as "total_out"
-        FROM gro."USER_TRANSFERS" t_in
+        -- FROM gro."USER_TRANSFERS" t_in
+        FROM gro."USER_STD_FACT_TRANSFERS" t_in
         WHERE t_in.user_address = $1
             AND t_in.transfer_type in (
                 'deposit',
@@ -101,7 +104,8 @@ FROM (
                 WHEN SUM(t_out.usd_value) IS NULL THEN 0
                 ELSE SUM(t_out.usd_value)
             END as "total_out"
-        FROM gro."USER_TRANSFERS" t_out
+        -- FROM gro."USER_TRANSFERS" t_out
+        FROM gro."USER_STD_FACT_TRANSFERS" t_out
         WHERE t_out.user_address = $1
             AND t_out.transfer_type in (
                 'withdrawal',

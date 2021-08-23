@@ -1,4 +1,5 @@
-INSERT INTO gro."TMP_USER_WITHDRAWALS" (
+-- INSERT INTO gro."TMP_USER_DEPOSITS" (
+INSERT INTO gro."USER_STD_TMP_DEPOSITS" (
         "block_number",
         "tx_hash",
         "network_id",
@@ -14,10 +15,7 @@ INSERT INTO gro."TMP_USER_WITHDRAWALS" (
         "dai_amount",
         "usdc_amount",
         "usdt_amount",
-        "creation_date",
-        "usd_deduct",
-        "usd_return",
-        "lp_amount"
+        "creation_date"
     )
 VALUES (
         $1,
@@ -35,8 +33,5 @@ VALUES (
         $13,
         $14,
         $15,
-        $16,
-        $17,
-        $18,
-        $19
+        $16
     );

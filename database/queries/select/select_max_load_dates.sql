@@ -11,5 +11,6 @@
 --         WHERE table_name = 'USER_APPROVALS'
 --     ) a;
 SELECT MAX(balance_date) as max_balance_date
-FROM gro."USER_BALANCES"
+-- FROM gro."USER_BALANCES"
+FROM gro."USER_STD_FACT_BALANCES"
 WHERE user_address = $1;

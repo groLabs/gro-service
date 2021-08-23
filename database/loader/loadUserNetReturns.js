@@ -10,7 +10,7 @@ const {
 } = require('../common/personalUtil');
 const { QUERY_ERROR } = require('../constants');
 
-/// @notice Loads net results into USER_NET_RETURNS
+/// @notice Loads net results into USER_STD_FACT_NET_RESULTS
 /// @dev Data sourced from USER_DEPOSITS & USER_TRANSACTIONS (full load w/o filters)
 /// @param fromDate Start date to load net results
 /// @param toDdate End date to load net results
@@ -26,8 +26,10 @@ const loadUserNetReturns = async (
         for (const date of dates) {
             /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
             const q = (account)
-                ? 'insert_cache_user_net_returns.sql'
-                : 'insert_user_net_returns.sql';
+                // ? 'insert_cache_user_net_returns.sql'
+                ? 'insert_user_cache_fact_net_returns.sql'
+                // : 'insert_user_net_returns.sql';
+                : 'insert_user_std_fact_net_results.sql';
             const params = (account)
                 ? [account]
                 : [moment(date).format('MM/DD/YYYY')];
@@ -36,12 +38,12 @@ const loadUserNetReturns = async (
                 return false;
             const numResults = result.rowCount;
             let msg = `**DB${account ? ' CACHE' : ''}: ${numResults} record${isPlural(numResults)} added into `;
-            msg += `USER_NET_RETURNS for date ${moment(date).format('DD/MM/YYYY')}`;
+            msg += `USER_STD_FACT_NET_RESULTS for date ${moment(date).format('DD/MM/YYYY')}`;
             logger.info(msg);
         }
 
         if (!account)
-            await loadTableUpdates('USER_NET_RETURNS', fromDate, toDate);
+            await loadTableUpdates('USER_STD_FACT_NET_RESULTS', fromDate, toDate);
     } catch (err) {
         handleErr(`loadUserNetReturns->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}]`, err);
     }

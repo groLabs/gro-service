@@ -1,4 +1,6 @@
-INSERT INTO gro."TMP_USER_DEPOSITS" (
+-- @notice: any change here should be also applied to 'insert_tmp_user_deposits'
+--INSERT INTO gro."CACHE_TMP_USER_DEPOSITS" (
+INSERT INTO gro."USER_CACHE_TMP_DEPOSITS" (
         "block_number",
         "tx_hash",
         "network_id",

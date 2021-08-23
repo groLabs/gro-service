@@ -1,16 +1,5 @@
 const ethers = require('ethers');
 const moment = require('moment');
-const { ContractNames } = require('../../registry/registry');
-const { getFilterEvents } = require('../../common/logFilter-new');
-const {
-    getLatestContractEventFilter,
-    getContractHistoryEventFilters,
-    getCoinApprovalFilters,
-} = require('../../common/filterGenerateTool');
-const { 
-    getContractsHistory,
-    loadContractInfoFromRegistry 
-} = require('../../registry/registryLoader');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -57,17 +46,13 @@ const transferType = (side) => {
         case Transfer.WITHDRAWAL:
             return 'withdrawal';
         case Transfer.EXTERNAL_GVT_DEPOSIT:
-            //return 'ext_gvt_deposit';
-            return 'transfer-gvt-in';
+            return 'ext_gvt_deposit';
         case Transfer.EXTERNAL_PWRD_DEPOSIT:
-            //return 'ext_pwrd_deposit';
-            return 'transfer-pwrd-in';
+            return 'ext_pwrd_deposit';
         case Transfer.EXTERNAL_GVT_WITHDRAWAL:
-            //return 'ext_gvt_withdrawal';
-            return 'transfer-gvt-out';
+            return 'ext_gvt_withdrawal';
         case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
-            // return 'ext_pwrd_withdrawal';
-            return 'transfer-pwrd-out';
+            return 'ext_pwrd_withdrawal';
         case Transfer.STABLECOIN_APPROVAL:
             return 'coin-approve';
         default:
@@ -164,30 +149,15 @@ const generateDateRange = (_fromDate, _toDate) => {
 // TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
 const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
     try {
-        // const logs = await getApprovalEV(account, fromBlock, toBlock)
-        //     .catch((err) => {
-        //         handleErr(`personalUtil->getApprovalEvents()->getApprovalEvents(): `, err);
-        //         return false;
-        //     });
-
-        const logApprovals = await getCoinApprovalFilters(
-            'default',
-            fromBlock,
-            toBlock,
-            account
+        const logs = await getApprovalEV(account, fromBlock, toBlock).catch(
+            (err) => {
+                handleErr(
+                    `personalUtil->getApprovalEvents()->getApprovalEvents(): `,
+                    err
+                );
+                return false;
+            }
         );
-        const logPromises = [];
-        for (let i = 0; i < logApprovals.length; i += 1) {
-            const approvalEvent = logApprovals[i];
-            logPromises.push(
-                getFilterEvents(
-                    approvalEvent.filter,
-                    approvalEvent.interface,
-                    'default'
-                )
-            );
-        }
-        const logs = await Promise.all(logPromises);
 
         // TODO/QUESTION: only deposits from the same period, or any previous deposit?
         const depositTx = [];
@@ -208,17 +178,9 @@ const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
         }
 
         // Remove approvals referring to deposits (only get stablecoin approvals)
-        // let logsFiltered = logs.filter(
-        //     (item) => !depositTx.includes(item.transactionHash)
-        // );
-        //const logsFiltered = logs; // ***** TODO *****
-        let logsFiltered = [];
-        for (let i = 0; i < logs.length; i++) {
-            logsFiltered.push(logs[i].filter(
-                (item) => !depositTx.includes(item.transactionHash)
-            ));
-        }
-
+        let logsFiltered = logs.filter(
+            (item) => !depositTx.includes(item.transactionHash)
+        );
 
         return logsFiltered;
     } catch (err) {
@@ -234,33 +196,24 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
     try {
         // Determine event type to apply filters
         let eventType;
-        let contractName;
         switch (side) {
             case Transfer.DEPOSIT:
-                // eventType = EVENT_TYPE.deposit;
-                eventType = 'LogNewDeposit';
-                contractName = ContractNames.depositHandler;
+                eventType = EVENT_TYPE.deposit;
                 break;
             case Transfer.WITHDRAWAL:
-                // eventType = EVENT_TYPE.withdraw;
-                eventType = 'LogNewWithdrawal';
-                contractName = ContractNames.withdrawHandler;
+                eventType = EVENT_TYPE.withdraw;
                 break;
             case Transfer.EXTERNAL_GVT_DEPOSIT:
                 eventType = EVENT_TYPE.inGvtTransfer;
-                contractName = ContractNames.groVault;
                 break;
             case Transfer.EXTERNAL_PWRD_DEPOSIT:
                 eventType = EVENT_TYPE.inPwrdTransfer;
-                contractName = ContractNames.powerD;
                 break;
             case Transfer.EXTERNAL_GVT_WITHDRAWAL:
                 eventType = EVENT_TYPE.outGvtTransfer;
-                contractName = ContractNames.groVault;
                 break;
             case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
                 eventType = EVENT_TYPE.outPwrdTransfer;
-                contractName = ContractNames.powerD;
                 break;
             default:
                 handleErr(
@@ -269,63 +222,16 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 );
                 return false;
         }
-
-
-        // TESTING
-
-
-        // END OF TESTING
-
-
         // Get all deposit or withdrawal events for a given block range
-        // const logs = await getTransferEV(
-        //     eventType,
-        //     fromBlock,
-        //     toBlock,
-        //     account
-        // ).catch((err) => {
-        //     handleErr(`personalUtil->checkEventType()->getEvents(): `, err);
-        //     return false;
-        // });
-        //console.log(`side: ${side} eventType: ${eventType} depositHandler: ${ContractNames.depositHandler}`)
-
-        let logs;
-        if (eventType === 'LogNewDeposit' || eventType == 'LogNewWithdrawal') {
-            const transferEventFilters = getContractHistoryEventFilters(
-                'default',
-                contractName,
-                eventType,
-                fromBlock,
-                toBlock,
-                [account, null]
-            );
-            console.log(`transfer events length: ${transferEventFilters.length}`);
-            const logPromises = [];
-            for (let i = 0; i < transferEventFilters.length; i += 1) {
-                const transferEventFilter = transferEventFilters[i];
-                logPromises.push(
-                    getFilterEvents(
-                        transferEventFilter.filter,
-                        transferEventFilter.interface,
-                        'default'
-                    )
-                );
-            }
-            const logResults = await Promise.all(logPromises);
-            logs = logResults;
-        } else {
-            const tokenHistory = getContractsHistory()[contractName];
-            // const logsTmp = await getTransferEV(
-            //     eventType,
-            //     fromBlock,
-            //     toBlock,
-            //     account
-            // ).catch((err) => {
-            //     handleErr(`personalUtil->checkEventType()->getEvents(): `, err);
-            //     return false;
-            // });
-            // logs = [logsTmp];
-        }
+        const logs = await getTransferEV(
+            eventType,
+            fromBlock,
+            toBlock,
+            account
+        ).catch((err) => {
+            handleErr(`personalUtil->checkEventType()->getEvents(): `, err);
+            return false;
+        });
         return logs;
     } catch (err) {
         handleErr(`personalUtil->checkEventType() [side: ${side}]`, err);
@@ -337,7 +243,8 @@ const getGTokenFromTx = async (result, side, account) => {
     try {
         const numTx = result.length;
         logger.info(
-            `**DB${account ? ' CACHE' : ''}: Processing ${numTx} ${side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
+            `**DB${account ? ' CACHE' : ''}: Processing ${numTx} ${
+                side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
             } transaction${isPlural(numTx)}...`
         );
 
@@ -385,7 +292,8 @@ const getGTokenFromTx = async (result, side, account) => {
             }
         }
         logger.info(
-            `**DB${account ? ' CACHE' : ''}: ${result.length
+            `**DB${account ? ' CACHE' : ''}: ${
+                result.length
             } transaction${isPlural(numTx)} processed`
         );
         return result;

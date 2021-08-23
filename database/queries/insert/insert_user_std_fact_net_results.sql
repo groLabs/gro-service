@@ -1,4 +1,5 @@
-INSERT INTO gro."USER_NET_RETURNS" (
+-- INSERT INTO gro."USER_NET_RETURNS" (
+INSERT INTO gro."USER_STD_FACT_NET_RESULTS" (
         "balance_date",
         "network_id",
         "user_address",
@@ -48,7 +49,8 @@ FROM (
             b.user_address as user_address,
             b.balance_date as balance_date,
             b.network_id as network_id
-        FROM gro."USER_BALANCES" b
+        -- FROM gro."USER_BALANCES" b
+        FROM gro."USER_STD_FACT_BALANCES" b
         WHERE date(b.balance_date) = $1
     ) ub
     LEFT JOIN (
@@ -57,7 +59,8 @@ FROM (
             sum(t.gvt_value) as gvt_value,
             t.user_address as user_address,
             t.network_id as network_id
-        FROM gro."USER_TRANSFERS" t
+        -- FROM gro."USER_TRANSFERS" t
+        FROM gro."USER_STD_FACT_TRANSFERS" t
         WHERE date(transfer_date) <= $1
         GROUP BY t.user_address,
             t.network_id

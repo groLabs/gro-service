@@ -14,12 +14,24 @@ const {
 const {
     parseAmount,
 } = require('../parser/personalStatsParser');
-const {
-    getGvt,
-    getPwrd,
-} = require('../../contract/allContracts');
+// const {
+//     getGvt,
+//     getPwrd,
+// } = require('../../contract/allContracts');
+const providerKey = 'stats_personal';
+const { ContractNames } = require('../../registry/registry');
+const { getLatestSystemContract } = require('../../stats/common/contractStorage');
 const { QUERY_ERROR } = require('../constants');
 
+
+function getLatestGroVault() {
+    return getLatestSystemContract(ContractNames.groVault, providerKey)
+        .contract;
+}
+
+function getLatestPowerD() {
+    return getLatestSystemContract(ContractNames.powerD, providerKey).contract;
+}
 
 /// @notice Loads balances into USER_BALANCES
 /// @dev Data is sourced from smart contract calls to user's balances at a certain block number
@@ -49,7 +61,7 @@ const loadUserBalances = async (
                 return false;
         }
 
-        // For each date, check gvt & pwrd balance and insert data into USER_BALANCES
+        // For each date, check gvt & pwrd balance and insert data into USER_STD_FACT_BALANCES
         const dates = generateDateRange(fromDate, toDate);
         logger.info(`**DB${account ? ' CACHE' : ''}: Processing ${users.rowCount} user balance${isPlural(users.rowCount)}...`);
         for (const date of dates) {
@@ -62,36 +74,40 @@ const loadUserBalances = async (
             }
             let rowCount = 0;
             for (const user of users.rows) {
-                const account = user.user_address;
-                const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-                const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
+                const addr = user.user_address;
+                // const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
+                // const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
+                const gvtValue = parseAmount(await getLatestGroVault().getAssets(addr, blockTag), 'USD');
+                const pwrdValue = parseAmount(await getLatestPowerD().getAssets(addr, blockTag), 'USD');
                 const totalValue = gvtValue + pwrdValue;
                 const params = [
                     day,
                     getNetworkId(),
-                    account,
+                    addr,
                     totalValue,
                     gvtValue,
                     pwrdValue,
                     moment.utc()
                 ];
                 const q = (account)
-                    ? 'insert_cache_user_balances.sql'
-                    : 'insert_user_balances.sql';
+                    // ? 'insert_cache_user_balances.sql'
+                    ? 'insert_user_cache_fact_balances.sql'
+                    // : 'insert_user_balances.sql';
+                    : 'insert_user_std_fact_balances.sql';
                 const result = await query(q, params);
                 if (result.status === QUERY_ERROR)
                     return false;
                 rowCount += result.rowCount;
             }
             let msg = `**DB${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} added into `;
-            msg += `USER_BALANCES for date ${moment(date).format('DD/MM/YYYY')}`;
+            msg += `USER_STD_FACT_BALANCES for date ${moment(date).format('DD/MM/YYYY')}`;
             logger.info(msg);
         }
 
         if (account) {
             return true;
         } else {
-            const res = await loadTableUpdates('USER_BALANCES', fromDate, toDate);
+            const res = await loadTableUpdates('USER_STD_FACT_BALANCES', fromDate, toDate);
             return (res) ? true : false;
         }
     } catch (err) {

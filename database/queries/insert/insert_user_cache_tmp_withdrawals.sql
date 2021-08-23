@@ -1,5 +1,6 @@
--- @notice: any change here should be also applied to 'insert_tmp_user_deposits'
-INSERT INTO gro."CACHE_TMP_USER_DEPOSITS" (
+-- @notice: any change here should be also applied to 'insert_tmp_user_withdrawals'
+--INSERT INTO gro."CACHE_TMP_USER_WITHDRAWALS" (
+INSERT INTO gro."USER_CACHE_TMP_WITHDRAWALS" (
         "block_number",
         "tx_hash",
         "network_id",
@@ -15,7 +16,10 @@ INSERT INTO gro."CACHE_TMP_USER_DEPOSITS" (
         "dai_amount",
         "usdc_amount",
         "usdt_amount",
-        "creation_date"
+        "creation_date",
+        "usd_deduct",
+        "usd_return",
+        "lp_amount"
     )
 VALUES (
         $1,
@@ -33,5 +37,8 @@ VALUES (
         $13,
         $14,
         $15,
-        $16
+        $16,
+        $17,
+        $18,
+        $19
     );

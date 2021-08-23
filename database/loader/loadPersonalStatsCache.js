@@ -41,13 +41,13 @@ const preloadCache = async (account) => {
             transfers,
             _fromDate,
         ] = await Promise.all([
-            query('delete_cache_tmp_user_approvals.sql', params),
-            query('delete_cache_tmp_user_deposits.sql', params),
-            query('delete_cache_tmp_user_withdrawals.sql', params),
-            query('delete_cache_user_approvals.sql', params),
-            query('delete_cache_user_balances.sql', params),
-            query('delete_cache_user_net_returns.sql', params),
-            query('delete_cache_user_transfers.sql', params),
+            query('delete_user_cache_tmp_approvals.sql', params),
+            query('delete_user_cache_tmp_deposits.sql', params),
+            query('delete_user_cache_tmp_withdrawals.sql', params),
+            query('delete_user_cache_fact_approvals.sql', params),
+            query('delete_user_cache_fact_balances.sql', params),
+            query('delete_user_cache_fact_net_returns.sql', params),
+            query('delete_user_cache_fact_transfers.sql', params),
             query('select_max_load_dates.sql', params),
         ]);
 

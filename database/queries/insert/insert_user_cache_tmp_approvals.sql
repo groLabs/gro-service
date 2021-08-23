@@ -1,4 +1,6 @@
-INSERT INTO gro."TMP_USER_APPROVALS" (
+-- @notice: any change here should be also applied to 'insert_tmp_user_approvals'
+--INSERT INTO gro."CACHE_TMP_USER_APPROVALS" (
+INSERT INTO gro."USER_CACHE_TMP_APPROVALS" (
         "block_number",
         "network_id",
         "stablecoin_id",

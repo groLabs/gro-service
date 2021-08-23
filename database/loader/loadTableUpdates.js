@@ -24,16 +24,16 @@ const loadTableUpdates = async (tableName, _fromDate, _toDate) => {
             moment.utc()];
         let q;
         switch (tableName) {
-            case 'USER_BALANCES':
+            case 'USER_STD_FACT_BALANCES':
                 q = 'insert_sys_load_user_balances.sql';
                 break;
-            case 'USER_NET_RETURNS':
-                q = 'insert_sys_load_user_net_returns.sql';
+            case 'USER_STD_FACT_NET_RESULTS':
+                q = 'insert_sys_load_user_net_results.sql';
                 break;
-            case 'USER_TRANSFERS':
+            case 'USER_STD_FACT_TRANSFERS':
                 q = 'insert_sys_load_user_transfers.sql';
                 break;
-            case 'USER_APPROVALS':
+            case 'USER_STD_FACT_APPROVALS':
                 q = 'insert_sys_load_user_approvals.sql';
                 break;
             default:

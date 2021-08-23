@@ -1,4 +1,5 @@
-INSERT INTO gro."CACHE_USER_BALANCES" (
+-- INSERT INTO gro."CACHE_USER_BALANCES" (
+INSERT INTO gro."USER_CACHE_FACT_BALANCES" (
         "balance_date",
         "network_id",
         "user_address",

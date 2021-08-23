@@ -1,2 +1,0 @@
-DELETE FROM gro."CACHE_USER_BALANCES"
-WHERE user_address = $1;

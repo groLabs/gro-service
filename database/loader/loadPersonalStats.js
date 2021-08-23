@@ -41,9 +41,9 @@ const preload = async (_fromDate, _toDate) => {
     try {
         // Truncate temporary tables
         const res = await Promise.all([
-            query('truncate_tmp_user_approvals.sql', []),
-            query('truncate_tmp_user_deposits.sql', []),
-            query('truncate_tmp_user_withdrawals.sql', []),
+            query('truncate_user_std_tmp_approvals.sql', []),
+            query('truncate_user_std_tmp_deposits.sql', []),
+            query('truncate_user_std_tmp_withdrawals.sql', []),
         ]);
 
         if (
@@ -87,10 +87,10 @@ const remove = async (fromDate, toDate) => {
         const params = [fromDateParsed, toDateParsed];
         const [transfers, balances, netReturns, approvals, loads] =
             await Promise.all([
-                query('delete_user_transfers.sql', params),
-                query('delete_user_balances.sql', params),
-                query('delete_user_net_returns.sql', params),
-                query('delete_user_approvals.sql', params),
+                query('delete_user_std_fact_transfers.sql', params),
+                query('delete_user_std_fact_balances.sql', params),
+                query('delete_user_std_fact_net_results.sql', params),
+                query('delete_user_std_fact_approvals.sql', params),
                 query('delete_table_loads.sql', params),
             ]);
 
@@ -98,17 +98,17 @@ const remove = async (fromDate, toDate) => {
             logger.info(
                 `**DB: ${transfers.rowCount} record${isPlural(
                     transfers.rowCount
-                )} deleted from USER_TRANSFERS`
+                )} deleted from USER_STD_FACT_TRANSFERS`
             );
             logger.info(
                 `**DB: ${balances.rowCount} record${isPlural(
                     balances.rowCount
-                )} deleted from USER_BALANCES`
+                )} deleted from USER_STD_FACT_BALANCES`
             );
             logger.info(
                 `**DB: ${netReturns.rowCount} record${isPlural(
                     netReturns.rowCount
-                )} deleted from USER_NET_RETURNS`
+                )} deleted from USER_STD_FACT_NET_RESULTS`
             );
             logger.info(
                 `**DB: ${approvals.rowCount} record${isPlural(
@@ -232,8 +232,8 @@ const loadPersonalStats = async () => {
         console.log('in loadPersonalStats');
 
         //DEV Ropsten:
-        // await reload('28/06/2021', '28/06/2021');
-        await reload('16/08/2021', '16/08/2021');
+        await reload('28/06/2021', '28/06/2021');
+        // await reload('16/08/2021', '16/08/2021');
         //await load('30/06/2021', '30/06/2021');
 
         // PROD:
