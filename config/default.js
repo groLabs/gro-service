@@ -17,7 +17,8 @@ module.exports = {
     pagerduty: {
         token: process.env.PAGERDUTY_TOKEN,
         from: process.env.PAGERDUTY_TRIGGER_FROM,
-        service: 'PCYAPT2', // Gro
+        service: 'P22YTVG', // Protocol
+        policy: 'PD1HPMI',
         urgency: {
             high: 'high',
             low: 'low',

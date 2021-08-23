@@ -1,9 +1,14 @@
+const { getConfig } = require('../common/configUtil');
+
+const SERVICE_ID = getConfig('pagerduty.service');
+const ESCALATION_POLICY_ID = getConfig('pagerduty.policy');
+
 function getIncidentBody(bodyParams) {
     const botTemplate = {
         incident: {
             title: 'incident integration test',
             service: {
-                id: 'PCYAPT2',
+                id: SERVICE_ID,
                 type: 'service_reference',
             },
             body: {
@@ -11,14 +16,14 @@ function getIncidentBody(bodyParams) {
             },
             urgency: 'high',
             escalation_policy: {
-                id: 'P48J3J5',
+                id: ESCALATION_POLICY_ID,
                 type: 'escalation_policy_reference',
                 summary: 'test policy',
             },
-            priority: {
-                id: 'PIRSQ61',
-                type: 'priority',
-            },
+            // priority: {
+            //     id: 'PIRSQ61',
+            //     type: 'priority',
+            // },
         },
     };
     const incidentBody = botTemplate.incident;
@@ -27,9 +32,9 @@ function getIncidentBody(bodyParams) {
     if (bodyParams.urgency) {
         incidentBody.urgency = bodyParams.urgency;
     }
-    if (bodyParams.priority) {
-        incidentBody.priority.id = bodyParams.priority;
-    }
+    // if (bodyParams.priority) {
+    //     incidentBody.priority.id = bodyParams.priority;
+    // }
 
     return botTemplate;
 }
