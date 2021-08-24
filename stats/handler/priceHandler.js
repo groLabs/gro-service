@@ -2,7 +2,8 @@ const { BigNumber: BN } = require('bignumber.js');
 const mapObject = require('map-obj');
 const { ethers, BigNumber } = require('ethers');
 const config = require('config');
-const { getBuoy } = require('../../contract/allContracts');
+const { getLatestSystemContract } = require('../common/contractStorage');
+const { ContractNames } = require('../../registry/registry');
 const logger = require('../statsLogger.js');
 
 const Curve3PoolABI = require('../../abi/ICurve3Pool.json');
@@ -190,8 +191,10 @@ function getBuoyStartBlock() {
 
 async function getGroPrice(blockNumberStr) {
     const providerKey = 'default';
-    const walletKey = 'default';
-    const buoyInstance = getBuoy(providerKey, walletKey);
+    const buoyInstance = getLatestSystemContract(
+        ContractNames.buoy3Pool,
+        providerKey
+    ).contract;
     let blockNumber;
     if (blockNumberStr === 'latest') {
         blockNumber = await buoyInstance.provider.getBlockNumber();

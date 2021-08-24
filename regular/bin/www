@@ -5,14 +5,14 @@
  */
 
 var app = require('../app');
-var debug = require('debug')('winsure-service:server');
+var debug = require('debug')('gro-service:server');
 var http = require('http');
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.H_R_PORT || '3030');
 app.set('port', port);
 
 /**

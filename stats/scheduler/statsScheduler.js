@@ -3,6 +3,7 @@ const path = require('path');
 const schedule = require('node-schedule');
 const { generateGroStatsFile } = require('../handler/statsHandler');
 const { getConfig } = require('../../common/configUtil');
+const { checkServerHealth } = require('../../common/checkBotHealth');
 const {
     sendErrorMessageToLogChannel,
 } = require('../../common/discord/discordService');
@@ -186,11 +187,30 @@ function EventSummaryScheduler() {
     });
 }
 
+function botLiveCheckScheduler() {
+    schedule.scheduleJob(generateStatsSchedulerSetting, async () => {
+        logger.info(`bot live check running at ${Date.now()}`);
+        try {
+            const criticUrl = getConfig('health_endpoint.critic', false);
+            checkServerHealth('critic', [criticUrl], logger).catch((e) => {
+                logger.error(e);
+            });
+            const harvestUrl = getConfig('health_endpoint.harvest', false);
+            checkServerHealth('harvest', [harvestUrl], logger).catch((e) => {
+                logger.error(e);
+            });
+        } catch (error) {
+            logger.error(error);
+        }
+    });
+}
+
 function starStatsJobs() {
     generateStatsFile();
     removeStatsFile();
     depositWithdrawEventScheduler();
     EventSummaryScheduler();
+    botLiveCheckScheduler();
 }
 
 module.exports = {
