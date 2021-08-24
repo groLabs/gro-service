@@ -6,12 +6,6 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
-// const {
-//     getGvt,
-//     getPwrd,
-//     getBuoy,
-//     getVaultStableCoins,
-// } = require('../../contract/allContracts');
 const providerKey = 'stats_personal';
 const { ContractNames } = require('../../registry/registry');
 const { getLatestSystemContract } = require('../../stats/common/contractStorage');

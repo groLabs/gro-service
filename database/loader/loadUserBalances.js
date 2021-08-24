@@ -14,10 +14,6 @@ const {
 const {
     parseAmount,
 } = require('../parser/personalStatsParser');
-// const {
-//     getGvt,
-//     getPwrd,
-// } = require('../../contract/allContracts');
 const providerKey = 'stats_personal';
 const { ContractNames } = require('../../registry/registry');
 const { getLatestSystemContract } = require('../../stats/common/contractStorage');

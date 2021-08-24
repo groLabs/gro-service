@@ -225,10 +225,11 @@ const load = async (fromDate, toDate) => {
     }
 };
 
-const etlPersonalStats = async () => {
+const etlPersonalStats = async (fromDate, toDate) => {
     try {
         //DEV Ropsten:
-        await reload('28/06/2021', '29/06/2021');
+        await reload(fromDate, toDate);
+        // await reload('28/06/2021', '29/06/2021');
         // await reload('16/08/2021', '16/08/2021');
         //await load('30/06/2021', '30/06/2021');
 
