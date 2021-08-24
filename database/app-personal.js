@@ -18,7 +18,21 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
         } else {
             await loadContractInfoFromRegistry();
             // Testing personal stats
-            await etlPersonalStats('27/06/2021', '27/06/2021');
+            await etlPersonalStats('28/07/2021', '29/07/2021');
+            await etlPersonalStats('30/07/2021', '31/07/2021');
+
+            await etlPersonalStats('01/08/2021', '02/08/2021');
+            await etlPersonalStats('03/08/2021', '04/08/2021');
+            await etlPersonalStats('05/08/2021', '06/08/2021');
+            await etlPersonalStats('07/08/2021', '08/08/2021');
+            await etlPersonalStats('09/08/2021', '10/08/2021');
+            await etlPersonalStats('11/08/2021', '12/08/2021');
+            await etlPersonalStats('13/08/2021', '14/08/2021');
+            await etlPersonalStats('15/08/2021', '16/08/2021');
+            await etlPersonalStats('17/08/2021', '18/08/2021');
+            await etlPersonalStats('19/08/2021', '20/08/2021');
+            await etlPersonalStats('21/08/2021', '22/08/2021');
+            await etlPersonalStats('23/08/2021', '24/08/2021');
             // Testing personal stats cache
             // await etlPersonalStatsCache('0xb5bE4d2510294d0BA77214F26F704d2956a99072');
         }
