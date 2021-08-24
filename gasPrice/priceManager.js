@@ -3,6 +3,7 @@ const axios = require('axios');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
+const { getConfig } = require('../common/configUtil');
 
 const priceObject = {};
 
@@ -33,6 +34,26 @@ async function getPriceObject() {
     return priceObject.data;
 }
 
+async function getAlchemyPriorityPrice() {
+    const apiKey = getConfig('blockchain.alchemy_api_keys.default');
+    const body = {
+        jsonrpc: '2.0',
+        method: 'eth_maxPriorityFeePerGas',
+        params: [],
+        id: 1,
+    };
+
+    const response = await axios({
+        method: 'post',
+        url: `https://eth-mainnet.alchemyapi.io/v2/${apiKey}`,
+        data: body,
+    }).catch((error) => {
+        logger.error(error);
+    });
+    return response.data.result;
+}
+
 module.exports = {
     getPriceObject,
+    getAlchemyPriorityPrice,
 };

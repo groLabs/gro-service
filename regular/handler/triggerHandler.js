@@ -84,7 +84,7 @@ async function sortStrategyByLastHarvested(vaults) {
     for (let i = 0; i < vaults.length; i += 1) {
         const adapterAddress = vaults[i].address;
         const vaultName = getVaultAndStrategyLabels()[adapterAddress].name;
-        const strategLabel =
+        const strategyArray =
             getVaultAndStrategyLabels()[adapterAddress].strategies;
         logger.info(`${vaultName}: ${adapterAddress}`);
         const vault = vaults[i];
@@ -106,17 +106,30 @@ async function sortStrategyByLastHarvested(vaults) {
             logger.info(`triggerResult ${triggerResult}`);
             // eslint-disable-next-line no-await-in-loop
             const strategyParam = await yearnVault.strategies(
-                strategLabel[j].address
+                strategyArray[j].address
             );
             logger.info(
-                `strategyParam ${strategLabel[j].address} ${strategyParam}`
+                `strategyParam ${strategyArray[j].address} ${strategyParam}`
+            );
+            // eslint-disable-next-line no-await-in-loop
+            const estimatedTotalAssets = await strategyArray[
+                j
+            ].strategy.estimatedTotalAssets();
+            logger.info(
+                `strategy estimated total assets ${estimatedTotalAssets} totalDebt ${
+                    strategyParam.totalDebt
+                } expectedReturn ${estimatedTotalAssets.sub(
+                    strategyParam.totalDebt
+                )} `
             );
             strategiesStatus.push({
                 vaultIndex: i,
                 strategyIndex: j,
-                address: strategLabel[j].address,
+                address: strategyArray[j].address,
                 trigger: triggerResult,
                 lastHarvest: strategyParam.lastReport,
+                totalDebt: strategyParam.totalDebt,
+                estimatedTotalAssets,
             });
         }
     }
@@ -239,11 +252,17 @@ async function harvestOneTrigger(providerKey, walletKey) {
     const gasPrice = await vaults[0].signer.getGasPrice();
     logger.info(`gasPrice ${gasPrice}`);
     for (let i = 0; i < strategies.length; i += 1) {
-        const { vaultIndex, strategyIndex, trigger } = strategies[i];
+        const {
+            vaultIndex,
+            strategyIndex,
+            trigger,
+            totalDebt,
+            estimatedTotalAssets,
+        } = strategies[i];
         logger.info(
             `harvestOneTrigger ${vaultIndex} ${strategyIndex} ${trigger}`
         );
-        // TODO: skip curve vault adapter
+        // TODO: use expected return for curve
         if (vaultIndex < 3 && trigger) {
             // Get harvest callCost
             const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${strategyIndex}`;
@@ -259,6 +278,31 @@ async function harvestOneTrigger(providerKey, walletKey) {
                     triggerResponse: trigger,
                 },
             };
+        }
+        if (vaultIndex === 3) {
+            // Get harvest callCost
+            const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${strategyIndex}`;
+            const baseCallCost = BigNumber.from(getConfig(callCostKey, false));
+            const callCost = baseCallCost.mul(gasPrice).div(GAS_PRICE_DECIMAL);
+            const expectedReturn = estimatedTotalAssets.sub(totalDebt);
+            logger.info(`curve callCost ${callCost} ${expectedReturn}`);
+            // use 10000 here is to make expectedReturn lager than 3x real cost
+            if (callCost.mul(BigNumber.from(10000)).lte(expectedReturn)) {
+                logger.info(
+                    `curve strategy is ready to harvest ${callCost.mul(
+                        BigNumber.from(10000)
+                    )} < ${expectedReturn}`
+                );
+                return {
+                    needCall: true,
+                    params: {
+                        vault: vaults[vaultIndex],
+                        strategyIndex,
+                        callCost,
+                        triggerResponse: trigger,
+                    },
+                };
+            }
         }
     }
     harvestTriggerMessage([]);
