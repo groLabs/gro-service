@@ -179,6 +179,11 @@ module.exports = {
         yearn: '0x1B5eb1173D2Bf770e50F10410C9a96F7a8eB6e75',
         curve: '0x7Eb40E450b9655f4B3cC4259BCC731c63ff55ae6',
     },
+    health_endpoint: {
+        stats: process.env.STATS_BOT_HEALTH,
+        critic: process.env.CRITICAL_BOT_HEALTH,
+        harvest: process.env.REGULAR_BOT_HEALTH,
+    },
     lifeguard_name: '3CRV',
     ratioUpperBond: 14000,
     ratioLowerBond: 7000,
