@@ -1,5 +1,4 @@
 -- @notice: any change here should be also applied to 'insert_tmp_user_withdrawals'
---INSERT INTO gro."CACHE_TMP_USER_WITHDRAWALS" (
 INSERT INTO gro."USER_CACHE_TMP_WITHDRAWALS" (
         "block_number",
         "tx_hash",

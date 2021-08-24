@@ -1,4 +1,3 @@
--- INSERT INTO gro."USER_TRANSFERS" (
 INSERT INTO gro."USER_STD_FACT_TRANSFERS" (
         "block_number",
         "block_timestamp",
@@ -43,7 +42,6 @@ SELECT d."block_number",
     d."usdc_amount",
     d."usdt_amount",
     d."creation_date"
--- FROM gro."TMP_USER_DEPOSITS" d
 FROM gro."USER_STD_TMP_DEPOSITS" d
     LEFT JOIN gro."ETH_BLOCKS" b ON d.block_number = b.block_number
 UNION ALL
@@ -68,6 +66,5 @@ SELECT w."block_number",
     w."usdc_amount",
     w."usdt_amount",
     w."creation_date"
--- FROM gro."TMP_USER_WITHDRAWALS" w
 FROM gro."USER_STD_TMP_WITHDRAWALS" w
     LEFT JOIN gro."ETH_BLOCKS" b ON w.block_number = b.block_number;

@@ -1,4 +1,3 @@
--- INSERT INTO gro."TMP_USER_APPROVALS" (
 INSERT INTO gro."USER_STD_TMP_APPROVALS" (
         "block_number",
         "network_id",

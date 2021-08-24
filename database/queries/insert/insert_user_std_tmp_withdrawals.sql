@@ -1,4 +1,3 @@
--- INSERT INTO gro."TMP_USER_WITHDRAWALS" (
 INSERT INTO gro."USER_STD_TMP_WITHDRAWALS" (
         "block_number",
         "tx_hash",

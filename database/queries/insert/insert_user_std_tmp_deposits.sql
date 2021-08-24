@@ -1,4 +1,3 @@
--- INSERT INTO gro."TMP_USER_DEPOSITS" (
 INSERT INTO gro."USER_STD_TMP_DEPOSITS" (
         "block_number",
         "tx_hash",

@@ -1,5 +1,4 @@
 -- @notice: any change here should be also applied to 'insert_user_approvals'
---INSERT INTO gro."CACHE_USER_APPROVALS" (
 INSERT INTO gro."USER_CACHE_FACT_APPROVALS" (
         "block_number",
         "block_timestamp",
@@ -24,7 +23,6 @@ SELECT a."block_number",
     a."coin_amount",
     a."coin_value",
     a."creation_date"
---FROM gro."CACHE_TMP_USER_APPROVALS" a
 FROM gro."USER_CACHE_TMP_APPROVALS" a
     LEFT JOIN gro."ETH_BLOCKS" b ON a.block_number = b.block_number
 WHERE a.sender_address = $1;

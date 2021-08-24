@@ -9,7 +9,6 @@ SELECT CASE
     a.coin_amount as "coin_amount",
     a.coin_value as "usd_amount",
     a.block_number as "block_number"
--- FROM gro."USER_APPROVALS" a
 FROM gro."USER_STD_FACT_APPROVALS" a
 WHERE a.sender_address = $1
 UNION ALL
@@ -24,6 +23,5 @@ SELECT CASE
     ca.coin_amount as "coin_amount",
     ca.coin_value as "usd_amount",
     ca.block_number as "block_number"
--- FROM gro."CACHE_USER_APPROVALS" ca
 FROM gro."USER_CACHE_FACT_APPROVALS" ca
 WHERE ca.sender_address = $1;

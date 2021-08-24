@@ -4,6 +4,5 @@ SELECT nr.pwrd_value as "return_pwrd",
     nr.pwrd_ratio_value as "ratio_pwrd",
     nr.gvt_ratio_value as "ratio_gvt",
     nr.usd_ratio_value as "ratio_total"
--- FROM gro."CACHE_USER_NET_RETURNS" nr
 FROM gro."USER_CACHE_FACT_NET_RETURNS" nr
 WHERE nr.user_address = $1;
