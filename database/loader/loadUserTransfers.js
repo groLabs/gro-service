@@ -22,7 +22,7 @@ const { QUERY_ERROR } = require('../constants');
 /// @notice Loads deposits/withdrawals into USER_STD_FACT_TRANSFERS
 ///         Data is sourced from TMP_USER_DEPOSITS & TMP_USER_TRANSACTIONS (full load w/o filters)
 ///         All blocks from such transactions are stored into ETH_BLOCKS (incl. timestamp)
-///         Latest block & time processed are stored into SYS_TABLE_LOADS
+///         Latest block & time processed are stored into SYS_USER_LOADS
 /// @param account User address for cache loading; null for daily loads
 /// @return True if no exceptions found, false otherwise
 const loadUserTransfers = async (fromDate, toDate, account) => {

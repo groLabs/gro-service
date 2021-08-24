@@ -63,7 +63,6 @@ const preload = async (_fromDate, _toDate) => {
             .add(59, 'minutes');
         const fromBlock = (await findBlockByDate(fromDate, true)).block;
         const toBlock = (await findBlockByDate(toDate, false)).block;
-
         return [fromBlock, toBlock, dates];
     } catch (err) {
         handleErr(
@@ -117,7 +116,7 @@ const remove = async (fromDate, toDate) => {
             logger.info(
                 `**DB: ${loads.rowCount} record${isPlural(
                     loads.rowCount
-                )} deleted from SYS_TABLE_LOADS`
+                )} deleted from SYS_USER_LOADS`
             );
         } else {
             const params = `Dates [${fromDate} - ${toDate}]`;

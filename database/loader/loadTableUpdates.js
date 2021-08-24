@@ -7,7 +7,7 @@ const {
 } = require('../common/personalUtil');
 const { QUERY_ERROR } = require('../constants');
 
-/// @notice Stores the last load time and number of records loaded into SYS_TABLE_LOADS
+/// @notice Stores the last load time and number of records loaded into SYS_USER_LOADS
 ///         for each day of a given time range
 /// @param tableName Name of the table that has been loaded
 /// @param _fromDate Start date of loading process

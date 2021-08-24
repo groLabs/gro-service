@@ -294,14 +294,13 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 [sender, receiver]
             );
         } else {
-            toBlock = 'latest'
             // returns an object
             events = getLatestContractEventFilter(
                 'default',
                 contractName,
                 eventType,
                 fromBlock,
-                'latest',
+                toBlock,
                 [sender, receiver]
             );
             events = [events];
@@ -318,20 +317,20 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 )
             );
         }
-        let logResults = await Promise.all(logPromises); 
+        let logResults = await Promise.all(logPromises);
 
         // Exclude events that are mint or burn (sender or receiver address is 0x0) only for transfers
         let logTrades = [];
         if (side > 2 && side < 7) {
-            for (let i=0; i<logResults.length; i++) {
+            for (let i = 0; i < logResults.length; i++) {
                 // console.log('transfer type: ', eventType, 'logs:', logResults[i], 'args:');
-                for (let j=0; j<logResults[i].length; j++) {
+                for (let j = 0; j < logResults[i].length; j++) {
                     const elem = logResults[i][j];
-                    console.log('transfer type: ', eventType, 'element:', elem, 'args:', elem.args);
+                    //console.log('transfer type: ', eventType, 'element:', elem, 'args:', elem.args);
                     if (elem.args[0] !== '0x0000000000000000000000000000000000000000'
-                    && elem.args[1] !== '0x0000000000000000000000000000000000000000') {
+                        && elem.args[1] !== '0x0000000000000000000000000000000000000000') {
                         logTrades.push(elem);
-                    }                
+                    }
                 }
             }
             logResults = [logTrades];
