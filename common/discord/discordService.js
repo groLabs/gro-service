@@ -205,7 +205,9 @@ function sendMessageToChannel(channel, msgObj) {
     if (!msgObj.emojis) {
         msgObj.emojis = [];
     }
-    msgObj.emojis.unshift(MESSAGE_EMOJI[msgObj.type]);
+    if (channel !== DISCORD_CHANNELS.botAlerts) {
+        msgObj.emojis.unshift(MESSAGE_EMOJI[msgObj.type]);
+    }
     sendEmbedMessage(channel, msgObj);
     sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
 }
