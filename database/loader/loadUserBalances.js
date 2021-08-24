@@ -30,7 +30,8 @@ function getLatestGroVault() {
 }
 
 function getLatestPowerD() {
-    return getLatestSystemContract(ContractNames.powerD, providerKey).contract;
+    return getLatestSystemContract(ContractNames.powerD, providerKey)
+        .contract;
 }
 
 /// @notice Loads balances into USER_BALANCES

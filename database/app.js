@@ -1,6 +1,5 @@
 const { etlGroStats, etlGroStatsHDL } = require('./etl/etlGroStats');
 const { etlPriceCheck, etlPriceCheckHDL } = require('./etl/etlPriceCheck');
-
 const { getPriceCheck } = require('./handler/priceCheckHandler');
 const scheduler = require('./scheduler/dbStatsScheduler');
 const { getHistoricalAPY } = require('./handler/historicalAPY');
@@ -40,8 +39,8 @@ const { getHistoricalAPY } = require('./handler/historicalAPY');
         }
 
         // Testing groStats
-        //await etlGroStats();
-        await etlGroStatsHDL(1623844800,1623844800,'apy',1800);
+        // await etlGroStats();
+        // await etlGroStatsHDL(1623844800,1623844800,'apy',1800);
 
         // Testing priceCheck
         // await etlPriceCheck();
@@ -66,3 +65,4 @@ const { getHistoricalAPY } = require('./handler/historicalAPY');
         console.log(err);
     }
 })();
+

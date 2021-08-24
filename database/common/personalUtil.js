@@ -7,9 +7,8 @@ const {
     getContractHistoryEventFilters,
     getCoinApprovalFilters,
 } = require('../../common/filterGenerateTool');
-const { 
-    getContractsHistory,
-    loadContractInfoFromRegistry 
+const {
+    loadContractInfoFromRegistry
 } = require('../../registry/registryLoader');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -235,32 +234,44 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
         // Determine event type to apply filters
         let eventType;
         let contractName;
+        let sender;
+        let receiver;
         switch (side) {
             case Transfer.DEPOSIT:
-                // eventType = EVENT_TYPE.deposit;
                 eventType = 'LogNewDeposit';
                 contractName = ContractNames.depositHandler;
+                sender = account;
+                receiver = null;
                 break;
             case Transfer.WITHDRAWAL:
-                // eventType = EVENT_TYPE.withdraw;
                 eventType = 'LogNewWithdrawal';
                 contractName = ContractNames.withdrawHandler;
+                sender = account;
+                receiver = null;
                 break;
             case Transfer.EXTERNAL_GVT_DEPOSIT:
-                eventType = EVENT_TYPE.inGvtTransfer;
+                eventType = 'LogTransfer';
                 contractName = ContractNames.groVault;
+                sender = null;
+                receiver = account;
                 break;
             case Transfer.EXTERNAL_PWRD_DEPOSIT:
-                eventType = EVENT_TYPE.inPwrdTransfer;
+                eventType = 'Transfer';
                 contractName = ContractNames.powerD;
+                sender = null;
+                receiver = account;
                 break;
             case Transfer.EXTERNAL_GVT_WITHDRAWAL:
-                eventType = EVENT_TYPE.outGvtTransfer;
+                eventType = 'LogTransfer';
                 contractName = ContractNames.groVault;
+                sender = account;
+                receiver = null;
                 break;
             case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
-                eventType = EVENT_TYPE.outPwrdTransfer;
+                eventType = 'Transfer';
                 contractName = ContractNames.powerD;
+                sender = account;
+                receiver = null;
                 break;
             default:
                 handleErr(
@@ -270,62 +281,74 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 return false;
         }
 
-
-        // TESTING
-
-
-        // END OF TESTING
-
-
-        // Get all deposit or withdrawal events for a given block range
-        // const logs = await getTransferEV(
-        //     eventType,
-        //     fromBlock,
-        //     toBlock,
-        //     account
-        // ).catch((err) => {
-        //     handleErr(`personalUtil->checkEventType()->getEvents(): `, err);
-        //     return false;
-        // });
-        //console.log(`side: ${side} eventType: ${eventType} depositHandler: ${ContractNames.depositHandler}`)
-
         let logs;
-        if (eventType === 'LogNewDeposit' || eventType == 'LogNewWithdrawal') {
-            const transferEventFilters = getContractHistoryEventFilters(
+        let events;
+        if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) {
+            // returns an array
+            events = getContractHistoryEventFilters(
                 'default',
                 contractName,
                 eventType,
                 fromBlock,
                 toBlock,
-                [account, null]
+                [sender, receiver]
             );
-            console.log(`transfer events length: ${transferEventFilters.length}`);
-            const logPromises = [];
-            for (let i = 0; i < transferEventFilters.length; i += 1) {
-                const transferEventFilter = transferEventFilters[i];
-                logPromises.push(
-                    getFilterEvents(
-                        transferEventFilter.filter,
-                        transferEventFilter.interface,
-                        'default'
-                    )
-                );
-            }
-            const logResults = await Promise.all(logPromises);
-            logs = logResults;
         } else {
-            const tokenHistory = getContractsHistory()[contractName];
-            // const logsTmp = await getTransferEV(
-            //     eventType,
-            //     fromBlock,
-            //     toBlock,
-            //     account
-            // ).catch((err) => {
-            //     handleErr(`personalUtil->checkEventType()->getEvents(): `, err);
-            //     return false;
-            // });
-            // logs = [logsTmp];
+            toBlock = 'latest'
+            // returns an object
+            events = getLatestContractEventFilter(
+                'default',
+                contractName,
+                eventType,
+                fromBlock,
+                'latest',
+                [sender, receiver]
+            );
+            events = [events];
         }
+
+        const logPromises = [];
+        for (let i = 0; i < events.length; i += 1) {
+            const transferEventFilter = events[i];
+            logPromises.push(
+                getFilterEvents(
+                    transferEventFilter.filter,
+                    transferEventFilter.interface,
+                    'default'
+                )
+            );
+        }
+        let logResults = await Promise.all(logPromises); 
+
+        // Exclude events that are mint or burn (sender or receiver address is 0x0) only for transfers
+        let logTrades = [];
+        if (side > 2 && side < 7) {
+            for (let i=0; i<logResults.length; i++) {
+                // console.log('transfer type: ', eventType, 'logs:', logResults[i], 'args:');
+                for (let j=0; j<logResults[i].length; j++) {
+                    const elem = logResults[i][j];
+                    console.log('transfer type: ', eventType, 'element:', elem, 'args:', elem.args);
+                    if (elem.args[0] !== '0x0000000000000000000000000000000000000000'
+                    && elem.args[1] !== '0x0000000000000000000000000000000000000000') {
+                        logTrades.push(elem);
+                    }                
+                }
+            }
+            logResults = [logTrades];
+        }
+
+        logs = logResults;
+        //     // const logsTmp = await getTransferEV(
+        //     //     eventType,
+        //     //     fromBlock,
+        //     //     toBlock,
+        //     //     account
+        //     // ).catch((err) => {
+        //     //     handleErr(`personalUtil->checkEventType()->getEvents(): `, err);
+        //     //     return false;
+        //     // });
+        //     // logs = [logsTmp];
+        // }
         return logs;
     } catch (err) {
         handleErr(`personalUtil->checkEventType() [side: ${side}]`, err);

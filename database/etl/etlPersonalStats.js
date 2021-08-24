@@ -18,19 +18,18 @@ const {
     parseApprovalEvents,
     parseTransferEvents,
 } = require('../parser/personalStatsParser');
-const { loadEthBlocks } = require('./loadEthBlocks');
-const { loadTableUpdates } = require('./loadTableUpdates');
+const { loadEthBlocks } = require('../loader/loadEthBlocks');
+const { loadTableUpdates } = require('../loader/loadTableUpdates');
 const {
     loadUserTransfers,
     loadTmpUserTransfers,
-} = require('./loadUserTransfers.js');
+} = require('../loader/loadUserTransfers');
 const {
     loadUserApprovals,
     loadTmpUserApprovals,
-} = require('./loadUserApprovals.js');
-const { loadUserBalances } = require('./loadUserBalances');
-const { loadUserNetReturns } = require('./loadUserNetReturns');
-const { loadGroStats } = require('./loadGroStats');
+} = require('../loader/loadUserApprovals');
+const { loadUserBalances } = require('../loader/loadUserBalances');
+const { loadUserNetReturns } = require('../loader/loadUserNetReturns');
 const { QUERY_ERROR } = require('../constants');
 
 /// @notice Truncates temporaty tables & calculates blocks and dates to be processed
@@ -68,7 +67,7 @@ const preload = async (_fromDate, _toDate) => {
         return [fromBlock, toBlock, dates];
     } catch (err) {
         handleErr(
-            `loadPersonalStats->preload() [from: ${_fromDate}, to: ${_toDate}]`,
+            `etlPersonalStats->preload() [from: ${_fromDate}, to: ${_toDate}]`,
             err
         );
         return [];
@@ -123,7 +122,7 @@ const remove = async (fromDate, toDate) => {
         } else {
             const params = `Dates [${fromDate} - ${toDate}]`;
             handleErr(
-                `loadPersonalStats->remove() Delete query didn't return results. Params: ${params}`,
+                `etlPersonalStats->remove() Delete query didn't return results. Params: ${params}`,
                 null
             );
             return false;
@@ -131,7 +130,7 @@ const remove = async (fromDate, toDate) => {
         return true;
     } catch (err) {
         handleErr(
-            `loadPersonalStats->remove() [from: ${fromDate}, to: ${toDate}]`,
+            `etlPersonalStats->remove() [from: ${fromDate}, to: ${toDate}]`,
             err
         );
         return false;
@@ -162,27 +161,27 @@ const reload = async (fromDate, toDate) => {
             ]);
 
             if (res.every(Boolean)) {
-                if (await loadTmpUserApprovals(fromBlock, toBlock, null))
+                // if (await loadTmpUserApprovals(fromBlock, toBlock, null))
                     if (await remove(fromDate, toDate))
                         if (await loadUserTransfers(fromDate, toDate, null))
-                            if (await loadUserApprovals(fromDate, toDate, null))
+                            // if (await loadUserApprovals(fromDate, toDate, null))
                                 if (await loadUserBalances(fromDate, toDate, null))
                                     await loadUserNetReturns(fromDate, toDate, null);
             } else {
                 logger.warn(
-                    `**DB: Error/s found in loadPersonalStats.js->reload()`
+                    `**DB: Error/s found in etlPersonalStats.js->reload()`
                 );
             }
         } else {
             const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
             handleErr(
-                `loadPersonalStats->reload() Error with parameters: ${params}`,
+                `etlPersonalStats->reload() Error with parameters: ${params}`,
                 null
             );
         }
     } catch (err) {
         handleErr(
-            `loadPersonalStats->reload() [from: ${fromDate}, to: ${toDate}]`,
+            `etlPersonalStats->reload() [from: ${fromDate}, to: ${toDate}]`,
             err
         );
     }
@@ -216,23 +215,21 @@ const load = async (fromDate, toDate) => {
                         if (await loadUserBalances(fromDate, toDate, null))
                             await loadUserNetReturns(fromDate, toDate, null);
         } else {
-            logger.warn(`**DB: Error/s found in loadPersonalStats.js->load()`);
+            logger.warn(`**DB: Error/s found in etlPersonalStats.js->load()`);
         }
     } else {
         const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
         handleErr(
-            `loadPersonalStats->load() Error with parameters: ${params}`,
+            `etlPersonalStats->load() Error with parameters: ${params}`,
             null
         );
     }
 };
 
-const loadPersonalStats = async () => {
+const etlPersonalStats = async () => {
     try {
-        console.log('in loadPersonalStats');
-
         //DEV Ropsten:
-        await reload('28/06/2021', '28/06/2021');
+        await reload('28/06/2021', '29/06/2021');
         // await reload('16/08/2021', '16/08/2021');
         //await load('30/06/2021', '30/06/2021');
 
@@ -246,10 +243,10 @@ const loadPersonalStats = async () => {
         // process.exit();
         console.log('here3');
     } catch (err) {
-        handleErr(`loadPersonalStats->loadPersonalStats()`, err);
+        handleErr(`etlPersonalStats->etlPersonalStats()`, err);
     }
 };
 
 module.exports = {
-    loadPersonalStats,
+    etlPersonalStats,
 };

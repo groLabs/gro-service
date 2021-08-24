@@ -12,13 +12,13 @@ const {
 const {
     loadUserTransfers,
     loadTmpUserTransfers,
-} = require('./loadUserTransfers.js');
+} = require('../loader/loadUserTransfers');
 const {
     loadUserApprovals,
     loadTmpUserApprovals,
-} = require('./loadUserApprovals.js');
-const { loadUserBalances } = require('./loadUserBalances');
-const { loadUserNetReturns } = require('./loadUserNetReturns');
+} = require('../loader/loadUserApprovals');
+const { loadUserBalances } = require('../loader/loadUserBalances');
+const { loadUserNetReturns } = require('../loader/loadUserNetReturns');
 const { QUERY_ERROR } = require('../constants');
 
 
@@ -93,7 +93,7 @@ const preloadCache = async (account) => {
 
         return [fromBlock, toDate];
     } catch (err) {
-        handleErr(`loadPersonalStatsCache->preloadCache() [account: ${account}]`, err);
+        handleErr(`etlPersonalStatsCache->preloadCache() [account: ${account}]`, err);
         return [];
     }
 }
@@ -114,32 +114,32 @@ const loadCache = async (account) => {
             ]);
 
             if (res.every(Boolean)) {
-                if (await loadTmpUserApprovals(fromBlock, null, account))
+                // if (await loadTmpUserApprovals(fromBlock, null, account))
                     if (await loadUserTransfers(null, null, account))
-                        if (await loadUserApprovals(null, null, account))
+                        // if (await loadUserApprovals(null, null, account))
                             if (await loadUserBalances(fromDate, toDate, account))
                                 await loadUserNetReturns(fromDate, toDate, account);
             } else {
-                logger.warn(`**DB: Error/s found in loadPersonalStatsCache.js->loadCache()`);
+                logger.warn(`**DB: Error/s found in etlPersonalStatsCache.js->loadCache()`);
             }
 
         } else {
             const params = `user: ${account} fromBlock ${fromBlock}`;
-            handleErr(`loadPersonalStatsCache->loadCache() Error with parameters: ${params}`, null);
+            handleErr(`etlPersonalStatsCache->loadCache() Error with parameters: ${params}`, null);
         }
     } catch (err) {
-        handleErr(`loadPersonalStatsCache->loadCache()`, err);
+        handleErr(`etlPersonalStatsCache->loadCache()`, err);
     }
 }
 
-const loadPersonalStatsCache = async (account) => {
+const etlPersonalStatsCache = async (account) => {
     try {
         await loadCache(account);
     } catch (err) {
-        handleErr(`loadPersonalStatsCache->loadPersonalStatsCache()`, err);
+        handleErr(`etlPersonalStatsCache->etlPersonalStatsCache()`, err);
     }
 }
 
 module.exports = {
-    loadPersonalStatsCache,
+    etlPersonalStatsCache,
 };

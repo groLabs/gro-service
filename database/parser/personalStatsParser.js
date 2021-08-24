@@ -6,12 +6,15 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
-const {
-    getGvt,
-    getPwrd,
-    getBuoy,
-    getVaultStableCoins,
-} = require('../../contract/allContracts');
+// const {
+//     getGvt,
+//     getPwrd,
+//     getBuoy,
+//     getVaultStableCoins,
+// } = require('../../contract/allContracts');
+const providerKey = 'stats_personal';
+const { ContractNames } = require('../../registry/registry');
+const { getLatestSystemContract } = require('../../stats/common/contractStorage');
 const {
     getNetworkId,
     getStableCoinIndex,
@@ -21,7 +24,72 @@ const {
     transferType,
 } = require('../common/personalUtil');
 
+
+function getLatestGroVault() {
+    return getLatestSystemContract(ContractNames.groVault, providerKey)
+        .contract;
+}
+
+function getLatestPowerD() {
+    return getLatestSystemContract(ContractNames.powerD, providerKey)
+        .contract;
+}
+
+function getLatestBuoy() {
+    return getLatestSystemContract(ContractNames.Buoy3Pool, providerKey)
+        .contract;
+}
+
+// async function getStableCoins() {
+//     if (!stableCoins.length) {
+//         const latestController = getLatestSystemContract(
+//             ContractNames.controller,
+//             providerKey
+//         ).contract;
+//         const stableCoinAddresses = await latestController
+//             .stablecoins()
+//             .catch((error) => {
+//                 logger.error(error);
+//                 return [];
+//             });
+//         for (let i = 0; i < stableCoinAddresses.length; i += 1) {
+//             stableCoins.push(
+//                 new ethers.Contract(stableCoinAddresses[i], erc20ABI, provider)
+//             );
+//         }
+//     }
+//     return stableCoins;
+// }
+
+// async function getStableCoinsInfo() {
+//     const keys = Object.keys(stableCoinsInfo);
+//     if (!keys.length) {
+//         stableCoinsInfo.decimals = {};
+//         stableCoinsInfo.symbols = {};
+//         const coins = await getStableCoins();
+//         const decimalPromise = [];
+//         const symbolPromise = [];
+//         for (let i = 0; i < coins.length; i += 1) {
+//             decimalPromise.push(coins[i].decimals());
+//             symbolPromise.push(coins[i].symbol());
+//         }
+//         const decimals = await Promise.all(decimalPromise);
+//         const symbols = await Promise.all(symbolPromise);
+
+//         for (let i = 0; i < coins.length; i += 1) {
+//             stableCoinsInfo.decimals[coins[i].address] = decimals[i].toString();
+//             stableCoinsInfo.symbols[coins[i].address] = symbols[i];
+//         }
+//     }
+//     return stableCoinsInfo;
+// }
+
+
+
+
+
 const parseAmount = (amount, coin) => {
+//console.log(amount, coin)
     // try {
     return parseFloat(
         div(
@@ -37,21 +105,25 @@ const parseAmount = (amount, coin) => {
 
 const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
     try {
+console.log('shit')
         let usdAmount = 0;
-        //const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-        //const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
-        if (getGvt().address === tokenAddress) {
-            usdAmount = await getGvt()
+        // if (getGvt().address === tokenAddress) {
+        if (getLatestGroVault().address === tokenAddress) {
+            // usdAmount = await getGvt()
+            usdAmount = await getLatestGroVault()
                 .getShareAssets(amount)
                 .catch((error) => {
                     logger.error(error);
                 });
-        } else if (getPwrd().address === tokenAddress) {
-            usdAmount = await getPwrd.getShareAssets(amount).catch((error) => {
+        // } else if (getPwrd().address === tokenAddress) {
+        } else if (getLatestPowerD().address === tokenAddress) {
+            // usdAmount = await getPwrd.getShareAssets(amount).catch((error) => {
+            usdAmount = await getLatestPowerD().getShareAssets(amount).catch((error) => {
                 logger.error(error);
             });
         } else {
-            usdAmount = await getBuoy().singleStableToUsd(
+            // usdAmount = await getBuoy().singleStableToUsd(
+            usdAmount = await getLatestBuoy().singleStableToUsd(
                 amount,
                 getStableCoinIndex(tokenSymbol)
             );
@@ -68,6 +140,7 @@ const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
 
 const parseApprovalEvents = async (logs) => {
     try {
+console.log('shit')
         const stableCoinInfo = getVaultStableCoins();
         const approvals = [];
         for (const log of logs) {
@@ -111,6 +184,9 @@ const parseTransferEvents = async (logs, side) => {
     try {
         let result = [];
         logs.forEach((log) => {
+//  if (side === 1) {
+//     console.log(`side: ${side} log: ${log} logs0: ${log[0]} logs: ${log.args}`)
+//  }
             const dai_amount =
                 side === Transfer.DEPOSIT
                     ? parseAmount(log.args[4][0], 'DAI') // LogNewDeposit.tokens[0]
@@ -201,7 +277,6 @@ const parseTransferEvents = async (logs, side) => {
                 side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
                     ? log.args[1]
                     : '0x0000000000000000000000000000000000000000';
-
             result.push({
                 block_number: log.blockNumber,
                 tx_hash: log.transactionHash,
