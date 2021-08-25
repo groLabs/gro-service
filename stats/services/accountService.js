@@ -138,7 +138,7 @@ function getDepositHandlerContracts(handlerHistories) {
     if (!depositHandlerContracts) {
         depositHandlerContracts = getContracts(ContractNames.depositHandler);
     }
-    let depositHandlers = [];
+    let depositHandlers = {};
     if (handlerHistories) {
         for (let i = 0; i < handlerHistories.length; i += 1) {
             depositHandlers[handlerHistories[i]] =
@@ -154,7 +154,7 @@ function getWithdrawHandlerContracts(handlerHistories) {
     if (!withdrawHandlerContracts) {
         withdrawHandlerContracts = getContracts(ContractNames.withdrawHandler);
     }
-    let withdrawHandlers = [];
+    let withdrawHandlers = {};
     if (handlerHistories) {
         for (let i = 0; i < handlerHistories.length; i += 1) {
             withdrawHandlers[handlerHistories[i]] =
@@ -205,7 +205,7 @@ function getContractInfosByAddresses(contractName, handlerHistories) {
     if (handlerHistories) {
         for (let i = 0; i < contractHistory.length; i += 1) {
             const contractInfo = contractHistory[i];
-            if (handlerHistories.includes(contractInfo.address.toLowerCase())) {
+            if (handlerHistories.includes(contractInfo.address)) {
                 contractInfos.push(contractInfo);
             }
         }
@@ -264,7 +264,6 @@ async function getHandlerEvents(
     for (let i = 0; i < logs.length; i += 1) {
         resultLogs.push(...logs[i]);
     }
-
     return resultLogs;
 }
 
@@ -278,7 +277,6 @@ async function getDepositHistories(account) {
     } else {
         needWrited = true;
     }
-
     const logs = await getHandlerEvents(
         account,
         ContractNames.depositHandler,
