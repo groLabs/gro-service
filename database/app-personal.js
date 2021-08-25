@@ -18,10 +18,10 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
         } else {
             await loadContractInfoFromRegistry();
             // Testing personal stats
-            await etlPersonalStats('28/07/2021', '28/07/2021');
-            await etlPersonalStats('29/07/2021', '29/07/2021');
-            await etlPersonalStats('30/07/2021', '30/07/2021');
-            await etlPersonalStats('31/07/2021', '31/07/2021');
+            // await etlPersonalStats('28/07/2021', '28/07/2021');
+            // await etlPersonalStats('29/07/2021', '29/07/2021');
+            // await etlPersonalStats('30/07/2021', '30/07/2021');
+            // await etlPersonalStats('31/07/2021', '31/07/2021');
 
             await etlPersonalStats('01/08/2021', '01/08/2021');
             await etlPersonalStats('02/08/2021', '02/08/2021');
