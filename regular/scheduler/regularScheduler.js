@@ -15,6 +15,7 @@ const {
     investTrigger,
     rebalanceTrigger,
     harvestOneTrigger,
+    distributeCurveVaultTrigger,
 } = require('../handler/triggerHandler');
 const {
     invest,
@@ -22,6 +23,7 @@ const {
     harvest,
     curveInvest,
     priceSafetyCheck,
+    distributeCurveVault,
 } = require('../handler/actionHandler');
 
 const { getVaults, getStrategyLength } = require('../../contract/allContracts');
@@ -258,6 +260,51 @@ function rebalanceTriggerScheduler() {
     });
 }
 
+function curveExposureMaintenanceScheduler() {
+    const providerKey = 'default';
+    const walletKey = 'fast';
+    schedule.scheduleJob(rebalanceTriggerSchedulerSetting, async () => {
+        try {
+            const result = await checkPendingTransactions(['curve-exposure']);
+            rebalanceTransactionMessage(result);
+
+            const triggerResult = await distributeCurveVaultTrigger(
+                providerKey,
+                walletKey
+            );
+
+            if (!triggerResult.needCall) return;
+
+            const currectBlockNumber = await getCurrentBlockNumber(providerKey);
+            if (!currectBlockNumber) return;
+
+            await syncManagerNonce(providerKey, walletKey);
+            await distributeCurveVault(
+                currectBlockNumber,
+                providerKey,
+                walletKey,
+                triggerResult.params.amount,
+                triggerResult.params.delta
+            );
+        } catch (error) {
+            sendErrorMessageToLogChannel(error);
+
+            const discordMessage = {
+                description:
+                    "[CRIT] B3 - CurveDistribute | CurveDistribute txn failed, CurveDistribute action didn't complete",
+            };
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[CRIT] B3 - CurveDistribute | CurveDistribute txn failed',
+                    description: discordMessage.description,
+                    urgency: 'low',
+                },
+            });
+        }
+    });
+}
+
 function harvestTriggerScheduler() {
     const providerKey = 'default';
     const walletKey = 'standard';
@@ -331,6 +378,7 @@ function startRegularJobs() {
     safetyCheckScheduler();
     longPendingTransactionsScheduler();
     botLiveCheckScheduler();
+    curveExposureMaintenanceScheduler();
 }
 
 module.exports = {

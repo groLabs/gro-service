@@ -43,6 +43,7 @@ const MESSAGE_TYPES = {
     chainPrice: 'Update Chain Price',
     totalAssetsChange: 'Total Assets Change',
     strategyAssets: 'Strategy Assets',
+    distributeCurveVault: 'Distribute Curve Vault',
     other: 'Others',
 };
 
