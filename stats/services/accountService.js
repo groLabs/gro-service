@@ -29,6 +29,10 @@ const {
 } = require('../../registry/registryLoader');
 
 const { getLatestSystemContract } = require('../common/contractStorage');
+const {
+    getFirstAirdropResult,
+    getSecondAirdropResult,
+} = require('./airdropService');
 
 const erc20ABI = require('../../abi/ERC20.json');
 
@@ -761,8 +765,12 @@ async function generateReport(account) {
         provider
     );
     const launchTime = await getTimestampByBlockNumber(fromBlock, provider);
+    const airdrops = [];
+    airdrops.push(await getFirstAirdropResult(account));
+    airdrops.push(await getSecondAirdropResult(account));
 
     const result = {
+        airdrops,
         transaction,
         current_timestamp: latestBlock.timestamp.toString(),
         launch_timestamp: launchTime,
