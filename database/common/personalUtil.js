@@ -331,16 +331,25 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                     if (elem.args[0] !== '0x0000000000000000000000000000000000000000'
                         && elem.args[1] !== '0x0000000000000000000000000000000000000000') {
                         // Fix: exclude Uniswap V3 interactions that generate duplicated events (Transfer & LogTransfer)
-                        if ((side === 5
-                            || side === 3)
-                            &&
-                            (elem.args[0] === '0xd65C3d1EE9B0af2cF4D35c982a4868D902037CC2'
-                                || elem.args[1] === '0xd65C3d1EE9B0af2cF4D35c982a4868D902037CC2')
-                        ) {
-                            // Excluding LogTransfer event for Uniswap V3 pools
-                        } else {
-                            logTrades.push(elem);
-                        }
+                        // if ((side === 5
+                        //     || side === 3)
+                        //     &&
+                        //     (
+                        //         // Uniswap V3 pool
+                        //         (elem.args[0] === '0xd65C3d1EE9B0af2cF4D35c982a4868D902037CC2'
+                        //             || elem.args[1] === '0xd65C3d1EE9B0af2cF4D35c982a4868D902037CC2')
+                        //         ||
+                        //         // Disperse
+                        //         (elem.args[0] === '0xD152f549545093347A162Dce210e7293f1452150'
+                        //             || elem.args[1] === '0xD152f549545093347A162Dce210e7293f1452150')
+                        //     )
+                        // ) {
+                        //     // Excluding LogTransfer event
+                        // } else {
+                        //     //console.log('Event type:', eventType, 'side:', side, 'logs:', elem);
+                        //     logTrades.push(elem);
+                        // }
+                        logTrades.push(elem);
 
                     }
                 }
