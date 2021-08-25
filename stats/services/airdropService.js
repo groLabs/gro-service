@@ -11,10 +11,10 @@ const airdropFirstDefaultValue = {
     name: 'gas_pwrd',
     display_name: 'Gas PWRD',
     token: 'pwrd',
-    participated: false,
+    participated: 'false',
     amount: '0.00',
     timestamp: '',
-    claimed: false,
+    claimed: 'false',
     hash: [],
 };
 
@@ -22,10 +22,10 @@ const airdropSecondDefaultValue = {
     name: 'early_frens',
     display_name: 'Early Frens',
     token: 'gro',
-    participated: false,
+    participated: 'false',
     amount: '0.00',
     timestamp: '',
-    claimed: false,
+    claimed: 'false',
     hash: [],
 };
 
@@ -49,8 +49,8 @@ async function getFirstAirdropResult(account) {
     if (accountAirdrop) {
         result = { ...airdropFirstDefaultValue };
         result.amount = `${BN(accountAirdrop.amount).toFormat(2)}`;
-        result.participated = true;
-        result.claimed = true;
+        result.participated = 'true';
+        result.claimed = 'true';
     }
     return result;
 }
