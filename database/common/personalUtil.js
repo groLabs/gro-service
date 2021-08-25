@@ -319,17 +319,29 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
         }
         let logResults = await Promise.all(logPromises);
 
-        // Exclude events that are mint or burn (sender or receiver address is 0x0) only for transfers
+
         let logTrades = [];
         if (side > 2 && side < 7) {
             for (let i = 0; i < logResults.length; i++) {
-                // console.log('transfer type: ', eventType, 'logs:', logResults[i], 'args:');
+                //console.log('Event type:', eventType, 'side:', side, 'logs:', logResults[i], 'args:');
                 for (let j = 0; j < logResults[i].length; j++) {
                     const elem = logResults[i][j];
                     //console.log('transfer type: ', eventType, 'element:', elem, 'args:', elem.args);
+                    // Exclude events that are mint or burn (sender or receiver address is 0x0) only for transfers
                     if (elem.args[0] !== '0x0000000000000000000000000000000000000000'
                         && elem.args[1] !== '0x0000000000000000000000000000000000000000') {
-                        logTrades.push(elem);
+                        // Fix: exclude Uniswap V3 interactions that generate duplicated events (Transfer & LogTransfer)
+                        if ((side === 5
+                            || side === 3)
+                            &&
+                            (elem.args[0] === '0xd65C3d1EE9B0af2cF4D35c982a4868D902037CC2'
+                                || elem.args[1] === '0xd65C3d1EE9B0af2cF4D35c982a4868D902037CC2')
+                        ) {
+                            // Excluding LogTransfer event for Uniswap V3 pools
+                        } else {
+                            logTrades.push(elem);
+                        }
+
                     }
                 }
             }
