@@ -82,11 +82,6 @@ function investTransactionMessage(content) {
             discordMessage.description = `[WARN] B1 - ${label} ${action} action for ${vaultName} reverted`;
             sendAlertMessage({
                 discord: discordMessage,
-                pagerduty: {
-                    title: '[WARN] B1 - invest txn reverted',
-                    description: discordMessage.description,
-                    urgency: 'low',
-                },
             });
         } else {
             sendMessageToChannel(

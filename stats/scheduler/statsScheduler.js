@@ -48,12 +48,6 @@ async function generateStatsFile() {
                         description:
                             '[WARN] B5 - Gro stats generation failed, didn’t produce json file',
                     },
-                    pagerduty: {
-                        title: '[WARN] B5 - Gro stats generation failed',
-                        description:
-                            '[WARN] B5 - Gro stats generation failed, didn’t produce json file',
-                        urgency: 'low',
-                    },
                 });
             }
         }
@@ -141,12 +135,6 @@ function depositWithdrawEventScheduler() {
                         description:
                             "[WARN] B16 - Trade trace monitor txn failed, trade update messages didn't generate",
                     },
-                    pagerduty: {
-                        title: '[WARN] B16 - Trade trace monitor txn failed',
-                        description:
-                            "[WARN] B16 - Trade trace monitor txn failed, trade update messages didn't generate",
-                        urgency: 'low',
-                    },
                 });
             }
         }
@@ -174,12 +162,6 @@ function EventSummaryScheduler() {
                     discord: {
                         description:
                             "[WARN] B17 - Trade summary monitor txn failed, trade summary didn't generate",
-                    },
-                    pagerduty: {
-                        title: '[WARN] B17 - Trade summary monitor txn failed',
-                        description:
-                            "[WARN] B17 - Trade summary monitor txn failed, trade summary didn't generate",
-                        urgency: 'low',
                     },
                 });
             }

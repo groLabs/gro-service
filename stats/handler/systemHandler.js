@@ -152,10 +152,24 @@ async function checkStrategyChange(blockTag) {
                     };
                     if (diff.gte(emergencyThreshold)) {
                         discordMessage.description = `[EMERG] P2 - Strategy ${strategyName} expected return | Assets expected return is $${expectedReturnUsd} , The ratio is ${diff} BPS, threshold is ${emergencyThreshold} BPS (1/1000000)`;
-                        sendAlertMessage({ discord: discordMessage });
+                        sendAlertMessage({
+                            discord: discordMessage,
+                            pagerduty: {
+                                title: `[EMERG] P2 - Strategy ${strategyName}'s asset isabnormal`,
+                                description: discordMessage.description,
+                                urgency: 'high',
+                            },
+                        });
                     } else if (diff.gte(criticalThreshold)) {
                         discordMessage.description = `[CRIT] P2 - Strategy ${strategyName} expected return | Assets expected return is $${expectedReturnUsd} , The ratio is ${diff} BPS, threshold is ${criticalThreshold} BPS (1/1000000)`;
-                        sendAlertMessage({ discord: discordMessage });
+                        sendAlertMessage({
+                            discord: discordMessage,
+                            pagerduty: {
+                                title: `[CRIT] P2 - Strategy ${strategyName}'s asset is abnormal`,
+                                description: discordMessage.description,
+                                urgency: 'low',
+                            },
+                        });
                     } else if (diff.gte(warningThreshold)) {
                         discordMessage.description = `[WARN] P2 - Strategy ${strategyName} expected return | Assets expected return is $${expectedReturnUsd} , The ratio is ${diff} BPS, threshold is ${warningThreshold} BPS (1/1000000)`;
                         sendAlertMessage({ discord: discordMessage });
