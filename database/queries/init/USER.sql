@@ -256,8 +256,7 @@ CREATE TABLE gro."USER_STD_TMP_DEPOSITS" (
     dai_amount NUMERIC (20, 8) NULL,
     usdc_amount NUMERIC (20, 8) NULL,
     usdt_amount NUMERIC (20, 8) NULL,
-    creation_date TIMESTAMP (6) NULL,
-    CONSTRAINT "USER_STD_TMP_DEPOSITS_pkey" PRIMARY KEY (block_number, tx_hash, user_address) NOT DEFERRABLE INITIALLY IMMEDIATE
+    creation_date TIMESTAMP (6) NULL
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."USER_STD_TMP_DEPOSITS" OWNER to postgres;
@@ -281,8 +280,7 @@ CREATE TABLE gro."USER_STD_TMP_WITHDRAWALS" (
     dai_amount NUMERIC (20, 8) NULL,
     usdc_amount NUMERIC (20, 8) NULL,
     usdt_amount NUMERIC (20, 8) NULL,
-    creation_date TIMESTAMP (6) NULL,
-    CONSTRAINT "USER_STD_TMP_WITHDRAWALS_pkey" PRIMARY KEY (block_number, tx_hash, user_address) NOT DEFERRABLE INITIALLY IMMEDIATE
+    creation_date TIMESTAMP (6) NULL
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."USER_STD_TMP_WITHDRAWALS" OWNER to postgres;

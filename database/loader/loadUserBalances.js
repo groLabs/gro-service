@@ -30,12 +30,12 @@ function getLatestPowerD() {
         .contract;
 }
 
-/// @notice Loads balances into USER_BALANCES
-/// @dev Data is sourced from smart contract calls to user's balances at a certain block number
-///      according to the dates provided
-/// @param fromDate Start date to load balances
-/// @param toDdate End date to load balances
-/// @param account User address for cache loading; null for daily loads
+/// @notice Loads balances into USER_STD_FACT_BALANCES
+/// @dev    Data is sourced from SC calls to users' balances at a certain block number
+///         according to the dates provided
+/// @param  fromDate Start date to load balances
+/// @param  toDdate End date to load balances
+/// @param  account User address for cache loading; null for daily loads
 /// @return True if no exceptions found, false otherwise
 const loadUserBalances = async (
     fromDate,
@@ -43,7 +43,7 @@ const loadUserBalances = async (
     account,
 ) => {
     try {
-        // Get users with any transfer
+        // Get all distinct users with any transfer
         let users;
         if (account) {
             users = {
@@ -58,7 +58,7 @@ const loadUserBalances = async (
                 return false;
         }
 
-        // For each date, check gvt & pwrd balance and insert data into USER_STD_FACT_BALANCES
+        // For each date, check each gvt & pwrd balance and insert data into USER_STD_FACT_BALANCES
         const dates = generateDateRange(fromDate, toDate);
         logger.info(`**DB${account ? ' CACHE' : ''}: Processing ${users.rowCount} user balance${isPlural(users.rowCount)}...`);
         for (const date of dates) {
@@ -70,10 +70,9 @@ const loadUserBalances = async (
                 blockTag: (await findBlockByDate(day, false)).block
             }
             let rowCount = 0;
+            let rowExcluded = 0;
             for (const user of users.rows) {
                 const addr = user.user_address;
-                // const gvtValue = parseAmount(await getGvt().getAssets(account, blockTag), 'USD');
-                // const pwrdValue = parseAmount(await getPwrd().getAssets(account, blockTag), 'USD');
                 const gvtValue = parseAmount(await getLatestGroVault().getAssets(addr, blockTag), 'USD');
                 const pwrdValue = parseAmount(await getLatestPowerD().getAssets(addr, blockTag), 'USD');
                 const totalValue = gvtValue + pwrdValue;
@@ -86,21 +85,25 @@ const loadUserBalances = async (
                     pwrdValue,
                     moment.utc()
                 ];
-                const q = (account)
-                    // ? 'insert_cache_user_balances.sql'
-                    ? 'insert_user_cache_fact_balances.sql'
-                    // : 'insert_user_balances.sql';
-                    : 'insert_user_std_fact_balances.sql';
-                const result = await query(q, params);
-                if (result.status === QUERY_ERROR)
-                    return false;
-                rowCount += result.rowCount;
+                // zero balance accounts are excluded
+                if (totalValue !== 0) {
+                    const q = (account)
+                        ? 'insert_user_cache_fact_balances.sql'
+                        : 'insert_user_std_fact_balances.sql';
+                    const result = await query(q, params);
+                    if (result.status === QUERY_ERROR)
+                        return false;
+                    rowCount += result.rowCount;
+                } else {
+                    rowExcluded++;
+                }
             }
-            let msg = `**DB${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} added into `;
-            msg += `USER_STD_FACT_BALANCES for date ${moment(date).format('DD/MM/YYYY')}`;
+            let msg = `**DB${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} `;
+            msg += `added into USER_STD_FACT_BALANCES `;
+            msg += (rowExcluded !== 0) ? ` (excluded ${rowExcluded} with 0-balance) ` : '';
+            msg += `for date ${moment(date).format('DD/MM/YYYY')}`;
             logger.info(msg);
         }
-
         if (account) {
             return true;
         } else {

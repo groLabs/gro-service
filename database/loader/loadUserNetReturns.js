@@ -26,9 +26,7 @@ const loadUserNetReturns = async (
         for (const date of dates) {
             /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
             const q = (account)
-                // ? 'insert_cache_user_net_returns.sql'
                 ? 'insert_user_cache_fact_net_returns.sql'
-                // : 'insert_user_net_returns.sql';
                 : 'insert_user_std_fact_net_results.sql';
             const params = (account)
                 ? [account]

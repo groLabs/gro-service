@@ -29,9 +29,7 @@ const loadUserApprovals = async (fromDate, toDate, account) => {
         if (await loadEthBlocks('loadUserApprovals', account)) {
             // Load approvals from temporary tables into USER_STD_FACT_APPROVALS or USER_CACHE_STD_APPROVALS
             const q = (account)
-                // ? 'insert_cache_user_approvals.sql'
                 ? 'insert_user_cache_fact_approvals.sql'
-                // : 'insert_user_approvals.sql';
                 : 'insert_user_std_fact_approvals.sql';
             const params = (account)
                 ? [account]

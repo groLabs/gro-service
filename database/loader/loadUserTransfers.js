@@ -31,9 +31,7 @@ const loadUserTransfers = async (fromDate, toDate, account) => {
         if (await loadEthBlocks('loadUserTransfers', account)) {
             // Load deposits & withdrawals from temporary tables into USER_STD_FACT_TRANSFERS
             const q = (account)
-                // ? 'insert_cache_user_transfers.sql'
                 ? 'insert_user_cache_fact_transfers.sql'
-                // : 'insert_user_transfers.sql';
                 : 'insert_user_std_fact_transfers.sql';
             const params = (account)
                 ? [account]
@@ -97,28 +95,20 @@ const loadTmpUserTransfers = async (
                 const [res, rows] = await query(
                     (isDeposit(side))
                         ? (account)
-                            //? 'insert_cache_tmp_user_deposits.sql'
                             ? 'insert_user_cache_tmp_deposits.sql'
-                            // : 'insert_tmp_user_deposits.sql'
                             : 'insert_user_std_tmp_deposits.sql'
                         : (account)
-                            // ? 'insert_cache_tmp_user_withdrawals.sql'
                             ? 'insert_user_cache_tmp_withdrawals.sql'
-                            // : 'insert_tmp_user_withdrawals.sql'
                             : 'insert_user_std_tmp_withdrawals.sql'
                     , params);
                 if (!res)
                     return false;
                 logger.info(`**DB${(account) ? ' CACHE' : ''}: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isDeposit(side))
                     ? (account)
-                        //? 'CACHE_TMP_USER_DEPOSITS'
                         ? 'USER_CACHE_TMP_DEPOSITS'
-                        // : 'TMP_USER_DEPOSITS'
                         : 'USER_STD_TMP_DEPOSITS'
                     : (account)
-                        //? 'CACHE_TMP_USER_DEPOSITS'
                         ? 'USER_CACHE_TMP_WITHDRAWALS'
-                        // : 'TMP_USER_WITHDRAWALS'
                         : 'USER_STD_TMP_WITHDRAWALS'
                     }`);
             }
