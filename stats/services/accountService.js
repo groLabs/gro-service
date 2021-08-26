@@ -301,10 +301,11 @@ async function getDepositHistories(account) {
     if (!logs.length) return result;
     logs.forEach((log) => {
         log.amount = new BN(log.args[3].toString());
-        log.coin_amount = log.gtokenAmount;
         if (log.args[2]) {
+            log.coin_amount = log.amount;
             result.powerD.push(log);
         } else {
+            log.coin_amount = log.gtokenAmount;
             result.groVault.push(log);
         }
     });
@@ -348,10 +349,11 @@ async function getWithdrawHistories(account) {
     if (!logs.length) return result;
     logs.forEach((log) => {
         log.amount = new BN(log.args[6].toString());
-        log.coin_amount = log.gtokenAmount;
         if (log.args[2]) {
+            log.coin_amount = log.amount;
             result.powerD.push(log);
         } else {
+            log.coin_amount = log.gtokenAmount;
             result.groVault.push(log);
         }
     });

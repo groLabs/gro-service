@@ -5,7 +5,10 @@ const { getConfig } = require('../../common/configUtil');
 const csvFolder = getConfig('airdrop_csv_folder');
 
 const csv1FilePath = `${csvFolder}/airdrop1_result.csv`;
+const csv2FilePath = `${csvFolder}/airdrop2_result.csv`;
+
 let firstAirdropJson;
+let secondAirdropJson;
 
 const airdropFirstDefaultValue = {
     name: 'gas_pwrd',
@@ -34,7 +37,7 @@ async function convertCSVtoJson(filePath) {
     const arrayResult = await csvtojson().fromFile(filePath);
     for (let i = 0; i < arrayResult.length; i += 1) {
         const item = arrayResult[i];
-        result[item.address] = arrayResult[i];
+        result[item.address.toLowerCase()] = arrayResult[i];
     }
     return result;
 }
@@ -56,7 +59,21 @@ async function getFirstAirdropResult(account) {
 }
 
 async function getSecondAirdropResult(account) {
-    return airdropSecondDefaultValue;
+    if (!secondAirdropJson) {
+        secondAirdropJson = await convertCSVtoJson(csv2FilePath);
+    }
+    account = account.toLowerCase();
+    const accountAirdrop = secondAirdropJson[account];
+    let result = airdropSecondDefaultValue;
+    if (accountAirdrop) {
+        const amount = `${BN(accountAirdrop.amount).toFormat(2)}`;
+        result = { ...airdropSecondDefaultValue };
+        if (amount !== '0.00') {
+            result.amount = amount;
+            result.participated = 'true';
+        }
+    }
+    return result;
 }
 
 module.exports = {
