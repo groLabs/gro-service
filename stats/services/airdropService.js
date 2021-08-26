@@ -16,7 +16,7 @@ const airdropFirstDefaultValue = {
     token: 'pwrd',
     participated: 'false',
     amount: '0.00',
-    timestamp: '',
+    timestamp: '1629383452',
     claimed: 'false',
     hash: [],
 };
@@ -27,7 +27,7 @@ const airdropSecondDefaultValue = {
     token: 'gro',
     participated: 'false',
     amount: '0.00',
-    timestamp: '',
+    timestamp: '1629972000',
     claimed: 'false',
     hash: [],
 };
