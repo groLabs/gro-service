@@ -42,7 +42,7 @@ const loadUserApprovals = async (fromDate, toDate, account) => {
         } else {
             return false;
         }
-
+        // Update table SYS_USER_LOADS with the last loads
         if (account) {
             return true;
         } else {
@@ -93,7 +93,6 @@ const loadTmpUserApprovals = async (
                     }
             }
         }
-
         // TODO: missing N records added into table X
         return true;
     } catch (err) {

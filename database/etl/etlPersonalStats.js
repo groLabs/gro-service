@@ -30,6 +30,7 @@ const {
 } = require('../loader/loadUserApprovals');
 const { loadUserBalances } = require('../loader/loadUserBalances');
 const { loadUserNetReturns } = require('../loader/loadUserNetReturns');
+const { checkDateRange } = require('../common/globalUtil');
 const { QUERY_ERROR } = require('../constants');
 
 /// @notice Truncates temporaty tables & calculates blocks and dates to be processed
@@ -161,11 +162,11 @@ const reload = async (fromDate, toDate) => {
 
             if (res.every(Boolean)) {
                 // if (await loadTmpUserApprovals(fromBlock, toBlock, null))
-                    if (await remove(fromDate, toDate))
-                        if (await loadUserTransfers(fromDate, toDate, null))
-                            // if (await loadUserApprovals(fromDate, toDate, null))
-                                if (await loadUserBalances(fromDate, toDate, null))
-                                    await loadUserNetReturns(fromDate, toDate, null);
+                if (await remove(fromDate, toDate))
+                    if (await loadUserTransfers(fromDate, toDate, null))
+                        // if (await loadUserApprovals(fromDate, toDate, null))
+                        if (await loadUserBalances(fromDate, toDate, null))
+                            await loadUserNetReturns(fromDate, toDate, null);
             } else {
                 logger.warn(
                     `**DB: Error/s found in etlPersonalStats.js->reload()`
@@ -227,21 +228,13 @@ const load = async (fromDate, toDate) => {
 
 const etlPersonalStats = async (fromDate, toDate) => {
     try {
-        //DEV Ropsten:
-        await reload(fromDate, toDate);
-        // await reload('28/06/2021', '29/06/2021');
-        // await reload('16/08/2021', '16/08/2021');
-        //await load('30/06/2021', '30/06/2021');
-
-        // PROD:
-        // await reload("02/07/2021", "04/07/2021");
+        if (checkDateRange(fromDate, toDate))
+            await reload(fromDate, toDate);
 
         // Personal Stats
         // const res = await getPersonalStats('06/07/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
         // console.log(res);
-
-        // process.exit();
-        console.log('here3');
+        console.log('personalStats loading complete');
     } catch (err) {
         handleErr(`etlPersonalStats->etlPersonalStats()`, err);
     }

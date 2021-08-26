@@ -11,10 +11,10 @@ const {
 const { QUERY_ERROR } = require('../constants');
 
 /// @notice Loads net results into USER_STD_FACT_NET_RESULTS
-/// @dev Data sourced from USER_DEPOSITS & USER_TRANSACTIONS (full load w/o filters)
-/// @param fromDate Start date to load net results
-/// @param toDdate End date to load net results
-/// @param account User address for cache loading; null for daily loads
+/// @dev    Data sourced from USER_STD_FACT_DEPOSITS & USER_STD_FACT_TRANSACTIONS (full load w/o filters)
+/// @param  fromDate Start date to load net results
+/// @param  toDdate End date to load net results
+/// @param  account User address for cache loading; null for daily loads
 const loadUserNetReturns = async (
     fromDate,
     toDate,
@@ -39,7 +39,7 @@ const loadUserNetReturns = async (
             msg += `USER_STD_FACT_NET_RESULTS for date ${moment(date).format('DD/MM/YYYY')}`;
             logger.info(msg);
         }
-
+        // Update table SYS_USER_LOADS with the last loads
         if (!account)
             await loadTableUpdates('USER_STD_FACT_NET_RESULTS', fromDate, toDate);
     } catch (err) {

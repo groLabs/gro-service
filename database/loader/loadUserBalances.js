@@ -104,6 +104,7 @@ const loadUserBalances = async (
             msg += `for date ${moment(date).format('DD/MM/YYYY')}`;
             logger.info(msg);
         }
+        // Update table SYS_USER_LOADS with the last loads
         if (account) {
             return true;
         } else {

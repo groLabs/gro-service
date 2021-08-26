@@ -1,6 +1,10 @@
 const { etlGroStats, etlGroStatsHDL } = require('./etl/etlGroStats');
 const { etlPriceCheck, etlPriceCheckHDL } = require('./etl/etlPriceCheck');
+const { etlPersonalStats } = require('./etl/etlPersonalStats');
+const { etlPersonalStatsCache } = require('./etl/etlPersonalStatsCache');
+const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 const { getPriceCheck } = require('./handler/priceCheckHandler');
+const { checkDateRange } = require('./common/globalUtil');
 const scheduler = require('./scheduler/dbStatsScheduler');
 const { getHistoricalAPY } = require('./handler/historicalAPY');
 
@@ -31,8 +35,18 @@ const { getHistoricalAPY } = require('./handler/historicalAPY');
                         console.log('Wrong parameters for groStats HDL - e.g.: groStats 1626825600 1626912000');
                     }
                     break;
+                case 'personalStatsETL':
+                    if (params.length === 3 && checkDateRange(params[1], params[2])) {
+                        await loadContractInfoFromRegistry();
+                        await etlPersonalStats(
+                            params[1],              // start date
+                            params[2]);             // end date
+                    } else {
+                        console.log('Wrong parameters for personal stats ETL - e.g.: personalStatsETL 28/06/2021 29/06/2021');
+                    }
+                    break;
                 default:
-                    console.log(`Unknown parameter: ${params[0]}`);
+                    console.log(`Unknown parameter/s: ${params}`);
                     break;
             }
             process.exit(0);
@@ -59,6 +73,9 @@ const { getHistoricalAPY } = require('./handler/historicalAPY');
         // const end = 16299;
         // const res = await getHistoricalAPY(attr, freq, start, end);
         // console.log(res);
+
+        // Testing personal stats cache
+        await etlPersonalStatsCache('0xb5bE4d2510294d0BA77214F26F704d2956a99072');
 
         process.exit(0);
     } catch (err) {

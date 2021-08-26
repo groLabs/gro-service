@@ -19,17 +19,19 @@ const {
 const { QUERY_ERROR } = require('../constants');
 
 
-/// @notice Loads deposits/withdrawals into USER_STD_FACT_TRANSFERS
-///         Data is sourced from TMP_USER_DEPOSITS & TMP_USER_TRANSACTIONS (full load w/o filters)
-///         All blocks from such transactions are stored into ETH_BLOCKS (incl. timestamp)
-///         Latest block & time processed are stored into SYS_USER_LOADS
-/// @param account User address for cache loading; null for daily loads
+/// @notice - Loads deposits/withdrawals into USER_STD_FACT_TRANSFERS
+///         - Data is sourced from USER_STD_TMP_DEPOSITS & USER_STD_TMP_TRANSACTIONS (full load w/o filters)
+///         - All blocks from such transactions are stored into ETH_BLOCKS (incl. timestamp)
+///         - Load date is stored into SYS_USER_LOADS
+/// @param  fromDate Start date to load transfers
+/// @param  toDdate End date to load transfers
+/// @param  account User address for cache loading; null for daily loads
 /// @return True if no exceptions found, false otherwise
 const loadUserTransfers = async (fromDate, toDate, account) => {
     try {
         // Add new blocks into ETH_BLOCKS (incl. block timestamp)
         if (await loadEthBlocks('loadUserTransfers', account)) {
-            // Load deposits & withdrawals from temporary tables into USER_STD_FACT_TRANSFERS
+            // Insert deposits, withdrawals & transfers
             const q = (account)
                 ? 'insert_user_cache_fact_transfers.sql'
                 : 'insert_user_std_fact_transfers.sql';
@@ -44,7 +46,7 @@ const loadUserTransfers = async (fromDate, toDate, account) => {
         } else {
             return false;
         }
-
+        // Update table SYS_USER_LOADS with the last loads
         if (account) {
             return true;
         } else {
@@ -58,14 +60,22 @@ const loadUserTransfers = async (fromDate, toDate, account) => {
 }
 
 //TBR
-/// @notice - Loads deposits/withdrawals from all user accounts into temporary tables
-///         - Gtoken amount is retrieved from related transaction
-///         - Rest of data is retrieved from related event (LogNewDeposit or LogNewWithdrawal)
-/// @dev - Truncates always temporary tables beforehand even if no data to be processed, 
-///        otherwise, old data would be loaded if no new deposits/withdrawals
+/// @notice - Loads deposits, withdrawals & transfers into temporary tables
+///         - Gtoken amount is retrieved from its related transaction
+///         - Rest of data is retrieved from related event
+/// @dev    - Truncates always temporary tables beforehand even if no data to be processed, 
+///         otherwise, old data would be loaded if no new deposits/withdrawals
 /// @param fromBlock Starting block to search for events
 /// @param toBlock Ending block to search for events
-/// @param side Load deposits ('Transfer.Deposit') or withdrawals ('Transfer.Withdraw')
+/// @param side Load type:
+///         - deposits: Transfer.Deposit
+///         - withdrawals: Transfer.Withdraw
+///
+///
+///
+///
+///
+///
 /// @param account User address for cache loading; null for daily loads
 /// @return True if no exceptions found, false otherwise
 const loadTmpUserTransfers = async (
