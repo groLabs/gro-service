@@ -105,18 +105,18 @@ const loadCache = async (account) => {
 
         if (fromBlock > 0) {
             const res = await Promise.all([
-                loadTmpUserTransfers(fromBlock, null, Transfer.DEPOSIT, account),
-                loadTmpUserTransfers(fromBlock, null, Transfer.WITHDRAWAL, account),
-                loadTmpUserTransfers(fromBlock, null, Transfer.EXTERNAL_GVT_WITHDRAWAL, account),
-                loadTmpUserTransfers(fromBlock, null, Transfer.EXTERNAL_GVT_DEPOSIT, account),
-                loadTmpUserTransfers(fromBlock, null, Transfer.EXTERNAL_PWRD_WITHDRAWAL, account),
-                loadTmpUserTransfers(fromBlock, null, Transfer.EXTERNAL_PWRD_DEPOSIT, account),
+                loadTmpUserTransfers(fromBlock, 'latest', Transfer.DEPOSIT, account),
+                loadTmpUserTransfers(fromBlock, 'latest', Transfer.WITHDRAWAL, account),
+                loadTmpUserTransfers(fromBlock, 'latest', Transfer.EXTERNAL_GVT_WITHDRAWAL, account),
+                loadTmpUserTransfers(fromBlock, 'latest', Transfer.EXTERNAL_GVT_DEPOSIT, account),
+                loadTmpUserTransfers(fromBlock, 'latest', Transfer.EXTERNAL_PWRD_WITHDRAWAL, account),
+                loadTmpUserTransfers(fromBlock, 'latest', Transfer.EXTERNAL_PWRD_DEPOSIT, account),
             ]);
 
             if (res.every(Boolean)) {
-                // if (await loadTmpUserApprovals(fromBlock, null, account))
+                if (await loadTmpUserApprovals(fromBlock, 'latest', account))
                     if (await loadUserTransfers(null, null, account))
-                        // if (await loadUserApprovals(null, null, account))
+                        if (await loadUserApprovals(null, null, account))
                             if (await loadUserBalances(fromDate, toDate, account))
                                 await loadUserNetReturns(fromDate, toDate, account);
             } else {

@@ -75,6 +75,7 @@ const { getHistoricalAPY } = require('./handler/historicalAPY');
         // console.log(res);
 
         // Testing personal stats cache
+        await loadContractInfoFromRegistry();
         await etlPersonalStatsCache('0xb5bE4d2510294d0BA77214F26F704d2956a99072');
 
         process.exit(0);

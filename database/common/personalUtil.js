@@ -7,31 +7,25 @@ const {
     getContractHistoryEventFilters,
     getCoinApprovalFilters,
 } = require('../../common/filterGenerateTool');
-const {
-    loadContractInfoFromRegistry
-} = require('../../registry/registryLoader');
+const { loadContractInfoFromRegistry } = require('../../registry/registryLoader');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-const {
-    getDefaultProvider,
-    getAlchemyRpcProvider,
-} = require('../../common/chainUtil');
+const { getProvider } = require('./globalUtil')
 const { query } = require('../handler/queryHandler');
 const {
     EVENT_TYPE,
     getEvents: getTransferEV,
     getApprovalEvents: getApprovalEV,
 } = require('../../common/logFilter');
-const { QUERY_ERROR } = require('../constants');
-const BlocksScanner = require('../../stats/common/blockscanner');
-const provider = getAlchemyRpcProvider('stats_personal');
-const scanner = new BlocksScanner(provider);
+const {
+    QUERY_ERROR,
+    ERC20_TRANSFER_SIGNATURE
+} = require('../constants');
+
 
 const ZERO_ADDRESS =
     '0x0000000000000000000000000000000000000000000000000000000000000000';
-const ERC20_TRANSFER_SIGNATURE =
-    '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
 const isPlural = (count) => (count > 1 ? 's' : '');
 
@@ -56,16 +50,12 @@ const transferType = (side) => {
         case Transfer.WITHDRAWAL:
             return 'withdrawal';
         case Transfer.EXTERNAL_GVT_DEPOSIT:
-            //return 'ext_gvt_deposit';
             return 'transfer-gvt-in';
         case Transfer.EXTERNAL_PWRD_DEPOSIT:
-            //return 'ext_pwrd_deposit';
             return 'transfer-pwrd-in';
         case Transfer.EXTERNAL_GVT_WITHDRAWAL:
-            //return 'ext_gvt_withdrawal';
             return 'transfer-gvt-out';
         case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
-            // return 'ext_pwrd_withdrawal';
             return 'transfer-pwrd-out';
         case Transfer.STABLECOIN_APPROVAL:
             return 'coin-approve';
@@ -83,7 +73,8 @@ const isDeposit = (side) => {
 };
 
 const getBlockData = async (blockNumber) => {
-    const block = await getDefaultProvider()
+    // const block = await getDefaultProvider()
+    const block = await getProvider()
         .getBlock(blockNumber)
         .catch((err) => {
             logger.error(err);
@@ -163,12 +154,6 @@ const generateDateRange = (_fromDate, _toDate) => {
 // TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
 const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
     try {
-        // const logs = await getApprovalEV(account, fromBlock, toBlock)
-        //     .catch((err) => {
-        //         handleErr(`personalUtil->getApprovalEvents()->getApprovalEvents(): `, err);
-        //         return false;
-        //     });
-
         const logApprovals = await getCoinApprovalFilters(
             'default',
             fromBlock,
@@ -188,7 +173,7 @@ const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
         }
         const logs = await Promise.all(logPromises);
 
-        // TODO/QUESTION: only deposits from the same period, or any previous deposit?
+        // Remove approvals referring to deposits (only get stablecoin approvals)
         const depositTx = [];
         const q = account
             ? 'select_cache_tmp_deposits.sql'
@@ -205,19 +190,12 @@ const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
                 depositTx.push(tx.tx_hash);
             }
         }
-
-        // Remove approvals referring to deposits (only get stablecoin approvals)
-        // let logsFiltered = logs.filter(
-        //     (item) => !depositTx.includes(item.transactionHash)
-        // );
-        //const logsFiltered = logs; // ***** TODO *****
         let logsFiltered = [];
         for (let i = 0; i < logs.length; i++) {
             logsFiltered.push(logs[i].filter(
                 (item) => !depositTx.includes(item.transactionHash)
             ));
         }
-
 
         return logsFiltered;
     } catch (err) {
@@ -330,25 +308,6 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                     // Exclude events that are mint or burn (sender or receiver address is 0x0) only for transfers
                     if (elem.args[0] !== '0x0000000000000000000000000000000000000000'
                         && elem.args[1] !== '0x0000000000000000000000000000000000000000') {
-                        // Fix: exclude Uniswap V3 interactions that generate duplicated events (Transfer & LogTransfer)
-                        // if ((side === 5
-                        //     || side === 3)
-                        //     &&
-                        //     (
-                        //         // Uniswap V3 pool
-                        //         (elem.args[0] === '0xd65C3d1EE9B0af2cF4D35c982a4868D902037CC2'
-                        //             || elem.args[1] === '0xd65C3d1EE9B0af2cF4D35c982a4868D902037CC2')
-                        //         ||
-                        //         // Disperse
-                        //         (elem.args[0] === '0xD152f549545093347A162Dce210e7293f1452150'
-                        //             || elem.args[1] === '0xD152f549545093347A162Dce210e7293f1452150')
-                        //     )
-                        // ) {
-                        //     // Excluding LogTransfer event
-                        // } else {
-                        //     //console.log('Event type:', eventType, 'side:', side, 'logs:', elem);
-                        //     logTrades.push(elem);
-                        // }
                         logTrades.push(elem);
 
                     }
@@ -357,19 +316,7 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
             logResults = [logTrades];
         }
 
-        logs = logResults;
-        //     // const logsTmp = await getTransferEV(
-        //     //     eventType,
-        //     //     fromBlock,
-        //     //     toBlock,
-        //     //     account
-        //     // ).catch((err) => {
-        //     //     handleErr(`personalUtil->checkEventType()->getEvents(): `, err);
-        //     //     return false;
-        //     // });
-        //     // logs = [logsTmp];
-        // }
-        return logs;
+        return logResults;
     } catch (err) {
         handleErr(`personalUtil->checkEventType() [side: ${side}]`, err);
         return false;
@@ -391,7 +338,8 @@ const getGTokenFromTx = async (result, side, account) => {
 
         // For all transactions -> for all logs -> retrieve GToken
         for (const item of result) {
-            const txReceipt = await getDefaultProvider()
+            // const txReceipt = await getDefaultProvider()
+            const txReceipt = await getProvider()
                 .getTransactionReceipt(item.tx_hash)
                 .catch((err) => {
                     console.log(err);

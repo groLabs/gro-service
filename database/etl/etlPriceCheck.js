@@ -8,7 +8,7 @@ const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { loadAllTables } = require('../loader/loadPriceCheck');
 const { checkLastTimestamp } = require('../common/protocolUtil');
-const { calcRangeTimestamps } = require('../common/calcRangeTimestamps');
+const { calcRangeTimestamps } = require('../common/globalUtil');
 const { findBlockByDate } = require('../common/globalUtil');
 const { QUERY_SUCCESS } = require('../constants');
 

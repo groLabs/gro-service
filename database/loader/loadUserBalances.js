@@ -14,21 +14,12 @@ const {
 const {
     parseAmount,
 } = require('../parser/personalStatsParser');
-const providerKey = 'stats_personal';
-const { ContractNames } = require('../../registry/registry');
-const { getLatestSystemContract } = require('../../stats/common/contractStorage');
+const {
+    getGroVault,
+    getPowerD,
+} = require('../common/contractUtil');
 const { QUERY_ERROR } = require('../constants');
 
-
-function getLatestGroVault() {
-    return getLatestSystemContract(ContractNames.groVault, providerKey)
-        .contract;
-}
-
-function getLatestPowerD() {
-    return getLatestSystemContract(ContractNames.powerD, providerKey)
-        .contract;
-}
 
 /// @notice Loads balances into USER_STD_FACT_BALANCES
 /// @dev    Data is sourced from SC calls to users' balances at a certain block number
@@ -73,8 +64,8 @@ const loadUserBalances = async (
             let rowExcluded = 0;
             for (const user of users.rows) {
                 const addr = user.user_address;
-                const gvtValue = parseAmount(await getLatestGroVault().getAssets(addr, blockTag), 'USD');
-                const pwrdValue = parseAmount(await getLatestPowerD().getAssets(addr, blockTag), 'USD');
+                const gvtValue = parseAmount(await getGroVault().getAssets(addr, blockTag), 'USD');
+                const pwrdValue = parseAmount(await getPowerD().getAssets(addr, blockTag), 'USD');
                 const totalValue = gvtValue + pwrdValue;
                 const params = [
                     day,

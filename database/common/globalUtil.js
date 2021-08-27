@@ -1,11 +1,39 @@
 const moment = require('moment');
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+const botEnvLogger = process.env.BOT_ENV.toLowerCase();
+const logger = require(`../../${botEnvLogger}/${botEnvLogger}Logger`);
 const { getAlchemyRpcProvider } = require('../../common/chainUtil');
-const provider = getAlchemyRpcProvider('stats_personal');
 const BlocksScanner = require('../../stats/common/blockscanner');
+// default key from BOT_ENV in config file => blockchain.alchemy_api_keys.default
+const providerKey = 'default';
+const provider = getAlchemyRpcProvider(providerKey);
 const scanner = new BlocksScanner(provider);
 
+
+/// @notice Calculate number of N-second intervals from the start to end dates 
+///         (in case an historical data load is needed)
+/// @param  start Start date of the interval
+/// @param  end End date of the interval
+/// @return Time range
+const calcRangeTimestamps = (start, end, interval) => {
+    try {
+        let iterations = [];
+        if (start === end) {
+            iterations.push(moment.unix(start).utc());
+            return iterations;
+        }
+        const search = (start, end) => {
+            if (start < end) {
+                iterations.push(moment.unix(start).utc());
+                start = start + interval;
+                search(start, end);
+            }
+            return iterations;
+        }
+        return search(start, end);
+    } catch (err) {
+        logger.error(`**DB: Error in globalUtil.js->calcRangeTimestamps(): ${err}`);
+    }
+}
 
 /// @notice Checks if date format and range are OK
 /// @param  fromDate Start date of the range
@@ -50,8 +78,17 @@ const findBlockByDate = async (scanDate, after = true) => {
     return blockFound;
 }
 
+/// @notice Returns the Alchemy provider based on referring bot key
+const getProvider = () => provider;
+
+/// @notice Returns the Alchemy provider key
+const getProviderKey = () => providerKey;
+
 
 module.exports = {
+    calcRangeTimestamps,
     checkDateRange,
     findBlockByDate,
+    getProvider,
+    getProviderKey,
 }

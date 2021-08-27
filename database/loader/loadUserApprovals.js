@@ -65,9 +65,6 @@ const loadTmpUserApprovals = async (
 ) => {
     try {
         // Get all approval events for a given block range
-        if (account)
-            toBlock = 'latest';
-
         const logs = await getApprovalEvents2(account, fromBlock, toBlock);
         if (!logs || logs.length < 1)
             return false;

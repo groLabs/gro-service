@@ -1,7 +1,6 @@
 const ethers = require('ethers');
 const { query } = require('../handler/queryHandler');
 const { getPersonalStats } = require('../handler/personalStatsHandler');
-const { getDefaultProvider } = require('../../common/chainUtil');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');

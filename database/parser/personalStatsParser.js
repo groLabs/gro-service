@@ -6,9 +6,6 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
-const providerKey = 'stats_personal';
-const { ContractNames } = require('../../registry/registry');
-const { getLatestSystemContract } = require('../../stats/common/contractStorage');
 const {
     getNetworkId,
     getStableCoinIndex,
@@ -17,69 +14,12 @@ const {
     Transfer,
     transferType,
 } = require('../common/personalUtil');
-
-
-function getLatestGroVault() {
-    return getLatestSystemContract(ContractNames.groVault, providerKey)
-        .contract;
-}
-
-function getLatestPowerD() {
-    return getLatestSystemContract(ContractNames.powerD, providerKey)
-        .contract;
-}
-
-function getLatestBuoy() {
-    return getLatestSystemContract(ContractNames.Buoy3Pool, providerKey)
-        .contract;
-}
-
-// async function getStableCoins() {
-//     if (!stableCoins.length) {
-//         const latestController = getLatestSystemContract(
-//             ContractNames.controller,
-//             providerKey
-//         ).contract;
-//         const stableCoinAddresses = await latestController
-//             .stablecoins()
-//             .catch((error) => {
-//                 logger.error(error);
-//                 return [];
-//             });
-//         for (let i = 0; i < stableCoinAddresses.length; i += 1) {
-//             stableCoins.push(
-//                 new ethers.Contract(stableCoinAddresses[i], erc20ABI, provider)
-//             );
-//         }
-//     }
-//     return stableCoins;
-// }
-
-// async function getStableCoinsInfo() {
-//     const keys = Object.keys(stableCoinsInfo);
-//     if (!keys.length) {
-//         stableCoinsInfo.decimals = {};
-//         stableCoinsInfo.symbols = {};
-//         const coins = await getStableCoins();
-//         const decimalPromise = [];
-//         const symbolPromise = [];
-//         for (let i = 0; i < coins.length; i += 1) {
-//             decimalPromise.push(coins[i].decimals());
-//             symbolPromise.push(coins[i].symbol());
-//         }
-//         const decimals = await Promise.all(decimalPromise);
-//         const symbols = await Promise.all(symbolPromise);
-
-//         for (let i = 0; i < coins.length; i += 1) {
-//             stableCoinsInfo.decimals[coins[i].address] = decimals[i].toString();
-//             stableCoinsInfo.symbols[coins[i].address] = symbols[i];
-//         }
-//     }
-//     return stableCoinsInfo;
-// }
-
-
-
+const {
+    getGroVault,
+    getPowerD,
+    getBuoy,
+    getStables,
+} = require('../common/contractUtil');
 
 
 const parseAmount = (amount, coin) => {
@@ -99,25 +39,24 @@ const parseAmount = (amount, coin) => {
 
 const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
     try {
-console.log('shit')
         let usdAmount = 0;
         // if (getGvt().address === tokenAddress) {
-        if (getLatestGroVault().address === tokenAddress) {
+        if (getGroVault().address === tokenAddress) {
             // usdAmount = await getGvt()
-            usdAmount = await getLatestGroVault()
+            usdAmount = await getGroVault()
                 .getShareAssets(amount)
                 .catch((error) => {
                     logger.error(error);
                 });
         // } else if (getPwrd().address === tokenAddress) {
-        } else if (getLatestPowerD().address === tokenAddress) {
+        } else if (getPowerD().address === tokenAddress) {
             // usdAmount = await getPwrd.getShareAssets(amount).catch((error) => {
-            usdAmount = await getLatestPowerD().getShareAssets(amount).catch((error) => {
+            usdAmount = await getPowerD().getShareAssets(amount).catch((error) => {
                 logger.error(error);
             });
         } else {
             // usdAmount = await getBuoy().singleStableToUsd(
-            usdAmount = await getLatestBuoy().singleStableToUsd(
+            usdAmount = await getBuoy().singleStableToUsd(
                 amount,
                 getStableCoinIndex(tokenSymbol)
             );
@@ -134,8 +73,7 @@ console.log('shit')
 
 const parseApprovalEvents = async (logs) => {
     try {
-console.log('shit')
-        const stableCoinInfo = getVaultStableCoins();
+        const stableCoinInfo = await getStables();
         const approvals = [];
         for (const log of logs) {
             const decimal = stableCoinInfo.decimals[log.address];
@@ -178,9 +116,6 @@ const parseTransferEvents = async (logs, side) => {
     try {
         let result = [];
         logs.forEach((log) => {
-//  if (side === 1) {
-//     console.log(`side: ${side} log: ${log} logs0: ${log[0]} logs: ${log.args}`)
-//  }
             const dai_amount =
                 side === Transfer.DEPOSIT
                     ? parseAmount(log.args[4][0], 'DAI') // LogNewDeposit.tokens[0]
