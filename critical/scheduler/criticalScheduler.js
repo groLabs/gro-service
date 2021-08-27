@@ -58,12 +58,7 @@ function checkCurveHealth() {
                 sendAlertMessage({
                     discord: {
                         description:
-                            "[CRIT] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
-                    },
-                    pagerduty: {
-                        title: '[CRIT] B15 - Chainlink | Curve price check txn failed',
-                        description:
-                            "[CRIT] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
+                            "[WARN] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
                     },
                 });
             }
@@ -85,12 +80,7 @@ function priceMonitor() {
                 sendAlertMessage({
                     discord: {
                         description:
-                            "[CRIT] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
-                    },
-                    pagerduty: {
-                        title: '[CRIT] B15 - Chainlink | Curve price check txn failed',
-                        description:
-                            "[CRIT] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
+                            "[WARN] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
                     },
                 });
             }

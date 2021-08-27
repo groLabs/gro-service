@@ -78,11 +78,7 @@ app.use((error, req, res, next) => {
         if (contractCallFailedCount.personalStas >= failedAlertTimes) {
             sendAlertMessage({
                 discord: {
-                    description: `[CRIT] B4 - Get personal stats failed for ${error.message} at ${req.originalUrl}`,
-                },
-                pagerduty: {
-                    title: '[CRIT] B4 - Get personal stats failed',
-                    description: `[CRIT] B4 - Get personal stats failed for ${error.message} at ${req.originalUrl}`,
+                    description: `[WARN] B4 - Get personal stats failed for ${error.message} at ${req.originalUrl}`,
                 },
             });
         }

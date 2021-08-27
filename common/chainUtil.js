@@ -333,11 +333,6 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
         if (failedTimes.accountBalance > failedAlertTimes) {
             sendAlertMessage({
                 discord: embedMessage,
-                pagerduty: {
-                    title: '[WARN] B7 - bot balance check failed',
-                    description: `[WARN] B7 - Call ${botType} ${botAccount}'s ETH balance txn failed, check balance didn't complate`,
-                    urgency: 'low',
-                },
             });
         }
         throw new BlockChainCallError(

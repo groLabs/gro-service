@@ -19,13 +19,17 @@ function botBalanceMessage(content) {
             },
         ],
     };
-    sendAlertMessage({
-        discord: discordMessage,
-        pagerduty: {
+    let pagerduty;
+    if (content.level !== '[WARN]') {
+        pagerduty = {
             title: `${content.level} B6 - Bot balance is too low`,
             description: `${content.level} B6 - ${content.botType} ${content.botAccount} only has ${balance} ETH, add more funds`,
             urgency: 'low',
-        },
+        };
+    }
+    sendAlertMessage({
+        pagerduty,
+        discord: discordMessage,
     });
 }
 

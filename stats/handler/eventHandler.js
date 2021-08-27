@@ -135,10 +135,24 @@ async function checkTvlChange(
         };
         if (diff.gte(emergencyThreshold)) {
             discordMessage.description = `[EMERG] P1 - System’s asset change | Assets change from ${fromBlock} to ${toBlock} is ${diff} bp, threshold is ${emergencyThreshold} bp`;
-            sendAlertMessage({ discord: discordMessage });
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[EMERG] P1 - System’s asset is abnormal',
+                    description: discordMessage.description,
+                    urgency: 'high',
+                },
+            });
         } else if (diff.gte(criticalThreshold)) {
             discordMessage.description = `[CRIT] P1 - System’s asset change | Assets change from ${fromBlock} to ${toBlock} is ${diff} bp, threshold is ${emergencyThreshold} bp`;
-            sendAlertMessage({ discord: discordMessage });
+            sendAlertMessage({
+                discord: discordMessage,
+                pagerduty: {
+                    title: '[CRIT] P1 - System’s asset is abnormal',
+                    description: discordMessage.description,
+                    urgency: 'low',
+                },
+            });
         } else if (diff.gte(warningThreshold)) {
             discordMessage.description = `[WARN] P1 - System’s asset change | Assets change from ${fromBlock} to ${toBlock} is ${diff} bp, threshold is ${warningThreshold} bp`;
             sendAlertMessage({ discord: discordMessage });
