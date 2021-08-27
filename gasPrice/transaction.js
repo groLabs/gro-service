@@ -9,6 +9,7 @@ const runEnv = process.env.NODE_ENV.toLowerCase();
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
+const MAX_BASE_GAS = BigNumber.from(50000000000);
 
 const methodGasMap = {
     updateTokenRatios: 'fast',
@@ -52,10 +53,11 @@ async function wrapSendTransaction(contract, methodName, params = []) {
     const maxPriorityFeePerGas = BigNumber.from(
         await getAlchemyPriorityPrice()
     );
-    const block = await contract.provider.getBlock('latest');
-    const maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
+    // const block = await contract.provider.getBlock('latest');
+    // const maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
+    const maxFeePerGas = MAX_BASE_GAS.add(maxPriorityFeePerGas);
     logger.info(
-        `send tx maxPriorityFeePerGas ${maxPriorityFeePerGas} baseFeePerGas ${block.baseFeePerGas} maxFeePerGas ${maxFeePerGas}`
+        `send tx maxPriorityFeePerGas ${maxPriorityFeePerGas} maxBaseFeePerGas ${MAX_BASE_GAS} maxFeePerGas ${maxFeePerGas}`
     );
     return method(...params, {
         maxPriorityFeePerGas: maxPriorityFeePerGas,

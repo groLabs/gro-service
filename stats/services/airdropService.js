@@ -66,7 +66,7 @@ async function getSecondAirdropResult(account) {
     const accountAirdrop = secondAirdropJson[account];
     let result = airdropSecondDefaultValue;
     if (accountAirdrop) {
-        const amount = `${BN(accountAirdrop.amount).toFormat(2)}`;
+        const amount = `${BN(accountAirdrop.amount).toFixed(2)}`;
         result = { ...airdropSecondDefaultValue };
         if (amount !== '0.00') {
             result.amount = amount;
