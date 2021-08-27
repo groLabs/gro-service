@@ -27,7 +27,7 @@ const airdropSecondDefaultValue = {
     token: 'gro',
     participated: 'false',
     amount: '0.00',
-    timestamp: '1629972000',
+    timestamp: '1630062000',
     claimed: 'false',
     hash: [],
 };
