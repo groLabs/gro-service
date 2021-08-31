@@ -24,6 +24,8 @@ module.exports = {
     airdrop_csv_folder: '../airdrop',
     etherscan_api_key: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
     base_gas: [50000000000, 75000000000, 100000000000],
+    timeout_retry: 2,
+    timeout_retry_staller: 1000,
     pagerduty: {
         token: process.env.PAGERDUTY_TOKEN,
         from: process.env.PAGERDUTY_TRIGGER_FROM,

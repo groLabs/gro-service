@@ -41,6 +41,8 @@ const infruraRpcProviders = {};
 const botWallets = {};
 const failedTimes = { accountBalance: 0 };
 const failedAlertTimes = getConfig('call_failed_time', false) || 2;
+const retryTimes = getConfig('timeout_retry', false) || 1;
+const stallerTime = getConfig('timeout_retry_staller', false) || 1000;
 
 const network = getConfig('blockchain.network');
 logger.info(`network: ${network}`);
@@ -76,17 +78,65 @@ function createProxyForAlchemyRpcProvider(alchemyProvider) {
     return rpcProvider;
 }
 
+function staller(duration) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, duration);
+    });
+}
+
+function createProxyForProvider(provider, providerKeyConfig) {
+    const handler = {
+        get(target, property) {
+            if (property === 'perform') {
+                return async function (...args) {
+                    for (let attempt = 0; attempt <= retryTimes; attempt += 1) {
+                        let result;
+                        try {
+                            result = Promise.resolve(
+                                Reflect.apply(target[property], target, args)
+                            );
+                        } catch (error) {
+                            if (
+                                error.message.match(/429 Too Many Requests/gi)
+                            ) {
+                                const providerKey =
+                                    getConfig(providerKeyConfig);
+                                sendAlertMessage({
+                                    discord: `Provider : ${providerKey} trigger rate limit.`,
+                                });
+                                throw error;
+                            } else if (error.message.match(/timeout/gi)) {
+                                if (attempt >= retryTimes) throw error;
+                                // eslint-disable-next-line no-await-in-loop
+                                await staller(stallerTime);
+                                // eslint-disable-next-line no-continue
+                                continue;
+                            }
+                            throw error;
+                        }
+                        return result;
+                    }
+                };
+            }
+            return target[property];
+        },
+    };
+    return new Proxy(provider, handler);
+}
+
 function createAlchemyRpcProvider() {
     if (rpcProvider) {
         return rpcProvider;
     }
     logger.info('Create default Alchemy Rpc provider.');
-    const apiKey = getConfig('blockchain.alchemy_api_keys.default');
+    const defaultApiKey = 'blockchain.alchemy_api_keys.default';
+    const apiKey = getConfig(defaultApiKey);
     const alchemyProvider = new ethers.providers.AlchemyProvider(
         network,
         apiKey
     );
-    return createProxyForAlchemyRpcProvider(alchemyProvider);
+    rpcProvider = createProxyForProvider(alchemyProvider, defaultApiKey);
+    return rpcProvider;
 }
 
 function createInfruraRpcProvider() {
@@ -94,8 +144,10 @@ function createInfruraRpcProvider() {
         return infruraRpcProvider;
     }
     logger.info('Create default Infrura Rpc provider.');
-    const apiKey = getConfig('blockchain.infura_api_keys.default');
-    infruraRpcProvider = new ethers.providers.InfuraProvider(network, apiKey);
+    const defaultApiKey = 'blockchain.infura_api_keys.default';
+    const apiKey = getConfig(defaultApiKey);
+    const provider = new ethers.providers.InfuraProvider(network, apiKey);
+    infruraRpcProvider = createProxyForProvider(provider, defaultApiKey);
     return infruraRpcProvider;
 }
 
@@ -139,7 +191,7 @@ function getAlchemyRpcProvider(providerKey) {
                     network,
                     apiKeyValue
                 );
-                result = createProxyForAlchemyRpcProvider(alchemyProvider);
+                result = createProxyForProvider(alchemyProvider, key);
             }
 
             logger.info(`Create a new ${providerKey} Rpc provider.`);
@@ -170,10 +222,11 @@ function getInfruraRpcProvider(providerKey) {
             if (process.env.NODE_ENV === 'develop') {
                 result = ethers.providers.getDefaultProvider(network);
             } else {
-                result = new ethers.providers.InfuraProvider(
+                const tempProvider = new ethers.providers.InfuraProvider(
                     network,
                     apiKeyValue
                 );
+                result = createProxyForProvider(tempProvider, key);
             }
 
             logger.info(`Create a new ${providerKey} Infrura Rpc provider.`);
