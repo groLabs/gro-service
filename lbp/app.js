@@ -1,4 +1,4 @@
-
+const {getLbpStats} = require('./handler/lbpHandler');
 
 (async () => {
     try {
@@ -22,7 +22,8 @@
 
 
         // Testing personal stats cache
-        
+        const result = await getLbpStats();
+        console.log(result);
 
         process.exit(0);
     } catch (err) {

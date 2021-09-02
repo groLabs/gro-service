@@ -14,7 +14,9 @@
         "start:mainnet:regular": "cross-env NODE_ENV=mainnet BOT_ENV=REGULAR node ./regular/bin/www",
         "start:mainnet:critic": "cross-env NODE_ENV=mainnet BOT_ENV=CRITICAL node ./critical/bin/www",
         "start:ropsten:database": "cross-env NODE_ENV=ropsten BOT_ENV=DATABASE node ./database/bin/www",
-        "start:mainnet:database": "cross-env NODE_ENV=mainnet BOT_ENV=DATABASE node ./database/bin/www"
+        "start:mainnet:database": "cross-env NODE_ENV=mainnet BOT_ENV=DATABASE node ./database/bin/www",
+        "start:ropsten:lbp": "cross-env NODE_ENV=ropsten BOT_ENV=LBP node ./lbp/bin/www",
+        "start:mainnet:lbp": "cross-env NODE_ENV=mainnet BOT_ENV=LBP node ./lbp/bin/www"
     },
     "dependencies": {
         "@ethersproject/experimental": "^5.0.10",
