@@ -68,6 +68,33 @@ async function adapterInvestTrigger(vault) {
     return investTriggerResult;
 }
 
+async function curveInvestTrigger(vault, lifeguard) {
+    const vaultName = getVaultAndStrategyLabels()[vault.address].name;
+    if (pendingTransactions.get(`invest-${vault.address}`)) {
+        const result = `Already has pending invest for ${vaultName}:${
+            vault.address
+        } transaction: ${
+            pendingTransactions.get(`invest-${vault.address}`).hash
+        }`;
+        logger.info(result);
+        throw new PendingTransactionError(result, MESSAGE_TYPES.investTrigger);
+    }
+
+    const investTriggerResult = await lifeguard
+        .investToCurveVaultTrigger()
+        .catch((error) => {
+            logger.error(error);
+            throw new ContractCallError(
+                `Call investToCurveVaultTrigger of ${vaultName} : ${vault.address} to check if the lifeguard need investment failed`,
+                MESSAGE_TYPES.investTrigger
+            );
+        });
+
+    logger.info(
+        `${vaultName} : ${vault.address} invest trigger: ${investTriggerResult}`
+    );
+}
+
 async function sortStrategyByLastHarvested(vaults) {
     if (vaults.length === 0) {
         logger.info('Not fund any vault.');
@@ -155,11 +182,15 @@ async function investTrigger(providerKey, walletKey) {
 
     const vaults = getVaults(providerKey, walletKey);
     const triggerPromises = [];
-    for (let i = 0; i < vaults.length - 1; i += 1) {
+    const lastVaultIndex = vaults.length - 1;
+    for (let i = 0; i < lastVaultIndex; i += 1) {
         triggerPromises.push(adapterInvestTrigger(vaults[i]));
     }
     triggerPromises.push(
-        getLifeguard(providerKey, walletKey).investToCurveVaultTrigger()
+        curveInvestTrigger(
+            vaults[lastVaultIndex],
+            getLifeguard(providerKey, walletKey)
+        )
     );
     const result = await Promise.all(triggerPromises);
     const strategies = await sortStrategyByLastHarvested(vaults);
