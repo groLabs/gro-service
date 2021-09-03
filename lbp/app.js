@@ -1,4 +1,5 @@
-const {getLbpStats} = require('./handler/lbpHandler');
+const { getLbpStats } = require('./handler/lbpHandler');
+const { loadLbpTables} = require('./loader/loadLbp');
 
 (async () => {
     try {
@@ -8,7 +9,7 @@ const {getLbpStats} = require('./handler/lbpHandler');
             switch (params[0]) {
                 case 'XXXX':
                     if (params.length === 3) {
-                            //TBC
+                        //TBC
                     } else {
                         console.log('Wrong parameters for Price Check HDL - e.g.: priceCheckHDL 1626825600 1626912000');
                     }
@@ -22,8 +23,10 @@ const {getLbpStats} = require('./handler/lbpHandler');
 
 
         // Testing personal stats cache
-        const result = await getLbpStats();
-        console.log(result);
+        // const result = await getLbpStats();
+        // console.log(result);
+
+        await loadLbpTables();
 
         process.exit(0);
     } catch (err) {
