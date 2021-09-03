@@ -1,69 +1,37 @@
 const { BigNumber } = require('ethers');
-const { getPriceObject, getAlchemyPriorityPrice } = require('./priceManager');
+const { getAlchemyPriorityPrice } = require('./priceManager');
 const { getWalletNonceManager } = require('../common/chainUtil');
 const { addPendingTransaction } = require('../common/storage');
 const { BlockChainCallError } = require('../common/error');
-
-const runEnv = process.env.NODE_ENV.toLowerCase();
+const { getConfig } = require('../common/configUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
-const MAX_BASE_GAS = BigNumber.from(50000000000);
+const BASE_GAS = getConfig('base_gas');
 
-const methodGasMap = {
-    updateTokenRatios: 'fast',
-    stop: 'rapid',
-    pause: 'rapid',
-    invest: 'slow',
-    investToCurveVault: 'slow',
-    strategyHarvest: 'standard',
-    rebalance: 'rapid',
-    getSafePriceFeed: 'standard',
-};
-
-async function getGasPrice(methodName) {
-    const priceObject = await getPriceObject();
-    return priceObject[methodGasMap[methodName]];
-}
-
-async function increaseGasPrice(methodName, oldGasPrice, resendTimes) {
-    const gasPrice = await getGasPrice(methodName);
-    if (gasPrice) {
-        oldGasPrice = gasPrice;
-    }
-    const oldPrice = BigNumber.from(oldGasPrice);
-    const newPrice = oldPrice
-        .mul(BigNumber.from(100 + resendTimes * 10))
-        .div(BigNumber.from(100));
-    return newPrice;
+function getBaseGas(resendTime = 0) {
+    const len = BASE_GAS.length;
+    resendTime = resendTime >= len ? len - 1 : resendTime;
+    return BigNumber.from(BASE_GAS[resendTime]);
 }
 
 async function wrapSendTransaction(contract, methodName, params = []) {
     const method = contract[methodName];
-    // if (runEnv === 'mainnet') {
-    //     const gasPrice = await getGasPrice(methodName);
-    //     logger.info(`${methodName} gasPrice: ${gasPrice}`);
-    //     if (gasPrice) {
-    //         return method(...params, {
-    //             gasPrice: BigNumber.from(gasPrice),
-    //         });
-    //     }
-    // }
     const maxPriorityFeePerGas = BigNumber.from(
         await getAlchemyPriorityPrice()
     );
     // const block = await contract.provider.getBlock('latest');
     // const maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
-    const maxFeePerGas = MAX_BASE_GAS.add(maxPriorityFeePerGas);
+    const baseGas = getBaseGas(0);
+    const maxFeePerGas = baseGas.add(maxPriorityFeePerGas);
     logger.info(
-        `send tx maxPriorityFeePerGas ${maxPriorityFeePerGas} maxBaseFeePerGas ${MAX_BASE_GAS} maxFeePerGas ${maxFeePerGas}`
+        `send tx maxPriorityFeePerGas ${maxPriorityFeePerGas} maxBaseFeePerGas ${baseGas} maxFeePerGas ${maxFeePerGas}`
     );
     return method(...params, {
-        maxPriorityFeePerGas: maxPriorityFeePerGas,
-        maxFeePerGas: maxFeePerGas,
+        maxPriorityFeePerGas,
+        maxFeePerGas,
     });
-    // return method(...params);
 }
 
 async function pendingTransactionResend(type, oldTransaction) {
@@ -77,16 +45,16 @@ async function pendingTransactionResend(type, oldTransaction) {
         methodName,
         transactionRequest,
     } = oldTransaction;
-    const newGasPrice = await increaseGasPrice(
-        methodName,
-        transactionRequest.gasPrice,
-        reSendTimes + 1
+    const reSendTime = reSendTimes + 1;
+    const newBaseGas = getBaseGas(reSendTime);
+    const maxPriorityFeePerGas = BigNumber.from(
+        await getAlchemyPriorityPrice()
     );
-    const newGasPriceHex = `0x${Number(newGasPrice).toString(16)}`;
-    transactionRequest.gasPrice = newGasPriceHex;
+    const maxFeePerGas = newBaseGas.add(maxPriorityFeePerGas);
     const newTransactionRequest = {
+        maxPriorityFeePerGas,
+        maxFeePerGas,
         nonce: transactionRequest.nonce,
-        gasPrice: newGasPrice,
         gasLimit: transactionRequest.gasLimit,
         to: transactionRequest.to,
         value: transactionRequest.value,
@@ -114,15 +82,13 @@ async function pendingTransactionResend(type, oldTransaction) {
         {
             blockNumber,
             methodName,
-            reSendTimes: reSendTimes + 1,
+            reSendTimes: reSendTime,
             label: msgLabel,
         },
         transactionResponse
     );
     logger.info(
-        `${type} transaction resend with gas price: ${newGasPrice} and resend times: ${
-            reSendTimes + 1
-        }`
+        `${type} transaction resend with maxFeePerGas: ${maxFeePerGas}, maxPriorityFeePerGas: ${maxPriorityFeePerGas} and resend times: ${reSendTime}`
     );
 }
 
