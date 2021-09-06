@@ -12,9 +12,11 @@ const {
 const { loadTableUpdate } = require('../common/lbpUtil');
 const { getNetworkId } = require('../common/lbpUtil');
 
+const { fetchLBPData } = require('../services/lbpService');
+
 
 /********* SAMPLE */
-const { stats } = require('./sample');
+// const { stats } = require('./sample');
 /********* SAMPLE */
 
 const loadPrice = async (stats) => {
@@ -75,6 +77,11 @@ const loadUserAggr = async () => {
 
 const loadLbpTables = async (/*stats*/) => {
     try {
+
+        // Retrieve swap events from Balancer
+        const stats = await fetchLBPData(12332704, 12335185);
+        //console.log('new stats:', stats);
+
         const [
             priceRows,
             userTradeRows
@@ -140,6 +147,16 @@ const loadLbpTables = async (/*stats*/) => {
         logger.error(`**DB: Error in loadLbp.js->loadLbpTables(): ${err}`);
     }
 }
+
+// const loadLbpTables = async () => {
+//     try {
+//         // const result = await fetchLBPData(12332704, 12335185);
+//         const result = await fetchLBPData(12332704, 12332750);
+//         console.log(result);
+//     } catch (err) {
+//         logger.error(`**DB: Error in loadLbp.js->loadLbpTables(): ${err}`);
+//     }
+// }
 
 module.exports = {
     getNetworkId,

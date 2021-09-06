@@ -1,5 +1,6 @@
 const { getLbpStats } = require('./handler/lbpHandler');
 const { loadLbpTables} = require('./loader/loadLbp');
+const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
 (async () => {
     try {
@@ -26,6 +27,8 @@ const { loadLbpTables} = require('./loader/loadLbp');
         // const result = await getLbpStats();
         // console.log(result);
 
+        // Testing LBP
+        //await loadContractInfoFromRegistry();
         await loadLbpTables();
 
         process.exit(0);
