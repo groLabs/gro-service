@@ -1,4 +1,8 @@
 const moment = require('moment');
+const {
+    LBP_CONTRACT,
+    USDC_CONTRACT,
+} = require('../constants');
 // This code is for parse(), which already exists in personalStatsParser.js, but gives a token error if used from here.
 const { getConfig } = require('../../common/configUtil');
 const BN = require('bignumber.js');
@@ -6,46 +10,65 @@ const { div } = require('../../common/digitalUtil');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 
+const Side = Object.freeze({
+    SWAP_IN: 1,
+    SWAP_OUT: 2,
+});
 
 const parse = (amount, coin) => {
-        return parseFloat(
-            div(
-                amount,
-                coin === 'DAI' || coin === 'USD' ? BN(10).pow(18) : BN(10).pow(6),
-                amountDecimal
-            )
-        );
-    };
+    return parseFloat(
+        div(
+            amount,
+            (coin === 'LBP') ? BN(10).pow(18) : BN(10).pow(6),
+            amountDecimal
+        )
+    );
+}
+
+const checkSide = (token_addr_out) => {
+    return (token_addr_out === USDC_CONTRACT)
+        ? Side.SWAP_IN
+        : Side.SWAP_OUT
+}
 
 const getPrice = (stats) => {
-    console.log('getPrice:', stats);
+    // console.log('getPrice:', stats);
     const result = [
         moment.unix(stats.timestamp).utc(),
         stats.timestamp,
         stats.blockNumber,
         3, // getNetworkId(),
-        parse(stats.price, 'USD'),
+        parse(stats.price, 'LBP'),
         moment().utc()
     ];
     return result;
 }
 
 const getTrades = (stats) => {
-    console.log('getTrades', stats)
+    // console.log('getTrades', stats)
+    const side = checkSide(stats.tokenOut);
+    console.log('tkn add out', stats.tokenOut)
     const result = [
-        moment.utc(),       //TODO: replace by date from blockNumber
-        moment().unix(),    //TODO: replace by timestamp from blockNumber
+        moment.unix(stats.timestamp).utc(),
+        stats.timestamp,
         stats.blockNumber,
         3,                  //TODO: getNetworkId(),
         stats.transactionHash,
-        stats.name,
+        (side === Side.SWAP_IN)
+            ? 'SWAP_IN'     // USDC comming in from user
+            : 'SWAP_OUT',   // GRO coming out to user
         stats.caller,
         stats.tokenIn,
-        parse(stats.tokenAmountIn, 'USD'),
+        stats.tokenAmountIn,
         stats.tokenOut,
-        parse(stats.tokenAmountOut, 'USD'),
+        stats.tokenAmountOut,
+        (side === Side.SWAP_IN)
+            ? parse(stats.tokenAmountOut, 'USD')
+            : parse(stats.tokenAmountOut, 'LBP'),
         moment().utc(),
     ];
+    console.log(side)
+    console.log(result);
     return result;
 }
 

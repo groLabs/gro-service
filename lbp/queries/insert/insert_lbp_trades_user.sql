@@ -1,4 +1,4 @@
-INSERT INTO gro."LBP_TRADES" (
+INSERT INTO gro."LBP_TRADES_USER" (
         "trade_date",
         "trade_timestamp",
         "block_number",
@@ -10,6 +10,7 @@ INSERT INTO gro."LBP_TRADES" (
         "token_amount_in",
         "token_addr_out",
         "token_amount_out",
+        "parsed_target_amount",
         "creation_date"
     )
 VALUES (
@@ -24,5 +25,6 @@ VALUES (
         $9,
         $10,
         $11,
-        $12
+        $12,
+        $13
     );

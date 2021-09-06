@@ -13,7 +13,8 @@ const trades = [{
     "tokenIn": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
     "tokenOut": "0x33349B282065b0284d756F0577FB39c158F935e6",
     "tokenAmountIn": "2700288769",
-    "tokenAmountOut": "152760863388103192162"
+    "tokenAmountOut": "152760863388103192162",
+    "timestamp": 1619664690,
 }, {
     "address": "0x29682CF1006Ad08EC6Ade56ae69Db94D4C940F86",
     "blockNumber": 12332967,
@@ -23,8 +24,31 @@ const trades = [{
     "tokenIn": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
     "tokenOut": "0x33349B282065b0284d756F0577FB39c158F935e6",
     "tokenAmountIn": "2694042586",
-    "tokenAmountOut": "151938216725419738068"
-},
+    "tokenAmountOut": "151938216725419738068",
+    "timestamp": 1619667159,
+},{
+    "address": "0x29682CF1006Ad08EC6Ade56ae69Db94D4C940F86",
+    "blockNumber": 12334373,
+    "name": "LOG_SWAP",
+    "transactionHash": "0x3c556f2bf8e56ba4a42604aca9f753ec43a8b6fe55afd8cb14dfeb8efd7ac4e2",
+    "caller": "0xCAbEa81aed10F035C1489fb2A66CE5Ca76fB413d",
+    "tokenIn": "0x33349B282065b0284d756F0577FB39c158F935e6",
+    "tokenOut": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "tokenAmountIn": "1232869669893593668479",
+    "tokenAmountOut": "25965507718",
+    "timestamp": 1619686013,
+},{
+    "address": "0x29682CF1006Ad08EC6Ade56ae69Db94D4C940F86",
+    "blockNumber": 12334373,
+    "name": "LOG_SWAP",
+    "transactionHash": "0x3c556f2bf8e56ba4a42604aca9f753ec43a8b6fe55afd8cb14dfeb8efd7ac4e2",
+    "caller": "0xCAbEa81aed10F035C1489fb2A66CE5Ca76fB413d",
+    "tokenIn": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "tokenOut": "0x33349B282065b0284d756F0577FB39c158F935e6",
+    "tokenAmountIn": "25965507718",
+    "tokenAmountOut": "1261029564647336007041",
+    "timestamp": 1619686013,
+}
 ];
 
 const stats = {
@@ -35,3 +59,4 @@ const stats = {
 module.exports = {
     stats
 }
+

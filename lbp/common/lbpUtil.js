@@ -37,9 +37,13 @@ const loadTableUpdate = async (table, last_date, last_timestamp, last_block, rec
             records,
             moment().utc(),
         ];
-        const res = await query('update_lbp_sys_loads.sql', params);
-        if (res.status === QUERY_ERROR)
+        const res = await query('insert_lbp_sys_loads.sql', params);
+        if (res.status === QUERY_ERROR) {
             logger.warn(`**DB: Error in lbpUtil.js->loadTableUpdate(): Table SYS_LBP_LOADS not updated.`);
+            return false;
+        } else {
+            return true;
+        }
     } catch (err) {
         logger.error(`**DB: Error in lbpUtil.js->loadTableUpdate(): ${err}`);
     }
