@@ -1,4 +1,12 @@
 module.exports = {
+    lbp: {
+        start_block: 12332617,
+        end_block: 12351817,
+        gro_token: '0x33349b282065b0284d756f0577fb39c158f935e6',
+        coin_token: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        bp_pool: '0x29682CF1006Ad08EC6Ade56ae69Db94D4C940F86',
+        crp_pool: '0x002083874F7455968993579688Dd25F58A912eBf',
+    },
     bot_balance: {
         warn: '1000000000000000000',
         critial: '200000000000000000',
