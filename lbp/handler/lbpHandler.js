@@ -28,7 +28,7 @@ const getLbpPrice = async () => {
     }
 }
 
-const getLbpVolume = async () => {
+const getLbpVolume = async (current_timestamp) => {
     try {
         const [
             gro_amount,
@@ -37,7 +37,7 @@ const getLbpVolume = async () => {
         ] = await Promise.all([
             query(`select_lbp_volume.sql`, []),
             query(`select_lbp_latest_price.sql`, []),
-            query(`select_lbp_price_1h.sql`, [1630578647]),
+            query(`select_lbp_price_1h.sql`, [current_timestamp]),
         ]);
 
         if (gro_amount.status === QUERY_ERROR
@@ -46,7 +46,7 @@ const getLbpVolume = async () => {
             return {};
         } else {
             return {
-                "gro_amount": parseFloat(gro_amount.rows[0].gro_amount),
+                "gro_amount": parseFloat(gro_amount.rows[0].gro_amount_out),
                 "latest_price": parseFloat(latest_price.rows[0].lastest_price),
                 "price_1h": parseFloat(price_1h.rows[0].price_1h),
             }
@@ -56,11 +56,11 @@ const getLbpVolume = async () => {
     }
 }
 
-const getLbpStats = async () => {
+const getLbpStats = async (current_timestamp) => {
     try {
         const result = {
             "price": await getLbpPrice(),
-            ...await getLbpVolume(),
+            ...await getLbpVolume(current_timestamp),
         }
         return result;
     } catch (err) {

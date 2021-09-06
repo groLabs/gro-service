@@ -28,8 +28,9 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
         // console.log(result);
 
         // Testing LBP
-        //await loadContractInfoFromRegistry();
-        await loadLbpTables();
+        //await loadContractInfoFromRegistry(); // not needed
+        //await loadLbpTables();
+        console.log(await getLbpStats(1619843541));
 
         process.exit(0);
     } catch (err) {

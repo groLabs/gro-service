@@ -42,6 +42,8 @@ const loadUserTrades = async (stats) => {
         }
         // Load data into LBP_TMP_TRADES
         let rows = 0;
+        if (stats.trades.length > 0)    
+            logger.info(`**DB: Processing ${stats.trades.length} trades...`);
         for (const trade of stats.trades) {
             if (trade.blockNumber > 0) {
                 const res = await query('insert_lbp_trades_user.sql', getTrades(trade));
@@ -77,10 +79,9 @@ const loadUserAggr = async () => {
 
 const loadLbpTables = async (/*stats*/) => {
     try {
-
         // Retrieve swap events from Balancer
         const stats = await fetchLBPData(12332704, 12335185);
-        //console.log('new stats:', stats);
+        // const stats = await fetchLBPData(12336186, 12346186);  // 
 
         const [
             priceRows,
@@ -141,22 +142,12 @@ const loadLbpTables = async (/*stats*/) => {
                 logger.warn(`**DB: Error found in loadLbp.js->loadLbpTables() when loading LBP_TRADES_AGGR: Table SYS_LBP_LOADS not updated.`);
             }
         } else {
-            logger.warn(`**DB: Error found in loadLbp.js->loadLbpTables(): Table SYS_LBP_LOADS not updated.`);
+            logger.warn(`**DB: Error found in loadLbp.js->loadLbpTables(): Table SYS_LBP_LOADS not updated. (priceRows: ${priceRows}, userTradeRows: ${userTradeRows})`);
         }
     } catch (err) {
         logger.error(`**DB: Error in loadLbp.js->loadLbpTables(): ${err}`);
     }
 }
-
-// const loadLbpTables = async () => {
-//     try {
-//         // const result = await fetchLBPData(12332704, 12335185);
-//         const result = await fetchLBPData(12332704, 12332750);
-//         console.log(result);
-//     } catch (err) {
-//         logger.error(`**DB: Error in loadLbp.js->loadLbpTables(): ${err}`);
-//     }
-// }
 
 module.exports = {
     getNetworkId,

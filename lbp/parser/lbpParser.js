@@ -32,7 +32,6 @@ const checkSide = (token_addr_out) => {
 }
 
 const getPrice = (stats) => {
-    // console.log('getPrice:', stats);
     const result = [
         moment.unix(stats.timestamp).utc(),
         stats.timestamp,
@@ -45,9 +44,7 @@ const getPrice = (stats) => {
 }
 
 const getTrades = (stats) => {
-    // console.log('getTrades', stats)
     const side = checkSide(stats.tokenOut);
-    console.log('tkn add out', stats.tokenOut)
     const result = [
         moment.unix(stats.timestamp).utc(),
         stats.timestamp,
@@ -67,8 +64,6 @@ const getTrades = (stats) => {
             : parse(stats.tokenAmountOut, 'LBP'),
         moment().utc(),
     ];
-    console.log(side)
-    console.log(result);
     return result;
 }
 

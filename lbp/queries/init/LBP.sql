@@ -4,8 +4,8 @@ CREATE TABLE gro."LBP_PRICE" (
     block_number INTEGER NOT NULL,
     network_id SMALLINT NOT NULL,
     spot_price NUMERIC (20, 8) NULL,
-    creation_date TIMESTAMP (6) NULL,
-    CONSTRAINT "LBP_PRICE_pkey" PRIMARY KEY (price_timestamp, network_id) NOT DEFERRABLE INITIALLY IMMEDIATE
+    creation_date TIMESTAMP (6) NULL
+    --CONSTRAINT "LBP_PRICE_pkey" PRIMARY KEY (price_timestamp, network_id) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."LBP_PRICE" OWNER to postgres;
