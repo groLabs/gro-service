@@ -231,15 +231,22 @@ async function totalSupplyOfGro() {
     return `${result}`;
 }
 
-async function fetchLBPData(blockNumber) {
-    const currectBlockNumber = await getCurrentBlockNumber(providerKey);
+async function fetchLBPData(startBlockNumber, endBlockNumber) {
+    let currectBlockNumber = endBlockNumber;
+    if (!currectBlockNumber) {
+        currectBlockNumber = await getCurrentBlockNumber(providerKey);
+    }
+
     const spotPrice = await getSpotPriceOfPool(
         groTokenAddress,
         stabeCoinAddress,
         currectBlockNumber
     );
 
-    const swapEvents = await fetchSwapEvents(blockNumber, currectBlockNumber);
+    const swapEvents = await fetchSwapEvents(
+        startBlockNumber,
+        currectBlockNumber
+    );
 
     return {
         price: spotPrice,
