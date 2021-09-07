@@ -10,6 +10,8 @@ const { div } = require('../../common/digitalUtil');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 
+const {getNetworkId} = require('../common/lbpUtil');
+
 
 const parse = (amount, type) => {
     return parseFloat(
@@ -26,7 +28,7 @@ const getData = (stats) => {
         moment.unix(stats.price.timestamp).utc(),
         stats.price.timestamp,
         stats.price.blockNumber,
-        3, // getNetworkId(),
+        getNetworkId(),
         parse(stats.price.price, 'price'),
         parse(stats.balance.balance, 'balance'),
         moment().utc(),

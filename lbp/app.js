@@ -1,5 +1,5 @@
 const { getLbpStats } = require('./handler/lbpHandler');
-const { loadLbpTables} = require('./loader/loadLbp');
+const { etlLbpStats} = require('./etl/etlLbpStats');
 const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
 (async () => {
@@ -29,9 +29,8 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
         // Testing LBP
         //await loadContractInfoFromRegistry(); // not needed
-        //await loadLbpTables();
-        // console.log(await getLbpStats(1619843541)); // TODO: change parameter by current timestamp
-        console.log(await getLbpStats());
+        await etlLbpStats();
+        // console.log(await getLbpStats());
 
         process.exit(0);
     } catch (err) {
