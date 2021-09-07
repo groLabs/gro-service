@@ -7,7 +7,7 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { QUERY_ERROR } = require('../constants');
 
-const getLbpPrice = async () => {
+const getLbpHistoricPrice = async () => {
     try {
         let result = [];
         const res = await query(`select_lbp_prices.sql`, []);
@@ -28,45 +28,52 @@ const getLbpPrice = async () => {
     }
 }
 
-const getLbpVolume = async (current_timestamp) => {
+const getLbpBalanceAndPrice = async () => {
     try {
         const [
             gro_amount,
             latest_price,
             price_1h
         ] = await Promise.all([
-            query(`select_lbp_volume.sql`, []),
+            query(`select_lbp_latest_balance.sql`, []),
             query(`select_lbp_latest_price.sql`, []),
-            query(`select_lbp_price_1h.sql`, [current_timestamp]),
+            query(`select_lbp_price_1h.sql`, []),
         ]);
 
         if (gro_amount.status === QUERY_ERROR
             || latest_price.status === QUERY_ERROR
             || price_1h.status === QUERY_ERROR) {
-            return {};
+            return {
+                "error": "no data found in DB",
+            };
         } else {
             return {
-                "gro_amount": parseFloat(gro_amount.rows[0].gro_amount_out),
-                "latest_price": parseFloat(latest_price.rows[0].lastest_price),
-                "price_1h": parseFloat(price_1h.rows[0].price_1h),
+                "gro_amount": (gro_amount.rowCount > 0)
+                    ? parseFloat(gro_amount.rows[0].latest_balance)
+                    : 'NA',
+                "latest_price": (latest_price.rowCount > 0)
+                    ? parseFloat(latest_price.rows[0].lastest_price)
+                    : 'NA',
+                "price_1h": (price_1h.rowCount > 0)
+                    ? parseFloat(price_1h.rows[0].price_1h)
+                    : 'NA',
             }
         }
     } catch (err) {
-        logger.error(`**DB: Error in lbpHandler.js->getLbpVolume(): ${err}`);
+        logger.error(`**DB: Error in lbpHandler.js->getLbpBalanceAndPrice(): ${err}`);
     }
 }
 
-const getLbpStats = async (current_timestamp) => {
+const getLbpStats = async () => {
     try {
         const result = {
-            "price": await getLbpPrice(),
-            ...await getLbpVolume(current_timestamp),
+            "price": await getLbpHistoricPrice(),
+            ...await getLbpBalanceAndPrice(),
         }
         return result;
     } catch (err) {
         logger.error(`**DB: Error in lbpHandler.js->getLbpStats(): ${err}`);
     }
-
 }
 
 module.exports = {

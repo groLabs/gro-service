@@ -10,64 +10,30 @@ const { div } = require('../../common/digitalUtil');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 
-const Side = Object.freeze({
-    SWAP_IN: 1,
-    SWAP_OUT: 2,
-});
 
-const parse = (amount, coin) => {
+const parse = (amount, type) => {
     return parseFloat(
         div(
             amount,
-            (coin === 'LBP') ? BN(10).pow(18) : BN(10).pow(6),
-            amountDecimal
+            (type === 'price') ? BN(10).pow(6) : BN(10).pow(18),
+            (type === 'price') ? 6 : 7
         )
     );
 }
 
-const checkSide = (token_addr_out) => {
-    return (token_addr_out === USDC_CONTRACT)
-        ? Side.SWAP_IN
-        : Side.SWAP_OUT
-}
-
-const getPrice = (stats) => {
+const getData = (stats) => {
     const result = [
-        moment.unix(stats.timestamp).utc(),
-        stats.timestamp,
-        stats.blockNumber,
+        moment.unix(stats.price.timestamp).utc(),
+        stats.price.timestamp,
+        stats.price.blockNumber,
         3, // getNetworkId(),
-        parse(stats.price, 'LBP'),
-        moment().utc()
-    ];
-    return result;
-}
-
-const getTrades = (stats) => {
-    const side = checkSide(stats.tokenOut);
-    const result = [
-        moment.unix(stats.timestamp).utc(),
-        stats.timestamp,
-        stats.blockNumber,
-        3,                  //TODO: getNetworkId(),
-        stats.transactionHash,
-        (side === Side.SWAP_IN)
-            ? 'SWAP_IN'     // USDC comming in from user
-            : 'SWAP_OUT',   // GRO coming out to user
-        stats.caller,
-        stats.tokenIn,
-        stats.tokenAmountIn,
-        stats.tokenOut,
-        stats.tokenAmountOut,
-        (side === Side.SWAP_IN)
-            ? parse(stats.tokenAmountOut, 'USD')
-            : parse(stats.tokenAmountOut, 'LBP'),
+        parse(stats.price.price, 'price'),
+        parse(stats.balance.balance, 'balance'),
         moment().utc(),
     ];
     return result;
 }
 
 module.exports = {
-    getPrice,
-    getTrades,
+    getData,
 }

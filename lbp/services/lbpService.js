@@ -245,7 +245,31 @@ async function totalSupplyOfGro() {
     return `${result}`;
 }
 
-async function fetchLBPData(startBlockNumber, endBlockNumber) {
+// Old version with price and events
+// async function fetchLBPData(startBlockNumber, endBlockNumber) {
+//     let currentBlockNumber = endBlockNumber;
+//     if (!currentBlockNumber) {
+//         currentBlockNumber = await getCurrentBlockNumber(providerKey);
+//     }
+
+//     const spotPrice = await getSpotPriceOfPool(
+//         groTokenAddress,
+//         stableCoinAddress,
+//         currentBlockNumber
+//     );
+
+//     const swapEvents = await fetchSwapEvents(
+//         startBlockNumber,
+//         currentBlockNumber
+//     );
+//     return {
+//         price: spotPrice,
+//         trades: swapEvents,
+//     };
+// }
+
+// New version with price and token supply
+async function fetchLBPData(endBlockNumber) {
     let currentBlockNumber = endBlockNumber;
     if (!currentBlockNumber) {
         currentBlockNumber = await getCurrentBlockNumber(providerKey);
@@ -257,13 +281,11 @@ async function fetchLBPData(startBlockNumber, endBlockNumber) {
         currentBlockNumber
     );
 
-    const swapEvents = await fetchSwapEvents(
-        startBlockNumber,
-        currentBlockNumber
-    );
+    const currentBalance = await getBalanceOfGroInPool();
+
     return {
         price: spotPrice,
-        trades: swapEvents,
+        balance: currentBalance,
     };
 }
 

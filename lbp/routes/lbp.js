@@ -5,9 +5,9 @@ const cors = require('cors');
 const router = express.Router();
 const { query } = require('express-validator');
 const { ParameterError } = require('../../common/error');
-const { getLbpStats } = require('../handler/lbpHandler');
 const { validate } = require('../../stats/common/validate');
 const { personalStatsMessage } = require('../../discordMessage/statsMessage');
+const { getLbpStats } = require('../handler/lbpHandler');
 
 const wrapAsync = function wrapAsync(fn) {
     return function wrap(req, res, next) {
@@ -15,6 +15,7 @@ const wrapAsync = function wrapAsync(fn) {
     };
 };
 
+//  http://localhost:3011/lbp/lbp_stats?network=mainnet&timestamp=1619843541
 router.get(
     '/lbp_stats',
     validate([
@@ -22,6 +23,8 @@ router.get(
             .trim()
             .notEmpty()
             .withMessage(`network can't be empty.`),
+        // query('timestamp')
+        //     .matches(/^\d{10}$/),
     ]),
     wrapAsync(async (req, res) => {
         let { network } = req.query;
