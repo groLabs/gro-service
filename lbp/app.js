@@ -1,5 +1,5 @@
 const { getLbpStats } = require('./handler/lbpHandler');
-const { etlLbpStats} = require('./etl/etlLbpStats');
+const { etlLbpStats, etlLbpStatsHDL} = require('./etl/etlLbpStats');
 const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
 (async () => {
@@ -22,14 +22,10 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
             process.exit(0);
         }
 
-
-        // Testing personal stats cache
-        // const result = await getLbpStats();
-        // console.log(result);
-
         // Testing LBP
-        //await loadContractInfoFromRegistry(); // not needed
-        await etlLbpStats();
+        // await loadContractInfoFromRegistry(); // not needed
+        // await etlLbpStats();
+        await etlLbpStatsHDL(1631035645, 1631036145, 300);
         // console.log(await getLbpStats());
 
         process.exit(0);

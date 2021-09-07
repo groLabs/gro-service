@@ -9,11 +9,12 @@ const provider = getAlchemyRpcProvider(providerKey);
 const scanner = new BlocksScanner(provider);
 
 
-/// @notice Calculate number of N-second intervals from the start to end dates 
+/// @notice Calculate number of N-second intervals between start and end timestamps
 ///         (in case an historical data load is needed)
-/// @param  start Start date of the interval
-/// @param  end End date of the interval
-/// @return Time range
+/// @param  start The start date of the interval in timestamp
+/// @param  end The end date of the interval in timestamp
+/// @param  interval The interval in seconds
+/// @return Array of timestamps
 const calcRangeTimestamps = (start, end, interval) => {
     try {
         let iterations = [];
@@ -36,8 +37,8 @@ const calcRangeTimestamps = (start, end, interval) => {
 }
 
 /// @notice Checks if date format and range are OK
-/// @param  fromDate Start date of the range
-/// @param  toDate End date of the range
+/// @param  fromDate The Start date of the range in date format (DD/MM/YYYY)
+/// @param  toDate The end date of the range in date format (DD/MM/YYYY)
 /// @return True if dates are OK; false otherwise
 const checkDateRange = (_fromDate, _toDate) => {
     try {

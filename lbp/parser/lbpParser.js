@@ -3,14 +3,12 @@ const {
     LBP_CONTRACT,
     USDC_CONTRACT,
 } = require('../constants');
-// This code is for parse(), which already exists in personalStatsParser.js, but gives a token error if used from here.
 const { getConfig } = require('../../common/configUtil');
 const BN = require('bignumber.js');
 const { div } = require('../../common/digitalUtil');
+const { getNetworkId } = require('../common/lbpUtil');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
-
-const {getNetworkId} = require('../common/lbpUtil');
 
 
 const parse = (amount, type) => {

@@ -281,7 +281,7 @@ async function fetchLBPData(endBlockNumber) {
         currentBlockNumber
     );
 
-    const currentBalance = await getBalanceOfGroInPool();
+    const currentBalance = await getBalanceOfGroInPool(currentBlockNumber);
 
     return {
         price: spotPrice,
