@@ -13,7 +13,7 @@ const poolABI = require('./Pool.json');
 
 const providerKey = 'default';
 const provider = getAlchemyRpcProvider(providerKey);
-const stabeCoinAddress = getConfig('lbp.coin_token');
+const stableCoinAddress = getConfig('lbp.coin_token');
 const groTokenAddress = getConfig('lbp.gro_token');
 const bpPoolAddress = getConfig('lbp.bp_pool');
 const crpPoolAddress = getConfig('lbp.crp_pool');
@@ -204,8 +204,8 @@ async function fetchExitEvents(fromBlock, toBlock) {
 }
 
 async function getSpotPriceOfPool(
-    inTokenAddress = groTokenAddress,
-    outTokenAddress = stabeCoinAddress,
+    outTokenAddress = groTokenAddress,
+    inTokenAddress = stableCoinAddress,
     blockNumber = 'latest'
 ) {
     logger.info(`fetch spot price at block ${blockNumber}`);
@@ -221,6 +221,20 @@ async function getSpotPriceOfPool(
     };
 }
 
+async function getBalanceOfGroInPool(blockNumber = 'latest') {
+    logger.info(`fetch balance of Gro token ${blockNumber}`);
+    const blockInfo = await provider.getBlock(blockNumber);
+    const { number, timestamp } = blockInfo;
+    const balance = await bpPool.getBalance(groTokenAddress, {
+        blockTag: number,
+    });
+    return {
+        timestamp,
+        blockNumber: number,
+        balance: `${balance}`,
+    };
+}
+
 async function balanceOfGro(userAddress) {
     const result = await groToken.balanceOf(userAddress);
     return `${result}`;
@@ -232,22 +246,21 @@ async function totalSupplyOfGro() {
 }
 
 async function fetchLBPData(startBlockNumber, endBlockNumber) {
-    let currectBlockNumber = endBlockNumber;
-    if (!currectBlockNumber) {
-        currectBlockNumber = await getCurrentBlockNumber(providerKey);
+    let currentBlockNumber = endBlockNumber;
+    if (!currentBlockNumber) {
+        currentBlockNumber = await getCurrentBlockNumber(providerKey);
     }
 
     const spotPrice = await getSpotPriceOfPool(
         groTokenAddress,
-        stabeCoinAddress,
-        currectBlockNumber
+        stableCoinAddress,
+        currentBlockNumber
     );
 
     const swapEvents = await fetchSwapEvents(
         startBlockNumber,
-        currectBlockNumber
+        currentBlockNumber
     );
-
     return {
         price: spotPrice,
         trades: swapEvents,
@@ -261,4 +274,5 @@ module.exports = {
     balanceOfGro,
     totalSupplyOfGro,
     fetchLBPData,
+    getBalanceOfGroInPool,
 };
