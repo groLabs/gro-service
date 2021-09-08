@@ -133,9 +133,9 @@ export const emoji = {
     curveCheck: ':loudspeaker:',
 };
 export const transaction_long_pending = {
-    invest: 120000,
-    investToCurveVault: 120000,
-    strategyHarvest: 120000,
+    invest: 86400000,
+    investToCurveVault: 86400000,
+    strategyHarvest: 86400000,
     execPnL: 60000,
     rebalance: 60000,
 };
@@ -144,6 +144,7 @@ export const stats_folder = '../stats';
 export const log_folder = '../logs';
 export const blockNumberFile = '../stats/lastBlockNumber.json';
 export const stats_latest = '../stats/gro-latest.json';
+export const pendingTransactionFile = '../pendingTransaction.json';
 export const vault_name = ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'];
 export const vault_display_name = ['DAI', 'USDC', 'USDT', '3CRVUSDx'];
 export const stable_coin = ['DAI', 'USDC', 'USDT'];

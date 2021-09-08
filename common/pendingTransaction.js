@@ -1,4 +1,8 @@
 const { pendingTransactions } = require('./storage');
+const {
+    readPendingTransaction,
+    updatePendingTransaction,
+} = require('./fileUtils.js');
 const { getVaultStableCoins } = require('../contract/allContracts');
 const { getAlchemyRpcProvider } = require('./chainUtil');
 const { BlockChainCallError } = require('../dist/common/error').default;
@@ -9,12 +13,50 @@ const {
     getRebalanceKeyData,
 } = require('./actionDataFunder');
 const { MESSAGE_TYPES } = require('../dist/common/discord/discordService').default;
+const { getConfig } = require('./configUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 const vaultStableCoins = getVaultStableCoins();
+
+function addPendingTransaction(typeKey, basicInfo, transactionResponse) {
+    const {
+        blockNumber,
+        providerKey,
+        walletKey,
+        reSendTimes,
+        methodName,
+        label,
+    } = basicInfo;
+    console.log(`transactionResponse: ${JSON.stringify(transactionResponse)}`);
+    pendingTransactions.set(typeKey, {
+        blockNumber,
+        providerKey,
+        walletKey,
+        reSendTimes,
+        methodName,
+        label,
+        hash: transactionResponse.hash,
+        createdTime: new Date(),
+        timestamp: Date.now(),
+        transactionRequest: {
+            nonce: transactionResponse.nonce,
+            type: transactionResponse.type,
+            maxPriorityFeePerGas: transactionResponse.maxPriorityFeePerGas,
+            maxFeePerGas: transactionResponse.maxFeePerGas,
+            gasLimit: transactionResponse.gasLimit,
+            to: transactionResponse.to,
+            value: transactionResponse.value,
+            data: transactionResponse.data,
+            chainId: transactionResponse.chainId,
+            from: transactionResponse.from,
+        },
+    });
+    console.log(`pendingTx ${pendingTransactions.size}`);
+    updatePendingTransaction(pendingTransactions);
+}
 
 async function parseAdditionalData(type, hash, transactionReceipt) {
     const typeSplit = type.split('-');
@@ -78,10 +120,23 @@ async function checkPendingTransactions(types) {
             pendingCheckPromise.push(getReceipt(type));
         }
     }
-    result = Promise.all(pendingCheckPromise);
+    result = await Promise.all(pendingCheckPromise);
+    updatePendingTransaction(pendingTransactions);
     return result;
+}
+
+function syncPendingTransactions() {
+    const filePendingTransactions = readPendingTransaction();
+    // logger.info(`filePendingTransactions ${filePendingTransactions.size()}`);
+    pendingTransactions.clear();
+    for (const [key, value] of filePendingTransactions) {
+        pendingTransactions.set(key, value);
+    }
+    logger.info(`sync pending transactions ${pendingTransactions.size}`);
 }
 
 module.exports = {
     checkPendingTransactions,
+    addPendingTransaction,
+    syncPendingTransactions,
 };
