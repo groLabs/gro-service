@@ -78,7 +78,7 @@ app.use((error, req, res, next) => {
 });
 
 // start the schedule task
-//scheduler.startLbpStatsJobs();
+// scheduler.startLbpStatsJobs();
 
 
 module.exports = app;

@@ -8,11 +8,15 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
         if (params.length > 0) {
             switch (params[0]) {
-                case 'XXXX':
-                    if (params.length === 3) {
-                        //TBC
+                case 'etlLbpStatsHDL':
+                    if (params.length === 4) {
+                        await etlLbpStatsHDL(
+                            parseInt(params[1]),    // start timestamp
+                            parseInt(params[2]),    // end timestamp
+                            parseInt(params[3])     // time interval in seconds
+                        );   
                     } else {
-                        console.log('Wrong parameters for Price Check HDL - e.g.: priceCheckHDL 1626825600 1626912000');
+                        console.log('Wrong parameters for LBP stats HDL - e.g.: etlLbpStatsHDL 1626825600 1626912000 3600');
                     }
                     break;
                 default:
@@ -34,3 +38,16 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
     }
 })();
 
+/*
+    Maple Finance in mainnet / Whole LBP
+    start timestamp:    1619641800 (28 apr 2021 20:30)
+    end timestamp:      1619901900 (01 may 2021 20:45)
+    interval:           3600 (1h)
+*/
+
+/* 
+    Maple Finance in mainnet / 1 day
+    start timestamp:    1619654400 (29 apr 2021 00:00)
+    end timestamp:      1619740800 (30 apr 2021 00:00)
+    interval:           3600 (1h)
+*/

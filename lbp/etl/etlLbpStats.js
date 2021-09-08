@@ -1,4 +1,9 @@
-const { loadLbp } = require('../loader/loadLbp');
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const logger = require(`../../${botEnv}/${botEnv}Logger`);
+const {
+    loadLbp,
+    removeLbp,
+} = require('../loader/loadLbp');
 const { getData } = require('../parser/lbpParser');
 const { fetchLBPData } = require('../services/lbpService');
 const {
@@ -52,27 +57,30 @@ const etlLbpStats = async () => {
 // 2) Loads in 5' intervals
 const etlLbpStatsHDL = async (start, end, interval) => {
     try {
+        // Safety check
         if (start > end) {
             logger.error(`**DB: Error in etlLbpStats.js->etlLbpStatsHDL(): start date can't be greater than end date`);
             throw 'Data not loaded into LBP_BALANCER_V1';
         }
+
         // Get all dates in N intervals for a given time range (start, end)
         const dates = calcRangeTimestamps(start, end, interval);
 
-        //TODO
-        // Remove records from DB for that time range
-        
-        // Get block number for each date
-        for (const date of dates) {
-            // Retrieve price & supply from Balancer
-            const block = (await findBlockByDate(date, true)).block;
-            const stats = await fetchLBPData(block);
-            if (isFormatOK(stats)) {
-                // Parse data into SQL parameter
-                const data = getData(stats);
-                if (isLengthOK(data))
-                    // Load data into LBP_BALANCER_V1
-                    await loadLbp(data);
+        // Remove records from DB for the given time range
+        const res = await removeLbp(start, end);
+        if (res) {
+            // Get block number for each date
+            for (const date of dates) {
+                // Retrieve price & supply from Balancer
+                const block = (await findBlockByDate(date, true)).block;
+                const stats = await fetchLBPData(block);
+                if (isFormatOK(stats)) {
+                    // Parse data into SQL parameter
+                    const data = getData(stats);
+                    if (isLengthOK(data))
+                        // Load data into LBP_BALANCER_V1
+                        await loadLbp(data);
+                }
             }
         }
     } catch (err) {
