@@ -1,4 +1,5 @@
 const {
+    getController,
     getInsurance,
     getLifeguard,
     getVaults,
@@ -223,6 +224,54 @@ async function priceSafetyCheck(providerKey) {
     }
 }
 
+async function distributeCurveVault(
+    blockNumber,
+    providerKey,
+    walletKey,
+    amount,
+    delta
+) {
+    logger.info(`amount ${amount} delta ${delta[0]} ${delta[1]} ${delta[2]}`);
+    const vaults = getVaults(providerKey, walletKey);
+    const withdrawResponse = await wrapSendTransaction(
+        vaults[3],
+        'withdrawToAdapter',
+        [amount, 0]
+    ).catch((error) => {
+        logger.error(error);
+        throw new ContractSendError(
+            'withdrawResponse call failed.',
+            MESSAGE_TYPES.distributeCurveVault
+        );
+    });
+    const distributeCurveVaultResponse = await wrapSendTransaction(
+        getController(providerKey, walletKey),
+        'distributeCurveAssets',
+        [amount, delta]
+    ).catch((error) => {
+        logger.error(error);
+        throw new ContractSendError(
+            'distributeCurveVault call failed.',
+            MESSAGE_TYPES.distributeCurveVault
+        );
+    });
+
+    addPendingTransaction(
+        'curve-exposure',
+        {
+            blockNumber,
+            providerKey,
+            walletKey,
+            reSendTimes: 0,
+            methodName: 'distributeCurveVault',
+            label: MESSAGE_TYPES.distributeCurveVault,
+        },
+        distributeCurveVaultResponse
+    );
+
+    rebalanceMessage({ transactionHash: distributeCurveVaultResponse.hash });
+}
+
 module.exports = {
     invest,
     curveInvest,
@@ -230,4 +279,5 @@ module.exports = {
     rebalance,
     execActions,
     priceSafetyCheck,
+    distributeCurveVault,
 };

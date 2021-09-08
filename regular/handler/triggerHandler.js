@@ -1,12 +1,14 @@
 const { BigNumber } = require('ethers');
 const {
     getInsurance,
+    getExposure,
     getLifeguard,
     getVaults,
     getStrategyLength,
     getVaultAndStrategyLabels,
     getYearnVaults,
     getController,
+    getBuoy,
 } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
 const { MESSAGE_TYPES } = require('../../common/discord/discordService');
@@ -17,7 +19,7 @@ const {
 } = require('../../common/error');
 const { investTriggerMessage } = require('../../discordMessage/investMessage');
 const {
-    rebalaneTriggerMessage,
+    rebalanceTriggerMessage,
 } = require('../../discordMessage/rebalanceMessage');
 const {
     harvestTriggerMessage,
@@ -26,6 +28,7 @@ const logger = require('../regularLogger');
 
 const NONEED_TRIGGER = { needCall: false };
 const GAS_PRICE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(9));
+const CURVE_DISTRIBUTE_BUFFER = BigNumber.from(1);
 
 async function isEmergencyState(messageType, providerKey, walletKey) {
     const controller = getController(providerKey, walletKey);
@@ -381,12 +384,80 @@ async function rebalanceTrigger(providerKey, walletKey) {
             needCall: true,
         };
     }
-    rebalaneTriggerMessage({ isRebalance: needRebalance });
+    rebalanceTriggerMessage({ isRebalance: needRebalance });
     return rebalanceTriggerResult;
+}
+
+async function distributeCurveVaultTrigger(providerKey, walletKey) {
+    // emergency check
+    const isEmergency = await isEmergencyState(
+        MESSAGE_TYPES.rebalanceTrigger,
+        providerKey,
+        walletKey
+    );
+    if (isEmergency) {
+        logger.info(
+            'System is in emergency state, rebalance action will be paused.'
+        );
+        return NONEED_TRIGGER;
+    }
+
+    if (pendingTransactions.get('curve-exposure')) {
+        const result = `Already has pending curve-exposure transaction: ${
+            pendingTransactions.get('curve-exposure').hash
+        }`;
+        logger.info(result);
+        throw new PendingTransactionError(
+            result,
+            MESSAGE_TYPES.distributeCurveVault
+        );
+    }
+    const insurance = getInsurance(providerKey, walletKey);
+    const exposure = getExposure(providerKey, walletKey);
+    const bouy3pool = getBuoy(providerKey, walletKey);
+
+    const preCal = await insurance.prepareCalculation();
+    const riskResult = await exposure.getExactRiskExposure(preCal);
+    const curveExposure = riskResult[2];
+    const curveTarget = await insurance.curveVaultPercent();
+
+    logger.info(
+        `curve exposure: ${curveExposure} curve target: ${curveTarget}`
+    );
+
+    let distributeCurveVaultTriggerResult = NONEED_TRIGGER;
+    if (curveExposure.gt(curveTarget)) {
+        const totalAssetsUsd = preCal[0];
+        const curveUsd = preCal[1];
+        logger.info(`totalAssetsUsd ${preCal[0]}, curveAssetsUsd ${preCal[1]}`);
+        // TODO: add 0.1% as buffer. Will over-withdraw 0.1%
+        const expectedCurveUsd = totalAssetsUsd
+            .mul(curveTarget.sub(CURVE_DISTRIBUTE_BUFFER))
+            .div(10000);
+        const usdAmountNeedDistribute = curveUsd.sub(expectedCurveUsd);
+        const lpAmountNeedDistribute = await bouy3pool.usdToLp(
+            usdAmountNeedDistribute
+        );
+        logger.info(
+            `usdAmountNeedDistribute ${usdAmountNeedDistribute} lpAmountNeedDistribute: ${lpAmountNeedDistribute}`
+        );
+        const delta = await insurance.calculateDepositDeltasOnAllVaults();
+        logger.info(`distribute delta ${delta[0]}, ${delta[1]}, ${delta[2]}`);
+        distributeCurveVaultTriggerResult = {
+            needCall: true,
+            params: {
+                amount: lpAmountNeedDistribute,
+                delta,
+            },
+        };
+    }
+    // rebalanceTriggerMessage({ isRebalance: needRebalance });
+    return distributeCurveVaultTriggerResult;
 }
 
 module.exports = {
     investTrigger,
     harvestOneTrigger,
     rebalanceTrigger,
+    distributeCurveVaultTrigger,
 };

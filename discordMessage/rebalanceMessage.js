@@ -13,7 +13,7 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
-function rebalaneTriggerMessage(content) {
+function rebalanceTriggerMessage(content) {
     const discordMessage = {
         type: MESSAGE_TYPES.pnlTrigger,
     };
@@ -97,7 +97,7 @@ function rebalanceTransactionMessage(content) {
 }
 
 module.exports = {
-    rebalaneTriggerMessage,
+    rebalanceTriggerMessage,
     rebalanceMessage,
     rebalanceTransactionMessage,
 };
