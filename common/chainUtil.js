@@ -36,6 +36,7 @@ let socketProvider;
 let rpcProvider;
 let infruraRpcProvider;
 let defaultWalletManager;
+let privateProvider;
 const rpcProviders = {};
 const infruraRpcProviders = {};
 const botWallets = {};
@@ -43,6 +44,7 @@ const failedTimes = { accountBalance: 0 };
 const failedAlertTimes = getConfig('call_failed_time', false) || 2;
 const retryTimes = getConfig('timeout_retry', false) || 1;
 const stallerTime = getConfig('timeout_retry_staller', false) || 1000;
+const needPrivateTransaction = getConfig('private_transaction', false) || false;
 
 const network = getConfig('blockchain.network');
 logger.info(`network: ${network}`);
@@ -151,6 +153,14 @@ function createInfruraRpcProvider() {
     return infruraRpcProvider;
 }
 
+function createPrivateProvider() {
+    if (!privateProvider) {
+        logger.info('Create private provider.');
+        privateProvider = new PrivateProvider(network);
+    }
+    return privateProvider;
+}
+
 function getDefaultProvider() {
     if (defaultProvider) {
         return defaultProvider;
@@ -236,12 +246,22 @@ function getInfruraRpcProvider(providerKey) {
     return result;
 }
 
+function getTransactionProvider(providerKey) {
+    let provider;
+    if (needPrivateTransaction && network === 'mainnet') {
+        provider = createPrivateProvider();
+    } else {
+        provider = getAlchemyRpcProvider(providerKey);
+    }
+    return provider;
+}
+
 function getNonceManager() {
     if (defaultWalletManager) {
         return defaultWalletManager;
     }
 
-    const provider = getAlchemyRpcProvider(DEFAULT_PROVIDER_KEY);
+    const provider = getTransactionProvider(DEFAULT_PROVIDER_KEY);
     const keystorePassword = getConfig('blockchain.keystores.default.password');
     let botWallet;
     if (keystorePassword === 'NO_PASSWORD') {
@@ -271,7 +291,7 @@ function createWallet(providerKey, walletKey) {
     providerKey = providerKey || DEFAULT_PROVIDER_KEY;
     walletKey = walletKey || DEFAULT_WALLET_KEY;
     let wallet;
-    const provider = getAlchemyRpcProvider(providerKey);
+    const provider = getTransactionProvider(providerKey);
     const botType = process.env.BOT_ENV.toLowerCase();
     const keystorePassword = getConfig(
         `blockchain.keystores.${botType}.${walletKey}_password`
@@ -452,6 +472,7 @@ module.exports = {
     getSocketProvider,
     getInfruraRpcProvider,
     getAlchemyRpcProvider,
+    getTransactionProvider,
     getWalletNonceManager,
     syncManagerNonce,
     checkAccountsBalance,

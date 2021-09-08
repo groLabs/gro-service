@@ -1,4 +1,5 @@
 module.exports = {
+    private_transaction: false,
     lbp: {
         start_block: 12332617,
         end_block: 12351817,
