@@ -1,8 +1,12 @@
 module.exports = {
     private_transaction: false,
     lbp: {
-        start_block: 12332617,
-        end_block: 12351817,
+        start_block: 12331109,
+        end_block: 12350508,
+        start_timestamp: 1619641800,
+        lbp_start_date: 1619641800,
+        lbp_end_date: 1619901900,
+        gro_amount_total: 500000,
         gro_token: '0x33349b282065b0284d756f0577fb39c158f935e6',
         coin_token: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
         bp_pool: '0x29682CF1006Ad08EC6Ade56ae69Db94D4C940F86',

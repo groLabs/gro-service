@@ -2,6 +2,10 @@ module.exports = {
     lbp: {
         start_block: 9260073,
         end_block: 12351817,
+        start_timestamp: 1631155336,
+        lbp_start_date: 1631155336,
+        lbp_end_date: 1631673736,
+        gro_amount_total: 5000000,
         gro_token: '0xD348b1F5872940901fcAF9aCD1b9785f4e12121A',
         coin_token: '0x9edF2989C22C5bF6675a4581E39D75a3C9BF8578',
         bp_pool: '0x86fa758a31ba14d1beea4a79eece71c2329d004b',
@@ -39,6 +43,7 @@ module.exports = {
     },
     trigger_scheduler: {},
     emoji: {},
+    stats_folder: '../stats',
     log_folder: '../logs',
     blockNumberFile: '../lbp/lastBlockNumber.json',
     discord: {

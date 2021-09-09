@@ -60,9 +60,9 @@ app.use((error, req, res, next) => {
     customLogger.error(error);
     if (error instanceof ContractCallError) {
         res.status(400).json({ message: `${error.name}: ${error.message}` });
-        sendMessage(DISCORD_CHANNELS.botLogs, {
-            message: `${error}, Url ${req.originalUrl}`,
-        });
+        // sendMessage(DISCORD_CHANNELS.botLogs, {
+        //     message: `${error}, Url ${req.originalUrl}`,
+        // });
     } else {
         next(error);
     }
@@ -71,14 +71,14 @@ app.use((error, req, res, next) => {
 app.use((error, req, res, next) => {
     customLogger.error(`${error.name}: ${error.message}`);
     res.status(500).json({ message: `${error.name} : ${error.message}` });
-    sendMessage(DISCORD_CHANNELS.botLogs, {
-        message: `${error}, Url ${req.originalUrl}`,
-    });
+    // sendMessage(DISCORD_CHANNELS.botLogs, {
+    //     message: `${error}, Url ${req.originalUrl}`,
+    // });
     next(error);
 });
 
 // start the schedule task
-// scheduler.startLbpStatsJobs();
+scheduler.startLbpStatsJobs();
 
 
 module.exports = app;

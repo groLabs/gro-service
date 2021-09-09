@@ -10,6 +10,8 @@ const {
     calcRangeTimestamps,
     findBlockByDate
 } = require('../../database/common/globalUtil');
+const { generateJSONFile } = require('../common/lbpUtil');
+const { getLbpStats } = require('../handler/lbpHandler');
 
 
 const isFormatOK = (stats) => {
@@ -43,9 +45,15 @@ const etlLbpStats = async () => {
         if (isFormatOK(stats)) {
             // Parse data into SQL parameter
             const data = getData(stats);
-            if (isLengthOK(data))
+            if (isLengthOK(data)) {
                 // Load data into LBP_BALANCER_V1
-                await loadLbp(data);
+                const res = await loadLbp(data);
+                if (res) {
+                    // Generate JSON file
+                    const allData = await getLbpStats();
+                    generateJSONFile(allData);
+                }
+            }
         }
     } catch (err) {
         logger.error(`**DB: Error in loadLbp.js->etlLbpStats(): ${err}`);
@@ -87,7 +95,6 @@ const etlLbpStatsHDL = async (start, end, interval) => {
         logger.error(`**DB: Error in etlLbpStats.js->etlLbpStatsHDL(): ${err}`);
     }
 }
-
 
 module.exports = {
     etlLbpStats,

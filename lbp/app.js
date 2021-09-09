@@ -27,11 +27,13 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
         }
 
         // Testing LBP
-        // await loadContractInfoFromRegistry(); // not needed
+        // 1) Testing normal ETL load
         // await etlLbpStats();
-        await etlLbpStatsHDL(1631035645, 1631036145, 300);
-        // console.log(await getLbpStats());
-
+        // 2) Testing historical ETL load
+        // await etlLbpStatsHDL(1631035645, 1631036145, 300);
+        // 3) Testing API request
+        console.log(await getLbpStats());
+        
         process.exit(0);
     } catch (err) {
         console.log(err);
@@ -43,6 +45,7 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
     start timestamp:    1619641800 (28 apr 2021 20:30)
     end timestamp:      1619901900 (01 may 2021 20:45)
     interval:           3600 (1h)
+    interval:           300 (5')
 */
 
 /* 
