@@ -1,5 +1,3 @@
-/// Sergi to implement a new route to provide LBP data to the FE
-
 const express = require('express');
 const cors = require('cors');
 const router = express.Router();
@@ -15,7 +13,7 @@ const wrapAsync = function wrapAsync(fn) {
     };
 };
 
-//  http://localhost:3011/lbp/lbp_stats?network=mainnet&timestamp=1619843541
+//  http://localhost:3011/lbp/lbp_stats?network=mainnet
 router.get(
     '/lbp_stats',
     validate([
@@ -23,8 +21,6 @@ router.get(
             .trim()
             .notEmpty()
             .withMessage(`network can't be empty.`),
-        // query('timestamp')
-        //     .matches(/^\d{10}$/),
     ]),
     wrapAsync(async (req, res) => {
         let { network } = req.query;
