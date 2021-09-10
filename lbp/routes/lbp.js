@@ -5,7 +5,7 @@ const { query } = require('express-validator');
 const { ParameterError } = require('../../common/error');
 const { validate } = require('../../stats/common/validate');
 const { personalStatsMessage } = require('../../discordMessage/statsMessage');
-const { getLbpStats } = require('../handler/lbpHandler');
+const { getLbpStatsDB } = require('../handler/lbpHandler');
 
 const wrapAsync = function wrapAsync(fn) {
     return function wrap(req, res, next) {
@@ -28,7 +28,7 @@ router.get(
         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
             throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats');
         }
-        const lbpStats = await getLbpStats();
+        const lbpStats = await getLbpStatsDB();
         res.json(lbpStats);
     })
 );

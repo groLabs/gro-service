@@ -1,5 +1,11 @@
-const { getLbpStats } = require('./handler/lbpHandler');
-const { etlLbpStats, etlLbpStatsHDL} = require('./etl/etlLbpStats');
+const {
+    getLbpStatsDB,
+    getLbpStatsFile,
+} = require('./handler/lbpHandler');
+const {
+    etlLbpStats,
+    etlLbpStatsHDL
+} = require('./etl/etlLbpStats');
 const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
 (async () => {
@@ -14,7 +20,7 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
                             parseInt(params[1]),    // start timestamp
                             parseInt(params[2]),    // end timestamp
                             parseInt(params[3])     // time interval in seconds
-                        );   
+                        );
                     } else {
                         console.log('Wrong parameters for LBP stats HDL - e.g.: etlLbpStatsHDL 1626825600 1626912000 3600');
                     }
@@ -28,12 +34,18 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
         // Testing LBP
         // 1) Testing normal ETL load
-        // await etlLbpStats();
+        await etlLbpStats();
+        await new Promise(resolve => setTimeout(resolve, 1000));
         // 2) Testing historical ETL load
         // await etlLbpStatsHDL(1631035645, 1631036145, 300);
         // 3) Testing API request
-        console.log(await getLbpStats());
-        
+        // console.log(await getLbpStatsDB());
+        // 4) Find a file
+        // console.log(findFile('../stats', 'json'));
+        // findFile('../stats', 'json');
+        // 5) Serve from files
+        // console.log(await getLbpStatsFile());
+
         process.exit(0);
     } catch (err) {
         console.log(err);
@@ -48,7 +60,7 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
     interval:           300 (5')
 */
 
-/* 
+/*
     Maple Finance in mainnet / 1 day
     start timestamp:    1619654400 (29 apr 2021 00:00)
     end timestamp:      1619740800 (30 apr 2021 00:00)

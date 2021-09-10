@@ -11,7 +11,7 @@ const {
     findBlockByDate
 } = require('../../database/common/globalUtil');
 const { generateJSONFile } = require('../common/lbpUtil');
-const { getLbpStats } = require('../handler/lbpHandler');
+const { getLbpStatsDB } = require('../handler/lbpHandler');
 
 
 const isFormatOK = (stats) => {
@@ -50,7 +50,7 @@ const etlLbpStats = async () => {
                 const res = await loadLbp(data);
                 if (res) {
                     // Generate JSON file
-                    const allData = await getLbpStats();
+                    const allData = await getLbpStatsDB();
                     generateJSONFile(allData);
                 }
             }

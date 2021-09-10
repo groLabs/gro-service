@@ -1,9 +1,11 @@
+const fs = require('fs');
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { getConfig } = require('../../common/configUtil');
+const { getJSONFile } = require('../common/lbpUtil');
 const { QUERY_ERROR } = require('../constants');
 
 // Config constants
@@ -11,6 +13,7 @@ const launch_timestamp = getConfig('lbp.start_timestamp');
 const lbp_start_date = getConfig('lbp.lbp_start_date');
 const lbp_end_date = getConfig('lbp.lbp_end_date');
 const gro_amount_total = getConfig('lbp.gro_amount_total');
+const stats_folder = getConfig('stats_folder');
 const NAH = 'NA';
 
 const getLbpHistoricPrice = async () => {
@@ -26,11 +29,16 @@ const getLbpHistoricPrice = async () => {
                 });
             }
         } else {
-            return {};
+            return {
+                "error": "DB error in lbpHandler.js->getLbpHistoricPrice()"
+            };
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in lbpHandler.js->getLbpPrice(): ${err}`);
+        logger.error(`**DB: Error in lbpHandler.js->getLbpHistoricPrice(): ${err}`);
+        return {
+            "error": "exception in lbpHandler.js->getLbpHistoricPrice()"
+        };
     }
 }
 
@@ -50,7 +58,7 @@ const getLbpBalanceAndPrice = async () => {
             || latest_price.status === QUERY_ERROR
             || price_1h.status === QUERY_ERROR) {
             return {
-                "error": "no data found in DB",
+                "error": "DB error in lbpHandler.js->getLbpBalanceAndPrice()"
             };
         } else {
             return {
@@ -85,10 +93,13 @@ const getLbpBalanceAndPrice = async () => {
         }
     } catch (err) {
         logger.error(`**DB: Error in lbpHandler.js->getLbpBalanceAndPrice(): ${err}`);
+        return {
+            "error": "exception in lbpHandler.js->getLbpBalanceAndPrice()"
+        };
     }
 }
 
-const getLbpStats = async () => {
+const getLbpStatsDB = async () => {
     try {
         const result = {
             "gro_price_history": await getLbpHistoricPrice(),
@@ -96,10 +107,26 @@ const getLbpStats = async () => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in lbpHandler.js->getLbpStats(): ${err}`);
+        logger.error(`**DB: Error in lbpHandler.js->getLbpStatsDB(): ${err}`);
+        return {
+            "error": "exception in lbpHandler.js->getLbpStatsDB()"
+        };
+    }
+}
+
+const getLbpStatsFile = async () => {
+    try {
+        const result = getJSONFile();
+        return result;
+    } catch (err) {
+        logger.error(`**DB: Error in lbpHandler.js->gelLbpStatsFile(): ${err}`);
+        return {
+            "error": "exception in lbpHandler.js->gelLbpStatsFile()"
+        };
     }
 }
 
 module.exports = {
-    getLbpStats,
+    getLbpStatsDB,
+    getLbpStatsFile,
 }
