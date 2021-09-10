@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const router = express.Router();
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const nodeEnv = process.env.NODE_ENV.toLowerCase();
+const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { query } = require('express-validator');
 const { ParameterError } = require('../../common/error');
 const { validate } = require('../../stats/common/validate');
@@ -25,11 +28,13 @@ router.get(
     wrapAsync(async (req, res) => {
         let { network } = req.query;
         network = network || '';
-        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
-            throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats');
+        if (network.toLowerCase() !== nodeEnv) {
+            // throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats');
+            logger.warn(`Warning in routes->lbp_stats: wrong network <${network.toLowerCase()}>`)
+        } else {
+            const lbpStats = await getLbpStatsDB();
+            res.json(lbpStats);
         }
-        const lbpStats = await getLbpStatsDB();
-        res.json(lbpStats);
     })
 );
 

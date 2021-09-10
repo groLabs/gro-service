@@ -5,8 +5,8 @@ const schedule = require('node-schedule');
 const { getConfig } = require('../../common/configUtil');
 const { etlLbpStats } = require('../etl/etlLbpStats');
 const lbpStatsJobSetting =
-    getConfig('trigger_scheduler.lbp_stats', false) || '*/10 * * * * *'; // 10 sec
-    // getConfig('trigger_scheduler.lbp_stats', false) || '*/5 * * * *'; // 5 mins
+    getConfig('trigger_scheduler.lbp_stats', false) || '*/10 * * * * *'; // in seconds
+    // getConfig('trigger_scheduler.lbp_stats', false) || '*/5 * * * *'; // in minutes
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
