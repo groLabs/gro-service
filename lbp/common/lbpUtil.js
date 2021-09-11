@@ -25,27 +25,15 @@ const getNetworkId = () => {
     }
 };
 
-// Generates the files asynchronously
-const generateJSONFile = (data) => {
+const generateJSONFile = (data, latest) => {
     try {
         if (data.current_timestamp && data.current_timestamp > 0) {
-            const timestamp = data.current_timestamp; 
+            const timestamp = data.current_timestamp;
             const currentFile = `${statsDir}/lbp-${timestamp}.json`;
             const latestFile = `${statsDir}/lbp-latest.json`;
-    
-            fs.writeFile(currentFile, JSON.stringify(data), (err) => {
-                if (err) {
-                    logger.error(`**DB: Error in lbpUtil->generateJSONFile() when creating <lbp-${timestamp}.json>: ${err}`);
-                } else {
-                    fs.writeFile(latestFile, JSON.stringify(data), (err) => {
-                        if (err) {
-                            logger.error(`**DB: Error in lbpUtil->generateJSONFile() when creating <lbp-latest.json>: ${err}`);
-                        } else {
-                            logger.info(`**DB: File <lbp-${timestamp}.json> created | File <lbp-latest.json> updated.`);
-                        }
-                    });
-                }
-            });
+            fs.writeFileSync(currentFile, JSON.stringify(data));
+            if (latest)
+                fs.writeFileSync(latestFile, JSON.stringify(data));
         } else {
             logger.error(`**DB: Error in lbpUtil->generateJSONFile(): wrong JSON data -> ${data}`);
         }
@@ -56,11 +44,15 @@ const generateJSONFile = (data) => {
 
 const getJSONFile = () => {
     try {
-        logger.info(`**DB: Providing LBP data...`);
         const data = require(`../../../stats/lbp-latest.json`);
+        const timestamp = data.current_timestamp
+        const date = moment.unix(timestamp).format('DD/MM/YYYY HH:mm:ss');
+        const price = data.gro_price_current;
+        const balance = data.gro_amount_current;
+        logger.info(`**DB: Providing LBP data via API (price: ${price}, balance: ${balance}, date: ${date} ${timestamp})`);
         return data;
     } catch (err) {
-        logger.error(`**DB: Error in lbpUtil->getJSONFile(): file <${statsDir}/lbp-latest.json> not available`);
+        logger.error(`**DB: Error in lbpUtil->getJSONFile() when reading from file <${statsDir}/lbp-latest.json> : ${err}`);
         return {
             'error': `file <${statsDir}/lbp-latest.json> not available`
         }

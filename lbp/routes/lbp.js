@@ -8,7 +8,10 @@ const { query } = require('express-validator');
 const { ParameterError } = require('../../common/error');
 const { validate } = require('../../stats/common/validate');
 const { personalStatsMessage } = require('../../discordMessage/statsMessage');
-const { getLbpStatsDB } = require('../handler/lbpHandler');
+const { 
+    getLbpStatsDB, 
+    getLbpStatsFile
+} = require('../handler/lbpHandler');
 
 const wrapAsync = function wrapAsync(fn) {
     return function wrap(req, res, next) {
@@ -29,10 +32,10 @@ router.get(
         let { network } = req.query;
         network = network || '';
         if (network.toLowerCase() !== nodeEnv) {
-            // throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats');
             logger.warn(`Warning in routes->lbp_stats: wrong network <${network.toLowerCase()}>`)
         } else {
-            const lbpStats = await getLbpStatsDB();
+            // const lbpStats = await getLbpStatsDB();
+            const lbpStats = await getLbpStatsFile();
             res.json(lbpStats);
         }
     })

@@ -15,11 +15,12 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
         if (params.length > 0) {
             switch (params[0]) {
                 case 'etlLbpStatsHDL':
-                    if (params.length === 4) {
+                    if (params.length === 5) {
                         await etlLbpStatsHDL(
                             parseInt(params[1]),    // start timestamp
                             parseInt(params[2]),    // end timestamp
-                            parseInt(params[3])     // time interval in seconds
+                            parseInt(params[3]),    // time interval in seconds
+                            params[4],              // include latest json file
                         );
                     } else {
                         console.log('Wrong parameters for LBP stats HDL - e.g.: etlLbpStatsHDL 1626825600 1626912000 3600');

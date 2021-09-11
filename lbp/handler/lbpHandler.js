@@ -102,8 +102,10 @@ const getLbpBalanceAndPrice = async () => {
 const getLbpStatsDB = async () => {
     try {
         const result = {
-            "gro_price_history": await getLbpHistoricPrice(),
-            ...await getLbpBalanceAndPrice(),
+            "lbp_stats": {
+                "gro_price_history": await getLbpHistoricPrice(),
+                ...await getLbpBalanceAndPrice(),
+            }
         }
         return result;
     } catch (err) {
@@ -116,7 +118,11 @@ const getLbpStatsDB = async () => {
 
 const getLbpStatsFile = async () => {
     try {
-        const result = getJSONFile();
+        const result = {
+            "lbp_stats": {
+                ...getJSONFile()
+            }
+        }
         return result;
     } catch (err) {
         logger.error(`**DB: Error in lbpHandler.js->gelLbpStatsFile(): ${err}`);

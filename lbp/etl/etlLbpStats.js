@@ -40,7 +40,7 @@ const isLengthOK = (data) => {
 // Normal load
 const etlLbpStats = async () => {
     try {
-        // Retrieve price & supply from Balancer
+        // Retrieve price & current supply from Balancer
         const stats = await fetchLBPData(null);
         if (isFormatOK(stats)) {
             // Parse data into SQL parameter
@@ -51,7 +51,7 @@ const etlLbpStats = async () => {
                 if (res) {
                     // Generate JSON file
                     const allData = await getLbpStatsDB();
-                    generateJSONFile(allData);
+                    generateJSONFile(allData, true);
                 }
             }
         }
@@ -62,8 +62,8 @@ const etlLbpStats = async () => {
 
 // Historical data reload
 // 1) Deletes any data from LBP_BALANCER_V1 within the timestamp range
-// 2) Loads in 5' intervals
-const etlLbpStatsHDL = async (start, end, interval) => {
+// 2) Loads data every N intervals
+const etlLbpStatsHDL = async (start, end, interval, latest) => {
     try {
         // Safety check
         if (start > end) {
@@ -79,20 +79,36 @@ const etlLbpStatsHDL = async (start, end, interval) => {
         if (res) {
             // Get block number for each date
             for (const date of dates) {
-                // Retrieve price & supply from Balancer
+                // Retrieve price & current supply from Balancer
                 const block = (await findBlockByDate(date, true)).block;
                 const stats = await fetchLBPData(block);
                 if (isFormatOK(stats)) {
                     // Parse data into SQL parameter
                     const data = getData(stats);
-                    if (isLengthOK(data))
+                    if (isLengthOK(data)) {
                         // Load data into LBP_BALANCER_V1
-                        await loadLbp(data);
+                        const res = await loadLbp(data);
+                        if (res) {
+                            // Generate JSON file
+                            const allData = await getLbpStatsDB();
+                            generateJSONFile(allData, latest);
+                        }
+                    }
                 }
             }
         }
     } catch (err) {
         logger.error(`**DB: Error in etlLbpStats.js->etlLbpStatsHDL(): ${err}`);
+    }
+}
+
+// If bot crashed and restarts, check amount of intervals lost and
+// load data before triggering the cron
+const etlRecovery = async () => {
+    try {
+        // TODO
+    } catch (err) {
+        logger.error(`**DB: Error in etlLbpStats.js->etlRecovery(): ${err}`);
     }
 }
 

@@ -23,7 +23,7 @@ const calcRangeTimestamps = (start, end, interval) => {
             return iterations;
         }
         const search = (start, end) => {
-            if (start < end) {
+            if (start <= end) {
                 iterations.push(moment.unix(start).utc());
                 start = start + interval;
                 search(start, end);
