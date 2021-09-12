@@ -25,13 +25,29 @@ const getNetworkId = () => {
     }
 };
 
-const generateJSONFile = (data, latest) => {
+function fileExists(path) {
     try {
-        if (data.current_timestamp && data.current_timestamp > 0) {
-            const timestamp = data.current_timestamp;
+        return fs.statSync(`${statsDir}/lbp-latest.json`).isFile();
+    }
+    catch (err) {
+        // File does not exist
+        if (err.code == 'ENOENT') {
+            return false;
+        }
+        // Other errors, e.g.: missing rights
+        logger.error(`Error in lbpUtil.js->fileExists() accessing ${path}`, err);
+        throw err;
+    }
+}
+
+const generateJSONFile = (data, latest, hdl) => {
+    try {
+        if (data.lbp_stats.current_timestamp && data.lbp_stats.current_timestamp > 0) {
+            const timestamp = data.lbp_stats.current_timestamp;
             const currentFile = `${statsDir}/lbp-${timestamp}.json`;
             const latestFile = `${statsDir}/lbp-latest.json`;
-            fs.writeFileSync(currentFile, JSON.stringify(data));
+            if (!hdl)
+                fs.writeFileSync(currentFile, JSON.stringify(data));
             if (latest)
                 fs.writeFileSync(latestFile, JSON.stringify(data));
         } else {
@@ -45,10 +61,10 @@ const generateJSONFile = (data, latest) => {
 const getJSONFile = () => {
     try {
         const data = require(`../../../stats/lbp-latest.json`);
-        const timestamp = data.current_timestamp
+        const timestamp = data.lbp_stats.current_timestamp
         const date = moment.unix(timestamp).format('DD/MM/YYYY HH:mm:ss');
-        const price = data.gro_price_current;
-        const balance = data.gro_amount_current;
+        const price = data.lbp_stats.gro_price_current;
+        const balance = data.lbp_stats.gro_amount_current;
         logger.info(`**DB: Providing LBP data via API (price: ${price}, balance: ${balance}, date: ${date} ${timestamp})`);
         return data;
     } catch (err) {
@@ -61,6 +77,7 @@ const getJSONFile = () => {
 
 module.exports = {
     getNetworkId,
+    fileExists,
     generateJSONFile,
     getJSONFile,
 }

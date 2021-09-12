@@ -1,5 +1,7 @@
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
+const { getConfig } = require('../../common/configUtil');
+const statsDir = getConfig('stats_folder');
 const {
     loadLbp,
     removeLbp,
@@ -10,7 +12,10 @@ const {
     calcRangeTimestamps,
     findBlockByDate
 } = require('../../database/common/globalUtil');
-const { generateJSONFile } = require('../common/lbpUtil');
+const {
+    generateJSONFile,
+    fileExists
+} = require('../common/lbpUtil');
 const { getLbpStatsDB } = require('../handler/lbpHandler');
 
 
@@ -51,7 +56,11 @@ const etlLbpStats = async () => {
                 if (res) {
                     // Generate JSON file
                     const allData = await getLbpStatsDB();
-                    generateJSONFile(allData, true);
+                    generateJSONFile(
+                        allData,    // JSON data
+                        true,       // latest file
+                        false       // HDL
+                    );
                 }
             }
         }
@@ -61,8 +70,9 @@ const etlLbpStats = async () => {
 }
 
 // Historical data reload
-// 1) Deletes any data from LBP_BALANCER_V1 within the timestamp range
+// 1) Deletes any data from table LBP_BALANCER_V1 within the timestamp range
 // 2) Loads data every N intervals
+// @dev: HDL does not generate intermediate JSON files, but only latest file is latest=true
 const etlLbpStatsHDL = async (start, end, interval, latest) => {
     try {
         // Safety check
@@ -79,6 +89,7 @@ const etlLbpStatsHDL = async (start, end, interval, latest) => {
         if (res) {
             // Get block number for each date
             for (const date of dates) {
+                console.log(date)
                 // Retrieve price & current supply from Balancer
                 const block = (await findBlockByDate(date, true)).block;
                 const stats = await fetchLBPData(block);
@@ -88,14 +99,19 @@ const etlLbpStatsHDL = async (start, end, interval, latest) => {
                     if (isLengthOK(data)) {
                         // Load data into LBP_BALANCER_V1
                         const res = await loadLbp(data);
-                        if (res) {
-                            // Generate JSON file
-                            const allData = await getLbpStatsDB();
-                            generateJSONFile(allData, latest);
-                        }
+                        if (!res)
+                            return;
                     }
                 }
             }
+        }
+        if (latest) {
+            const allData = await getLbpStatsDB();
+            generateJSONFile(
+                allData,    // JSON data
+                latest,     // latest file
+                true        // HDL
+            );
         }
     } catch (err) {
         logger.error(`**DB: Error in etlLbpStats.js->etlLbpStatsHDL(): ${err}`);
@@ -106,13 +122,18 @@ const etlLbpStatsHDL = async (start, end, interval, latest) => {
 // load data before triggering the cron
 const etlRecovery = async () => {
     try {
-        // TODO
+        const isFile = fileExists(`${statsDir}/lbp-latest.json`);
+        if (isFile) {
+            const data = require(`../../../stats/lbp-latest.json`);
+        }
     } catch (err) {
         logger.error(`**DB: Error in etlLbpStats.js->etlRecovery(): ${err}`);
+
     }
 }
 
 module.exports = {
     etlLbpStats,
     etlLbpStatsHDL,
+    etlRecovery,
 };

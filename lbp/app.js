@@ -4,7 +4,8 @@ const {
 } = require('./handler/lbpHandler');
 const {
     etlLbpStats,
-    etlLbpStatsHDL
+    etlLbpStatsHDL,
+    etlRecovery,
 } = require('./etl/etlLbpStats');
 const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
@@ -35,8 +36,8 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
         // Testing LBP
         // 1) Testing normal ETL load
-        await etlLbpStats();
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // await etlLbpStats();
+        // await new Promise(resolve => setTimeout(resolve, 1000));
         // 2) Testing historical ETL load
         // await etlLbpStatsHDL(1631035645, 1631036145, 300);
         // 3) Testing API request
@@ -46,6 +47,8 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
         // findFile('../stats', 'json');
         // 5) Serve from files
         // console.log(await getLbpStatsFile());
+        // 6) Recovery
+        await etlRecovery();
 
         process.exit(0);
     } catch (err) {
