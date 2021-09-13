@@ -1,7 +1,9 @@
+const fs = require('fs');
+const path = require('path');
+const moment = require('moment');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { getConfig } = require('../../common/configUtil');
-const statsDir = getConfig('stats_folder');
 const {
     loadLbp,
     removeLbp,
@@ -17,6 +19,11 @@ const {
     fileExists
 } = require('../common/lbpUtil');
 const { getLbpStatsDB } = require('../handler/lbpHandler');
+const { INTERVAL } = require('../constants');
+
+// Config
+const statsDir = getConfig('stats_folder');
+const LBP_START_TIMESTMAP = getConfig('lbp.lbp_start_date');
 
 
 const isFormatOK = (stats) => {
@@ -40,6 +47,12 @@ const isLengthOK = (data) => {
         logger.error(`**DB: Error in etlLbpStats.js->etlLbpStats(): wrong number of values after JSON parsing: ${data}`);
         return false;
     }
+}
+
+const isCurrentTimestampOK = (data) => {
+    return (data.lbp_stats.current_timestamp && data.lbp_stats.current_timestamp > 0)
+        ? true
+        : false;
 }
 
 // Normal load
@@ -85,11 +98,11 @@ const etlLbpStatsHDL = async (start, end, interval, latest) => {
         const dates = calcRangeTimestamps(start, end, interval);
 
         // Remove records from DB for the given time range
+        logger.error(`**DB: LBP - starting data load from ${start} to ${end} for ${dates.length} interval/s...`);
         const res = await removeLbp(start, end);
         if (res) {
             // Get block number for each date
             for (const date of dates) {
-                console.log(date)
                 // Retrieve price & current supply from Balancer
                 const block = (await findBlockByDate(date, true)).block;
                 const stats = await fetchLBPData(block);
@@ -119,16 +132,50 @@ const etlLbpStatsHDL = async (start, end, interval, latest) => {
 }
 
 // If bot crashed and restarts, check amount of intervals lost and
-// load data before triggering the cron
+// backfill data before triggering the cron
 const etlRecovery = async () => {
     try {
         const isFile = fileExists(`${statsDir}/lbp-latest.json`);
         if (isFile) {
-            const data = require(`../../../stats/lbp-latest.json`);
+            let rawdata = fs.readFileSync(`${statsDir}/lbp-latest.json`);
+            let data = JSON.parse(rawdata);
+            if (isCurrentTimestampOK(data)) {
+                const lbp_current_timestamp = parseFloat(data.lbp_stats.current_timestamp);
+                const now = moment().unix();
+                if (now >= LBP_START_TIMESTMAP) {
+                    if (now - lbp_current_timestamp > INTERVAL) {
+                        // Last load more than INTERVAL minutes ago -> recovery needed
+                        logger.info(`**DB: LBP - backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minutes ago.`);
+                        await etlLbpStatsHDL(
+                            lbp_current_timestamp + INTERVAL, // start
+                            now, // end
+                            INTERVAL, // interval
+                            true, // last file
+                        )
+                        await etlRecovery();
+                        return true;
+                    } else {
+                        // Last load less than INTERVAL minutes ago -> no recovery needed
+                        logger.info(`**DB: LBP - no backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minute/s ago.`);
+                        return true;
+                    }
+                } else {
+                    // LBP not started yet, no recovery needed
+                    logger.info(`**DB: LBP - no backfill needed: LBP not started yet`);
+                    return true;
+                }
+            } else {
+                // Wrong JSON format
+                logger.error(`**DB: Error in etlLbpStats.js->etlRecovery(): Wrong JSON format -> ${JSON.stringify(data)}`);
+                return false;
+            }
+        } else {
+            logger.error(`**DB: Error in etlLbpStats.js->etlRecovery(): File <${statsDir}/lbp-latest.json> is missing`);
+            return false;
         }
     } catch (err) {
         logger.error(`**DB: Error in etlLbpStats.js->etlRecovery(): ${err}`);
-
+        return false;
     }
 }
 

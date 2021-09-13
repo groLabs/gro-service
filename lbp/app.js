@@ -9,6 +9,9 @@ const {
 } = require('./etl/etlLbpStats');
 const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
+// testing
+const { getProvider } = require('../database/common/globalUtil');
+
 (async () => {
     try {
         const params = process.argv.slice(2);
@@ -36,7 +39,7 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
         // Testing LBP
         // 1) Testing normal ETL load
-        // await etlLbpStats();
+        //await etlLbpStats();
         // await new Promise(resolve => setTimeout(resolve, 1000));
         // 2) Testing historical ETL load
         // await etlLbpStatsHDL(1631035645, 1631036145, 300);
@@ -48,7 +51,12 @@ const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
         // 5) Serve from files
         // console.log(await getLbpStatsFile());
         // 6) Recovery
-        await etlRecovery();
+        // await etlRecovery();
+
+        // Get block data
+        // const a = (await getProvider().getBlock());
+        // console.log('block:', a);
+        // Get block given a timestamp
 
         process.exit(0);
     } catch (err) {

@@ -1,8 +1,4 @@
 const moment = require('moment');
-const {
-    LBP_CONTRACT,
-    USDC_CONTRACT,
-} = require('../constants');
 const { getConfig } = require('../../common/configUtil');
 const BN = require('bignumber.js');
 const { div } = require('../../common/digitalUtil');

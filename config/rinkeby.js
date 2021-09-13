@@ -11,6 +11,19 @@ module.exports = {
         bp_pool: '0x86fa758a31ba14d1beea4a79eece71c2329d004b',
         crp_pool: '0xade0c1536e2053328b53a7b41b32289bce2cf65d',
     },
+    // Testing fill LBP for 1h in Rinkeby on 10/09/2021
+    // lbp: {
+    //     start_block: 9260073,
+    //     end_block: 12351817,
+    //     start_timestamp: 1631155336,
+    //     lbp_start_date: 1631155336,     // 1631232000 (00:00:00)
+    //     lbp_end_date: 1631673736,       // 1631318400 (00:00:00 D+1)
+    //     gro_amount_total: 5000000,
+    //     gro_token: '0xD348b1F5872940901fcAF9aCD1b9785f4e12121A',
+    //     coin_token: '0x9edF2989C22C5bF6675a4581E39D75a3C9BF8578',
+    //     bp_pool: '0x86fa758a31ba14d1beea4a79eece71c2329d004b',
+    //     crp_pool: '0xade0c1536e2053328b53a7b41b32289bce2cf65d',
+    // },
     blockchain: {
         network: 'rinkeby',
         default_api_keys: {

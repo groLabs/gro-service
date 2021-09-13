@@ -60,7 +60,8 @@ const generateJSONFile = (data, latest, hdl) => {
 
 const getJSONFile = () => {
     try {
-        const data = require(`../../../stats/lbp-latest.json`);
+        let rawdata = fs.readFileSync(`${statsDir}/lbp-latest.json`);
+        let data = JSON.parse(rawdata);
         const timestamp = data.lbp_stats.current_timestamp
         const date = moment.unix(timestamp).format('DD/MM/YYYY HH:mm:ss');
         const price = data.lbp_stats.gro_price_current;
