@@ -10,7 +10,9 @@ const {
 const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
 // testing
+const moment = require('moment');
 const { getProvider } = require('../database/common/globalUtil');
+const { findBlockByDate } = require('../database/common/globalUtil');
 
 (async () => {
     try {
@@ -57,6 +59,8 @@ const { getProvider } = require('../database/common/globalUtil');
         // const a = (await getProvider().getBlock());
         // console.log('block:', a);
         // Get block given a timestamp
+        const block = (await findBlockByDate(moment.unix(1631318400).utc(), true)).block;
+        console.log(block);
 
         process.exit(0);
     } catch (err) {

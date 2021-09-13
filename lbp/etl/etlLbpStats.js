@@ -23,7 +23,8 @@ const { INTERVAL } = require('../constants');
 
 // Config
 const statsDir = getConfig('stats_folder');
-const LBP_START_TIMESTMAP = getConfig('lbp.lbp_start_date');
+const LBP_START_TIMESTAMP = getConfig('lbp.lbp_start_date');
+const LBP_END_TIMESTAMP = getConfig('lbp.lbp_end_date');
 
 
 const isFormatOK = (stats) => {
@@ -91,7 +92,7 @@ const etlLbpStatsHDL = async (start, end, interval, latest) => {
         // Safety check
         if (start > end) {
             logger.error(`**DB: Error in etlLbpStats.js->etlLbpStatsHDL(): start date can't be greater than end date`);
-            throw 'Data not loaded into LBP_BALANCER_V1';
+            return false;
         }
 
         // Get all dates in N intervals for a given time range (start, end)
@@ -126,8 +127,10 @@ const etlLbpStatsHDL = async (start, end, interval, latest) => {
                 true        // HDL
             );
         }
+        return true;
     } catch (err) {
         logger.error(`**DB: Error in etlLbpStats.js->etlLbpStatsHDL(): ${err}`);
+        return false;
     }
 }
 
@@ -142,17 +145,27 @@ const etlRecovery = async () => {
             if (isCurrentTimestampOK(data)) {
                 const lbp_current_timestamp = parseFloat(data.lbp_stats.current_timestamp);
                 const now = moment().unix();
-                if (now >= LBP_START_TIMESTMAP) {
-                    if (now - lbp_current_timestamp > INTERVAL) {
+                if (now >= LBP_START_TIMESTAMP) {
+                    if (now - lbp_current_timestamp > INTERVAL && lbp_current_timestamp < LBP_END_TIMESTAMP) {
                         // Last load more than INTERVAL minutes ago -> recovery needed
                         logger.info(`**DB: LBP - backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minutes ago.`);
-                        await etlLbpStatsHDL(
-                            lbp_current_timestamp + INTERVAL, // start
-                            now, // end
-                            INTERVAL, // interval
-                            true, // last file
-                        )
-                        await etlRecovery();
+
+                        const res = await etlLbpStatsHDL(
+                            lbp_current_timestamp + INTERVAL,   // start
+                            (now > LBP_END_TIMESTAMP)
+                                ? LBP_END_TIMESTAMP
+                                : now,                          // end (if now is later than LBP end date, calc until LBP end date)
+                            INTERVAL,                           // interval
+                            true,                               // last file
+                        );
+
+                        // Re-check if any load is still required after the backfilling
+                        if (res) {
+                            await etlRecovery();
+                        } else {
+                            return false;
+                        }
+                            
                         return true;
                     } else {
                         // Last load less than INTERVAL minutes ago -> no recovery needed

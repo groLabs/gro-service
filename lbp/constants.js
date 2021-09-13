@@ -1,6 +1,7 @@
 const QUERY_ERROR = 400;
 const QUERY_SUCCESS = 200;
-const INTERVAL = 300; // 5 minutes (for checking price spot & pool balance)
+// const INTERVAL = 300; // 5 minutes (for checking price spot & pool balance)
+const INTERVAL = 3600; // 1h
 
 module.exports = {
     QUERY_ERROR,
