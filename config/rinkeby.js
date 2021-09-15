@@ -13,12 +13,16 @@ module.exports = {
     // },
     // Testing fill LBP for 1h in Rinkeby on 10/09/2021
     lbp: {
-        start_block: 9265175,
-        end_block: 9270925,
-        start_timestamp: 1631232000,
-        lbp_start_date: 1631232000,     // 1631232000 (10.09.2021 00:00:00)  set current_date in JSON file at 23:00:00 D-1 (1631228400)
-        lbp_end_date: 1631318400,       // 1631318400 (11.09.2021 00:00:00)
-        gro_amount_total: 5000000,
+        // start_block: 9265175,
+        // end_block: 9270925,
+        start_block: 9260073,           // Block when the LBP contract was deployed
+        start_timestamp: 1631577600,    // Timestamp when the LBP contract was deployed
+        lbp_start_date: 1631649600,     // 14.09.2021 20:00:00
+        lbp_end_date: 1631650800,       // 14.09.2021 20:20:00
+        // lbp_start_date: 1631577600,     // Timestamp for the LBP start  => eg: 1631577600 (14.09.2021 00:00:00)
+        // lbp_end_date: 1631664000,       // Timestamp for the LBP end    => eg: 1631664000 (15.09.2021 00:00:00)
+        start_price: 10,
+        gro_amount_total: 5000000.00000000,
         gro_token: '0xD348b1F5872940901fcAF9aCD1b9785f4e12121A',
         coin_token: '0x9edF2989C22C5bF6675a4581E39D75a3C9BF8578',
         bp_pool: '0x86fa758a31ba14d1beea4a79eece71c2329d004b',

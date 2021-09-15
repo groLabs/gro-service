@@ -1,0 +1,16 @@
+{
+    "lbp_stats": {
+        "lbp_stats": {
+            "gro_price_history": [],
+            "current_timestamp": "1631577600",
+            "launch_timestamp": "1631664000",
+            "lbp_start_date": "1631577600",
+            "lbp_end_date": "1631663999",
+            "network": "mainnet",
+            "gro_amount_total": "5000000.00000000",
+            "gro_amount_current": "5000000.00000000",
+            "gro_price_current": "10.00000000",
+            "gro_price_1h": "10.00000000"
+        }
+    }
+}

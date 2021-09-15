@@ -5,8 +5,9 @@ const {
     etlRecovery,
 } = require('../etl/etlLbpStats');
 const lbpStatsJobSetting =
-    //getConfig('trigger_scheduler.lbp_stats', false) || '*/10 * * * * *'; // in seconds
-    getConfig('trigger_scheduler.lbp_stats', false) || '*/5 * * * *'; // in minutes
+    // getConfig('trigger_scheduler.lbp_stats', false) || '*/10 * * * * *'; // in seconds
+    // getConfig('trigger_scheduler.lbp_stats', false) || '*/5 * * * *'; // in minutes
+    getConfig('trigger_scheduler.lbp_stats', false) || '*/2 * * * *'; // in minutes
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 

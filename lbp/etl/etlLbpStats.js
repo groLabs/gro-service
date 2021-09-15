@@ -59,25 +59,33 @@ const isCurrentTimestampOK = (data) => {
 // Normal load
 const etlLbpStats = async () => {
     try {
-        // Retrieve price & current supply from Balancer
-        const stats = await fetchLBPData(null);
-        if (isFormatOK(stats)) {
-            // Parse data into SQL parameter
-            const data = getData(stats);
-            if (isLengthOK(data)) {
-                // Load data into LBP_BALANCER_V1
-                const res = await loadLbp(data);
-                if (res) {
-                    // Generate JSON file
-                    const allData = await getLbpStatsDB();
-                    generateJSONFile(
-                        allData,    // JSON data
-                        true,       // latest file
-                        false       // HDL
-                    );
+        const now = moment().unix();
+        if (now >= LBP_START_TIMESTAMP && now <= LBP_END_TIMESTAMP) {
+            // Retrieve price & current supply from Balancer
+            const stats = await fetchLBPData(null);
+            if (isFormatOK(stats)) {
+                // Parse data into SQL parameter
+                const data = getData(stats);
+                if (isLengthOK(data)) {
+                    // Load data into LBP_BALANCER_V1
+                    const res = await loadLbp(data);
+                    if (res) {
+                        // Generate JSON file
+                        const allData = await getLbpStatsDB();
+                        generateJSONFile(
+                            allData,    // JSON data
+                            true,       // latest file
+                            false       // HDL
+                        );
+                    }
                 }
             }
+        } else {
+            let msg = `**DB: LBP - current date (${now}) is out of the LBP period (start: `;
+            msg += `${LBP_START_TIMESTAMP} end: ${LBP_END_TIMESTAMP}) - no data load needed`;
+            logger.info(msg);
         }
+
     } catch (err) {
         logger.error(`**DB: Error in loadLbp.js->etlLbpStats(): ${err}`);
     }
@@ -147,9 +155,8 @@ const etlRecovery = async () => {
                 const now = moment().unix();
                 if (now >= LBP_START_TIMESTAMP) {
                     if (now - lbp_current_timestamp > INTERVAL && lbp_current_timestamp < LBP_END_TIMESTAMP) {
-                        // Last load more than INTERVAL minutes ago -> recovery needed
+                        // Last load > INTERVAL minutes ago -> recovery needed
                         logger.info(`**DB: LBP - backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minutes ago.`);
-
                         const res = await etlLbpStatsHDL(
                             lbp_current_timestamp + INTERVAL,   // start
                             (now > LBP_END_TIMESTAMP)
@@ -158,18 +165,21 @@ const etlRecovery = async () => {
                             INTERVAL,                           // interval
                             true,                               // last file
                         );
-
                         // Re-check if any load is still required after the backfilling
                         if (res) {
                             await etlRecovery();
                         } else {
                             return false;
                         }
-                            
                         return true;
                     } else {
-                        // Last load less than INTERVAL minutes ago -> no recovery needed
-                        logger.info(`**DB: LBP - no backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minute/s ago.`);
+                        if (lbp_current_timestamp >= LBP_END_TIMESTAMP) {
+                            // LBP completed, data up-to-date -> no recovery needed
+                            logger.info(`**DB: LBP - no backfill needed. LBP already finished and data up-to-date.`);
+                        } else {
+                            // Last load less than INTERVAL minutes ago -> no recovery needed
+                            logger.info(`**DB: LBP - no backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minute/s ago.`);
+                        }
                         return true;
                     }
                 } else {
