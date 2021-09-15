@@ -7,6 +7,9 @@ const {
     etlLbpStatsHDL,
     etlRecovery,
 } = require('./etl/etlLbpStats');
+const {
+    etlLbpStatsV2,
+} = require('./etl/etlLbpStatsV2');
 const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
 // testing
@@ -41,7 +44,8 @@ const { findBlockByDate } = require('../database/common/globalUtil');
 
         // Testing LBP
         // 1) Testing normal ETL load
-        //await etlLbpStats();
+        // await etlLbpStats();
+        await etlLbpStatsV2();
         // await new Promise(resolve => setTimeout(resolve, 1000));
         // 2) Testing historical ETL load
         // await etlLbpStatsHDL(1631035645, 1631036145, 300);
@@ -59,8 +63,8 @@ const { findBlockByDate } = require('../database/common/globalUtil');
         // const a = (await getProvider().getBlock());
         // console.log('block:', a);
         // Get block given a timestamp
-        const block = (await findBlockByDate(moment.unix(1631318400).utc(), true)).block;
-        console.log(block);
+        // const block = (await findBlockByDate(moment.unix(1631318400).utc(), true)).block;
+        // console.log(block);
 
         process.exit(0);
     } catch (err) {

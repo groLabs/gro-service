@@ -15,6 +15,9 @@ const {
     findBlockByDate
 } = require('../../database/common/globalUtil');
 const {
+    isFormatOK,
+    isLengthOK,
+    isCurrentTimestampOK,
     generateJSONFile,
     fileExists
 } = require('../common/lbpUtil');
@@ -26,35 +29,6 @@ const statsDir = getConfig('stats_folder');
 const LBP_START_TIMESTAMP = getConfig('lbp.lbp_start_date');
 const LBP_END_TIMESTAMP = getConfig('lbp.lbp_end_date');
 
-
-const isFormatOK = (stats) => {
-    // Check timestamp JSON fields
-    if (!stats.price.timestamp
-        || stats.price.timestamp <= 0
-        || !stats.balance.timestamp
-        || stats.balance.timestamp <= 0
-    ) {
-        logger.error(`**DB: Error in etlLbpStats.js->etlLbpStats(): wrong JSON format from data sourcing: ${stats}`);
-        throw 'Data not loaded into LBP_BALANCER_V1';
-    } else {
-        return true;
-    }
-}
-
-const isLengthOK = (data) => {
-    if (data && data.length === 7) {
-        return true;
-    } else {
-        logger.error(`**DB: Error in etlLbpStats.js->etlLbpStats(): wrong number of values after JSON parsing: ${data}`);
-        return false;
-    }
-}
-
-const isCurrentTimestampOK = (data) => {
-    return (data.lbp_stats.current_timestamp && data.lbp_stats.current_timestamp > 0)
-        ? true
-        : false;
-}
 
 // Normal load
 const etlLbpStats = async () => {
@@ -85,7 +59,6 @@ const etlLbpStats = async () => {
             msg += `${LBP_START_TIMESTAMP} end: ${LBP_END_TIMESTAMP}) - no data load needed`;
             logger.info(msg);
         }
-
     } catch (err) {
         logger.error(`**DB: Error in loadLbp.js->etlLbpStats(): ${err}`);
     }

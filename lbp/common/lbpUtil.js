@@ -6,6 +6,35 @@ const { getConfig } = require('../../common/configUtil');
 const statsDir = getConfig('stats_folder');
 
 
+const isFormatOK = (stats) => {
+    // Check timestamp JSON fields
+    if (!stats.price.timestamp
+        || stats.price.timestamp <= 0
+        || !stats.balance.timestamp
+        || stats.balance.timestamp <= 0
+    ) {
+        logger.error(`**DB: Error in lbpUtil.js->isFormatOK(): wrong JSON format from data sourcing: ${stats}`);
+        throw 'Data not loaded into LBP_BALANCER_V1';
+    } else {
+        return true;
+    }
+}
+
+const isLengthOK = (data) => {
+    if (data && data.length === 7) {
+        return true;
+    } else {
+        logger.error(`**DB: Error in lbpUtil.js->isLengthOK(): wrong number of values after JSON parsing: ${data}`);
+        return false;
+    }
+}
+
+const isCurrentTimestampOK = (data) => {
+    return (data.lbp_stats.current_timestamp && data.lbp_stats.current_timestamp > 0)
+        ? true
+        : false;
+}
+
 const getNetworkId = () => {
     try {
         switch (process.env.NODE_ENV.toLowerCase()) {
@@ -77,6 +106,9 @@ const getJSONFile = () => {
 }
 
 module.exports = {
+    isFormatOK,
+    isLengthOK,
+    isCurrentTimestampOK,
     getNetworkId,
     fileExists,
     generateJSONFile,
