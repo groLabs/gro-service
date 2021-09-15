@@ -22,6 +22,7 @@ const { validate } = require('../common/validate');
 const { postDegenScore } = require('../services/degenscoreService');
 const { personalStatsMessage } = require('../../discordMessage/statsMessage');
 const { contractCallFailedCount } = require('../common/contractStorage');
+const { updateOGAirdropFile } = require('../services/airdropService');
 
 /**
  * @api {get} /stats/user Get /stats/user
@@ -104,6 +105,19 @@ router.get(
         }
         const groStats = await getGroStatsContent();
         res.json({ gro_stats: groStats });
+    })
+);
+
+router.get(
+    '/update_og_airdrop',
+    wrapAsync(async (req, res) => {
+        let { network } = req.query;
+        network = network || '';
+        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+            throw new ParameterError('Parameter network failed.');
+        }
+        await updateOGAirdropFile();
+        res.json({ result: 'success' });
     })
 );
 
