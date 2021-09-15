@@ -6,9 +6,11 @@ const csvFolder = getConfig('airdrop_csv_folder');
 
 const csv1FilePath = `${csvFolder}/airdrop1_result.csv`;
 const csv2FilePath = `${csvFolder}/airdrop2_result.csv`;
+const csv3FilePath = `${csvFolder}/airdrop3_result.csv`;
 
 let firstAirdropJson;
 let secondAirdropJson;
+let thirdAirdropJson;
 
 const airdropFirstDefaultValue = {
     name: 'gas_pwrd',
@@ -28,6 +30,17 @@ const airdropSecondDefaultValue = {
     participated: 'false',
     amount: '0.00',
     timestamp: '1630062000',
+    claimed: 'false',
+    hash: [],
+};
+
+const airdropThirdDefaultValue = {
+    name: 'og_drop',
+    display_name: 'OG drop',
+    token: 'gro',
+    participated: 'false',
+    amount: '0.00',
+    timestamp: '1631577600',
     claimed: 'false',
     hash: [],
 };
@@ -76,7 +89,31 @@ async function getSecondAirdropResult(account) {
     return result;
 }
 
+async function getThirdAirdropResult(account) {
+    if (!thirdAirdropJson) {
+        thirdAirdropJson = await convertCSVtoJson(csv3FilePath);
+    }
+    account = account.toLowerCase();
+    const accountAirdrop = thirdAirdropJson[account];
+    let result = airdropThirdDefaultValue;
+    if (accountAirdrop) {
+        const amount = `${BN(accountAirdrop.amount).toFixed(2)}`;
+        result = { ...airdropThirdDefaultValue };
+        if (amount !== '0.00') {
+            result.amount = amount;
+            result.participated = 'true';
+        }
+    }
+    return result;
+}
+
+async function updateOGAirdropFile() {
+    thirdAirdropJson = await convertCSVtoJson(csv3FilePath);
+}
+
 module.exports = {
     getFirstAirdropResult,
     getSecondAirdropResult,
+    getThirdAirdropResult,
+    updateOGAirdropFile,
 };
