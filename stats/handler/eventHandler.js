@@ -61,7 +61,9 @@ async function checkTvlChange(
             ContractNames.controller,
             providerKey
         ).contract;
-        const startTvl = await controller.totalAssets({ blockTag: fromBlock });
+        const startTvl = await controller.totalAssets({
+            blockTag: fromBlock - 1,
+        });
         const endTvl = await controller.totalAssets({ blockTag: toBlock });
         const depositTotal = depositEventResult.total.pwrd.usdAmount.add(
             depositEventResult.total.gvt.usdAmount
