@@ -1,32 +1,48 @@
+const moment = require('moment');
+const { getNetworkId } = require('../common/lbpUtil');
 
-// TODO: get exceptions
-const parseData = (stats) => {
-    let gro_balance;
-    let usdc_balance;
-    let gro_weight;
-    let usdc_weight;
-
-    for (const pool of stats.poolTokens) {
-        if (pool.symbol === 'GRO') {
-            gro_balance = pool.balance;
-            gro_weight = pool.weight;
-        } else if (pool.symbol === 'USDC') {
-            usdc_balance = pool.balance;
-            usdc_weight = pool.weight;
+const parseV2 = (stats) => {
+    try {
+        let gro_balance;
+        let usdc_balance;
+    
+        for (const pool of stats.poolTokens) {
+            if (pool.symbol === 'GRO') {
+                gro_balance = pool.balance;
+            } else if (pool.symbol === 'USDC') {
+                usdc_balance = pool.balance;
+            }
         }
+
+        return [
+            // moment.unix(stats.price.timestamp).utc(),
+            // stats.price.timestamp,
+            // stats.price.blockNumber,
+            // getNetworkId(),
+            parseFloat(gro_balance),
+            parseFloat(usdc_balance),
+            // moment().utc(),
+        ];
+    } catch(err) {
+        console.log(err);
     }
-    // let gro_price = stats.tokenPrices[0].price;
-    let gro_swap_timestamp = stats.tokenPrices[0].timestamp;
+}
+
+// TODO: get exceptions !!!!!
+const getDataV2 = (stats) => {
     return [
-        parseFloat(gro_balance),
-        parseFloat(usdc_balance),
-        parseFloat(gro_weight),
-        // parseFloat(usdc_weight),
-        // parseFloat(gro_price),
-        parseFloat(gro_swap_timestamp),
+        moment.unix(stats.price.timestamp).utc(),
+        stats.price.timestamp,
+        stats.price.blockNumber,
+        getNetworkId(),
+        parseFloat(stats.price.price),
+        parseFloat(stats.balance.balance),
+        moment().utc(),
     ];
+
 }
 
 module.exports = {
-    parseData,
+    parseV2,
+    getDataV2,
 }
