@@ -7,7 +7,7 @@ const parseV2 = (stats) => {
         let usdc_balance;
     
         for (const pool of stats.poolTokens) {
-            if (pool.symbol === 'GRO') {
+            if (pool.symbol === 'GRO' || pool.symbol === 'aKLIMA') {  // TO BE REMOVED 
                 gro_balance = pool.balance;
             } else if (pool.symbol === 'USDC') {
                 usdc_balance = pool.balance;
@@ -15,20 +15,15 @@ const parseV2 = (stats) => {
         }
 
         return [
-            // moment.unix(stats.price.timestamp).utc(),
-            // stats.price.timestamp,
-            // stats.price.blockNumber,
-            // getNetworkId(),
             parseFloat(gro_balance),
             parseFloat(usdc_balance),
-            // moment().utc(),
         ];
     } catch(err) {
         console.log(err);
     }
 }
 
-// TODO: get exceptions !!!!!
+// TODO: get exceptions !!
 const getDataV2 = (stats) => {
     return [
         moment.unix(stats.price.timestamp).utc(),

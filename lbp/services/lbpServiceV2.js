@@ -30,22 +30,24 @@ const calcWeight = (targetTimestamp) => {
     }
 }
 
-const calcBalance = async (stats, targetTimestamp) => {
+const calcBalance = async (targetTimestamp, stats) => {
     try {
         let gro_balance = lbp_gro_start_balance;
         let usdc_balance = lbp_usdc_start_balance;
-
         // check if data OK?
-        for (const swap of stats.swaps) {
+        for (const swap of stats) {
             if (swap.timestamp <= targetTimestamp) {
-                if (swap.tokenInSym.toUpperCase() === 'USDC' && swap.tokenOutSym.toUpperCase() === 'GRO') {
+                // if (swap.tokenInSym.toUpperCase() === 'USDC' && swap.tokenOutSym.toUpperCase() === 'GRO') {
+                if (swap.tokenInSym === 'USDC' && swap.tokenOutSym === 'aKLIMA') {
                     usdc_balance += parseFloat(swap.tokenAmountIn);
                     gro_balance -= parseFloat(swap.tokenAmountOut);
-                } else if (swap.tokenInSym.toUpperCase() === 'GRO' && swap.tokenOutSym.toUpperCase() === 'USDC') {
+                // } else if (swap.tokenInSym.toUpperCase() === 'GRO' && swap.tokenOutSym.toUpperCase() === 'USDC') {
+                } else if (swap.tokenInSym === 'aKLIMA' && swap.tokenOutSym === 'USDC') {
                     gro_balance += parseFloat(swap.tokenAmountIn);
                     usdc_balance -= parseFloat(swap.tokenAmountOut);
                 } else {
                     // logger.error
+                    console.log('Unknown token in calcBalance()');
                 }
             }
         }
@@ -56,28 +58,25 @@ const calcBalance = async (stats, targetTimestamp) => {
     }
 }
 
-const getHistoricPriceAndBalance = () => {
+const getPriceAndBalance = async (targetTimestamp, stats) => {
     try {
-
-    } catch (err) {
-        console.log(err);
-    }
-}
-
-const getCurrentPriceAndBalance = async (targetTimestamp) => {
-    try {
-        // Get current weights
+        // Get target weights
         const [
             gro_weight,
             usdc_weight,
         ] = calcWeight(targetTimestamp);
 
-        // Get latest balances
-        const res = await callSubgraph('latestPriceAndBalance', targetTimestamp);         // TODO: check if res is OK
-        const [
-            gro_balance,
-            usdc_balance,
-        ] = parseV2(res);
+        // Get target balances
+        let gro_balance;
+        let usdc_balance;
+        if (stats) {
+            // HDL
+            [gro_balance, usdc_balance] = await calcBalance(targetTimestamp, stats);
+        } else {
+            // Normal load
+            const res = await callSubgraph('latestPriceAndBalance', targetTimestamp);         // TODO: check if res is OK
+            [gro_balance, usdc_balance] = parseV2(res);
+        }
 
         // Calc spot price
         const spot_price = (usdc_balance / usdc_weight) / (gro_balance / gro_weight);
@@ -89,14 +88,14 @@ const getCurrentPriceAndBalance = async (targetTimestamp) => {
 }
 
 
-const fetchLBPDataV2 = async (targetTimestamp) => {
+const fetchLBPDataV2 = async (targetTimestamp, stats) => {
     try {
         // TODO 1: check if error is returned
         // sometimes: 2021-09-15T18:16:09.567Z error: **DB: Error in lbpServiceV2.js->fetchLBPDataV2(): Error: Request failed with status code 502
         // TODO 2: check if data returned, all expected fields exist
         // TODO 3: check when targetTimestamp is before or after the LBP
 
-        const [price, balance] = await getCurrentPriceAndBalance(targetTimestamp)
+        const [price, balance] = await getPriceAndBalance(targetTimestamp, stats);
 
         return {
             price: {

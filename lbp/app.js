@@ -9,6 +9,7 @@ const {
 } = require('./etl/etlLbpStats');
 const {
     etlLbpStatsV2,
+    etlLbpStatsHDLV2,
 } = require('./etl/etlLbpStatsV2');
 const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
 
@@ -45,7 +46,9 @@ const { findBlockByDate } = require('../database/common/globalUtil');
         // Testing LBP
         // 1) Testing normal ETL load
         // await etlLbpStats();
-        await etlLbpStatsV2();
+        // await etlLbpStatsV2();
+        // await etlLbpStatsHDLV2(1631786400, 1631788200, 300, false);
+        await etlLbpStatsHDLV2(1631631600, 1631836800, 300, true);  //aKlima
         // await new Promise(resolve => setTimeout(resolve, 1000));
         // 2) Testing historical ETL load
         // await etlLbpStatsHDL(1631035645, 1631036145, 300);

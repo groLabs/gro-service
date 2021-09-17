@@ -41,6 +41,6 @@ app.get('/favico.ico', (req, res) => {
 });
 
 // start the schedule task
-scheduler.startLbpStatsJobs();
+// scheduler.startLbpStatsJobs();
 
 module.exports = app;

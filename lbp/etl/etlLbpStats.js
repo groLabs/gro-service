@@ -60,7 +60,7 @@ const etlLbpStats = async () => {
             logger.info(msg);
         }
     } catch (err) {
-        logger.error(`**DB: Error in loadLbp.js->etlLbpStats(): ${err}`);
+        logger.error(`**DB: Error in etlLbpStats.js->etlLbpStats(): ${err}`);
     }
 }
 

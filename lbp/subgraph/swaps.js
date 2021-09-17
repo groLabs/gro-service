@@ -1,6 +1,8 @@
-const swaps = (poolId, targetTimestamp) => (
+const swaps = (poolId, targetTimestamp, first, skip) => (
   `{
       swaps (
+          first: ${first}
+          skip: ${skip}
           orderBy: timestamp
           orderDirection: desc
           where: {

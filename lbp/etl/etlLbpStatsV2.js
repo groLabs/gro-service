@@ -8,13 +8,12 @@ const {
     loadLbp,
     removeLbp,
 } = require('../loader/loadLbp');
-const { getData } = require('../parser/lbpParser');
 const { getDataV2 } = require('../parser/lbpParserV2');
 const { fetchLBPDataV2 } = require('../services/lbpServiceV2');
-const { fetchLBPData } = require('../services/lbpService');
+const { callSubgraph } = require('../common/apiCaller');
 const {
     calcRangeTimestamps,
-    findBlockByDate
+    // findBlockByDate
 } = require('../../database/common/globalUtil');
 const {
     isFormatOK,
@@ -39,7 +38,7 @@ const etlLbpStatsV2 = async () => {
         if (now >= LBP_START_TIMESTAMP && now <= LBP_END_TIMESTAMP) {
             // Retrieve price & current supply from Balancer
             // const stats = await fetchLBPData(null);
-            const stats = await fetchLBPDataV2(now);
+            const stats = await fetchLBPDataV2(now, null);
             console.log('stats', stats);
             if (isFormatOK(stats)) {
                 // Parse data into SQL parameter
@@ -63,15 +62,86 @@ const etlLbpStatsV2 = async () => {
             msg += `${LBP_START_TIMESTAMP} end: ${LBP_END_TIMESTAMP}) - no data load needed`;
             logger.info(msg);
         }
-
         // const stats = await fetchLBPDataV2(targetTimestamp);
         // console.log('stats', stats);
 
     } catch (err) {
-        logger.error(`**DB: Error in loadLbp.js->etlLbpStats(): ${err}`);
+        logger.error(`**DB: Error in etlLbpStatsV2.js->etlLbpStats(): ${err}`);
+    }
+}
+
+// Multiple records from subgraphs need to be retrieved through pagination
+const getSwaps = async (end, skip, result) => {
+    try {
+        const swaps = await callSubgraph('swaps', end, 1000, skip);
+        result = result.concat(swaps.swaps);
+        return (swaps.swaps.length < 1000)
+            ? result
+            : getSwaps(end, skip + 1000, result);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+// Historical load
+// 1) Deletes any data from table LBP_BALANCER_V1 within the timestamp range
+// 2) Loads data every N intervals
+// @dev: HDL does not generate intermediate JSON files, but only latest file is latest=true
+const etlLbpStatsHDLV2 = async (start, end, interval, latest) => {
+    try {
+        // Safety check
+        if (start > end) {
+            logger.error(`**DB: Error in etlLbpStatsV2.js->etlLbpStatsHDLV2(): start date can't be greater than end date`);
+            return false;
+        }
+
+        // Get all dates in N intervals for a given time range (start, end)
+        const dates = calcRangeTimestamps(start, end, interval);
+
+        // Remove records from DB for the given time range
+        logger.error(`**DB: LBP - starting data load from ${start} to ${end} for ${dates.length} interval/s...`);
+        const res = await removeLbp(start, end);
+
+        // Retrieve all swaps
+        if (res) {
+            const swaps = await getSwaps(
+                end,    // end timestamp
+                0,      // skip (calculated recursively)
+                []      // result (calculated recursively)
+            );
+
+            // For each date, Retrieve price and balace up to that given date
+            for (const date of dates) {
+                const stats = await fetchLBPDataV2(moment(date).unix(), swaps);
+                if (isFormatOK(stats)) {
+                    // Parse data into SQL parameter
+                    const data = getDataV2(stats);
+                    if (isLengthOK(data)) {
+                        // Load data into LBP_BALANCER_V1
+                        const res = await loadLbp(data);
+                        if (!res)
+                            return;
+                    }
+                }
+            }
+        }
+
+        if (latest) {
+            const allData = await getLbpStatsDB();
+            generateJSONFile(
+                allData,    // JSON data
+                latest,     // latest file
+                true        // HDL
+            );
+        }
+        return true;
+    } catch (err) {
+        logger.error(`**DB: Error in etlLbpStatsV2.js->etlLbpStatsHDLV2(): ${err}`);
+        return false;
     }
 }
 
 module.exports = {
     etlLbpStatsV2,
+    etlLbpStatsHDLV2,
 };

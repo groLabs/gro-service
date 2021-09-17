@@ -8,7 +8,7 @@ const balancerV2_graph_url = getConfig('lbp.balancerV2_graph_url');
 const balancerV2_pool_id = getConfig('lbp.balancerV2_pool_id');
 
 
-const callSubgraph = async (query, targetTimestamp) => {
+const callSubgraph = async (query, targetTimestamp, first, skip) => {
 
     let q;
     switch (query) {
@@ -21,7 +21,9 @@ const callSubgraph = async (query, targetTimestamp) => {
         case 'swaps':
             q = swaps(
                 balancerV2_pool_id,
-                targetTimestamp
+                targetTimestamp,
+                first,
+                skip
             )
             break;
         default:
