@@ -1,4 +1,4 @@
-INSERT INTO gro."LBP_BALANCER_V1" (
+INSERT INTO gro."LBP_BALANCER_HOST2" (
         "lbp_date",
         "lbp_timestamp",
         "lbp_block_number",

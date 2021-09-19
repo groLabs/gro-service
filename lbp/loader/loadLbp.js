@@ -1,5 +1,6 @@
 const moment = require('moment');
 const botEnv = process.env.BOT_ENV.toLowerCase();
+const hostEnv = process.env.HOST_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { query } = require('../handler/queryHandler');
 const { QUERY_ERROR } = require('../constants');
@@ -8,7 +9,7 @@ const { QUERY_ERROR } = require('../constants');
 const loadLbp = async (data) => {
     try {
         // Load data into LBP_BALANCER_V1
-        const res = await query('insert_lbp_balancer.sql', data);
+        const res = await query(`insert_lbp_balancer_${hostEnv}.sql`, data);
         if (res.status !== QUERY_ERROR) {
             const price = ` (price: ${data[4]},`;
             const balance = `balance: ${data[5]},`;
@@ -28,7 +29,7 @@ const loadLbp = async (data) => {
 const removeLbp = async (start, end) => {
     try {
         // delete data from LBP_BALANCER_V1
-        const res = await query('delete_lbp_balancer.sql', [start, end]);
+        const res = await query(`delete_lbp_balancer_${hostEnv}.sql`, [start, end]);
         if (res.status !== QUERY_ERROR) {
             logger.info(`**LBP: ${res.rowCount} record/s removed from LBP_BALANCER_V1`);
             return true;

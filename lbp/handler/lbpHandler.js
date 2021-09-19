@@ -1,8 +1,7 @@
-const fs = require('fs');
-const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const botEnv = process.env.BOT_ENV.toLowerCase();
+const hostEnv = process.env.HOST_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { getConfig } = require('../../common/configUtil');
 const { getJSONFile } = require('../common/lbpUtil');
@@ -13,13 +12,12 @@ const launch_timestamp = getConfig('lbp.start_timestamp');
 const lbp_start_date = getConfig('lbp.lbp_start_date');
 const lbp_end_date = getConfig('lbp.lbp_end_date');
 const gro_amount_total = getConfig('lbp.gro_amount_total');
-const stats_folder = getConfig('stats_folder');
 const NAH = 'NA';
 
 const getLbpHistoricPrice = async () => {
     try {
         let result = [];
-        const res = await query(`select_lbp_prices.sql`, []);
+        const res = await query(`select_lbp_prices_${hostEnv}.sql`, []);
         if (res.status !== QUERY_ERROR) {
             const prices = res.rows;
             for (const price of prices) {
@@ -49,9 +47,9 @@ const getLbpBalanceAndPrice = async () => {
             latest_price,
             price_1h
         ] = await Promise.all([
-            query(`select_lbp_latest_balance_and_timestamp.sql`, []),
-            query(`select_lbp_latest_price.sql`, []),
-            query(`select_lbp_price_1h.sql`, []),
+            query(`select_lbp_latest_balance_and_timestamp_${hostEnv}.sql`, []),
+            query(`select_lbp_latest_price_${hostEnv}.sql`, []),
+            query(`select_lbp_price_1h_${hostEnv}.sql`, []),
         ]);
 
         if (balanceAndTimestamp.status === QUERY_ERROR

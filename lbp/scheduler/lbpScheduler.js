@@ -31,7 +31,6 @@ const lbpStatsJob = async () => {
     } catch (err) {
         logger.error(`**LBP: Error in lbpScheduler.js->lbpStatsJob(): ${err}`);
     }
-
 }
 
 const startLbpStatsJobs = async () => {

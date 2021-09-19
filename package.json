@@ -16,8 +16,10 @@
         "start:ropsten:database": "cross-env NODE_ENV=ropsten BOT_ENV=DATABASE node ./database/bin/www",
         "start:mainnet:database": "cross-env NODE_ENV=mainnet BOT_ENV=DATABASE node ./database/bin/www",
         "start:ropsten:lbp": "cross-env NODE_ENV=ropsten BOT_ENV=LBP node ./lbp/bin/www",
-        "start:mainnet:lbp": "cross-env NODE_ENV=mainnet BOT_ENV=LBP node ./lbp/bin/www",
-        "start:rinkeby:lbp": "cross-env NODE_ENV=rinkeby BOT_ENV=LBP node ./lbp/bin/www"
+        "start:mainnet:lbp1": "cross-env NODE_ENV=mainnet BOT_ENV=LBP HOST_ENV=host1 node ./lbp/bin/www",
+        "start:mainnet:lbp2": "cross-env NODE_ENV=mainnet BOT_ENV=LBP HOST_ENV=host2 node ./lbp/bin/www",
+        "start:rinkeby:lbp1": "cross-env NODE_ENV=rinkeby BOT_ENV=LBP HOST_ENV=host1 node ./lbp/bin/www",
+        "start:rinkeby:lbp2": "cross-env NODE_ENV=rinkeby BOT_ENV=LBP HOST_ENV=host2 node ./lbp/bin/www"
     },
     "dependencies": {
         "@ethersproject/experimental": "^5.0.10",

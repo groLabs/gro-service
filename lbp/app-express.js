@@ -5,12 +5,12 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
-const {
-    SettingError,
-    ParameterError,
-    ContractCallError,
-} = require('../common/error');
-const customLogger = require('./lbpLogger');
+// const {
+//     SettingError,
+//     ParameterError,
+//     ContractCallError,
+// } = require('../common/error');
+// const customLogger = require('./lbpLogger');
 const statsRouter = require('./routes/lbp');
 const scheduler = require('./scheduler/lbpScheduler');
 
