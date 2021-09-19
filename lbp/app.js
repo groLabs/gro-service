@@ -26,7 +26,7 @@ const { findBlockByDate } = require('../database/common/globalUtil');
             switch (params[0]) {
                 case 'etlLbpStatsHDL':
                     if (params.length === 5) {
-                        await etlLbpStatsHDL(
+                        await etlLbpStatsHDLV2(
                             parseInt(params[1]),    // start timestamp
                             parseInt(params[2]),    // end timestamp
                             parseInt(params[3]),    // time interval in seconds
@@ -46,9 +46,10 @@ const { findBlockByDate } = require('../database/common/globalUtil');
         // Testing LBP
         // 1) Testing normal ETL load
         // await etlLbpStats();
-        // await etlLbpStatsV2();
-        // await etlLbpStatsHDLV2(1631786400, 1631788200, 300, false);
-        await etlLbpStatsHDLV2(1631631600, 1631836800, 300, true);  //aKlima
+        await etlLbpStatsV2();
+        // await etlLbpStatsHDLV2(1631703600, 1631736000, 3600, false); //
+        // await etlLbpStatsHDLV2(1631631600, 1631890800, 3600, false);  //aKlima
+        // await etlLbpStatsHDLV2(1631876400, 1632135600, 3600, true);  //Gro v2 rinkeby
         // await new Promise(resolve => setTimeout(resolve, 1000));
         // 2) Testing historical ETL load
         // await etlLbpStatsHDL(1631035645, 1631036145, 300);

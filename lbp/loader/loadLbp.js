@@ -13,14 +13,14 @@ const loadLbp = async (data) => {
             const price = ` (price: ${data[4]},`;
             const balance = `balance: ${data[5]},`;
             const date = `date: ${moment.utc(data[0]).format('DD/MM/YYYY HH:mm:ss')})`;
-            logger.info(`**DB: 1 record added into LBP_BALANCER_V1 ${price} ${balance} ${date}`);
+            logger.info(`**LBP: 1 record added into LBP_BALANCER_V1 ${price} ${balance} ${date}`);
             return true;
         } else {
-            logger.error(`**DB: Error in loadLbp.js->loadLbp(): loading data into LBP_BALANCER_V1`);
+            logger.error(`**LBP: Error in loadLbp.js->loadLbp(): loading data into LBP_BALANCER_V1`);
             return false;
         }
     } catch (err) {
-        logger.error(`**DB: Error in loadLbp.js->loadLbp(): ${err}`);
+        logger.error(`**LBP: Error in loadLbp.js->loadLbp(): ${err}`);
         return false;
     }
 }
@@ -30,14 +30,14 @@ const removeLbp = async (start, end) => {
         // delete data from LBP_BALANCER_V1
         const res = await query('delete_lbp_balancer.sql', [start, end]);
         if (res.status !== QUERY_ERROR) {
-            logger.info(`**DB: ${res.rowCount} record/s removed from LBP_BALANCER_V1`);
+            logger.info(`**LBP: ${res.rowCount} record/s removed from LBP_BALANCER_V1`);
             return true;
         } else {
-            logger.error(`**DB: Error in loadLbp.js->removeLbp(): removing data from LBP_BALANCER_V1`);
+            logger.error(`**LBP: Error in loadLbp.js->removeLbp(): removing data from LBP_BALANCER_V1`);
             return false;
         }
     } catch (err) {
-        logger.error(`**DB: Error in loadLbp.js->removeLbp(): ${err}`);
+        logger.error(`**LBP: Error in loadLbp.js->removeLbp(): ${err}`);
         return false;
     }
 }

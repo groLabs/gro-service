@@ -64,7 +64,7 @@ const query = async (file, params) => {
             return result;
         }
     } catch (err) {
-        logger.error(`**DB: queryHandler.js->query(): ${err}`);
+        logger.error(`**LBP: queryHandler.js->query(): ${err}`);
         return ERROR;
     }
 }
@@ -83,13 +83,13 @@ const singleQuery = async (q, file, op, params) => {
             }
         } catch (err) {
             if ((op === 'insert') || (op == 'update') || (op == 'delete')) { await client.query('ROLLBACK') }
-            logger.error(`**DB: queryHandler.js->singleQuery() \n Message: ${err} \n Query: ${file} \n Params: ${params}`);
+            logger.error(`**LBP: queryHandler.js->singleQuery() \n Message: ${err} \n Query: ${file} \n Params: ${params}`);
             return ERROR;
         } finally {
             client.release();
         }
     } catch (err) {
-        logger.error(`**DB: queryHandler.js->singleQuery() \n Message: ${err}`);
+        logger.error(`**LBP: queryHandler.js->singleQuery() \n Message: ${err}`);
         return ERROR;
     }
 };

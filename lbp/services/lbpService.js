@@ -115,17 +115,6 @@ async function getSwapEventsInPool(fromBlock, toBlock) {
     return swapLogs;
 }
 
-// async function getJoinEventsInPool(fromBlock, toBlock) {
-//     const filter = bpPool.filters.LOG_JOIN(null, null, null);
-//     filter.fromBlock = fromBlock;
-//     filter.toBlock = toBlock;
-
-//     const joinLogs = await getFilterEvents(filter, bpPool.interface, 'default');
-
-//     console.log(`join log: ${JSON.stringify(joinLogs)}`);
-//     return joinLogs;
-// }
-
 async function getExitEventsInPool(fromBlock, toBlock) {
     const filter = crpPool.filters.LogExit(null, null);
     filter.fromBlock = fromBlock;

@@ -55,12 +55,12 @@ const etlLbpStats = async () => {
                 }
             }
         } else {
-            let msg = `**DB: LBP - current date (${now}) is out of the LBP period (start: `;
+            let msg = `**LBP: Current date (${now}) is out of the LBP period (start: `;
             msg += `${LBP_START_TIMESTAMP} end: ${LBP_END_TIMESTAMP}) - no data load needed`;
             logger.info(msg);
         }
     } catch (err) {
-        logger.error(`**DB: Error in etlLbpStats.js->etlLbpStats(): ${err}`);
+        logger.error(`**LBP: Error in etlLbpStats.js->etlLbpStats(): ${err}`);
     }
 }
 
@@ -72,7 +72,7 @@ const etlLbpStatsHDL = async (start, end, interval, latest) => {
     try {
         // Safety check
         if (start > end) {
-            logger.error(`**DB: Error in etlLbpStats.js->etlLbpStatsHDL(): start date can't be greater than end date`);
+            logger.error(`**LBP: Error in etlLbpStats.js->etlLbpStatsHDL(): start date can't be greater than end date`);
             return false;
         }
 
@@ -80,7 +80,7 @@ const etlLbpStatsHDL = async (start, end, interval, latest) => {
         const dates = calcRangeTimestamps(start, end, interval);
 
         // Remove records from DB for the given time range
-        logger.error(`**DB: LBP - starting data load from ${start} to ${end} for ${dates.length} interval/s...`);
+        logger.info(`**LBP: LBP - starting data load from ${start} to ${end} for ${dates.length} interval/s...`);
         const res = await removeLbp(start, end);
         if (res) {
             // Get block number for each date
@@ -110,7 +110,7 @@ const etlLbpStatsHDL = async (start, end, interval, latest) => {
         }
         return true;
     } catch (err) {
-        logger.error(`**DB: Error in etlLbpStats.js->etlLbpStatsHDL(): ${err}`);
+        logger.error(`**LBP: Error in etlLbpStats.js->etlLbpStatsHDL(): ${err}`);
         return false;
     }
 }
@@ -129,7 +129,7 @@ const etlRecovery = async () => {
                 if (now >= LBP_START_TIMESTAMP) {
                     if (now - lbp_current_timestamp > INTERVAL && lbp_current_timestamp < LBP_END_TIMESTAMP) {
                         // Last load > INTERVAL minutes ago -> recovery needed
-                        logger.info(`**DB: LBP - backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minutes ago.`);
+                        logger.info(`**LBP: LBP - backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minutes ago.`);
                         const res = await etlLbpStatsHDL(
                             lbp_current_timestamp + INTERVAL,   // start
                             (now > LBP_END_TIMESTAMP)
@@ -140,7 +140,7 @@ const etlRecovery = async () => {
                         );
                         // Re-check if any load is still required after the backfilling
                         if (res) {
-                            await etlRecovery();
+                            return await etlRecovery();
                         } else {
                             return false;
                         }
@@ -148,29 +148,29 @@ const etlRecovery = async () => {
                     } else {
                         if (lbp_current_timestamp >= LBP_END_TIMESTAMP) {
                             // LBP completed, data up-to-date -> no recovery needed
-                            logger.info(`**DB: LBP - no backfill needed. LBP already finished and data up-to-date.`);
+                            logger.info(`**LBP: LBP - no backfill needed. LBP already finished and data up-to-date.`);
                         } else {
                             // Last load less than INTERVAL minutes ago -> no recovery needed
-                            logger.info(`**DB: LBP - no backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minute/s ago.`);
+                            logger.info(`**LBP: LBP - no backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minute/s ago.`);
                         }
                         return true;
                     }
                 } else {
                     // LBP not started yet, no recovery needed
-                    logger.info(`**DB: LBP - no backfill needed: LBP not started yet`);
+                    logger.info(`**LBP: LBP - no backfill needed: LBP not started yet`);
                     return true;
                 }
             } else {
                 // Wrong JSON format
-                logger.error(`**DB: Error in etlLbpStats.js->etlRecovery(): Wrong JSON format -> ${JSON.stringify(data)}`);
+                logger.error(`**LBP: Error in etlLbpStats.js->etlRecovery(): Wrong JSON format -> ${JSON.stringify(data)}`);
                 return false;
             }
         } else {
-            logger.error(`**DB: Error in etlLbpStats.js->etlRecovery(): File <${statsDir}/lbp-latest.json> is missing`);
+            logger.error(`**LBP: Error in etlLbpStats.js->etlRecovery(): File <${statsDir}/lbp-latest.json> is missing`);
             return false;
         }
     } catch (err) {
-        logger.error(`**DB: Error in etlLbpStats.js->etlRecovery(): ${err}`);
+        logger.error(`**LBP: Error in etlLbpStats.js->etlRecovery(): ${err}`);
         return false;
     }
 }

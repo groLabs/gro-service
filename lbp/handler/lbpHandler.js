@@ -35,7 +35,7 @@ const getLbpHistoricPrice = async () => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in lbpHandler.js->getLbpHistoricPrice(): ${err}`);
+        logger.error(`**LBP: Error in lbpHandler.js->getLbpHistoricPrice(): ${err}`);
         return {
             "error": "exception in lbpHandler.js->getLbpHistoricPrice()"
         };
@@ -92,7 +92,7 @@ const getLbpBalanceAndPrice = async () => {
             }
         }
     } catch (err) {
-        logger.error(`**DB: Error in lbpHandler.js->getLbpBalanceAndPrice(): ${err}`);
+        logger.error(`**LBP: Error in lbpHandler.js->getLbpBalanceAndPrice(): ${err}`);
         return {
             "error": "exception in lbpHandler.js->getLbpBalanceAndPrice()"
         };
@@ -109,7 +109,7 @@ const getLbpStatsDB = async () => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in lbpHandler.js->getLbpStatsDB(): ${err}`);
+        logger.error(`**LBP: Error in lbpHandler.js->getLbpStatsDB(): ${err}`);
         return {
             "error": "exception in lbpHandler.js->getLbpStatsDB()"
         };
@@ -125,7 +125,7 @@ const getLbpStatsFile = async () => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in lbpHandler.js->gelLbpStatsFile(): ${err}`);
+        logger.error(`**LBP: Error in lbpHandler.js->gelLbpStatsFile(): ${err}`);
         return {
             "error": "exception in lbpHandler.js->gelLbpStatsFile()"
         };

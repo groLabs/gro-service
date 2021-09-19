@@ -1,5 +1,3 @@
-const axios = require('axios');
-const moment = require('moment');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { getConfig } = require('../../common/configUtil');
@@ -25,36 +23,37 @@ const calcWeight = (targetTimestamp) => {
 
         return [gro_weight, usdc_weight];
     } catch (err) {
-        console.log(err);
-        // TODO: return error
+        logger.error(`**LBP: Error in lbpServiceV2.js->calcWeight(): ${err}`);
     }
 }
 
+// return USDC & GRO balances based on swap history. If no swaps, return initial balances
 const calcBalance = async (targetTimestamp, stats) => {
     try {
+        // Initial balances
         let gro_balance = lbp_gro_start_balance;
         let usdc_balance = lbp_usdc_start_balance;
-        // check if data OK?
+
+        // Calc balances based on swap history. If no swaps, subgraph will return an empty array
         for (const swap of stats) {
             if (swap.timestamp <= targetTimestamp) {
-                // if (swap.tokenInSym.toUpperCase() === 'USDC' && swap.tokenOutSym.toUpperCase() === 'GRO') {
-                if (swap.tokenInSym === 'USDC' && swap.tokenOutSym === 'aKLIMA') {
+                if (swap.tokenInSym.toUpperCase() === 'USDC' && swap.tokenOutSym.toUpperCase() === 'GRO') {
+                    // if (swap.tokenInSym === 'USDC' && swap.tokenOutSym === 'aKLIMA') {
                     usdc_balance += parseFloat(swap.tokenAmountIn);
                     gro_balance -= parseFloat(swap.tokenAmountOut);
-                // } else if (swap.tokenInSym.toUpperCase() === 'GRO' && swap.tokenOutSym.toUpperCase() === 'USDC') {
-                } else if (swap.tokenInSym === 'aKLIMA' && swap.tokenOutSym === 'USDC') {
+                } else if (swap.tokenInSym.toUpperCase() === 'GRO' && swap.tokenOutSym.toUpperCase() === 'USDC') {
+                    // } else if (swap.tokenInSym === 'aKLIMA' && swap.tokenOutSym === 'USDC') {
                     gro_balance += parseFloat(swap.tokenAmountIn);
                     usdc_balance -= parseFloat(swap.tokenAmountOut);
                 } else {
-                    // logger.error
-                    console.log('Unknown token in calcBalance()');
+                    const tkns = `tokenInSym: ${swap.tokenInSym}, tokenOutSym: ${swap.tokenOutSym}`;
+                    logger.error(`**LBP: Unknown token in lbpServiceV2.js->calcBalance(): ${tkns}`);
                 }
             }
         }
         return [gro_balance, usdc_balance];
     } catch (err) {
-        console.log(err);
-        // return error;
+        logger.error(`**LBP: Error in lbpServiceV2.js->calcBalance(): ${err}`);
     }
 }
 
@@ -74,8 +73,14 @@ const getPriceAndBalance = async (targetTimestamp, stats) => {
             [gro_balance, usdc_balance] = await calcBalance(targetTimestamp, stats);
         } else {
             // Normal load
-            const res = await callSubgraph('latestPriceAndBalance', targetTimestamp);         // TODO: check if res is OK
-            [gro_balance, usdc_balance] = parseV2(res);
+            const res = await callSubgraph('latestPriceAndBalance');
+            if (res && res.poolTokens) {
+                [gro_balance, usdc_balance] = parseV2(res);
+                if (!gro_balance || !usdc_balance)
+                    throw 'GRO & USDC balances not found';
+            } else {
+                throw 'Error during subgraph API call';
+            }
         }
 
         // Calc spot price
@@ -83,7 +88,7 @@ const getPriceAndBalance = async (targetTimestamp, stats) => {
 
         return [spot_price, gro_balance];
     } catch (err) {
-        console.log(err);
+        logger.error(`**LBP: Error in lbpServiceV2.js->getPriceAndBalance(): ${err}`);
     }
 }
 
@@ -91,26 +96,36 @@ const getPriceAndBalance = async (targetTimestamp, stats) => {
 const fetchLBPDataV2 = async (targetTimestamp, stats) => {
     try {
         // TODO 1: check if error is returned
-        // sometimes: 2021-09-15T18:16:09.567Z error: **DB: Error in lbpServiceV2.js->fetchLBPDataV2(): Error: Request failed with status code 502
+        // sometimes: 2021-09-15T18:16:09.567Z error: **LBP: Error in lbpServiceV2.js->fetchLBPDataV2(): Error: Request failed with status code 502
         // TODO 2: check if data returned, all expected fields exist
         // TODO 3: check when targetTimestamp is before or after the LBP
 
-        const [price, balance] = await getPriceAndBalance(targetTimestamp, stats);
+        //const [price, balance] = await getPriceAndBalance(targetTimestamp, stats);
+        const res = await getPriceAndBalance(targetTimestamp, stats);
+        if (res) {
+            const [price, balance] = res;
+            return {
+                price: {
+                    timestamp: targetTimestamp,
+                    blockNumber: 0,
+                    price: price,
+                },
+                balance: {
+                    timestamp: targetTimestamp,
+                    blockNumber: 0,
+                    balance: balance,
+                },
+            };
+        } else {
+            return {
+                message: 'Error during price & balance calculation with Balancer subgraphs'
+            }
+        }
 
-        return {
-            price: {
-                timestamp: targetTimestamp,
-                blockNumber: 0,
-                price: price,
-            },
-            balance: {
-                timestamp: targetTimestamp,
-                blockNumber: 0,
-                balance: balance,
-            },
-        };
+
+
     } catch (err) {
-        logger.error(`**DB: Error in lbpServiceV2.js->fetchLBPDataV2(): ${err}`);
+        logger.error(`**LBP: Error in lbpServiceV2.js->fetchLBPDataV2(): ${err}`);
     }
 }
 

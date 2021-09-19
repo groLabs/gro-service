@@ -13,7 +13,7 @@ const isFormatOK = (stats) => {
         || !stats.balance.timestamp
         || stats.balance.timestamp <= 0
     ) {
-        logger.error(`**DB: Error in lbpUtil.js->isFormatOK(): wrong JSON format from data sourcing: ${stats}`);
+        logger.error(`**LBP: Error in lbpUtil.js->isFormatOK(): wrong JSON format from data sourcing: ${stats}`);
         throw 'Data not loaded into LBP_BALANCER_V1';
     } else {
         return true;
@@ -24,7 +24,7 @@ const isLengthOK = (data) => {
     if (data && data.length === 7) {
         return true;
     } else {
-        logger.error(`**DB: Error in lbpUtil.js->isLengthOK(): wrong number of values after JSON parsing: ${data}`);
+        logger.error(`**LBP: Error in lbpUtil.js->isLengthOK(): wrong number of values after JSON parsing: ${data}`);
         return false;
     }
 }
@@ -80,10 +80,10 @@ const generateJSONFile = (data, latest, hdl) => {
             if (latest)
                 fs.writeFileSync(latestFile, JSON.stringify(data));
         } else {
-            logger.error(`**DB: Error in lbpUtil->generateJSONFile(): wrong JSON data -> ${data}`);
+            logger.error(`**LBP: Error in lbpUtil->generateJSONFile(): wrong JSON data -> ${data}`);
         }
     } catch (err) {
-        logger.error(`**DB: Error in lbpUtil->generateJSONFile(): ${err}`);
+        logger.error(`**LBP: Error in lbpUtil->generateJSONFile(): ${err}`);
     }
 }
 
@@ -95,10 +95,10 @@ const getJSONFile = () => {
         const date = moment.unix(timestamp).format('DD/MM/YYYY HH:mm:ss');
         const price = data.lbp_stats.gro_price_current;
         const balance = data.lbp_stats.gro_amount_current;
-        logger.info(`**DB: Providing LBP data via API (price: ${price}, balance: ${balance}, date: ${date} ${timestamp})`);
+        logger.info(`**LBP: Providing LBP data via API (price: ${price}, balance: ${balance}, date: ${date} ${timestamp})`);
         return data;
     } catch (err) {
-        logger.error(`**DB: Error in lbpUtil->getJSONFile() when reading from file <${statsDir}/lbp-latest.json> : ${err}`);
+        logger.error(`**LBP: Error in lbpUtil->getJSONFile() when reading from file <${statsDir}/lbp-latest.json> : ${err}`);
         return {
             'error': `file <${statsDir}/lbp-latest.json> not available`
         }
@@ -134,11 +134,11 @@ const findFile = (path, extension) => {
 
         // Return the latest file
         if (lastTimestamp > 0) {
-            logger.info(`**DB: Providing LBP data from file lbp-${lastTimestamp}.json`);
+            logger.info(`**LBP: Providing LBP data from file lbp-${lastTimestamp}.json`);
             const data = require(`../../../stats/lbp-${lastTimestamp}.json`);
             return data;
         } else {
-            logger.error(`**DB: No JSON files with LBP data were found in folder <${path}>`);
+            logger.error(`**LBP: No JSON files with LBP data were found in folder <${path}>`);
             return {
                 "error": "no JSON files with LBP data available"
             };
