@@ -57,8 +57,8 @@ const etlLbpStatsV2 = async () => {
                     }
                 }
         } else {
-            let msg = `**LBP: LBP - current date (${now}) is out of the LBP period (start: `;
-            msg += `${LBP_START_TIMESTAMP} end: ${LBP_END_TIMESTAMP}) - no data load needed`;
+            let msg = `**LBP: No data load needed - Current date (${now}) is out of LBP period `;
+            msg += `(from: ${LBP_START_TIMESTAMP} to: ${LBP_END_TIMESTAMP})`;
             logger.info(msg);
         }
     } catch (err) {
@@ -157,11 +157,11 @@ const etlRecoveryV2 = async () => {
             let rawdata = fs.readFileSync(`${statsDir}/lbp-latest.json`);
             let data = JSON.parse(rawdata);
             if (isCurrentTimestampOK(data)) {
-                const lbp_current_timestamp = parseFloat(data.lbp_stats.current_timestamp);
                 const now = moment().unix();
                 if (now >= LBP_START_TIMESTAMP) {
+                    const lbp_current_timestamp = parseFloat(data.lbp_stats.current_timestamp);
                     if (now - lbp_current_timestamp >= INTERVAL && lbp_current_timestamp <= LBP_END_TIMESTAMP) {
-                        // Last load > INTERVAL minutes ago -> recovery needed
+                        // Last load >=5' ago and now still within the LBP -> recovery needed
                         logger.info(`**LBP: LBP - backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minutes ago.`);
                         const res = await etlLbpStatsHDLV2(
                             lbp_current_timestamp + INTERVAL,   // start
@@ -171,7 +171,7 @@ const etlRecoveryV2 = async () => {
                             INTERVAL,                           // interval
                             true,                               // last file
                         );
-                        
+
                         if (res) {
                             // Re-check if any load is still required after the backfilling
                             return await etlRecoveryV2();
@@ -182,29 +182,29 @@ const etlRecoveryV2 = async () => {
                     } else {
                         if (lbp_current_timestamp > LBP_END_TIMESTAMP) {
                             // LBP completed, data up-to-date -> no recovery needed
-                            logger.info(`**LBP: LBP - no backfill needed. LBP already finished and data up-to-date.`);
+                            logger.info(`**LBP: No backfill needed: LBP already finished and data up-to-date.`);
                         } else {
                             // Last load less than INTERVAL minutes ago -> no recovery needed
-                            logger.info(`**LBP: LBP - no backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minute/s ago.`);
+                            logger.info(`**LBP: No backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minute/s ago.`);
                         }
                         return true;
                     }
                 } else {
                     // LBP not started yet, no recovery needed
-                    logger.info(`**LBP: LBP - no backfill needed: LBP not started yet`);
+                    logger.info(`**LBP: No backfill needed: LBP not started yet`);
                     return true;
                 }
             } else {
                 // Wrong JSON format
-                logger.error(`**LBP: Error in etlLbpStats.js->etlRecovery(): Wrong JSON format -> ${JSON.stringify(data)}`);
+                logger.error(`**LBP: Error in etlLbpStatsV2.js->etlRecoveryV2(): Wrong JSON format -> ${JSON.stringify(data)}`);
                 return false;
             }
         } else {
-            logger.error(`**LBP: Error in etlLbpStats.js->etlRecovery(): File <${statsDir}/lbp-latest.json> is missing`);
+            logger.error(`**LBP: Error in etlLbpStatsV2.js->etlRecoveryV2(): File <${statsDir}/lbp-latest.json> is missing`);
             return false;
         }
     } catch (err) {
-        logger.error(`**LBP: Error in etlLbpStats.js->etlRecovery(): ${err}`);
+        logger.error(`**LBP: Error in etlLbpStatsV2.js->etlRecoveryV2(): ${err}`);
         return false;
     }
 }

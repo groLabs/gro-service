@@ -35,10 +35,12 @@ module.exports = {
     // LBP V2 - Ropsten 2nd version (Gro with Copper) - NOT WORKING
     lbp: {
         // Balancer V2:
-        lbp_start_date: 1632046200,     // Official: 17 September 2021 11:00:00
-        // lbp_start_date: 1631876400,     // Official: 17 September 2021 11:00:00
-        lbp_end_date: 1632305400,       // Official: 20 September 2021 11:00:00
-        // lbp_end_date: 1632135600,       // Official: 20 September 2021 11:00:00
+        // lbp_start_date: 1631876400,  // Official: 17 September 2021 11:00:00
+        // lbp_end_date: 1632135600,    // Official: 20 September 2021 11:00:00
+        // lbp_start_date: 1632046200,     // 19 September 2021 10:10:00
+        // lbp_end_date: 1632305400,       // 22 September 2021 10:10:00
+        lbp_start_date: 1632132000,     // 20 September 2021 10:00:00
+        lbp_end_date: 1632304800,       // 22 September 2021 10:10:00
         lbp_gro_start_weight: 0.95,
         lbp_gro_end_weight: 0.5,
         gro_amount_total: 5000,

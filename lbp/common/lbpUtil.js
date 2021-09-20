@@ -71,7 +71,8 @@ function fileExists(path) {
 
 const generateJSONFile = (data, latest, hdl) => {
     try {
-        if (data.lbp_stats.current_timestamp && data.lbp_stats.current_timestamp > 0) {
+        // if (data.lbp_stats.current_timestamp && data.lbp_stats.current_timestamp > 0) {
+        if (isCurrentTimestampOK(data)) {
             const timestamp = data.lbp_stats.current_timestamp;
             const currentFile = `${statsDir}/lbp-${timestamp}.json`;
             const latestFile = `${statsDir}/lbp-latest.json`;
@@ -87,20 +88,29 @@ const generateJSONFile = (data, latest, hdl) => {
     }
 }
 
+// to provide JSON data to the FE
 const getJSONFile = () => {
     try {
         let rawdata = fs.readFileSync(`${statsDir}/lbp-latest.json`);
         let data = JSON.parse(rawdata);
-        const timestamp = data.lbp_stats.current_timestamp
-        const date = moment.unix(timestamp).format('DD/MM/YYYY HH:mm:ss');
-        const price = data.lbp_stats.gro_price_current;
-        const balance = data.lbp_stats.gro_amount_current;
-        logger.info(`**LBP: Providing LBP data via API (price: ${price}, balance: ${balance}, date: ${date} ${timestamp})`);
-        return data;
+        if (isCurrentTimestampOK(data)) {
+            const timestamp = data.lbp_stats.current_timestamp
+            const date = moment.unix(timestamp).format('DD/MM/YYYY HH:mm:ss');
+            const price = data.lbp_stats.gro_price_current;
+            const balance = data.lbp_stats.gro_amount_current;
+            logger.info(`**LBP: Providing LBP data via API (price: ${price}, balance: ${balance}, date: ${date} ${timestamp})`);
+            return data;
+        } else {
+            logger.error(`**LBP: lbpUtil->getJSONFile(): wrong JSON data -> ${data}`);
+            return {
+                'message': `Wrong JSON data`
+            }
+        }
+
     } catch (err) {
         logger.error(`**LBP: Error in lbpUtil->getJSONFile() when reading from file <${statsDir}/lbp-latest.json> : ${err}`);
         return {
-            'error': `file <${statsDir}/lbp-latest.json> not available`
+            'message': `file <${statsDir}/lbp-latest.json> not available`
         }
     }
 }

@@ -8,7 +8,7 @@ const { QUERY_ERROR } = require('../constants');
 
 const loadLbp = async (data) => {
     try {
-        // Load data into LBP_BALANCER_V1
+        // Load data into LBP_BALANCER_HOST*
         const res = await query(`insert_lbp_balancer_${hostEnv}.sql`, data);
         if (res.status !== QUERY_ERROR) {
             const price = ` (price: ${data[4]},`;
@@ -28,7 +28,7 @@ const loadLbp = async (data) => {
 
 const removeLbp = async (start, end) => {
     try {
-        // delete data from LBP_BALANCER_V1
+        // delete data from LBP_BALANCER_HOST*
         const res = await query(`delete_lbp_balancer_${hostEnv}.sql`, [start, end]);
         if (res.status !== QUERY_ERROR) {
             logger.info(`**LBP: ${res.rowCount} record/s removed from LBP_BALANCER_V1`);

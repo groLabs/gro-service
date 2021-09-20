@@ -116,11 +116,7 @@ const getLbpStatsDB = async () => {
 
 const getLbpStatsFile = async () => {
     try {
-        const result = {
-            "lbp_stats": {
-                ...getJSONFile()
-            }
-        }
+        const result = getJSONFile();
         return result;
     } catch (err) {
         logger.error(`**LBP: Error in lbpHandler.js->gelLbpStatsFile(): ${err}`);

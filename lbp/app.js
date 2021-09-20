@@ -75,18 +75,3 @@ const { findBlockByDate } = require('../database/common/globalUtil');
         console.log(err);
     }
 })();
-
-/*
-    Maple Finance in mainnet / Whole LBP
-    start timestamp:    1619641800 (28 apr 2021 20:30)
-    end timestamp:      1619901900 (01 may 2021 20:45)
-    interval:           3600 (1h)
-    interval:           300 (5')
-*/
-
-/*
-    Maple Finance in mainnet / 1 day
-    start timestamp:    1619654400 (29 apr 2021 00:00)
-    end timestamp:      1619740800 (30 apr 2021 00:00)
-    interval:           3600 (1h)
-*/
