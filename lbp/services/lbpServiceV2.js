@@ -3,6 +3,10 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { getConfig } = require('../../common/configUtil');
 const { parseV2 } = require('../parser/lbpParserV2');
 const { callSubgraph } = require('../common/apiCaller');
+const {
+    GRO_TICKER,
+    USDC_TICKER,
+} = require('../constants');
 
 // Config
 const LBP_START_TIMESTAMP = getConfig('lbp.lbp_start_date');
@@ -30,6 +34,8 @@ const calcWeight = (targetTimestamp) => {
 // return USDC & GRO balances based on swap history. If no swaps, return initial balances
 const calcBalance = async (targetTimestamp, stats) => {
     try {
+        let unknown_token = [];
+
         // Initial balances
         let gro_balance = lbp_gro_start_balance;
         let usdc_balance = lbp_usdc_start_balance;
@@ -37,19 +43,27 @@ const calcBalance = async (targetTimestamp, stats) => {
         // Calc balances based on swap history. If no swaps, subgraph will return an empty array
         for (const swap of stats) {
             if (swap.timestamp <= targetTimestamp) {
-                if (swap.tokenInSym.toUpperCase() === 'USDC' && swap.tokenOutSym.toUpperCase() === 'GRO') {
-                    // if (swap.tokenInSym === 'USDC' && swap.tokenOutSym === 'aKLIMA') {
+                const tokenInSym = swap.tokenInSym.toUpperCase();
+                const tokenOutSym = swap.tokenOutSym.toUpperCase();
+                if (tokenInSym === USDC_TICKER && tokenOutSym === GRO_TICKER) {
                     usdc_balance += parseFloat(swap.tokenAmountIn);
                     gro_balance -= parseFloat(swap.tokenAmountOut);
-                } else if (swap.tokenInSym.toUpperCase() === 'GRO' && swap.tokenOutSym.toUpperCase() === 'USDC') {
-                    // } else if (swap.tokenInSym === 'aKLIMA' && swap.tokenOutSym === 'USDC') {
+                } else if (tokenInSym === GRO_TICKER && tokenOutSym === USDC_TICKER) {
                     gro_balance += parseFloat(swap.tokenAmountIn);
                     usdc_balance -= parseFloat(swap.tokenAmountOut);
                 } else {
-                    const tkns = `tokenInSym: ${swap.tokenInSym}, tokenOutSym: ${swap.tokenOutSym}`;
-                    logger.error(`**LBP: Unknown token in lbpServiceV2.js->calcBalance(): ${tkns}`);
+                    if (tokenInSym !== GRO_TICKER && tokenInSym !== USDC_TICKER) {
+                        if (!unknown_token.includes(tokenInSym))
+                            unknown_token.push(tokenInSym);
+                    } else if (tokenOutSym !== GRO_TICKER && tokenOutSym !== USDC_TICKER) {
+                        if (!unknown_token.includes(tokenOutSym))
+                            unknown_token.push(tokenOutSym);
+                    }
                 }
             }
+        }
+        if (unknown_token.length > 0) {
+            logger.error(`**LBP: Unknown token/s in lbpServiceV2.js->calcBalance(): ${unknown_token}`);
         }
         return [gro_balance, usdc_balance];
     } catch (err) {

@@ -2,6 +2,10 @@ const moment = require('moment');
 const { getNetworkId } = require('../common/lbpUtil');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
+const {
+    GRO_TICKER,
+    USDC_TICKER,
+} = require('../constants');
 
 
 const parseV2 = (stats) => {
@@ -9,10 +13,9 @@ const parseV2 = (stats) => {
         let gro_balance;
         let usdc_balance;
         for (const pool of stats.poolTokens) {
-            // if (pool.symbol === 'GRO' || pool.symbol === 'aKLIMA') {  // for aKLIMA LBP
-            if (pool.symbol === 'GRO') {
+            if (pool.symbol.toUpperCase() === GRO_TICKER) {
                 gro_balance = pool.balance;
-            } else if (pool.symbol === 'USDC') {
+            } else if (pool.symbol.toUpperCase() === USDC_TICKER) {
                 usdc_balance = pool.balance;
             }
         }

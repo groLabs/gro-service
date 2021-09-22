@@ -91,7 +91,8 @@ const etlLbpStatsHDLV2 = async (start, end, interval, latest) => {
     try {
         // Safety check
         if (start > end) {
-            logger.error(`**LBP: Error in etlLbpStatsV2.js->etlLbpStatsHDLV2(): start date can't be greater than end date`);
+            const msg = `start date ${start} can't be greater than end date ${end}`
+            logger.error(`**LBP: Error in etlLbpStatsV2.js->etlLbpStatsHDLV2(): ${msg}`);
             return false;
         }
 
@@ -150,6 +151,9 @@ const etlLbpStatsHDLV2 = async (start, end, interval, latest) => {
 
 // If bot crashed and restarts, check amount of intervals lost and
 // backfill data before triggering the cron
+// - No recovery if LBP hasn' t started
+// - No recovery if last update < 5' (within LBP period)
+// - No recovery if last update > LBP end date
 const etlRecoveryV2 = async () => {
     try {
         const isFile = fileExists(`${statsDir}/lbp-latest.json`);
@@ -159,12 +163,12 @@ const etlRecoveryV2 = async () => {
             if (isCurrentTimestampOK(data)) {
                 const now = moment().unix();
                 if (now >= LBP_START_TIMESTAMP) {
-                    const lbp_current_timestamp = parseFloat(data.lbp_stats.current_timestamp);
-                    if (now - lbp_current_timestamp >= INTERVAL && lbp_current_timestamp <= LBP_END_TIMESTAMP) {
+                    const lbp_latest_timestamp = parseFloat(data.lbp_stats.current_timestamp);
+                    if (now - lbp_latest_timestamp >= INTERVAL && lbp_latest_timestamp < LBP_END_TIMESTAMP) {
                         // Last load >=5' ago and now still within the LBP -> recovery needed
-                        logger.info(`**LBP: LBP - backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minutes ago.`);
+                        logger.info(`**LBP: LBP - backfill needed: last load was ${(now - lbp_latest_timestamp) / 60 | 0} minutes ago.`);
                         const res = await etlLbpStatsHDLV2(
-                            lbp_current_timestamp + INTERVAL,   // start
+                            lbp_latest_timestamp + INTERVAL,   // start
                             (now > LBP_END_TIMESTAMP)
                                 ? LBP_END_TIMESTAMP
                                 : now,                          // end (if now is later than LBP end date, calc until LBP end date)
@@ -180,12 +184,12 @@ const etlRecoveryV2 = async () => {
                             return false;
                         }
                     } else {
-                        if (lbp_current_timestamp > LBP_END_TIMESTAMP) {
+                        if (lbp_latest_timestamp > LBP_END_TIMESTAMP) {
                             // LBP completed, data up-to-date -> no recovery needed
                             logger.info(`**LBP: No backfill needed: LBP already finished and data up-to-date.`);
                         } else {
                             // Last load less than INTERVAL minutes ago -> no recovery needed
-                            logger.info(`**LBP: No backfill needed: last load was ${(now - lbp_current_timestamp) / 60 | 0} minute/s ago.`);
+                            logger.info(`**LBP: No backfill needed: last load was ${(now - lbp_latest_timestamp) / 60 | 0} minute/s ago.`);
                         }
                         return true;
                     }

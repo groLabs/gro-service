@@ -14,10 +14,10 @@ const loadLbp = async (data) => {
             const price = ` (price: ${data[4]},`;
             const balance = `balance: ${data[5]},`;
             const date = `date: ${moment.utc(data[0]).format('DD/MM/YYYY HH:mm:ss')})`;
-            logger.info(`**LBP: 1 record added into LBP_BALANCER_V1 ${price} ${balance} ${date}`);
+            logger.info(`**LBP: 1 record added into LBP_BALANCER_${hostEnv.toUpperCase()} ${price} ${balance} ${date}`);
             return true;
         } else {
-            logger.error(`**LBP: Error in loadLbp.js->loadLbp(): loading data into LBP_BALANCER_V1`);
+            logger.error(`**LBP: Error in loadLbp.js->loadLbp(): loading data into LBP_BALANCER_${hostEnv.toUpperCase()}`);
             return false;
         }
     } catch (err) {

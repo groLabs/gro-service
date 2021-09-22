@@ -33,49 +33,49 @@ module.exports = {
     //     crp_pool: '0xade0c1536e2053328b53a7b41b32289bce2cf65d',
     // },
     // LBP V2 - Ropsten 2nd version (Gro with Copper) - NOT WORKING
-    lbp: {
-        // Balancer V2:
-        // lbp_start_date: 1631876400,  // Official: 17 September 2021 11:00:00
-        // lbp_end_date: 1632135600,    // Official: 20 September 2021 11:00:00
-        // lbp_start_date: 1632046200,     // 19 September 2021 10:10:00
-        // lbp_end_date: 1632305400,       // 22 September 2021 10:10:00
-        lbp_start_date: 1632146400,     // 20 September 2021 14:00:00
-        lbp_end_date: 1632304800,       // 22 September 2021 10:10:00
-        lbp_gro_start_weight: 0.95,
-        lbp_gro_end_weight: 0.5,
-        gro_amount_total: 5000,
-        usdc_amount_total: 2650,
-        balancerV2_graph_url: 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-kovan-v2',
-        balancerV2_pool_address: '0xcE8d42d9754470dEd74042b07521e6A9335716Fd',
-        balancerV2_pool_id: '0xce8d42d9754470ded74042b07521e6a9335716fd000200000000000000000182',
-        // Balancer V1
-        start_block: 9260073,
-        start_timestamp: 1631577600,
-        gro_token: '0xD348b1F5872940901fcAF9aCD1b9785f4e12121A',
-        coin_token: '0x9edF2989C22C5bF6675a4581E39D75a3C9BF8578',
-        bp_pool: '0x86fa758a31ba14d1beea4a79eece71c2329d004b',
-        crp_pool: '0xade0c1536e2053328b53a7b41b32289bce2cf65d',
-    },
-    // LBP V2 - aKLIMA
     // lbp: {
-    //     // V2:
-    //     start_block: 27191741,
-    //     start_timestamp: 1631589784,
-    //     lbp_start_date: 1631631600,
-    //     lbp_end_date: 1631890800,
-    //     lbp_gro_start_weight: 0.96,
-    //     lbp_gro_end_weight: 0.1,
-    //     gro_amount_total: 120000,
-    //     usdc_amount_total: 579500,
-    //     balancerV2_graph_url: 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2',
-    //     balancerV2_pool_address: '0x6Aa8A7B23F7B3875a966dDCc83D5b675cC9af54B',
-    //     balancerV2_pool_id: '0x6aa8a7b23f7b3875a966ddcc83d5b675cc9af54b00020000000000000000008e',
-    //     // V1
+    //     // Balancer V2:
+    //     // lbp_start_date: 1631876400,  // Official: 17 September 2021 11:00:00
+    //     // lbp_end_date: 1632135600,    // Official: 20 September 2021 11:00:00
+    //     // lbp_start_date: 1632046200,     // 19 September 2021 10:10:00
+    //     // lbp_end_date: 1632305400,       // 22 September 2021 10:10:00
+    //     lbp_start_date: 1632232200,     // 21 September 2021 13:50:00 UTC
+    //     lbp_end_date: 1632233400,       // 22 September 2021 14:10:00 UTC
+    //     lbp_gro_start_weight: 0.95,
+    //     lbp_gro_end_weight: 0.5,
+    //     gro_amount_total: 5000,
+    //     usdc_amount_total: 2650,
+    //     balancerV2_graph_url: 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-kovan-v2',
+    //     balancerV2_pool_address: '0xcE8d42d9754470dEd74042b07521e6A9335716Fd',
+    //     balancerV2_pool_id: '0xce8d42d9754470ded74042b07521e6a9335716fd000200000000000000000182',
+    //     // Balancer V1
+    //     start_block: 9260073,
+    //     start_timestamp: 1631577600,
     //     gro_token: '0xD348b1F5872940901fcAF9aCD1b9785f4e12121A',
     //     coin_token: '0x9edF2989C22C5bF6675a4581E39D75a3C9BF8578',
     //     bp_pool: '0x86fa758a31ba14d1beea4a79eece71c2329d004b',
     //     crp_pool: '0xade0c1536e2053328b53a7b41b32289bce2cf65d',
     // },
+    // LBP V2 - aKLIMA
+    lbp: {
+        // V2:
+        start_block: 27191741,
+        start_timestamp: 1631631600,
+        lbp_start_date: 1631631600,
+        lbp_end_date: 1631890800,
+        lbp_gro_start_weight: 0.96,
+        lbp_gro_end_weight: 0.1,
+        gro_amount_total: 120000,
+        usdc_amount_total: 579500,
+        balancerV2_graph_url: 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2',
+        balancerV2_pool_address: '0x6Aa8A7B23F7B3875a966dDCc83D5b675cC9af54B',
+        balancerV2_pool_id: '0x6aa8a7b23f7b3875a966ddcc83d5b675cc9af54b00020000000000000000008e',
+        // V1
+        gro_token: '0xD348b1F5872940901fcAF9aCD1b9785f4e12121A',
+        coin_token: '0x9edF2989C22C5bF6675a4581E39D75a3C9BF8578',
+        bp_pool: '0x86fa758a31ba14d1beea4a79eece71c2329d004b',
+        crp_pool: '0xade0c1536e2053328b53a7b41b32289bce2cf65d',
+    },
     blockchain: {
         network: 'rinkeby',
         default_api_keys: {
