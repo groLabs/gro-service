@@ -13,7 +13,6 @@ const { fetchLBPDataV2 } = require('../services/lbpServiceV2');
 const { callSubgraph } = require('../common/apiCaller');
 const {
     calcRangeTimestamps,
-    // findBlockByDate
 } = require('../../database/common/globalUtil');
 const {
     isFormatOK,
@@ -31,7 +30,9 @@ const LBP_START_TIMESTAMP = getConfig('lbp.lbp_start_date');
 const LBP_END_TIMESTAMP = getConfig('lbp.lbp_end_date');
 
 
-// Normal load
+/// @notice Normal loading process
+/// @dev    Price spot & Gro balance are retrieved from Balancer subgraph every 5'
+///         only during the LBP period
 const etlLbpStatsV2 = async () => {
     try {
         const now = moment().unix();
@@ -66,7 +67,16 @@ const etlLbpStatsV2 = async () => {
     }
 }
 
-// Multiple records from subgraphs need to be retrieved through pagination
+/// @notice Retrieve swaps from Balancer subgraph
+/// @dev    - Amount of records returned via subgraph API is limited to 1K, so 
+///         recursive calls per 1K records each are done to retrieve all data
+///         - The recurvise calls will stop once the latest iteration returns
+///         an amount of records < 1K
+/// @param  end The end timestamp to retrieve data
+/// @param  skip The offset to start retrieving data from (e.g: 0 for the 1st call,
+///         1k for the 2nd call, 2k for the 3rd call...)
+/// @param  result The array that stores all swap values
+/// @return An array with all swaps
 const getSwaps = async (end, skip, result) => {
     try {
         const swaps = await callSubgraph('swaps', end, 1000, skip);
@@ -83,10 +93,20 @@ const getSwaps = async (end, skip, result) => {
     }
 }
 
-// Historical load
-// 1) Deletes any data from table LBP_BALANCER_V1 within the timestamp range
-// 2) Loads data every N intervals
-// @dev: HDL does not generate intermediate JSON files, but only latest file is latest=true
+/// @notice Historical loading process
+///         1) Deletes any data from table LBP_BALANCER_HOST* within the timestamp range
+///         2) Loads data every N intervals from start to end dates
+/// @dev    - Gro balance is calculated based on the sum of all swaps until end date
+///         for every N interval iteration
+///         - Price spot is calculated based on weights until end date on every N 
+///         interval iteration
+///         - An HDL will never generate intermediate json files, but only the latest 
+///         file <lbp-latest.json> if parameter 'latest' is true
+/// @param  start The start timestamp to load historical data
+/// @param  end The end timestamp to load historical data
+/// @param  interval The interval timestamp to load historical data (e.g.: every 5 minutes)
+/// @param  latest Updates file <lbp-latest.json> if true; does not update otherwise
+/// @return True if no exceptions found, false otherwise
 const etlLbpStatsHDLV2 = async (start, end, interval, latest) => {
     try {
         // Safety check
@@ -149,11 +169,14 @@ const etlLbpStatsHDLV2 = async (start, end, interval, latest) => {
     }
 }
 
-// If bot crashed and restarts, check amount of intervals lost and
-// backfill data before triggering the cron
-// - No recovery if LBP hasn' t started
-// - No recovery if last update < 5' (within LBP period)
-// - No recovery if last update > LBP end date
+/// @notice Recovery process
+///         If the bot is interrupted, the recovery process will be called first thing
+///         once the bot re-starts, checking amount of intervals to be backfilled with
+///         missing data before it triggers the normal loading process again
+/// @dev    - No recovery if LBP hasn' t started
+//          - No recovery if last update >= LBP end date
+//          - No recovery if last update < 5' (within LBP period)
+/// @return True if no exceptions found, false otherwise
 const etlRecoveryV2 = async () => {
     try {
         const isFile = fileExists(`${statsDir}/lbp-latest.json`);
@@ -184,7 +207,7 @@ const etlRecoveryV2 = async () => {
                             return false;
                         }
                     } else {
-                        if (lbp_latest_timestamp > LBP_END_TIMESTAMP) {
+                        if (lbp_latest_timestamp >= LBP_END_TIMESTAMP) {
                             // LBP completed, data up-to-date -> no recovery needed
                             logger.info(`**LBP: No backfill needed: LBP already finished and data up-to-date.`);
                         } else {
