@@ -71,7 +71,6 @@ function fileExists(path) {
 
 const generateJSONFile = (data, latest, hdl) => {
     try {
-        // if (data.lbp_stats.current_timestamp && data.lbp_stats.current_timestamp > 0) {
         if (isCurrentTimestampOK(data)) {
             const timestamp = data.lbp_stats.current_timestamp;
             const currentFile = `${statsDir}/lbp-${timestamp}.json`;

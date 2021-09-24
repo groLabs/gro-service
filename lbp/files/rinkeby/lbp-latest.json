@@ -9,6 +9,7 @@
         "gro_amount_total": "5000",
         "gro_amount_current": "5000",
         "gro_price_current": "10",
-        "gro_price_1h": "10"
+        "gro_price_1h": "NA",
+        "usdc_raised": "NA"
     }
 }

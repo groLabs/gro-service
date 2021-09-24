@@ -8,6 +8,7 @@ const {
 } = require('../constants');
 
 
+// Retrieve Gro and USDC balances
 const parseV2 = (stats) => {
     try {
         let gro_balance;
@@ -29,7 +30,7 @@ const parseV2 = (stats) => {
     }
 }
 
-
+// Parse data to DB table structure
 const getDataV2 = (stats) => {
     try {
         return [

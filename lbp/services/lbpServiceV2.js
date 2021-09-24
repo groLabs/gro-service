@@ -87,7 +87,7 @@ const getPriceAndBalance = async (targetTimestamp, stats) => {
             [gro_balance, usdc_balance] = await calcBalance(targetTimestamp, stats);
         } else {
             // Normal load
-            const res = await callSubgraph('latestPriceAndBalance');
+            const res = await callSubgraph('latestPriceAndBalance', null, null, null);
             if (res && res.poolTokens) {
                 [gro_balance, usdc_balance] = parseV2(res);
                 if (!gro_balance || !usdc_balance)

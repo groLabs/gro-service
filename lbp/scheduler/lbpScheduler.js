@@ -5,7 +5,7 @@ const {
     etlRecoveryV2,
 } = require('../etl/etlLbpStatsV2');
 const lbpStatsJobSetting =
-    // getConfig('trigger_scheduler.lbp_stats', false) || '*/10 * * * * *'; // in seconds
+// getConfig('trigger_scheduler.lbp_stats', false) || '*/10 * * * * *'; // in seconds
 getConfig('trigger_scheduler.lbp_stats', false) || '*/5 * * * *'; // in minutes
 // getConfig('trigger_scheduler.lbp_stats', false) || '*/2 * * * *'; // in minutes
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -35,12 +35,10 @@ const startLbpStatsJobs = async () => {
             await lbpStatsJob();
         } else {
             logger.error(`**LBP: Bot is stopped due to issues during recovery phase`);
-        }
-            
+        } 
     } catch (err) {
         logger.error(`**LBP: Error in lbpScheduler.js->startLbpStatsJobs(): ${err}`);
     }
-
 }
 
 module.exports = {

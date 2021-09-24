@@ -87,6 +87,7 @@ const getLbpBalanceAndPrice = async () => {
                 "gro_price_1h": (price_1h.rowCount > 0)
                     ? price_1h.rows[0].price_1h
                     : NAH,
+                "usdc_raised" : NAH,
             }
         }
     } catch (err) {
@@ -97,6 +98,8 @@ const getLbpBalanceAndPrice = async () => {
     }
 }
 
+// Retrieve price spot history, latest price spot and current balance from the DB
+// and parse data in JSON format
 const getLbpStatsDB = async () => {
     try {
         const result = {
@@ -114,6 +117,7 @@ const getLbpStatsDB = async () => {
     }
 }
 
+// Generate JSON file with parsed data from DB
 const getLbpStatsFile = async () => {
     try {
         const result = getJSONFile();
