@@ -18,6 +18,7 @@ const {
     getSystemStats,
     getExposureStats,
 } = require('./systemHandler');
+const { getPools } = require('./groTokenHandler');
 const { ParameterError } = require('../../common/error');
 const { apyStatsMessage } = require('../../discordMessage/statsMessage');
 const logger = require('../statsLogger');
@@ -121,7 +122,9 @@ async function generateGroStatsFile() {
         ['total_amount', 'amount']
     );
     stats.exposure = mapper(exposure, ['concentration'], []);
-
+    const poolsInfo = await getPools(apy.current, latestBlockTag);
+    stats.token_price_usd = poolsInfo.tokenPriceUsd;
+    stats.pools = poolsInfo.pools;
     const statsFilename = `${statsDir}/gro-stats-${latestBlock.timestamp}.json`;
     fs.writeFileSync(statsFilename, JSON.stringify(stats));
     const argentStatsFilename = `${statsDir}/argent-stats-${latestBlock.timestamp}.json`;

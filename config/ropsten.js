@@ -9,6 +9,14 @@ module.exports = {
         '0xb8082aAeE3fC604FB5E09d895297B138973fA981': {},
     },
     old_pnl: ['0x6E50c4d3b3917a4aa4196F4F90C2533C2d2e1634'],
+    staker: {
+        address: '0x53C1F46b1584Fc4D0b51a6B19D45151e974B3f7B',
+        start_block: 11091289,
+    },
+    vesting: {
+        address: '0xAbCe0853782181c82B8b55c4B922E16BE6132C28',
+        start_block: 11091286,
+    },
     buoy_start_block: 10633347,
     blockchain: {
         network: 'ropsten',
@@ -179,6 +187,58 @@ module.exports = {
     fail_percentage_pre_price: 500,
     contracts: {
         controller: '0x8A59743BBC178063BE23603B39059e1DFE9edD22',
+    },
+    staker_pools: {
+        contracts: {
+            gro_address: '0x9892fff05b42adc940c251ca879d912dfa94c731',
+            staker_address: '0xCD72ccA707C61C2d7361F99B6c66bC312dB50BF7',
+            gro_price_oracle_address:
+                '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
+            uniswap_gro_gvt_pool_address:
+                '0x02910bC117C6F1E7347aEF1A8e94a0B45041EF3F',
+            pwrd_usdc_lp_address: '0x0f1801f97eb62ee5dbf2b809aed75a6f1223694a',
+            uniswap_gro_usdc_pool_address:
+                '0x45078a6dc55299D1cE68f624cE564eee80E644DB',
+            curve_pwrd3crv_pool_address:
+                '0x613081F24c4d5D797dca6480ccA67611224d7f41',
+            curve_3pool_address: '0x930e1D35BeF80A1FF7Cb70DcFf295Ed97D187c58',
+            curve_3crv_address: '0xF92594660CAE88FC36C63d542266eA57575a08BC',
+        },
+        single_staking_100_gro_0: {
+            deposit_url: '',
+            display_order: '0',
+            pid: '1',
+            disable: 'false',
+        },
+        uniswap_v2_5050_gro_gvt_1: {
+            deposit_url:
+                'https://app.uniswap.org/#/add/v2/0x4394be2135357833A9e18D5A73B2a0C629efE984/0x9892fFf05B42AdC940C251cA879D912Dfa94c731',
+            display_order: '1',
+            pid: '0',
+            disable: 'false',
+            start_block: 11117850,
+        },
+        uniswap_v2_5050_gro_usdc_2: {
+            deposit_url:
+                'https://app.uniswap.org/#/add/v2/0xa553cda420072a759ac352dca4cec70709829614/0x9892fFf05B42AdC940C251cA879D912Dfa94c731',
+            display_order: '2',
+            pid: '6',
+            disable: 'false',
+            start_block: 11136489,
+        },
+        single_staking_100_gvt_3: {
+            deposit_url: '',
+            display_order: '3',
+            pid: '2',
+            disable: 'false',
+        },
+        curve_meta_pwrd_3crv_4: {
+            deposit_url: '',
+            display_order: '4',
+            pid: '3',
+            disable: 'false',
+            start_block: 11124360,
+        },
     },
     discord: {
         token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
