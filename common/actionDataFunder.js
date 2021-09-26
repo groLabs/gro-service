@@ -226,17 +226,25 @@ async function getMintOrBurnGToken(
     );
     if (transactionReceipt) {
         const { logs } = transactionReceipt;
-        let gtoken = getLatestContractsAddress()[ContractNames.powerD].address;
+        let gtoken =
+            getLatestContractsAddress()[
+                ContractNames.powerD
+            ].address.toLowerCase();
         const eventFragment = getEventFragment(erc20ABI, 'Transfer');
         if (eventFragment) {
             logger.info(`Transfer topic: ${eventFragment.topic}`);
             if (!isPWRD) {
                 gtoken =
-                    getLatestContractsAddress()[ContractNames.groVault].address;
+                    getLatestContractsAddress()[
+                        ContractNames.groVault
+                    ].address.toLowerCase();
             }
             for (let i = 0; i < logs.length; i += 1) {
                 const { topics, address, data } = logs[i];
-                if (eventFragment.topic === topics[0] && gtoken === address) {
+                if (
+                    eventFragment.topic === topics[0] &&
+                    gtoken === address.toLowerCase()
+                ) {
                     const logData = parseData(
                         erc20ABI,
                         eventFragment.eventFragment,
