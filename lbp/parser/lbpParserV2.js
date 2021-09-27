@@ -8,7 +8,12 @@ const {
 } = require('../constants');
 
 
-// Retrieve Gro and USDC balances
+/// @notice Retrieve GRO and USDC balances
+/// @dev    - If GRO or USDC is not found, a NaN will be sent to
+///         lbpServiceV2.js->getPriceAndBalance(), and a check with isNaN()
+///         will prevent to load data
+/// @param  stats The data from subraphs' poolTokens
+/// @return An tuple with GRO & USDC balances
 const parseV2 = (stats) => {
     try {
         let gro_balance;

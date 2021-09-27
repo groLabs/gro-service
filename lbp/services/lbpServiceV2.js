@@ -63,7 +63,7 @@ const calcBalance = async (targetTimestamp, stats) => {
             }
         }
         if (unknown_token.length > 0) {
-            logger.error(`**LBP: Unknown token/s in lbpServiceV2.js->calcBalance(): ${unknown_token}`);
+            logger.warning(`**LBP: Unknown token/s in lbpServiceV2.js->calcBalance(): ${unknown_token}`);
         }
         return [gro_balance, usdc_balance];
     } catch (err) {
@@ -90,7 +90,7 @@ const getPriceAndBalance = async (targetTimestamp, stats) => {
             const res = await callSubgraph('latestPriceAndBalance', null, null, null);
             if (res && res.poolTokens) {
                 [gro_balance, usdc_balance] = parseV2(res);
-                if (!gro_balance || !usdc_balance)
+                if (isNaN(gro_balance) || isNaN(usdc_balance))
                     throw 'GRO & USDC balances not found';
             } else {
                 throw 'Error during subgraph API call';
@@ -99,7 +99,12 @@ const getPriceAndBalance = async (targetTimestamp, stats) => {
 
         // Calc spot price
         const spot_price = (usdc_balance / usdc_weight) / (gro_balance / gro_weight);
-
+        if (isNaN(spot_price)) {
+            const msg1 = `(usdc_balance / usdc_weight) / (gro_balance / gro_weight)`;
+            const msg2 = `(${usdc_balance}/ ${usdc_weight}) / (${gro_balance} / ${gro_weight})`
+            throw `Spot price calculation error - \n formula ${msg1} has values \n ${msg2}`;
+        }
+        
         return [spot_price, gro_balance];
     } catch (err) {
         logger.error(`**LBP: Error in lbpServiceV2.js->getPriceAndBalance(): ${err}`);

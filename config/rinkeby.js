@@ -36,7 +36,7 @@ module.exports = {
     lbp: {
         // V2:
         start_block: 27191741,
-        start_timestamp: 1631631600,
+        start_timestamp: 1631231600,
         lbp_start_date: 1631631600,
         lbp_end_date: 1631890800,
         lbp_gro_start_weight: 0.96,
