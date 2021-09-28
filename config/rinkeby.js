@@ -33,20 +33,39 @@ module.exports = {
     //     crp_pool: '0xade0c1536e2053328b53a7b41b32289bce2cf65d',
     // },
     // LBP V2 - aKLIMA
+    // lbp: {
+    //     // V2:
+    //     start_block: 27191741,
+    //     start_timestamp: 1631231600,
+    //     lbp_start_date: 1631631600,
+    //     lbp_end_date: 1631890800,
+    //     lbp_gro_start_weight: 0.96,
+    //     lbp_gro_end_weight: 0.1,
+    //     gro_amount_total: 120000,
+    //     usdc_amount_total: 579500,
+    //     balancerV2_graph_url: 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2',
+    //     balancerV2_pool_address: '0x6Aa8A7B23F7B3875a966dDCc83D5b675cC9af54B',
+    //     balancerV2_pool_id: '0x6aa8a7b23f7b3875a966ddcc83d5b675cc9af54b00020000000000000000008e',
+    //     // V1
+    //     gro_token: '0xD348b1F5872940901fcAF9aCD1b9785f4e12121A',
+    //     coin_token: '0x9edF2989C22C5bF6675a4581E39D75a3C9BF8578',
+    //     bp_pool: '0x86fa758a31ba14d1beea4a79eece71c2329d004b',
+    //     crp_pool: '0xade0c1536e2053328b53a7b41b32289bce2cf65d',
+    // },
+    // Balancer V2 LBP: GRO LBP
     lbp: {
-        // V2:
-        start_block: 27191741,
-        start_timestamp: 1631231600,
-        lbp_start_date: 1631631600,
-        lbp_end_date: 1631890800,
-        lbp_gro_start_weight: 0.96,
-        lbp_gro_end_weight: 0.1,
-        gro_amount_total: 120000,
-        usdc_amount_total: 579500,
+        start_block: 13289180,
+        start_timestamp: 1632496215,    // Friday, 24 September 2021 15:10:15
+        lbp_start_date: 1632844800,     // Tuesday, 28 September 2021 16:00:00
+        lbp_end_date: 1633104000,       // Friday, 1 October 2021 16:00:00
+        lbp_gro_start_weight: 0.95,     // GRO start weight: 95%
+        lbp_gro_end_weight: 0.5,        // GRO end weight: 50%
+        gro_amount_total: 5000000,      // GRO initial balance: 5M
+        usdc_amount_total: 2650000,     // USDC initial balance: 2,65M
         balancerV2_graph_url: 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2',
-        balancerV2_pool_address: '0x6Aa8A7B23F7B3875a966dDCc83D5b675cC9af54B',
-        balancerV2_pool_id: '0x6aa8a7b23f7b3875a966ddcc83d5b675cc9af54b00020000000000000000008e',
-        // V1
+        balancerV2_pool_address: '0x64e2c43cA952BA01E32E8cFA05c1E009Bc92E06c',
+        balancerV2_pool_id: '0x64e2c43ca952ba01e32e8cfa05c1e009bc92e06c00020000000000000000009b',
+        // Balancer V1 (Not used)
         gro_token: '0xD348b1F5872940901fcAF9aCD1b9785f4e12121A',
         coin_token: '0x9edF2989C22C5bF6675a4581E39D75a3C9BF8578',
         bp_pool: '0x86fa758a31ba14d1beea4a79eece71c2329d004b',

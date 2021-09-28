@@ -2,6 +2,7 @@ const schedule = require('node-schedule');
 const { getConfig } = require('../../common/configUtil');
 const {
     etlLbpStatsV2,
+    etlLbpStatsV2_vol,
     etlRecoveryV2,
 } = require('../etl/etlLbpStatsV2');
 const lbpStatsJobSetting =
@@ -18,7 +19,8 @@ const lbpStatsJob = async () => {
         schedule.scheduleJob(lbpStatsJobSetting, async () => {
             try {
                 logger.info('**LBP: lbpStatsJob started');
-                await etlLbpStatsV2();
+                //await etlLbpStatsV2();
+                await etlLbpStatsV2_vol();
                 logger.info('**LBP: lbpStatsJob finished');
             } catch (err) {
                 logger.error(`**LBP: Error in lbpStatsScheduler.js->lbpStatsJob(): ${err}`);

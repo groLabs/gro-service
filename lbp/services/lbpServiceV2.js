@@ -6,6 +6,7 @@ const { callSubgraph } = require('../common/apiCaller');
 const {
     GRO_TICKER,
     USDC_TICKER,
+    INTERVAL,
 } = require('../constants');
 
 // Config
@@ -39,6 +40,8 @@ const calcBalance = async (targetTimestamp, stats) => {
         // Initial balances
         let gro_balance = lbp_gro_start_balance;
         let usdc_balance = lbp_usdc_start_balance;
+        let trading_volume = 0;
+        let trading_volume_total = 0;
 
         // Calc balances based on swap history. If no swaps, subgraph will return an empty array
         for (const swap of stats) {
@@ -48,9 +51,15 @@ const calcBalance = async (targetTimestamp, stats) => {
                 if (tokenInSym === USDC_TICKER && tokenOutSym === GRO_TICKER) {
                     usdc_balance += parseFloat(swap.tokenAmountIn);
                     gro_balance -= parseFloat(swap.tokenAmountOut);
+                    trading_volume_total += parseFloat(swap.tokenAmountIn);
+                    if (swap.timestamp >= targetTimestamp - INTERVAL)
+                        trading_volume += parseFloat(swap.tokenAmountIn);
                 } else if (tokenInSym === GRO_TICKER && tokenOutSym === USDC_TICKER) {
                     gro_balance += parseFloat(swap.tokenAmountIn);
                     usdc_balance -= parseFloat(swap.tokenAmountOut);
+                    trading_volume_total += parseFloat(swap.tokenAmountOut);
+                    if (swap.timestamp >= targetTimestamp - INTERVAL)
+                        trading_volume += parseFloat(swap.tokenAmountOut);
                 } else {
                     if (tokenInSym !== GRO_TICKER && tokenInSym !== USDC_TICKER) {
                         if (!unknown_token.includes(tokenInSym))
@@ -62,10 +71,11 @@ const calcBalance = async (targetTimestamp, stats) => {
                 }
             }
         }
+
         if (unknown_token.length > 0) {
             logger.warning(`**LBP: Unknown token/s in lbpServiceV2.js->calcBalance(): ${unknown_token}`);
         }
-        return [gro_balance, usdc_balance];
+        return [gro_balance, usdc_balance, trading_volume];
     } catch (err) {
         logger.error(`**LBP: Error in lbpServiceV2.js->calcBalance(): ${err}`);
     }
@@ -82,9 +92,10 @@ const getPriceAndBalance = async (targetTimestamp, stats) => {
         // Get target balances
         let gro_balance;
         let usdc_balance;
+        let trading_volume;
         if (stats) {
             // HDL
-            [gro_balance, usdc_balance] = await calcBalance(targetTimestamp, stats);
+            [gro_balance, usdc_balance, trading_volume] = await calcBalance(targetTimestamp, stats);
         } else {
             // Normal load
             const res = await callSubgraph('latestPriceAndBalance', null, null, null);
@@ -104,8 +115,8 @@ const getPriceAndBalance = async (targetTimestamp, stats) => {
             const msg2 = `(${usdc_balance}/ ${usdc_weight}) / (${gro_balance} / ${gro_weight})`
             throw `Spot price calculation error - \n formula ${msg1} has values \n ${msg2}`;
         }
-        
-        return [spot_price, gro_balance];
+
+        return [spot_price, gro_balance, trading_volume];
     } catch (err) {
         logger.error(`**LBP: Error in lbpServiceV2.js->getPriceAndBalance(): ${err}`);
     }
@@ -122,7 +133,7 @@ const fetchLBPDataV2 = async (targetTimestamp, stats) => {
         //const [price, balance] = await getPriceAndBalance(targetTimestamp, stats);
         const res = await getPriceAndBalance(targetTimestamp, stats);
         if (res) {
-            const [price, balance] = res;
+            const [price, balance, volume] = res;
             return {
                 price: {
                     timestamp: targetTimestamp,
@@ -134,6 +145,11 @@ const fetchLBPDataV2 = async (targetTimestamp, stats) => {
                     blockNumber: 0,
                     balance: balance,
                 },
+                trading_volume: {
+                    timestamp: targetTimestamp,
+                    blockNumber: 0,
+                    volume: volume,
+                }
             };
         } else {
             return {

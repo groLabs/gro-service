@@ -67,6 +67,59 @@ const etlLbpStatsV2 = async () => {
     }
 }
 
+// ************
+// ************
+// ************
+// ************
+const etlLbpStatsV2_vol = async () => {
+    try {
+
+        const now = moment().unix();
+        if (now >= LBP_START_TIMESTAMP && now <= LBP_END_TIMESTAMP) {
+
+            const swaps = await getSwaps(
+                now,    // end timestamp
+                0,      // skip (calculated recursively)
+                []      // result (calculated recursively)
+            );
+            // If error during subgraph call
+            if (!swaps)
+                return false;
+
+            const stats = await fetchLBPDataV2(now, swaps);
+            if (!stats.message) {
+                if (isFormatOK(stats)) {
+                    // Parse data into SQL parameter
+                    const data = getDataV2(stats);
+                    if (isLengthOK(data)) {
+                        // Load data into LBP_BALANCER_V1
+                        const res = await loadLbp(data);
+                        if (res) {
+                            // Generate JSON file
+                            const allData = await getLbpStatsDB();
+                            generateJSONFile(
+                                allData,    // JSON data
+                                true,       // latest file
+                                false       // HDL
+                            );
+                        }
+                    }
+                }
+            } else {
+                return false;
+            }
+
+
+        } else {
+            let msg = `**LBP: No data load needed - Current date (${now}) is out of LBP period `;
+            msg += `(from: ${LBP_START_TIMESTAMP} to: ${LBP_END_TIMESTAMP})`;
+            logger.info(msg);
+        }
+    } catch (err) {
+        logger.error(`**LBP: Error in etlLbpStatsV2.js->etlLbpStats(): ${err}`);
+    }
+}
+
 /// @notice Retrieve swaps from Balancer subgraph
 /// @dev    - Amount of records returned via subgraph API is limited to 1K, so 
 ///         recursive calls per 1K records each are done to retrieve all data
@@ -238,6 +291,7 @@ const etlRecoveryV2 = async () => {
 
 module.exports = {
     etlLbpStatsV2,
+    etlLbpStatsV2_vol,
     etlLbpStatsHDLV2,
     etlRecoveryV2,
 };
