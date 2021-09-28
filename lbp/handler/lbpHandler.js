@@ -24,6 +24,7 @@ const getLbpHistoricPrice = async () => {
                 result.push({
                     "time": price.timestamp.toString(),
                     "value": price.value,
+                    "volume": price.volume,
                 });
             }
         } else {
