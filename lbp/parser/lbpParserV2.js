@@ -44,7 +44,7 @@ const getDataV2 = (stats) => {
             stats.price.blockNumber,
             getNetworkId(),
             parseFloat(stats.price.price),
-            //parseFloat(stats.balance.balance),
+            parseFloat(stats.balance.balance),
             parseFloat(stats.trading_volume.volume),
             moment().utc(),
         ];

@@ -5,6 +5,7 @@ CREATE TABLE gro."LBP_BALANCER_HOST1" (
     network_id SMALLINT NOT NULL,
     spot_price NUMERIC (20, 8) NULL,
     current_balance NUMERIC (20, 8) NULL,
+    trading_volume NUMERIC (20, 8) NULL,
     creation_date TIMESTAMP (6) NULL
 ) WITH (OIDS = FALSE);
 
@@ -17,6 +18,7 @@ CREATE TABLE gro."LBP_BALANCER_HOST2" (
     network_id SMALLINT NOT NULL,
     spot_price NUMERIC (20, 8) NULL,
     current_balance NUMERIC (20, 8) NULL,
+    trading_volume NUMERIC (20, 8) NULL,
     creation_date TIMESTAMP (6) NULL
 ) WITH (OIDS = FALSE);
 

@@ -5,6 +5,7 @@ INSERT INTO gro."LBP_BALANCER_HOST1" (
         "network_id",
         "spot_price",
         "current_balance",
+        "trading_volume",
         "creation_date"
     )
 VALUES (
@@ -14,5 +15,6 @@ VALUES (
         $4,
         $5,
         $6,
-        $7
+        $7,
+        $8
     );

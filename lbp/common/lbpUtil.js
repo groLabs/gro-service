@@ -21,7 +21,7 @@ const isFormatOK = (stats) => {
 }
 
 const isLengthOK = (data) => {
-    if (data && data.length === 7) {
+    if (data && data.length === 8) {
         return true;
     } else {
         logger.error(`**LBP: Error in lbpUtil.js->isLengthOK(): wrong number of values after JSON parsing: ${data}`);
