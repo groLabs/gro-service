@@ -41,7 +41,6 @@ const calcBalance = async (targetTimestamp, stats) => {
         let gro_balance = lbp_gro_start_balance;
         let usdc_balance = lbp_usdc_start_balance;
         let trading_volume = 0;
-        let trading_volume_total = 0;
 
         // Calc balances based on swap history. If no swaps, subgraph will return an empty array
         for (const swap of stats) {
@@ -51,13 +50,11 @@ const calcBalance = async (targetTimestamp, stats) => {
                 if (tokenInSym === USDC_TICKER && tokenOutSym === GRO_TICKER) {
                     usdc_balance += parseFloat(swap.tokenAmountIn);
                     gro_balance -= parseFloat(swap.tokenAmountOut);
-                    trading_volume_total += parseFloat(swap.tokenAmountIn);
                     if (swap.timestamp >= targetTimestamp - INTERVAL)
                         trading_volume += parseFloat(swap.tokenAmountIn);
                 } else if (tokenInSym === GRO_TICKER && tokenOutSym === USDC_TICKER) {
                     gro_balance += parseFloat(swap.tokenAmountIn);
                     usdc_balance -= parseFloat(swap.tokenAmountOut);
-                    trading_volume_total += parseFloat(swap.tokenAmountOut);
                     if (swap.timestamp >= targetTimestamp - INTERVAL)
                         trading_volume += parseFloat(swap.tokenAmountOut);
                 } else {
@@ -122,15 +119,8 @@ const getPriceAndBalance = async (targetTimestamp, stats) => {
     }
 }
 
-
 const fetchLBPDataV2 = async (targetTimestamp, stats) => {
     try {
-        // TODO 1: check if error is returned
-        // sometimes: 2021-09-15T18:16:09.567Z error: **LBP: Error in lbpServiceV2.js->fetchLBPDataV2(): Error: Request failed with status code 502
-        // TODO 2: check if data returned, all expected fields exist
-        // TODO 3: check when targetTimestamp is before or after the LBP
-
-        //const [price, balance] = await getPriceAndBalance(targetTimestamp, stats);
         const res = await getPriceAndBalance(targetTimestamp, stats);
         if (res) {
             const [price, balance, volume] = res;
@@ -156,9 +146,6 @@ const fetchLBPDataV2 = async (targetTimestamp, stats) => {
                 message: 'Error during price & balance calculation with Balancer subgraphs'
             }
         }
-
-
-
     } catch (err) {
         logger.error(`**LBP: Error in lbpServiceV2.js->fetchLBPDataV2(): ${err}`);
     }

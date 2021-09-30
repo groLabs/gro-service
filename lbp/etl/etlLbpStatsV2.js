@@ -30,7 +30,7 @@ const LBP_START_TIMESTAMP = getConfig('lbp.lbp_start_date');
 const LBP_END_TIMESTAMP = getConfig('lbp.lbp_end_date');
 
 
-/// @notice Normal loading process
+/// @notice Normal loading process (without trading volume)
 /// @dev    Price spot & Gro balance are retrieved from Balancer subgraph every 5'
 ///         only during the LBP period
 const etlLbpStatsV2 = async () => {
@@ -67,10 +67,9 @@ const etlLbpStatsV2 = async () => {
     }
 }
 
-// ************
-// ************
-// ************
-// ************
+/// @notice Normal loading process (with trading volume)
+/// @dev    Price spot, Gro balance & trading volume are retrieved from Balancer subgraph every 5'
+///         only during the LBP period
 const etlLbpStatsV2_vol = async () => {
     try {
 
@@ -109,14 +108,13 @@ const etlLbpStatsV2_vol = async () => {
                 return false;
             }
 
-
         } else {
             let msg = `**LBP: No data load needed - Current date (${now}) is out of LBP period `;
             msg += `(from: ${LBP_START_TIMESTAMP} to: ${LBP_END_TIMESTAMP})`;
             logger.info(msg);
         }
     } catch (err) {
-        logger.error(`**LBP: Error in etlLbpStatsV2.js->etlLbpStats(): ${err}`);
+        logger.error(`**LBP: Error in etlLbpStatsV2.js->etlLbpStatsV2_vol(): ${err}`);
     }
 }
 

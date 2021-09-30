@@ -1,5 +1,3 @@
-// poolTokens = get the current balance of GRO and USDC
-
 const latestPriceAndBalance = (poolId) => (
   `{
     poolTokens (

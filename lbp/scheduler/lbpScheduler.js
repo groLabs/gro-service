@@ -19,8 +19,8 @@ const lbpStatsJob = async () => {
         schedule.scheduleJob(lbpStatsJobSetting, async () => {
             try {
                 logger.info('**LBP: lbpStatsJob started');
-                //await etlLbpStatsV2();
-                await etlLbpStatsV2_vol();
+                //await etlLbpStatsV2();    // not including trading volume
+                await etlLbpStatsV2_vol();  // including trading volume
                 logger.info('**LBP: lbpStatsJob finished');
             } catch (err) {
                 logger.error(`**LBP: Error in lbpStatsScheduler.js->lbpStatsJob(): ${err}`);

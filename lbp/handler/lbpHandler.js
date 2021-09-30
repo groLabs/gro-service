@@ -14,6 +14,8 @@ const lbp_end_date = getConfig('lbp.lbp_end_date');
 const gro_amount_total = getConfig('lbp.gro_amount_total');
 const NAH = 'NA';
 
+
+/// @return An array with historic spot prices and trading volumes from DB
 const getLbpHistoricPrice = async () => {
     try {
         let result = [];
@@ -41,6 +43,7 @@ const getLbpHistoricPrice = async () => {
     }
 }
 
+/// @return Latest spot price, spot price 1h ago and latest Gro balance
 const getLbpBalanceAndPrice = async () => {
     try {
         const [
@@ -99,8 +102,8 @@ const getLbpBalanceAndPrice = async () => {
     }
 }
 
-// Retrieve price spot history, latest price spot and current balance from the DB
-// and parse data in JSON format
+/// @return Object with all LBP data retrieved from the DB to be served to the FE
+/// @dev    Currently not used - replaced by getLbpStatsFile()
 const getLbpStatsDB = async () => {
     try {
         const result = {
@@ -118,7 +121,7 @@ const getLbpStatsDB = async () => {
     }
 }
 
-// Generate JSON file with parsed data from DB
+/// @return Object with all LBP data retrieved from a JSON file to be served to the FE
 const getLbpStatsFile = async () => {
     try {
         const result = getJSONFile();

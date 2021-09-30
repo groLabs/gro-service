@@ -12,7 +12,7 @@ const {
 /// @dev    - If GRO or USDC is not found, a NaN will be sent to
 ///         lbpServiceV2.js->getPriceAndBalance(), and a check with isNaN()
 ///         will prevent to load data
-/// @param  stats The data from subraphs' poolTokens
+/// @param  stats The LBP data from subraphs' poolTokens
 /// @return An tuple with GRO & USDC balances
 const parseV2 = (stats) => {
     try {
@@ -35,7 +35,9 @@ const parseV2 = (stats) => {
     }
 }
 
-// Parse data to DB table structure
+/// @notice Parse data to DB table structure
+/// @param  stats The LBP data from subraphs' poolTokens
+/// @return An array ready to be inserted into the DB table LBP_BALANCER_HOST*
 const getDataV2 = (stats) => {
     try {
         return [
