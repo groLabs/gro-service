@@ -1,5 +1,5 @@
 const BN = require('bignumber.js');
-const { ethers } = require('ethers');
+const { ethers, BigNumber } = require('ethers');
 const logger = require('../statsLogger');
 const { getFilterEvents } = require('../../common/logFilter-new');
 const {
@@ -34,6 +34,7 @@ const {
     getSecondAirdropResult,
     getThirdAirdropResult,
 } = require('./airdropService');
+// const { getPoolTransactions } = require('./lpoolService');
 
 const erc20ABI = require('../../abi/ERC20.json');
 
@@ -110,29 +111,6 @@ async function getStableCoins() {
         }
     }
     return stableCoins;
-}
-
-async function getStableCoinsInfo() {
-    const keys = Object.keys(stableCoinsInfo);
-    if (!keys.length) {
-        stableCoinsInfo.decimals = {};
-        stableCoinsInfo.symbols = {};
-        const coins = await getStableCoins();
-        const decimalPromise = [];
-        const symbolPromise = [];
-        for (let i = 0; i < coins.length; i += 1) {
-            decimalPromise.push(coins[i].decimals());
-            symbolPromise.push(coins[i].symbol());
-        }
-        const decimals = await Promise.all(decimalPromise);
-        const symbols = await Promise.all(symbolPromise);
-
-        for (let i = 0; i < coins.length; i += 1) {
-            stableCoinsInfo.decimals[coins[i].address] = decimals[i].toString();
-            stableCoinsInfo.symbols[coins[i].address] = symbols[i];
-        }
-    }
-    return stableCoinsInfo;
 }
 
 function getDepositHandlerContracts(handlerHistories) {
@@ -214,6 +192,31 @@ function getContractInfosByAddresses(contractName, handlerHistories) {
         contractInfos.push(...contractHistory);
     }
     return contractInfos;
+}
+
+async function getStableCoinsInfo() {
+    const keys = Object.keys(stableCoinsInfo);
+    if (!keys.length) {
+        stableCoinsInfo.decimals = {};
+        stableCoinsInfo.symbols = {};
+        const coins = await getStableCoins();
+        coins.push(getLatestGroVault());
+        coins.push(getLatestPowerD());
+        const decimalPromise = [];
+        const symbolPromise = [];
+        for (let i = 0; i < coins.length; i += 1) {
+            decimalPromise.push(coins[i].decimals());
+            symbolPromise.push(coins[i].symbol());
+        }
+        const decimals = await Promise.all(decimalPromise);
+        const symbols = await Promise.all(symbolPromise);
+
+        for (let i = 0; i < coins.length; i += 1) {
+            stableCoinsInfo.decimals[coins[i].address] = decimals[i].toString();
+            stableCoinsInfo.symbols[coins[i].address] = symbols[i];
+        }
+    }
+    return stableCoinsInfo;
 }
 
 async function getHandlerEvents(
@@ -618,11 +621,24 @@ async function getApprovalHistoryies(account, depositEventHashs) {
                     getGTokenUSDAmount(address, args[2], providerKey)
                 );
             } else {
+                console.log(
+                    ` ----- ${address} ${transactionHash} ${blockNumber} ${args[2]}`
+                );
+                // const aaa = await buoy.singleStableToUsd(
+                //     args[2],
+                //     getStableCoinIndex(tokenSymbio)
+                // );
+                // console.log(' ----- done');
+                // usdAmoutPromise.push(
+                //     buoy.singleStableToUsd(
+                //         args[2],
+                //         getStableCoinIndex(tokenSymbio)
+                //     )
+                // );
                 usdAmoutPromise.push(
-                    buoy.singleStableToUsd(
-                        args[2],
-                        getStableCoinIndex(tokenSymbio)
-                    )
+                    new Promise((resolve, reject) => {
+                        resolve(BigNumber.from('1000000000000000000'));
+                    })
                 );
             }
         }
@@ -770,7 +786,8 @@ async function generateReport(account) {
     airdrops.push(await getFirstAirdropResult(account));
     airdrops.push(await getSecondAirdropResult(account));
     airdrops.push(await getThirdAirdropResult(account));
-
+    // const pools = await getPoolTransactions(account, latestBlock.number);
+    // transaction.pools = pools;
     const result = {
         airdrops,
         transaction,

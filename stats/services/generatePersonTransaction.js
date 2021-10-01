@@ -219,4 +219,5 @@ async function getTransaction(
 module.exports = {
     getTransactions,
     getTransaction,
+    appendEventTimestamp,
 };
