@@ -303,4 +303,9 @@ module.exports = {
         bp_pool: '0x86fa758a31ba14d1beea4a79eece71c2329d004b',
         crp_pool: '0xade0c1536e2053328b53a7b41b32289bce2cf65d',
     },
+    subgraph: {
+        uniswapV2_graph_url: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2',
+        uniswapV2_pair_id_gro_usdc: '0x21c5918ccb42d20a2368bdca8feda0399ebfd2f6',
+        uniswapV2_pair_id_gvt_gro: '0x2ac5bc9dda37601edb1a5e29699deb0a5b67e9bb',
+    }
 };

@@ -8,6 +8,8 @@ const {
 } = require('../common/contractStorage');
 const { getAlchemyRpcProvider } = require('../../common/chainUtil');
 const { getConfig } = require('../../common/configUtil');
+const moment = require('moment');
+const { findBlockByDate } = require('../../database/common/globalUtil');
 
 // ABI
 const UniswapRouteABI = require('../abi/uniswapRoute.json');
@@ -19,6 +21,7 @@ const CurvePoolABI = require('../abi/SwapPool.json');
 
 const ONE = BigNumber.from('1000000000000000000');
 const ZERO = BigNumber.from('0');
+const YEAR = BigNumber.from('365');
 const BLOCKS_PER_YEAR = BigNumber.from(2252571);
 const BLOCKS_PER_DAY = 6400;
 const GTOKEN_SCALE = BigNumber.from('1000000000000');
@@ -43,6 +46,14 @@ const pool1Config = getConfig('staker_pools.uniswap_v2_5050_gro_gvt_1');
 const pool2Config = getConfig('staker_pools.uniswap_v2_5050_gro_usdc_2');
 const pool3Config = getConfig('staker_pools.single_staking_100_gvt_3');
 const pool4Config = getConfig('staker_pools.curve_meta_pwrd_3crv_4');
+
+// Uniswap subgraph
+const { callSubgraph } = require('../../common/subgraphCaller');
+const subgraphURL = getConfig('subgraph.uniswapV2_graph_url');
+const subgrapGroUsdc = getConfig('subgraph.uniswapV2_pair_id_gro_usdc');
+const subgrapGvtGro = getConfig('subgraph.uniswapV2_pair_id_gvt_gro');
+const UNISWAP_SWAP_FEE = 0.003;
+
 
 function getLatestSystemContract(contractName) {
     return getLatestContract(contractName, providerKey);
@@ -273,7 +284,8 @@ async function getUniswapGroGvtStats(
     currentApy,
     groPerBlock,
     totalAllocPoint,
-    latestBlock
+    latestBlock,
+    block24hAgo
 ) {
     // pool-0
     const poolOneInfo = await readUniswapPool(
@@ -282,16 +294,17 @@ async function getUniswapGroGvtStats(
         priceOracle.groPriceInUsd,
         latestBlock
     );
-    const tag24HoursAgo = {
-        blockTag: latestBlock.blockTag - 6400,
-    };
-    const priceOracle24HoursAgo = await getGroPriceFromUniswap(tag24HoursAgo);
-    const poolOneInfo24HoursAgo = await readUniswapPool(
-        uniswapGroGvtPool,
-        priceOracle24HoursAgo.gvtPriceInUsd,
-        priceOracle24HoursAgo.groPriceInUsd,
-        tag24HoursAgo
-    );
+
+    // const tag24HoursAgo = {
+    //     blockTag: latestBlock.blockTag - 6400,
+    // };
+    // const priceOracle24HoursAgo = await getGroPriceFromUniswap(tag24HoursAgo);
+    // const poolOneInfo24HoursAgo = await readUniswapPool(
+    //     uniswapGroGvtPool,
+    //     priceOracle24HoursAgo.gvtPriceInUsd,
+    //     priceOracle24HoursAgo.groPriceInUsd,
+    //     tag24HoursAgo
+    // );
     // TODO : find out how to calculate fee
     // poolOneInfo.feeApy = poolOneInfo.lpPrice
     //     .sub(poolOneInfo24HoursAgo.lpPrice)
@@ -301,8 +314,12 @@ async function getUniswapGroGvtStats(
     // if (poolOneInfo.feeApy.lte(BigNumber.from(0))) {
     //     poolOneInfo.feeApy = BigNumber.from(0);
     // }
-    poolOneInfo.feeApy = ZERO;
-    logger.info(`poolOneInfo.feeApy ${poolOneInfo.feeApy}`);
+    //poolOneInfo.feeApy = ZERO;
+
+    const groGvtFees = await calcFees('uniswap_v2_5050_gro_gvt_1', block24hAgo);
+    const annGroGvt = groGvtFees.mul(YEAR).mul(ONE).div(poolOneInfo.tvl);
+    poolOneInfo.feeApy = annGroGvt;
+    logger.info(`poolOneInfo.feeApy ${poolOneInfo.feeApy}, groGvtFees: ${groGvtFees}`);
 
     poolOneInfo.tokenApy = currentApy.gvt
         .mul(GTOKEN_SCALE)
@@ -346,7 +363,8 @@ async function getUniswapGroUsdcStats(
     currentApy,
     groPerBlock,
     totalAllocPoint,
-    latestBlock
+    latestBlock,
+    block24hAgo
 ) {
     // pool-0
     const poolOneInfo = await readUniswapPoolWithDecimal(
@@ -358,29 +376,28 @@ async function getUniswapGroUsdcStats(
         latestBlock
     );
 
-    let tagBlock = latestBlock.blockTag - 6400;
-    let duration = 365;
-    if (tagBlock < pool2Config.start_block) {
-        tagBlock = pool2Config.start_block;
-        duration = parseInt(
-            (365 * 24 * 3600) / ((latestBlock.blockTag - tagBlock) * 13),
-            10
-        );
-    }
-    const tag24HoursAgo = {
-        blockTag: tagBlock,
-    };
-    logger.info(`tagBlock ${tagBlock} duration ${duration}`);
-    const priceOracle24HoursAgo = await getGroPriceFromUniswap(tag24HoursAgo);
-    const poolOneInfo24HoursAgo = await readUniswapPoolWithDecimal(
-        uniswapGroUsdcPool,
-        priceOracle24HoursAgo.groPriceInUsd,
-        ONE,
-        ONE,
-        BigNumber.from('1000000'),
-        tag24HoursAgo
-    );
-
+    // let tagBlock = latestBlock.blockTag - 6400;
+    // let duration = 365;
+    // if (tagBlock < pool2Config.start_block) {
+    //     tagBlock = pool2Config.start_block;
+    //     duration = parseInt(
+    //         (365 * 24 * 3600) / ((latestBlock.blockTag - tagBlock) * 13),
+    //         10
+    //     );
+    // }
+    // const tag24HoursAgo = {
+    //     blockTag: tagBlock,
+    // };
+    // logger.info(`tagBlock ${tagBlock} duration ${duration}`);
+    // const priceOracle24HoursAgo = await getGroPriceFromUniswap(tag24HoursAgo);
+    // const poolOneInfo24HoursAgo = await readUniswapPoolWithDecimal(
+    //     uniswapGroUsdcPool,
+    //     priceOracle24HoursAgo.groPriceInUsd,
+    //     ONE,
+    //     ONE,
+    //     BigNumber.from('1000000'),
+    //     tag24HoursAgo
+    // );
     // // no balance change
     // if (
     //     poolOneInfo.reserved[0].eq(poolOneInfo24HoursAgo.reserved[0]) &&
@@ -397,8 +414,12 @@ async function getUniswapGroUsdcStats(
     //         poolOneInfo.feeApy = BigNumber.from(0);
     //     }
     // }
-    poolOneInfo.feeApy = ZERO;
-    logger.info(`poolOneInfo.feeApy ${poolOneInfo.feeApy}`);
+    // poolOneInfo.feeApy = ZERO;
+
+    const groUsdcFees = await calcFees('uniswap_v2_5050_gro_usdc_2', block24hAgo);
+    const annGroUsdc = groUsdcFees.mul(YEAR).mul(ONE).div(poolOneInfo.tvl);
+    poolOneInfo.feeApy = annGroUsdc;
+    logger.info(`poolOneInfo.feeApy ${poolOneInfo.feeApy}, groUsdcFees: ${groUsdcFees}`);
 
     poolOneInfo.tokenApy = BigNumber.from('0');
     logger.info(
@@ -714,6 +735,95 @@ async function calculateCurveMetaPoolApy(priceOracle, currentApy, latestBlock) {
     return metaPoolInfo;
 }
 
+/// @notice Calculate pool fees based on annualised 24h volume on fees
+/// @param pool The pool name to calculate fees
+/// @param block24hAgo The block number 24h ago
+/// @return fee amount in BigNumber type
+const calcFees = async (pool, block24hAgo) => {
+    try {
+        let payload = {
+            query: 'uniswapVolume',
+            url: subgraphURL,
+        }
+
+        switch (pool) {
+            case 'uniswap_v2_5050_gro_gvt_1':
+
+                // volume in pool GVT-GRO 24h ago
+                const payload1 = {
+                    ...payload,
+                    id: subgrapGvtGro,
+                    block: block24hAgo,
+                }
+
+                // volume in pool GRO-USDC 24h now
+                const payload2 = {
+                    ...payload,
+                    id: subgrapGvtGro,
+                }
+
+                const [
+                    volGvtGro24hAgo,
+                    volGvtGroNow,
+                ] = await Promise.all([
+                    callSubgraph(payload1),
+                    callSubgraph(payload2),
+                ]);
+
+                if (!volGvtGro24hAgo || !volGvtGroNow)
+                    return ZERO;
+
+                const vGvtGro24h = parseFloat(volGvtGro24hAgo.pair.untrackedVolumeUSD);
+                const vGvtGroNow = parseFloat(volGvtGroNow.pair.untrackedVolumeUSD);
+                const volGvtGro = (vGvtGroNow - vGvtGro24h) * UNISWAP_SWAP_FEE;
+
+                logger.info(`Fees calc GVT/GRO: vol now: ${vGvtGroNow}, vol 24h: ${vGvtGro24h}, vol diff: ${vGvtGroNow - vGvtGro24h}, vol incl. fee: ${volGvtGro}`);
+
+                return BigNumber.from(volGvtGro.toFixed(0).toString()).mul(ONE);
+
+            case 'uniswap_v2_5050_gro_usdc_2':
+
+                // volume in pool GRO-USDC 24h ago
+                const payload3 = {
+                    ...payload,
+                    id: subgrapGroUsdc,
+                    block: block24hAgo,
+                }
+
+                // volume in pool GRO-USDC 24h now
+                const payload4 = {
+                    ...payload,
+                    id: subgrapGroUsdc,
+                }
+                const [
+                    volGroUsdc24hAgo,
+                    volGroUsdcNow,
+                ] = await Promise.all([
+                    callSubgraph(payload3),
+                    callSubgraph(payload4),
+                ]);
+
+                if (!volGroUsdc24hAgo || !volGroUsdcNow)
+                    return ZERO;
+
+                const vGroUsdc24h = parseFloat(volGroUsdc24hAgo.pair.untrackedVolumeUSD);
+                const vGroUsdcNow = parseFloat(volGroUsdcNow.pair.untrackedVolumeUSD);
+                const volGroUsdc = (vGroUsdcNow - vGroUsdc24h) * UNISWAP_SWAP_FEE;
+
+                logger.info(`Fees calc GRO/USDC: vol now: ${vGroUsdcNow}, vol 24h: ${vGroUsdc24h}, vol diff: ${vGroUsdcNow - vGroUsdc24h}, vol incl. fee: ${volGroUsdc}`);
+
+                return BigNumber.from(volGroUsdc.toFixed(0).toString()).mul(ONE);
+
+            default:
+                return ZERO;
+        }
+    } catch (err) {
+        logger.error(`Error in groTokenHandler.js->calcFees(): ${err}`);
+        return ZERO;
+    }
+}
+
+
 async function getPools(currentApy, latestBlock) {
     await initContracts();
     const priceOracle = await getGroPriceFromUniswap(latestBlock);
@@ -723,6 +833,9 @@ async function getPools(currentApy, latestBlock) {
     logger.info(
         `groPerBlock ${groPerBlock} totalAllocPoint ${totalAllocPoint}`
     );
+    // Get block number 24h ago
+    const block24hAgo = (await findBlockByDate(moment.utc().subtract(1, 'day'), true)).block;
+    logger.info(`Block number 24h ago: ${block24hAgo}`);
 
     logger.info(' -- pool0');
     const poolSingleGroStats = await getSingleGroStats(
@@ -737,7 +850,8 @@ async function getPools(currentApy, latestBlock) {
         currentApy,
         groPerBlock,
         totalAllocPoint,
-        latestBlock
+        latestBlock,
+        block24hAgo
     );
     logger.info(' -- pool2');
     const poolUniswapGroUsdcStats = await getUniswapGroUsdcStats(
@@ -745,7 +859,8 @@ async function getPools(currentApy, latestBlock) {
         currentApy,
         groPerBlock,
         totalAllocPoint,
-        latestBlock
+        latestBlock,
+        block24hAgo
     );
     logger.info(' -- pool3');
     const poolSingleGvtStats = await getSingleGvtStats(

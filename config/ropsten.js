@@ -276,4 +276,9 @@ module.exports = {
             port: process.env.BOT_DEV_PORT,
         },
     },
+    subgraph: {
+        uniswapV2_graph_url: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2',
+        uniswapV2_pair_id_gro_usdc: '0x21c5918ccb42d20a2368bdca8feda0399ebfd2f6',
+        uniswapV2_pair_id_gvt_gro: '0x2ac5bc9dda37601edb1a5e29699deb0a5b67e9bb',
+    }
 };
