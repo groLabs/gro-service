@@ -736,8 +736,9 @@ async function calculateCurveMetaPoolApy(priceOracle, currentApy, latestBlock) {
 }
 
 /// @notice Calculate pool fees based on annualised 24h volume on fees
-/// @param pool The pool name to calculate fees
-/// @param block24hAgo The block number 24h ago
+/// @dev    Uniswap V2 does not have subgraph for Ropsten => won't return data
+/// @param  pool The pool name to calculate fees
+/// @param  block24hAgo The block number 24h ago
 /// @return fee amount in BigNumber type
 const calcFees = async (pool, block24hAgo) => {
     try {
