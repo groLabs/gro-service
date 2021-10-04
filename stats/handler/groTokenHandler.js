@@ -666,11 +666,16 @@ async function calculateCurveMetaPoolApy(priceOracle, currentApy, latestBlock) {
 
     // meta pool LP apy
     const metaPoolFirstAddLiquidityBlock = pool4Config.start_block; // TODO
-    const poolApy = await getCurveLpApy(
+    let poolApy = await getCurveLpApy(
         curvePwrd3crvPool,
         latestBlock,
         metaPoolFirstAddLiquidityBlock
     );
+    // Avoid double-counting fees and return 0 if value <0
+    poolApy = poolApy.sub(tokenApy);
+    if (poolApy.lt(ZERO)) {
+        poolApy = ZERO;
+    }
     logger.info(`metapoolLPTApy Token apy : ${poolApy}`);
 
     // reward apy
