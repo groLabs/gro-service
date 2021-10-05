@@ -10,6 +10,7 @@ const { getAlchemyRpcProvider } = require('../../common/chainUtil');
 const { getConfig } = require('../../common/configUtil');
 const moment = require('moment');
 const { findBlockByDate } = require('../../database/common/globalUtil');
+const { callSubgraph } = require('../../common/subgraphCaller');
 
 // ABI
 const UniswapRouteABI = require('../abi/uniswapRoute.json');
@@ -46,13 +47,18 @@ const pool1Config = getConfig('staker_pools.uniswap_v2_5050_gro_gvt_1');
 const pool2Config = getConfig('staker_pools.uniswap_v2_5050_gro_usdc_2');
 const pool3Config = getConfig('staker_pools.single_staking_100_gvt_3');
 const pool4Config = getConfig('staker_pools.curve_meta_pwrd_3crv_4');
+const pool5Config = getConfig('staker_pools.balancer_v2_8020_gro_weth_5');
 
-// Uniswap subgraph
-const { callSubgraph } = require('../../common/subgraphCaller');
-const subgraphURL = getConfig('subgraph.uniswapV2_graph_url');
+// Uniswap v2 subgraph
+const subgraphUniswapURL = getConfig('subgraph.uniswapV2_graph_url');
 const subgrapGroUsdc = getConfig('subgraph.uniswapV2_pair_id_gro_usdc');
 const subgrapGvtGro = getConfig('subgraph.uniswapV2_pair_id_gvt_gro');
 const UNISWAP_SWAP_FEE = 0.003;
+
+// Balancer v2 subgraph
+const subgraphBalancerURL = getConfig('subgraph.balancerV2_graph_url');
+const subgraphGroWeth = getConfig('subgraph.balancerV2_pool_id_gro_weth');
+const BALANCER_SWAP_FEE = 0.003;
 
 
 function getLatestSystemContract(contractName) {
@@ -747,9 +753,13 @@ async function calculateCurveMetaPoolApy(priceOracle, currentApy, latestBlock) {
 /// @return fee amount in BigNumber type
 const calcFees = async (pool, block24hAgo) => {
     try {
-        let payload = {
+        const payloadUniswap = {
             query: 'uniswapVolume',
-            url: subgraphURL,
+            url: subgraphUniswapURL,
+        }
+        const payloadBalancer = {
+            query: 'balancerVolume',
+            url: subgraphUniswapURL,
         }
 
         switch (pool) {
@@ -757,14 +767,14 @@ const calcFees = async (pool, block24hAgo) => {
 
                 // volume in pool GVT-GRO 24h ago
                 const payload1 = {
-                    ...payload,
+                    ...payloadUniswap,
                     id: subgrapGvtGro,
                     block: block24hAgo,
                 }
 
                 // volume in pool GRO-USDC 24h now
                 const payload2 = {
-                    ...payload,
+                    ...payloadUniswap,
                     id: subgrapGvtGro,
                 }
 
@@ -791,14 +801,14 @@ const calcFees = async (pool, block24hAgo) => {
 
                 // volume in pool GRO-USDC 24h ago
                 const payload3 = {
-                    ...payload,
+                    ...payloadUniswap,
                     id: subgrapGroUsdc,
                     block: block24hAgo,
                 }
 
                 // volume in pool GRO-USDC 24h now
                 const payload4 = {
-                    ...payload,
+                    ...payloadUniswap,
                     id: subgrapGroUsdc,
                 }
                 const [
@@ -820,12 +830,141 @@ const calcFees = async (pool, block24hAgo) => {
 
                 return BigNumber.from(volGroUsdc.toFixed(0).toString()).mul(ONE);
 
+            case 'balancer_v2_8020_gro_weth_5':
+                // TODO
+                break;
+
             default:
                 return ZERO;
         }
     } catch (err) {
         logger.error(`Error in groTokenHandler.js->calcFees(): ${err}`);
         return ZERO;
+    }
+}
+
+const getBalancerGroWethStats = async (
+    priceOracle,
+    groPerBlock,
+    totalAllocPoint,
+) => {
+    try {
+        // **** TO BE DELETED - start ****
+        // await initContracts();
+        // const priceOracle = await getGroPriceFromUniswap(null);
+        // // reward in staker per block
+        // const groPerBlock = await lpTokenStaker.groPerBlock(null);
+        // const totalAllocPoint = await lpTokenStaker.totalAllocPoint(null);
+        // console.log(`groPerBlock ${groPerBlock} totalAllocPoint ${totalAllocPoint}`);
+        // Get block number 24h ago
+        // const block24hAgo = (await findBlockByDate(moment.utc().subtract(1, 'day'), true)).block;
+        // logger.info(`Block number 24h ago: ${block24hAgo}`);
+        // console.log('block24hAgo', block24hAgo);
+        // **** TO BE DELETED - end ****
+
+        let pools;
+        let poolShares;
+        let stakedSharesBN = ZERO;
+
+        // Pull data from Balancer v2 subgraph
+        const payload = {
+            query: 'balancerVolume',
+            url: subgraphBalancerURL,
+            id: subgraphGroWeth,
+            // addr: '0x359f4fe841f246a095a82cb26f5819e10a91fe0d', // For testing
+            // addr: lpTokenStaker.address,
+            addr: '0x001c249c09090d79dc350a286247479f08c7aad7', // staker. Careful!! not working from config with uppercaps
+            block: null
+        }
+        const res = await callSubgraph(payload);
+
+        if (!res) {
+            console.log('no data!'); // TODO
+        } else {
+            pools = res.pools[0];
+            poolShares = res.poolShares[0]; // TODO: if nothing stake, it can fail
+        }
+
+        // Pull data from Staker
+        const poolFiveStakingInfo = await lpTokenStaker.poolInfo(
+            pool5Config.pid,
+            null,
+        );
+
+        logger.info('poolFiveStakingInfo', poolFiveStakingInfo);
+        logger.info('accGroPerShare', poolFiveStakingInfo.accGroPerShare.toString(), 'allocPoint', poolFiveStakingInfo.allocPoint.toString());
+        console.log(pools);
+
+
+        // Calculations
+        const lpPrice = parseFloat(pools.totalLiquidity) / parseFloat(pools.totalShares);
+        // TODO: same without decimal precision lost
+        const lbPriceBN = BigNumber.from(lpPrice.toFixed(0).toString()).mul(ONE);
+
+        let rewardApy;
+        if (!poolShares) {
+            rewardApy = ZERO;
+        } else {
+            // TODO: same without decimal precision lost
+            stakedSharesBN = BigNumber.from(parseFloat(poolShares.balance).toFixed(0).toString()).mul(ONE);
+            if (stakedSharesBN.lte(ZERO)) {
+                rewardApy = ZERO;
+            } else {
+                rewardApy = groPerBlock
+                    .mul(priceOracle.groPriceInUsd)
+                    .mul(BLOCKS_PER_YEAR)
+                    .mul(ONE)
+                    .mul(poolFiveStakingInfo.allocPoint)
+                    .div(totalAllocPoint)
+                    .div(stakedSharesBN.mul(lbPriceBN));
+            }
+            logger.info('groPerBlock:', groPerBlock.toString());
+            logger.info('priceOracle.groPriceInUsd', priceOracle.groPriceInUsd.toString());
+            logger.info('BLOCKS_PER_YEAR', BLOCKS_PER_YEAR.toString());
+            logger.info('poolFiveStakingInfo.allocPoint', poolFiveStakingInfo.allocPoint.toString());
+            logger.info('totalAllocPoint', totalAllocPoint.toString());
+            logger.info('sharesBN', stakedSharesBN.toString());
+            logger.info('lbPriceBN', lbPriceBN.toString());
+        }
+
+        const tvlBN = BigNumber.from(parseFloat(pools.totalLiquidity).toFixed(0).toString()).mul(ONE);
+        const tvlStaked = parseFloat(poolShares.balance) * lpPrice;
+        const tvlStakedBN = BigNumber.from(tvlStaked.toFixed(0).toString()).mul(ONE);
+        const shares = parseFloat(pools.totalShares);
+        const sharesBN = BigNumber.from(shares.toFixed(0).toString()).mul(ONE);
+        const unstaked = sharesBN.sub(stakedSharesBN);
+
+        // TODO: TEST ONLY
+        const info = {
+            tvl: printUsd(tvlBN),
+            tvlStaked: printUsd(tvlStakedBN),
+            stakedLP: printUsd(stakedSharesBN),
+            totalLP: printUsd(sharesBN),
+            lpPrice: printUsd(lbPriceBN),
+            totalApy: printUsd(ZERO), // TODO
+            tokenApy: printUsd(ZERO),
+            feeApy: printUsd(ZERO), // TODO
+            rewardApy: printUsd(rewardApy),
+            unstaked: printUsd(unstaked),
+        };
+        console.log(info);
+
+        const metaPoolInfo = {
+            tvl: tvlBN,
+            tvlStaked: tvlStakedBN,
+            stakedLP: stakedSharesBN,
+            totalLP: sharesBN,
+            lpPrice: lbPriceBN,
+            totalApy: ZERO,     // TODO
+            tokenApy: ZERO,
+            feeApy: ZERO,       // TODO
+            rewardApy: rewardApy,
+            unstaked: unstaked,
+        };
+        return metaPoolInfo;
+
+    } catch (err) {
+        logger.error(`Error in groTokenHandler.js->getBalancerGroWethStats(): ${err}`);
     }
 }
 
@@ -881,6 +1020,12 @@ async function getPools(currentApy, latestBlock) {
         priceOracle,
         currentApy,
         latestBlock
+    );
+    logger.info(' -- pool5');
+    const poolBalancerGroWethStats = await getBalancerGroWethStats(
+        priceOracle,
+        groPerBlock,
+        totalAllocPoint,
     );
 
     const pools = [
@@ -1017,6 +1162,31 @@ async function getPools(currentApy, latestBlock) {
                 },
             },
         },
+        {
+            deposit_url: pool5Config.deposit_url,
+            name: 'balancer_v2_8020_gro_weth_5',
+            display_name: 'GRO 80% / WETH 20%',
+            type: 'balancer_v2',
+            display_type: 'Balancer v2',
+            display_order: pool5Config.display_order,
+            tokens: ['gro', 'weth'],
+            pid: pool5Config.pid,
+            tvl: printUsd(poolBalancerGroWethStats.tvl),
+            tvl_staked: printUsd(poolBalancerGroWethStats.tvlStaked),
+            staked: poolBalancerGroWethStats.stakedLP.toString(),
+            unstaked: poolBalancerGroWethStats.unstaked.toString(),
+            required_tokens_num: '0',
+            disable: pool5Config.disable,
+            lp_usd_price: printUsd(poolBalancerGroWethStats.lpPrice),
+            apy: {
+                current: {
+                    total: printPercent(poolBalancerGroWethStats.totalApy),
+                    token: printPercent(poolBalancerGroWethStats.tokenApy),
+                    pool_fees: printPercent(poolBalancerGroWethStats.feeApy),
+                    reward: printPercent(poolBalancerGroWethStats.rewardApy),
+                },
+            },
+        },
     ];
     const tokenPriceUsd = {
         pwrd: '1.0000000',
@@ -1029,4 +1199,5 @@ async function getPools(currentApy, latestBlock) {
 module.exports = {
     getGroPriceFromUniswap,
     getPools,
+    getBalancerGroWethStats, // SJS: to be removed
 };

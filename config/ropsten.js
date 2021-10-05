@@ -206,14 +206,14 @@ module.exports = {
         },
         single_staking_100_gro_0: {
             deposit_url: '',
-            display_order: '0',
+            display_order: '1',
             pid: '1',
             disable: 'false',
         },
         uniswap_v2_5050_gro_gvt_1: {
             deposit_url:
                 'https://app.uniswap.org/#/add/v2/0x4394be2135357833A9e18D5A73B2a0C629efE984/0x9892fFf05B42AdC940C251cA879D912Dfa94c731',
-            display_order: '1',
+            display_order: '2',
             pid: '0',
             disable: 'false',
             start_block: 11117850,
@@ -221,23 +221,31 @@ module.exports = {
         uniswap_v2_5050_gro_usdc_2: {
             deposit_url:
                 'https://app.uniswap.org/#/add/v2/0xa553cda420072a759ac352dca4cec70709829614/0x9892fFf05B42AdC940C251cA879D912Dfa94c731',
-            display_order: '2',
+            display_order: '3',
             pid: '6',
             disable: 'false',
             start_block: 11136489,
         },
         single_staking_100_gvt_3: {
             deposit_url: '',
-            display_order: '3',
+            display_order: '4',
             pid: '2',
             disable: 'false',
         },
         curve_meta_pwrd_3crv_4: {
             deposit_url: '',
-            display_order: '4',
+            display_order: '5',
             pid: '3',
             disable: 'false',
             start_block: 11124360,
+        },
+        // Only mainnet (data from subgraphs)
+        balancer_v2_8020_gro_weth_5: {
+            deposit_url: 'https://app.balancer.fi/#/pool/0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
+            display_order: '0',
+            pid: '5',
+            disable: 'false',
+            start_block: 13355180,
         },
     },
     discord: {
@@ -280,5 +288,7 @@ module.exports = {
         uniswapV2_graph_url: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2',
         uniswapV2_pair_id_gro_usdc: '0x45078a6dc55299D1cE68f624cE564eee80E644DB',
         uniswapV2_pair_id_gvt_gro: '0x02910bC117C6F1E7347aEF1A8e94a0B45041EF3F',
+        balancerV2_graph_url: 'https://thegraph.com/legacy-explorer/subgraph/balancer-labs/balancer-v2',
+        balancerV2_pool_id_gro_weth: '0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
     }
 };
