@@ -880,6 +880,8 @@ const getBalancerGroWethStats = async (
     priceOracle,
     groPerBlock,
     totalAllocPoint,
+    block24hAgo,
+
 ) => {
     try {
         // // **** TO BE DELETED - start ****
@@ -1072,6 +1074,7 @@ async function getPools(currentApy, latestBlock) {
         priceOracle,
         groPerBlock,
         totalAllocPoint,
+        block24hAgo
     );
 
     const pools = [
