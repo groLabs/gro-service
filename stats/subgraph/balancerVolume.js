@@ -1,6 +1,12 @@
-const balancerVolume = (poolId, addr) => (
+const balancerVolume = (poolId, addr, block) => (
     `{
         pools(
+          ${block
+            ? `block: {
+                number: ${block}
+              }`
+            : ''
+          } 
           where: {
             id: "${poolId}",
           }
@@ -17,6 +23,7 @@ const balancerVolume = (poolId, addr) => (
           totalLiquidity
           totalShares
           totalSwapVolume
+          totalSwapFee
           createTime
         }
         poolShares(

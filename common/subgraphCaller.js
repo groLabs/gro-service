@@ -20,6 +20,7 @@ const callSubgraph = async (payload) => {
             q = balancerVolume(
                 payload.id,
                 payload.addr,
+                payload.block
             );
             break;
         default:
@@ -30,15 +31,20 @@ const callSubgraph = async (payload) => {
     const result = await axios.post(
         payload.url,
         { query: q }
-    )
-
-    if (result.data.errors) {
-        for (const err of result.data.errors) {
+    ).catch(err => {
+        if (err.response) {
+            // Request made and server responded
+            logger.error(`Error in subgraphCaller.js->callSubgraph(): ${err.response.data}`);
+        } else if (err.request) {
+            // The request was made but no response was received
+            logger.error(`Error in subgraphCaller.js->callSubgraph(): ${err.request}`);
+        } else {
+            // Something happened in setting up the request that triggered an Error
             logger.error(`Error in subgraphCaller.js->callSubgraph(): ${err.message}`);
         }
-    }
+    });
 
-    return result.data.data;
+    return (!result || result.data.errors) ? null : result.data.data;
 }
 
 module.exports = {

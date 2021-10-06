@@ -1,8 +1,12 @@
 const BN = require('bignumber.js');
 const { BigNumber } = require('ethers');
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 const ETH_DECIMAL = BN(10).pow(18);
 const CONTRACT_ASSET_DECIMAL = BN(10).pow(18);
+const ONE = BigNumber.from('1000000000000000000');
+const ZERO = BigNumber.from('0');
 
 function div(mol, deno, decimal) {
     return BN(mol.toString()).div(deno).toFixed(decimal);
@@ -41,6 +45,38 @@ function shortAccount(accountAddress, fixed = 6) {
     return accountAddress.substring(0, fixed);
 }
 
+/// @notice Converts a float (with decimals) into BigNumber in weis (10exp18)
+///         E.g.: given 34.560, it will return 34560000000000000000
+/// @dev    The decimals are trimmed to 10 digits to avoid 'invalid BigNumber string' error
+/// @param _value The float to be converted
+/// @return BigNumber in weis
+const floatToBN = (_value) => {
+    try {
+        if (isNaN(_value)) {
+            return ZERO;
+        } else {
+            const value = parseFloat(_value);
+            if (Math.trunc(value) !== value) {
+                const integer = Math.trunc(value);
+                const decimals = value.toFixed(10).split(".")[1];
+                const countDecimals = decimals.length || 0;
+                const result =
+                    BigNumber.from(integer.toString() + decimals)
+                        .mul(ONE)
+                        .div(BigNumber.from('10').pow(countDecimals.toString()));
+                return result;
+            } else {
+                const result = BigNumber.from(value.toString())
+                    .mul(ONE);
+                return result;
+            }
+        }
+    } catch (err) {
+        logger.error(`Error at ... ${err}`);
+        return ZERO;
+    }
+}
+
 module.exports = {
     ETH_DECIMAL,
     CONTRACT_ASSET_DECIMAL,
@@ -50,4 +86,5 @@ module.exports = {
     formatNumber,
     shortAccount,
     calculateDelta,
+    floatToBN,
 };
