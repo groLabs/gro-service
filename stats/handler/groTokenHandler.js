@@ -51,15 +51,14 @@ const pool4Config = getConfig('staker_pools.curve_meta_pwrd_3crv_4');
 const pool5Config = getConfig('staker_pools.balancer_v2_8020_gro_weth_5');
 
 // Uniswap v2 subgraph
-const subgraphUniswapURL = getConfig('subgraph.uniswapV2_graph_url');
-const subgrapGroUsdc = getConfig('subgraph.uniswapV2_pair_id_gro_usdc');
-const subgrapGvtGro = getConfig('subgraph.uniswapV2_pair_id_gvt_gro');
+const sgUniswapURL = getConfig('subgraph.uniswapV2_graph_url');
+const sgGroUsdcPoolId = getConfig('subgraph.uniswapV2_pair_id_gro_usdc');
+const sgGvtGroPoolId = getConfig('subgraph.uniswapV2_pair_id_gvt_gro');
 const UNISWAP_SWAP_FEE = 0.003;
 
 // Balancer v2 subgraph
-const subgraphBalancerURL = getConfig('subgraph.balancerV2_graph_url');
-const subgraphGroWeth = getConfig('subgraph.balancerV2_pool_id_gro_weth');
-const BALANCER_SWAP_FEE = 0.003;
+const sgBalancerURL = getConfig('subgraph.balancerV2_graph_url');
+const sgGroWethPoolId = getConfig('subgraph.balancerV2_pool_id_gro_weth');
 
 
 function getLatestSystemContract(contractName) {
@@ -752,124 +751,77 @@ async function calculateCurveMetaPoolApy(priceOracle, currentApy, latestBlock) {
 /// @param  pool The pool name to calculate fees
 /// @param  block24hAgo The block number 24h ago
 /// @return fee amount in BigNumber type
-
-
-// TODO !!!!!!!!   reuse code, avoid repeating!
-
 const calcFees = async (pool, block24hAgo) => {
     try {
-        const payloadUniswap = {
-            query: 'uniswapVolume',
-            url: subgraphUniswapURL,
+        // Fill in payload for subgraph queries
+
+        const isUniswap = (pool === 'uniswap_v2_5050_gro_gvt_1' || pool === 'uniswap_v2_5050_gro_usdc_2')
+            ? true
+            : false;
+
+        const query = (isUniswap)
+            ? 'uniswapVolume'
+            : 'balancerVolume';
+
+        const url = (isUniswap)
+            ? sgUniswapURL
+            : sgBalancerURL;
+
+        const poolId = (pool === 'uniswap_v2_5050_gro_gvt_1')
+            ? sgGvtGroPoolId
+            : (pool === 'uniswap_v2_5050_gro_usdc_2')
+                ? sgGroUsdcPoolId
+                : (pool === 'balancer_v2_8020_gro_weth_5')
+                    ? sgGroWethPoolId
+                    : -1;
+
+        if (poolId === -1) {
+            logger.error(`Error in groTokenHandler.js->calcFees(): Unknown pool`);
+            return ZERO;
         }
-        const payloadBalancer = {
-            query: 'balancerVolume',
-            url: subgraphBalancerURL,
+
+        const payloadNow = {
+            query: query,
+            url: url,
+            id: poolId,
         }
 
-        switch (pool) {
-            case 'uniswap_v2_5050_gro_gvt_1':
-
-                // volume in pool GVT-GRO 24h ago
-                const payload1 = {
-                    ...payloadUniswap,
-                    id: subgrapGvtGro,
-                    block: block24hAgo,
-                }
-
-                // volume in pool GRO-USDC 24h now
-                const payload2 = {
-                    ...payloadUniswap,
-                    id: subgrapGvtGro,
-                }
-
-                const [
-                    volGvtGro24hAgo,
-                    volGvtGroNow,
-                ] = await Promise.all([
-                    callSubgraph(payload1),
-                    callSubgraph(payload2),
-                ]);
-
-                if (!volGvtGro24hAgo || !volGvtGroNow)
-                    return ZERO;
-
-                const vGvtGro24h = parseFloat(volGvtGro24hAgo.pair.untrackedVolumeUSD);
-                const vGvtGroNow = parseFloat(volGvtGroNow.pair.untrackedVolumeUSD);
-                const volGvtGro = (vGvtGroNow - vGvtGro24h) * UNISWAP_SWAP_FEE;
-
-                logger.info(`Fees calc GVT/GRO: vol now: ${vGvtGroNow}, vol 24h: ${vGvtGro24h}, vol diff: ${vGvtGroNow - vGvtGro24h}, vol incl. fee: ${volGvtGro}`);
-
-                return BigNumber.from(volGvtGro.toFixed(0).toString()).mul(ONE);
-
-            case 'uniswap_v2_5050_gro_usdc_2':
-
-                // volume in pool GRO-USDC 24h ago
-                const payload3 = {
-                    ...payloadUniswap,
-                    id: subgrapGroUsdc,
-                    block: block24hAgo,
-                }
-
-                // volume in pool GRO-USDC 24h now
-                const payload4 = {
-                    ...payloadUniswap,
-                    id: subgrapGroUsdc,
-                }
-                const [
-                    volGroUsdc24hAgo,
-                    volGroUsdcNow,
-                ] = await Promise.all([
-                    callSubgraph(payload3),
-                    callSubgraph(payload4),
-                ]);
-
-                if (!volGroUsdc24hAgo || !volGroUsdcNow)
-                    return ZERO;
-
-                const vGroUsdc24h = parseFloat(volGroUsdc24hAgo.pair.untrackedVolumeUSD);
-                const vGroUsdcNow = parseFloat(volGroUsdcNow.pair.untrackedVolumeUSD);
-                const volGroUsdc = (vGroUsdcNow - vGroUsdc24h) * UNISWAP_SWAP_FEE;
-
-                logger.info(`Fees calc GRO/USDC: vol now: ${vGroUsdcNow}, vol 24h: ${vGroUsdc24h}, vol diff: ${vGroUsdcNow - vGroUsdc24h}, vol incl. fee: ${volGroUsdc}`);
-
-                return BigNumber.from(volGroUsdc.toFixed(0).toString()).mul(ONE);
-
-            case 'balancer_v2_8020_gro_weth_5':
-                // volume in pool GRO-WETH 24h ago
-                const payload5 = {
-                    ...payloadBalancer,
-                    id: subgraphGroWeth,
-                    block: block24hAgo,
-                }
-
-                // volume in pool GRO-WETH 24h now
-                const payload6 = {
-                    ...payloadBalancer,
-                    id: subgraphGroWeth,
-                }
-                const [
-                    volGroWeth24hAgo,
-                    volGroWethNow,
-                ] = await Promise.all([
-                    callSubgraph(payload5),
-                    callSubgraph(payload6),
-                ]);
-
-                if (!volGroWeth24hAgo || !volGroWethNow)
-                    return ZERO;
-
-                const vGroWeth24h = parseFloat(volGroWeth24hAgo.pools[0].totalSwapFee);
-                const vGroWethNow = parseFloat(volGroWethNow.pools[0].totalSwapFee);
-                const swapFees = (vGroWethNow - vGroWeth24h);
-
-                logger.info(`Fees calc GRO/WETH: feeVol now: ${vGroWethNow}, feeVol 24h: ${vGroWeth24h}, vol diff: ${vGroWethNow - vGroWeth24h}`);
-
-                return floatToBN(swapFees);
-            default:
-                logger.error(`Error in groTokenHandler.js->calcFees(): Unrecognized pool`);
-                return ZERO;
+        const payload24h = {
+            query: query,
+            url: url,
+            id: poolId,
+            block: block24hAgo,
         }
+
+        // Pull data from subgraphs
+
+        const [
+            volNow,
+            vol24h
+        ] = await Promise.all([
+            callSubgraph(payloadNow),
+            callSubgraph(payload24h),
+        ]);
+
+        if (!volNow || !vol24h)
+            return ZERO;
+
+        // Calc volume fees from last 24h
+
+        if (isUniswap) {
+            const vNow = parseFloat(volNow.pair.untrackedVolumeUSD);
+            const v24h = parseFloat(vol24h.pair.untrackedVolumeUSD);
+            const swapFees24h = (vNow - v24h) * UNISWAP_SWAP_FEE;
+            logger.info(`Fees calc => vol now: ${vNow}, vol 24h: ${v24h}, vol diff: ${vNow - v24h}, vol incl. fee: ${swapFees24h}`);
+            return floatToBN(swapFees24h);
+        } else {
+            const vNow = parseFloat(volNow.pools[0].totalSwapFee);
+            const v24h = parseFloat(vol24h.pools[0].totalSwapFee);
+            const swapFees24h = (vNow - v24h);
+            logger.info(`Fees calc => feeVol now: ${vNow}, feeVol 24h: ${v24h}, vol diff: ${vNow - v24h}`);
+            return floatToBN(swapFees24h);
+        }
+
     } catch (err) {
         logger.error(`Error in groTokenHandler.js->calcFees(): ${err}`);
         return ZERO;
@@ -881,19 +833,16 @@ const getBalancerGroWethStats = async (
     groPerBlock,
     totalAllocPoint,
     block24hAgo,
-
 ) => {
     try {
-        // // **** TO BE DELETED - start ****
+        // // **** SJS TEST ONLY - start ****
         // await initContracts();
         // const priceOracle = await getGroPriceFromUniswap(null);
-        // // reward in staker per block
         // const groPerBlock = await lpTokenStaker.groPerBlock(null);
         // const totalAllocPoint = await lpTokenStaker.totalAllocPoint(null);
-        // // Get block number 24h ago
         // const block24hAgo = (await findBlockByDate(moment.utc().subtract(1, 'day'), true)).block;
         // logger.info(`Block number 24h ago: ${block24hAgo}`);
-        // // **** TO BE DELETED - end ****
+        // // **** SJS TEST ONLY - end ****
 
         let pools;
         let poolShares;
@@ -902,8 +851,8 @@ const getBalancerGroWethStats = async (
         // Pull data from Balancer v2 subgraph
         const payload = {
             query: 'balancerVolume',
-            url: subgraphBalancerURL,
-            id: subgraphGroWeth,
+            url: sgBalancerURL,
+            id: sgGroWethPoolId,
             addr: lpTokenStaker.address.toLowerCase(),
             block: null
         }
@@ -981,20 +930,20 @@ const getBalancerGroWethStats = async (
             .add(tokenApy)
             .add(rewardApy);
 
-        // TODO: TEST ONLY
-        // const info = {
-        //     tvl: printUsd(tvlBN),
-        //     tvlStaked: printUsd(tvlStakedBN),
-        //     stakedLP: printUsd(stakedSharesBN),
-        //     totalLP: printUsd(sharesBN),
-        //     lpPrice: printUsd(lbPriceBN),
-        //     totalApy: printUsd(totalAPY),
-        //     tokenApy: printUsd(ZERO),
-        //     feeApy: printUsd(feeApy),
-        //     rewardApy: printUsd(rewardApy),
-        //     unstaked: printUsd(unstaked),
-        // };
-        // console.log(info);
+        // SJS TODO: TEST ONLY
+        const info = {
+            tvl: printUsd(tvlBN),
+            tvlStaked: printUsd(tvlStakedBN),
+            stakedLP: printUsd(stakedSharesBN),
+            totalLP: printUsd(sharesBN),
+            lpPrice: printUsd(lbPriceBN),
+            totalApy: printUsd(totalAPY),
+            tokenApy: printUsd(ZERO),
+            feeApy: printUsd(feeApy),
+            rewardApy: printUsd(rewardApy),
+            unstaked: printUsd(unstaked),
+        };
+        console.log(info);
 
         const metaPoolInfo = {
             tvl: tvlBN,
@@ -1262,5 +1211,5 @@ async function getPools(currentApy, latestBlock) {
 module.exports = {
     getGroPriceFromUniswap,
     getPools,
-    getBalancerGroWethStats, // SJS: to be removed
+    getBalancerGroWethStats, // For testing
 };
