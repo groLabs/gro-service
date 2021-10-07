@@ -292,4 +292,5 @@ module.exports = {
     etlLbpStatsV2_vol,
     etlLbpStatsHDLV2,
     etlRecoveryV2,
+    getSwaps,
 };

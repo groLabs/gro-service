@@ -11,8 +11,11 @@ const {
     etlLbpStatsV2,
     etlLbpStatsV2_vol,
     etlLbpStatsHDLV2,
+    getSwaps,
 } = require('./etl/etlLbpStatsV2');
 const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 // testing
 const moment = require('moment');
@@ -48,7 +51,6 @@ const { findBlockByDate } = require('../database/common/globalUtil');
         // 1) Testing normal ETL load
         // await etlLbpStats();
         // await etlLbpStatsV2();
-        await etlLbpStatsV2_vol();
         // await etlLbpStatsHDLV2(1631703600, 1631736000, 3600, false); //
         // await etlLbpStatsHDLV2(1631631600, 1631890800, 3600, false);  //aKlima
         // await etlLbpStatsHDLV2(1631876400, 1632135600, 3600, true);  //Gro v2 rinkeby
@@ -71,6 +73,25 @@ const { findBlockByDate } = require('../database/common/globalUtil');
         // Get block given a timestamp
         // const block = (await findBlockByDate(moment.unix(1631318400).utc(), true)).block;
         // console.log(block);
+
+        // Dump swaps into file
+        let result = '';
+        const swaps = await getSwaps(
+            moment().unix(),
+            0,
+            []
+        );
+        for (const swap of swaps) {
+            result += `${swap.caller}| ${swap.timestamp}| ${swap.tokenInSym}| ${swap.tokenOutSym}| ${swap.tokenAmountIn}| ${swap.tokenAmountOut}\n`;
+        }
+
+        const fs = require('fs');
+        fs.writeFileSync('swaps.csv', result, function (err) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+        });
 
         process.exit(0);
     } catch (err) {
