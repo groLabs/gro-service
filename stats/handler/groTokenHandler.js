@@ -835,15 +835,6 @@ const getBalancerGroWethStats = async (
     block24hAgo,
 ) => {
     try {
-        // // **** SJS TEST ONLY - start ****
-        // await initContracts();
-        // const priceOracle = await getGroPriceFromUniswap(null);
-        // const groPerBlock = await lpTokenStaker.groPerBlock(null);
-        // const totalAllocPoint = await lpTokenStaker.totalAllocPoint(null);
-        // const block24hAgo = (await findBlockByDate(moment.utc().subtract(1, 'day'), true)).block;
-        // logger.info(`Block number 24h ago: ${block24hAgo}`);
-        // // **** SJS TEST ONLY - end ****
-
         let pools;
         let poolShares;
         let stakedSharesBN = ZERO;
@@ -930,21 +921,6 @@ const getBalancerGroWethStats = async (
             .add(tokenApy)
             .add(rewardApy);
 
-        // SJS TODO: TEST ONLY
-        const info = {
-            tvl: printUsd(tvlBN),
-            tvlStaked: printUsd(tvlStakedBN),
-            stakedLP: printUsd(stakedSharesBN),
-            totalLP: printUsd(sharesBN),
-            lpPrice: printUsd(lbPriceBN),
-            totalApy: printUsd(totalAPY),
-            tokenApy: printUsd(ZERO),
-            feeApy: printUsd(feeApy),
-            rewardApy: printUsd(rewardApy),
-            unstaked: printUsd(unstaked),
-        };
-        console.log(info);
-
         const metaPoolInfo = {
             tvl: tvlBN,
             tvlStaked: tvlStakedBN,
@@ -963,7 +939,6 @@ const getBalancerGroWethStats = async (
         logger.error(`Error in groTokenHandler.js->getBalancerGroWethStats(): ${err}`);
     }
 }
-
 
 async function getPools(currentApy, latestBlock) {
     await initContracts();
@@ -1211,5 +1186,4 @@ async function getPools(currentApy, latestBlock) {
 module.exports = {
     getGroPriceFromUniswap,
     getPools,
-    getBalancerGroWethStats, // For testing
 };

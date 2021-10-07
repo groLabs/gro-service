@@ -72,7 +72,7 @@ const floatToBN = (_value) => {
             }
         }
     } catch (err) {
-        logger.error(`Error at ... ${err}`);
+        logger.error(`Error at digitalUtil->floatToBN(): ${err}`);
         return ZERO;
     }
 }
