@@ -461,6 +461,19 @@
             },
             "active": true,
             "contractName": "3CrvPrimary"
+        },
+        "BalancerWeightedPool": {
+            "address": "0x702605f43471183158938c1a3e5f5a359d7b31ba",
+            "deployedBlock": 13360980,
+            "startBlock": 13360980,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Core",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
         }
     },
     "contractHistories": {
@@ -1584,6 +1597,21 @@
                     "DN": "Curve - XPool",
                     "DY": 117589
                 },
+                "active": true
+            }
+        ],
+        "BalancerWeightedPool": [
+            {
+                "address": "0x702605f43471183158938c1a3e5f5a359d7b31ba",
+                "deployedBlock": 13360980,
+                "startBlock": 13360980,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Core",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
                 "active": true
             }
         ]
