@@ -12,7 +12,11 @@ const { floatToBN } = require('../../common/digitalUtil');
 const providerKey = 'stats_gro';
 const moment = require('moment');
 const { airdrop4Addr: AIRDROP4_ADDRESSES } = require('../files/airdrop4Addr');
-const { loadAirdrop4 } = require('../loader/loadAirdrop4');
+const {
+    loadAirdrop4,
+    loadTempAirdrop4,
+    truncateTempAirdrop4,
+} = require('../loader/loadAirdrop4');
 const { getNetworkId } = require('../common/personalUtil');
 
 // ABIs
@@ -105,7 +109,13 @@ const airdrop4Handler = async (from, to) => {
         await initContracts();
 
         const blockTag = {
-            blockTag:  END_SNAPSHOT_BLOCK // null
+            blockTag: END_SNAPSHOT_BLOCK // null
+        }
+
+        const res = await truncateTempAirdrop4();
+        if (!res) {
+            logger.info(`Error truncating table AIRDROP4_TEMP`);
+            return;
         }
 
         for (let i = from; i <= to; i++) {
@@ -155,7 +165,7 @@ const airdrop4Handler = async (from, to) => {
             // console.log('unstaked pwrd-3crv pool: ', printUsd(unstaked_pwrd_pool));
             // console.log('unstaked gro/weth:', printUsd(unstaked_gro_weth));
 
-            // Store record into DB
+            // Store record into DB (AIRDROP4_TEMP)
             const record = [
                 END_SNAPSHOT_BLOCK,                 // block
                 END_SNAPSHOT_DATE,                  // Date
@@ -178,9 +188,13 @@ const airdrop4Handler = async (from, to) => {
                 moment.utc(),                       // now
             ];
 
-            const res = await loadAirdrop4(record);
+            const res = await loadTempAirdrop4(i, record);
             if (!res) return;
         }
+
+        // Load all records into DB (AIRDROP_FINAL)
+        await loadAirdrop4();
+
     } catch (err) {
         logger.error(`**DB: Error in airdrop4Handler.js->airdrop4Handler(): ${err}`);
     }

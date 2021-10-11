@@ -1,4 +1,4 @@
-INSERT INTO gro."AIRDROP4" (
+INSERT INTO gro."AIRDROP4_TEMP" (
     "a4_block",
     "a4_date",
     "a4_timestamp",
