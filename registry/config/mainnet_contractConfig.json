@@ -320,17 +320,17 @@
                 "DAI"
             ],
             "protocols": [
-                "Cream"
+                "Aave"
             ],
             "protocolsDisplayName": [
-                "CREAM"
+                "Aave"
             ],
             "metaData": {
-                "N": "Cream",
-                "DN": "CREAM - DAI",
+                "N": "Aave",
+                "DN": "Aave - DAI",
                 "DY": 41334,
                 "PDN": {
-                    "2": "CREAM"
+                    "2": "Aave"
                 }
             },
             "active": true
@@ -461,37 +461,9 @@
             },
             "active": true,
             "contractName": "3CrvPrimary"
-        },
-        "BalancerWeightedPool": {
-            "address": "0x702605f43471183158938c1a3e5f5a359d7b31ba",
-            "deployedBlock": 13360980,
-            "startBlock": 13360980,
-            "endBlock": null,
-            "abiVersion": "fa8e260",
-            "tag": "Core",
-            "tokens": [],
-            "protocols": [],
-            "protocolsDisplayName": [],
-            "metaData": {},
-            "active": true
         }
     },
     "contractHistories": {
-        "BalancerWeightedPool": [
-            {
-                "address": "0x702605f43471183158938c1a3e5f5a359d7b31ba",
-                "deployedBlock": 13360980,
-                "startBlock": 13360980,
-                "endBlock": null,
-                "abiVersion": "fa8e260",
-                "tag": "Core",
-                "tokens": [],
-                "protocols": [],
-                "protocolsDisplayName": [],
-                "metaData": {},
-                "active": true
-            }
-        ],
         "GroVault": [
             {
                 "address": "0x3ADb04E127b9C0a5D36094125669d4603AC52a0c",

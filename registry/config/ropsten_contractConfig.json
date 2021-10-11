@@ -1,5 +1,31 @@
 {
-    "latestContracts": {},
+    "latestContracts": {
+        "DAISecondary": {
+            "address": "0xDe70653B9414b0B39b3126cd2656f1978031B87c",
+            "deployedBlock": 12832421,
+            "startBlock": 12836674,
+            "abiVersion": "ce7b149",
+            "tag": "Strategy",
+            "tokens": [
+                "DAI"
+            ],
+            "protocols": [
+                "Aave"
+            ],
+            "protocolsDisplayName": [
+                "Aave"
+            ],
+            "metaData": {
+                "N": "Aave",
+                "DN": "Aave - DAI",
+                "DY": 41334,
+                "PDN": {
+                    "2": "Aave"
+                }
+            },
+            "active": true
+        }
+    },
     "contractHistories": {},
     "contractInfo": {}
 }
