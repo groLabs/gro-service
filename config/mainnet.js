@@ -209,6 +209,8 @@ module.exports = {
                 '0xbcb91E689114B9Cc865AD7871845C95241Df4105',
             curve_3pool_address: '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
             curve_3crv_address: '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490',
+            balancer_gro_weth_pool_address:
+                '0x702605f43471183158938c1a3e5f5a359d7b31ba',
         },
         single_staking_100_gro_0: {
             deposit_url: '',
@@ -246,7 +248,8 @@ module.exports = {
             start_block: 13314356,
         },
         balancer_v2_8020_gro_weth_5: {
-            deposit_url: 'https://app.balancer.fi/#/pool/0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
+            deposit_url:
+                'https://app.balancer.fi/#/pool/0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
             display_order: '0',
             pid: '5',
             disable: 'false',
@@ -311,10 +314,14 @@ module.exports = {
         crp_pool: '0xade0c1536e2053328b53a7b41b32289bce2cf65d',
     },
     subgraph: {
-        uniswapV2_graph_url: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2',
-        uniswapV2_pair_id_gro_usdc: '0x21c5918ccb42d20a2368bdca8feda0399ebfd2f6',
+        uniswapV2_graph_url:
+            'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2',
+        uniswapV2_pair_id_gro_usdc:
+            '0x21c5918ccb42d20a2368bdca8feda0399ebfd2f6',
         uniswapV2_pair_id_gvt_gro: '0x2ac5bc9dda37601edb1a5e29699deb0a5b67e9bb',
-        balancerV2_graph_url: 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2',
-        balancerV2_pool_id_gro_weth: '0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
-    }
+        balancerV2_graph_url:
+            'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2',
+        balancerV2_pool_id_gro_weth:
+            '0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
+    },
 };
