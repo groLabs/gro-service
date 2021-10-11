@@ -7,6 +7,7 @@ const { getPriceCheck } = require('./handler/priceCheckHandler');
 const { checkDateRange } = require('./common/globalUtil');
 const scheduler = require('./scheduler/dbStatsScheduler');
 const { getHistoricalAPY } = require('./handler/historicalAPY');
+const { airdrop4Handler } = require('./handler/airdrop4handler');
 
 
 (async () => {
@@ -45,6 +46,16 @@ const { getHistoricalAPY } = require('./handler/historicalAPY');
                         console.log('Wrong parameters for personal stats ETL - e.g.: personalStatsETL 28/06/2021 29/06/2021');
                     }
                     break;
+                case 'airdrop4':
+                    if (params.length === 3) {
+                        await loadContractInfoFromRegistry();
+                        await airdrop4Handler(
+                            parseInt(params[1]),    // start position in addr list
+                            parseInt(params[2]));   // end position in addr list
+                    } else {
+                        console.log('Wrong parameters for Airdrop4 - e.g.: airdrop4 0 250');
+                    }
+                    break;
                 default:
                     console.log(`Unknown parameter/s: ${params}`);
                     break;
@@ -75,8 +86,8 @@ const { getHistoricalAPY } = require('./handler/historicalAPY');
         // console.log(res);
 
         // Testing personal stats cache
-        await loadContractInfoFromRegistry();
-        await etlPersonalStatsCache('0xb5bE4d2510294d0BA77214F26F704d2956a99072');
+        // await loadContractInfoFromRegistry();
+        // await etlPersonalStatsCache('0xb5bE4d2510294d0BA77214F26F704d2956a99072');
 
         process.exit(0);
     } catch (err) {

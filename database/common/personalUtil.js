@@ -253,7 +253,7 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 break;
             default:
                 handleErr(
-                    `personalUtil->checkEventType()->switch: No valid event`,
+                    `personalUtil->checkEventType()->switch: Invalid event`,
                     null
                 );
                 return false;
