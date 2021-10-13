@@ -7,7 +7,7 @@ const { getPriceCheck } = require('./handler/priceCheckHandler');
 const { checkDateRange } = require('./common/globalUtil');
 const scheduler = require('./scheduler/dbStatsScheduler');
 const { getHistoricalAPY } = require('./handler/historicalAPY');
-const { airdrop4Handler } = require('./handler/airdrop4handler');
+const { airdrop4Handler, airdrop4HandlerV2 } = require('./handler/airdrop4handler');
 
 
 (async () => {
@@ -47,11 +47,12 @@ const { airdrop4Handler } = require('./handler/airdrop4handler');
                     }
                     break;
                 case 'airdrop4':
-                    if (params.length === 3) {
+                    if (params.length === 4) {
                         await loadContractInfoFromRegistry();
-                        await airdrop4Handler(
+                        await airdrop4HandlerV2(
                             parseInt(params[1]),    // start position in addr list
-                            parseInt(params[2]));   // end position in addr list
+                            parseInt(params[2]),    // end position in addr list
+                            params[3]);   // timestamp
                     } else {
                         console.log('Wrong parameters for Airdrop4 - e.g.: airdrop4 0 250');
                     }

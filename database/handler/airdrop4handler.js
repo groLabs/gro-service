@@ -7,11 +7,12 @@ const { getLatestSystemContract: getLatestContract, } = require('../../stats/com
 const { getAlchemyRpcProvider } = require('../../common/chainUtil');
 const { getConfig } = require('../../common/configUtil');
 const { findBlockByDate } = require('../common/globalUtil');
-// const { callSubgraph } = require('../../common/subgraphCaller');
 const { floatToBN } = require('../../common/digitalUtil');
 const providerKey = 'stats_gro';
 const moment = require('moment');
-const { airdrop4Addr: AIRDROP4_ADDRESSES } = require('../files/airdrop4Addr');
+// const { airdrop4Addr: AIRDROP4_ADDRESSES } = require('../files/airdrop4Addr');
+// const { airdrop4AddrGvtStaking: AIRDROP4_ADDRESSES } = require('../files/airdrop4AddrGvtStaking');
+const { airdrop4StakingFinal: AIRDROP4_ADDRESSES } = require('../files/airdrop4StakingFinal');
 const {
     loadAirdrop4,
     loadTempAirdrop4,
@@ -46,7 +47,6 @@ let groWethLpToken;
 const END_SNAPSHOT_TIMESTAMP = 1633651191; // Oct-07-2021 11:59:51 PM +UTC
 const END_SNAPSHOT_DATE = moment.unix(END_SNAPSHOT_TIMESTAMP).utc();
 const END_SNAPSHOT_BLOCK = 13374853;
-
 
 const getLatestSystemContract = (contractName) => getLatestContract(contractName, providerKey);
 
@@ -84,12 +84,12 @@ const initContracts = async () => {
     curve3Pool = new ethers.Contract(curve3poolAddress, CurvePoolABI, provider);
     curve3CrvLpToken = new ethers.Contract(curve3crvAddress, LpTokenABI, provider);
     groWethLpToken = new ethers.Contract(groWethAddress, GroWethABI, provider)
-
 }
 
-/// @notice Load token amounts from elegible users for airdrop4
-/// @param  from The start position in the addresses list to start loading data
-/// @dev    In order to avoid potential infura/alchemy limitations, it is preferred to load data
+/// @notice Load token amounts for elegible wallets having GVT or PWRD
+/// @param  from The start position in the wallets list to start loading data
+/// @param  end The end position in the wallets list to finish loading data
+/// @dev    In order to avoid potential alchemy limitations, it is preferred to load data
 ///         in different loops (e.g.: by 250 records)
 const airdrop4Handler = async (from, to) => {
     try {
@@ -109,7 +109,7 @@ const airdrop4Handler = async (from, to) => {
         await initContracts();
 
         const blockTag = {
-            blockTag: END_SNAPSHOT_BLOCK // null
+            blockTag: END_SNAPSHOT_BLOCK
         }
 
         const res = await truncateTempAirdrop4();
@@ -150,21 +150,6 @@ const airdrop4Handler = async (from, to) => {
                 groWethLpToken.balanceOf(addr[i], blockTag),    //  Unstaked Gro/Weth
             ]);
 
-            // Check amounts
-            // console.log('staked gro: ', printUsd(staked_gro.amount));
-            // console.log('staked gro/gvt: ', printUsd(staked_gro_gvt.amount));
-            // console.log('staked gro/usdc: ', printUsd(staked_gro_usdc.amount));
-            // console.log('staked gvt: ', printUsd(staked_gvt.amount));
-            // console.log('staked pwrd: ', printUsd(staked_pwrd.amount));
-            // console.log('staked gro/weth: ', printUsd(staked_gro_weth.amount));
-            // console.log('unstaked gro: ', printUsd(unstaked_gro));
-            // console.log('unstaked gro/gvt pool: ', printUsd(unstaked_gro_gvt));
-            // console.log('unstaked gro/usdc pool: ', printUsd(unstaked_gro_usdc));
-            // console.log('unstaked gvt: ', printUsd(unstaked_gvt));
-            // console.log('unstaked pwrd: ', printUsd(unstaked_pwrd));
-            // console.log('unstaked pwrd-3crv pool: ', printUsd(unstaked_pwrd_pool));
-            // console.log('unstaked gro/weth:', printUsd(unstaked_gro_weth));
-
             // Store record into DB (AIRDROP4_TEMP)
             const record = [
                 END_SNAPSHOT_BLOCK,                 // block
@@ -173,17 +158,17 @@ const airdrop4Handler = async (from, to) => {
                 getNetworkId(),                     // mainnet
                 addr[i],                            // address
                 printUsd(staked_gro.amount),        // staked Gro
-                printUsd(staked_gro_gvt.amount),    // staked Gro/Gvt
+                printUsd(staked_gro_gvt.amount),    // staked Gro/Gvt   (*)
                 printUsd(staked_gro_usdc.amount),   // staked Gro/Usdc
-                printUsd(staked_gvt.amount),        // staked Gvt
-                printUsd(staked_pwrd.amount),       // staked Pwrd
+                printUsd(staked_gvt.amount),        // staked Gvt       (*)
+                printUsd(staked_pwrd.amount),       // staked Pwrd      (*)
                 printUsd(staked_gro_weth.amount),   // staked Gro/Weth
                 printUsd(unstaked_gro),             // unstaked Gro
-                printUsd(unstaked_gro_gvt),         // unstaked Gro/Gvt [Uniswap pool]
+                printUsd(unstaked_gro_gvt),         // unstaked Gro/Gvt [Uniswap pool] (*)
                 printUsd(unstaked_gro_usdc),        // unstaked Gro/Usdc pool [Uniswap pool]
                 printUsd(unstaked_gvt),             // unstaked Gvt
                 printUsd(unstaked_pwrd),            // unstaked Pwrd
-                printUsd(unstaked_pwrd_pool),       // unstaked Pwrd-3crv [Curve 3crv pool]
+                printUsd(unstaked_pwrd_pool),       // unstaked Pwrd-3crv [Curve 3crv pool] (*)
                 printUsd(unstaked_gro_weth),        // unstaked Gro/Weth
                 moment.utc(),                       // now
             ];
@@ -200,6 +185,99 @@ const airdrop4Handler = async (from, to) => {
     }
 }
 
+/// @notice Load token amounts (only GVT/GRO, GVT & PWRD-3CRV) for elegible wallets
+/// @param  from The start position in the wallets list to start loading data
+/// @param  end The end position in the wallets list to finish loading data
+/// @param  date The target data to load data (format: DD/MM/YYYY)
+/// @dev    In order to avoid potential alchemy limitations, it is preferred to load data
+///         in different loops (e.g.: by 250 records)
+const airdrop4HandlerV2 = async (from, to, date) => {
+    try {
+        const day = moment.utc(date, "DD/MM/YYYY")
+            .add(23, 'hours')
+            .add(59, 'minutes')
+            .add(59, 'seconds');
+        
+        logger.info(`using date: ${day}`);
+        const block = (await findBlockByDate(day, false)).block;
+        logger.info(`using block ${block}`);
+        const addr = AIRDROP4_ADDRESSES;
+
+        if (to < from) {
+            logger.info(`to (${to}) must be greater than from (${from})`);
+            return;
+        } else if (to > addr.length - 1) {
+            logger.info(`to (${to}) is greater than addresses count (${addr.length - 1})`);
+            return;
+        } else if (from > addr.length - 1) {
+            logger.info(`from (${from}) is greater than addresses count (${addr.length - 1})`);
+            return;
+        }
+
+        await initContracts();
+
+        const blockTag = {
+            blockTag: block
+        }
+
+        const res = await truncateTempAirdrop4();
+        if (!res) {
+            logger.info(`Error truncating table AIRDROP4_TEMP`);
+            return;
+        }
+
+        for (let i = from; i <= to; i++) {
+            const [
+                staked_gro_gvt,     // [starts on 30.10.2021]
+                staked_gvt,         // [starts on 30.10.2021]
+                staked_pwrd,        // [starts on 30.10.2021]
+                unstaked_gro_gvt,
+                unstaked_pwrd_pool,
+            ] = await Promise.all([
+                lpTokenStaker.userInfo(1, addr[i], blockTag),   // staked Gro/Gvt   [starts on 30.10.2021]
+                lpTokenStaker.userInfo(3, addr[i], blockTag),   // staked Gvt       [starts on 30.10.2021]
+                lpTokenStaker.userInfo(4, addr[i], blockTag),   // staked Pwrd      [starts on 30.10.2021]
+                //-------------------------------------------------------
+                uniswapGroGvtPool.balanceOf(addr[i], blockTag), // unstaked Gro/Gvt [Uniswap pool]
+                groPwrdUsdcLpToken.balanceOf(addr[i], blockTag),// unstaked Pwrd-3crv [Curve 3crv pool]
+            ]);
+
+            // V2: only for staked or unstaked GVT & PWRD
+            const record = [
+                block,                                          // block
+                day,                                            // Date
+                moment.utc(day).unix(),                         // Timestamp
+                getNetworkId(),                                 // mainnet
+                addr[i],                                        // address
+                null,                                           // staked Gro
+                printUsd(staked_gro_gvt.amount),                // staked Gro/Gvt   [starts on 30.10.2021]
+                null,                                           // staked Gro/Usdc
+                printUsd(staked_gvt.amount),                    // staked Gvt       [starts on 30.10.2021]
+                printUsd(staked_pwrd.amount),                   // staked Pwrd      [starts on 30.10.2021]
+                null,                                           // staked Gro/Weth
+                null,                                           // unstaked Gro
+                printUsd(unstaked_gro_gvt),                     // unstaked Gro/Gvt [Uniswap pool]
+                null,                                           // unstaked Gro/Usdc pool [Uniswap pool]
+                null,                                           // unstaked Gvt
+                null,                                           // unstaked Pwrd
+                printUsd(unstaked_pwrd_pool),                   // unstaked Pwrd-3crv [Curve 3crv pool]
+                null,                                           // unstaked Gro/Weth
+                moment.utc(),                                   // now
+            ];
+
+            const res = await loadTempAirdrop4(i, record);
+            if (!res) return;
+        }
+
+        // Load all records into DB (AIRDROP_FINAL)
+        await loadAirdrop4();
+
+    } catch (err) {
+        logger.error(`**DB: Error in airdrop4Handler.js->airdrop4HandlerV2(): ${err}`);
+    }
+}
+
 module.exports = {
     airdrop4Handler,
+    airdrop4HandlerV2,
 }
