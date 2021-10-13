@@ -1,4 +1,34 @@
 {
+    "contractNames": [
+        "GroVault",
+        "PowerDollar",
+        "Controller",
+        "PnL",
+        "Insurance",
+        "Exposure",
+        "Allocation",
+        "Buoy3Pool",
+        "Lifeguard",
+        "DAIVault",
+        "DAIVaultAdaptor",
+        "USDCVault",
+        "USDCVaultAdaptor",
+        "USDTVault",
+        "USDTVaultAdaptor",
+        "3CRVVault",
+        "3CRVVaultAdaptor",
+        "DepositHandler",
+        "EmergencyHandler",
+        "WithdrawHandler",
+        "DAIPrimary",
+        "DAISecondary",
+        "USDCPrimary",
+        "USDCSecondary",
+        "USDTPrimary",
+        "USDTSecondary",
+        "3CrvPrimary",
+        "BalancerWeightedPool"
+    ],
     "latestContracts": {
         "DAISecondary": {
             "address": "0xDe70653B9414b0B39b3126cd2656f1978031B87c",
@@ -24,8 +54,37 @@
                 }
             },
             "active": true
+        },
+        "BalancerWeightedPool": {
+            "address": "0x702605f43471183158938c1a3e5f5a359d7b31ba",
+            "deployedBlock": 13360980,
+            "startBlock": 13360980,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Core",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
         }
     },
-    "contractHistories": {},
+    "contractHistories": {
+        "BalancerWeightedPool": [
+            {
+                "address": "0x702605f43471183158938c1a3e5f5a359d7b31ba",
+                "deployedBlock": 13360980,
+                "startBlock": 13360980,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Core",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ]
+    },
     "contractInfo": {}
 }
