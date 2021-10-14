@@ -4,6 +4,7 @@
     "private": true,
     "scripts": {
         "generate:keystore": "node ./scripts/generateKeystore.js",
+        "generate:proofs": "node ./scripts/merkleTree.js",
         "start:develop:stats": "cross-env NODE_ENV=develop BOT_ENV=STATS node ./stats/bin/www",
         "start:develop:regular": "cross-env NODE_ENV=develop BOT_ENV=REGULAR node ./regular/bin/www",
         "start:develop:critic": "cross-env NODE_ENV=develop BOT_ENV=CRITICAL node ./critical/bin/www",
@@ -48,6 +49,7 @@
         "nodemon": "^2.0.7",
         "pg": "^8.6.0",
         "pug": "2.0.0-beta11",
+        "web3-utils": "^1.6.0",
         "winston": "^3.3.3",
         "winston-daily-rotate-file": "^4.5.2"
     },
