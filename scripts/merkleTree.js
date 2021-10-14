@@ -4,6 +4,17 @@ const { soliditySha3, toHex, toChecksumAddress } = require('web3-utils');
 const { BigNumber: BN } = require('bignumber.js');
 const csvtojson = require('csvtojson');
 
+const fakeAirdropItems = [
+    { address: '0x6D1e68d2cc52696241fA17Ae198f41Ce84078328', amount: 0 },
+    { address: '0x085873B5fb1BC6833CE995a4Cd856D0Cc6C95748', amount: 0 },
+    { address: '0x4C4A81298CC85c5BBF8092bd241fCc5dD6Ec3f74', amount: 0 },
+    { address: '0xc94dDeACff69bd206CEDdFe2b601a277225D23D6', amount: 0 },
+    { address: '0xdBCf4f419B0364c81f337EEceb47bA76E1404aF9', amount: 0 },
+    { address: '0x7B4B446f42016c12b47899cEC35F417cB290524f', amount: 0 },
+    { address: '0x48cB6fD436D34A909523A74de8f82d6bF59E6A3C', amount: 0 },
+    { address: '0x732A3A2E00362802c422cdad0343eFB2E1A37A8A', amount: 0 },
+];
+
 class MerKleTree {
     combinedHash(a, b) {
         if (!a) {
@@ -38,10 +49,9 @@ class MerKleTree {
     }
 
     getTreeObject(items) {
-        const objItems = items.sort((a, b) => a.localeCompare(b));
         return {
-            elements: objItems,
-            layers: this.getLayers(objItems),
+            elements: items,
+            layers: this.getLayers(items),
             root: function root() {
                 return this.layers.slice(-1)[0];
             },
@@ -80,17 +90,20 @@ async function generateProof(
     console.log(
         `filePath: ${filePath}\nmerkleIndex: ${merkleIndex}\ndistFileName: ${distFileName}\ndecimals: ${decimals}`
     );
-    const arrayResult = await csvtojson().fromFile(filePath);
+    const airDropResult = await csvtojson().fromFile(filePath);
+    // console.log(`before length: ${airDropResult.length}`);
+    airDropResult.push(...fakeAirdropItems);
+    // console.log(`after length: ${airDropResult.length}`);
     const nodes = [];
     const items = [];
-    for (let i = 0; i < arrayResult.length; i += 1) {
-        const item = arrayResult[i];
+    for (let i = 0; i < airDropResult.length; i += 1) {
+        const item = airDropResult[i];
         const amount = decimals
             ? new BN(item.amount).multipliedBy(new BN(10).pow(new BN(decimals)))
             : item.amount;
         const node = soliditySha3(
             { t: 'address', v: toChecksumAddress(item.address) },
-            { t: 'uint256', v: toHex(amount) }
+            { t: 'uint128', v: toHex(amount) }
         );
         nodes.push(node);
 
