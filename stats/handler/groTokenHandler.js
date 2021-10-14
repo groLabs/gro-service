@@ -12,6 +12,7 @@ const moment = require('moment');
 const { findBlockByDate } = require('../../database/common/globalUtil');
 const { callSubgraph } = require('../../common/subgraphCaller');
 const { floatToBN } = require('../../common/digitalUtil');
+const nodeEnv = process.env.NODE_ENV.toLowerCase();
 
 // ABI
 const UniswapRouteABI = require('../abi/uniswapRoute.json');
@@ -763,7 +764,7 @@ const calcFees = async (pool, block24hAgo) => {
 
         const isUniswap =
             pool === 'uniswap_v2_5050_gro_gvt_1' ||
-            pool === 'uniswap_v2_5050_gro_usdc_2'
+                pool === 'uniswap_v2_5050_gro_usdc_2'
                 ? true
                 : false;
 
@@ -775,10 +776,10 @@ const calcFees = async (pool, block24hAgo) => {
             pool === 'uniswap_v2_5050_gro_gvt_1'
                 ? sgGvtGroPoolId
                 : pool === 'uniswap_v2_5050_gro_usdc_2'
-                ? sgGroUsdcPoolId
-                : pool === 'balancer_v2_8020_gro_weth_5'
-                ? sgGroWethPoolId
-                : -1;
+                    ? sgGroUsdcPoolId
+                    : pool === 'balancer_v2_8020_gro_weth_5'
+                        ? sgGroWethPoolId
+                        : -1;
 
         if (poolId === -1) {
             logger.error(
@@ -816,8 +817,7 @@ const calcFees = async (pool, block24hAgo) => {
             const v24h = parseFloat(vol24h.pair.untrackedVolumeUSD);
             const swapFees24h = (vNow - v24h) * UNISWAP_SWAP_FEE;
             logger.info(
-                `Fees calc => vol now: ${vNow}, vol 24h: ${v24h}, vol diff: ${
-                    vNow - v24h
+                `Fees calc => vol now: ${vNow}, vol 24h: ${v24h}, vol diff: ${vNow - v24h
                 }, vol incl. fee: ${swapFees24h}`
             );
             return floatToBN(swapFees24h);
@@ -826,8 +826,7 @@ const calcFees = async (pool, block24hAgo) => {
             const v24h = parseFloat(vol24h.pools[0].totalSwapFee);
             const swapFees24h = vNow - v24h;
             logger.info(
-                `Fees calc => feeVol now: ${vNow}, feeVol 24h: ${v24h}, vol diff: ${
-                    vNow - v24h
+                `Fees calc => feeVol now: ${vNow}, feeVol 24h: ${v24h}, vol diff: ${vNow - v24h
                 }`
             );
             return floatToBN(swapFees24h);
@@ -848,6 +847,21 @@ const getBalancerGroWethStats = async (
         let pools;
         let poolShares;
         let stakedSharesBN = ZERO;
+
+        // Avoid returning always 'NA' in test environment
+        if (nodeEnv === 'ropsten' || nodeEnv === 'rinkeby')
+            return {
+                tvl: ZERO,
+                tvlStaked: ZERO,
+                stakedLP: ZERO,
+                totalLP: ZERO,
+                lpPrice: ZERO,
+                totalApy: ZERO,
+                tokenApy: ZERO,
+                feeApy: ZERO,
+                rewardApy: ZERO,
+                unstaked: ZERO,
+            };
 
         // Pull data from Balancer v2 subgraph
         const payload = {
