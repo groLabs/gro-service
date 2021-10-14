@@ -79,11 +79,12 @@ async function generateProof(
     filePath,
     merkleIndex,
     decimals = 0,
+    metadataString,
     distFileName = 'merkleTreeProofs'
 ) {
     if (!filePath) {
         console.log(
-            'usage: npm generate:proofs airdropCSVFilePath merkleIndex [decimals] [savedProofFileName]'
+            'usage: npm generate:proofs airdropCSVFilePath merkleIndex decimals metadata [savedProofFileName]'
         );
         return;
     }
@@ -94,6 +95,17 @@ async function generateProof(
     // console.log(`before length: ${airDropResult.length}`);
     airDropResult.push(...fakeAirdropItems);
     // console.log(`after length: ${airDropResult.length}`);
+
+    // parse metadata
+    const metaStringArray = metadataString.split(',');
+    const metadata = {};
+    metaStringArray.forEach((item) => {
+        const pair = item.split('=');
+        const metaName = pair[0].trim();
+        const metaValue = pair[1].trim();
+        metadata[metaName] = metaValue;
+    });
+    console.log(`metadata: ${JSON.stringify(metadata)}`);
     const nodes = [];
     const items = [];
     for (let i = 0; i < airDropResult.length; i += 1) {
@@ -131,6 +143,7 @@ async function generateProof(
     }
 
     const result = {
+        ...metadata,
         totalAmount: `${totalAmount}`,
         merkleIndex: parseInt(merkleIndex, 10),
         root,
@@ -140,4 +153,4 @@ async function generateProof(
 }
 
 const args = process.argv.slice(2);
-generateProof(args[0], args[1], args[2], args[3]);
+generateProof(args[0], args[1], args[2], args[3], args[4]);
