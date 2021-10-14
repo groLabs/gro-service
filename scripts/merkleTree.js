@@ -93,7 +93,11 @@ async function generateProof(
     );
     const airDropResult = await csvtojson().fromFile(filePath);
     // console.log(`before length: ${airDropResult.length}`);
-    airDropResult.push(...fakeAirdropItems);
+    // handle fake airdrop
+    const overCount = airDropResult.length % 8;
+    if (overCount > 0) {
+        airDropResult.push(...fakeAirdropItems.splice(overCount));
+    }
     // console.log(`after length: ${airDropResult.length}`);
 
     // parse metadata
