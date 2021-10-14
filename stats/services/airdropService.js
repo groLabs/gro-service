@@ -1,16 +1,24 @@
 const csvtojson = require('csvtojson');
 const BN = require('bignumber.js');
+const fs = require('fs');
+const { ethers } = require('ethers');
 const { getConfig } = require('../../common/configUtil');
+const {
+    getAirdropClaimEvents,
+    getAirdropClaimed,
+} = require('../handler/airdropClaimHandler');
 
 const csvFolder = getConfig('airdrop_csv_folder');
+const airdropConfig = getConfig('airdrop');
 
 const csv1FilePath = `${csvFolder}/airdrop1_result.csv`;
-const csv2FilePath = `${csvFolder}/airdrop2_result.csv`;
-const csv3FilePath = `${csvFolder}/airdrop3_result.csv`;
+const airdrop2FilePath = `${csvFolder}/airdrop_early_frens.json`;
+const airdrop3FilePath = `${csvFolder}/airdrop_og_drop_01.json`;
+
+const DECIMAL = new BN('1000000000000000000');
+const airdropCache = new Map();
 
 let firstAirdropJson;
-let secondAirdropJson;
-let thirdAirdropJson;
 
 const airdropFirstDefaultValue = {
     name: 'gas_pwrd',
@@ -18,32 +26,37 @@ const airdropFirstDefaultValue = {
     token: 'pwrd',
     participated: 'false',
     amount: '0.00',
+    amount_to_claim: '0',
+    merkle_root_index: 'N/A',
     timestamp: '1629383452',
     claimed: 'false',
+    claimable: 'false',
+    expired: 'false',
+    proofs: [],
     hash: [],
 };
 
-const airdropSecondDefaultValue = {
-    name: 'early_frens',
-    display_name: 'Early Frens',
-    token: 'gro',
+const airdropDefaultValue = {
+    name: 'N/A',
+    display_name: 'N/A',
+    token: 'N/A',
     participated: 'false',
     amount: '0.00',
-    timestamp: '1630062000',
+    amount_to_claim: '0',
+    merkle_root_index: 'N/A',
+    timestamp: 'N/A',
     claimed: 'false',
+    claimable: 'false',
+    expired: 'false',
+    proofs: [],
     hash: [],
 };
 
-const airdropThirdDefaultValue = {
-    name: 'og_drop',
-    display_name: 'OG drop',
-    token: 'gro',
-    participated: 'false',
-    amount: '0.00',
-    timestamp: '1631577600',
-    claimed: 'false',
-    hash: [],
-};
+async function readAirdropFile(fileName) {
+    const rawdata = fs.readFileSync(fileName);
+    const result = JSON.parse(rawdata);
+    return result;
+}
 
 async function convertCSVtoJson(filePath) {
     const result = {};
@@ -55,7 +68,7 @@ async function convertCSVtoJson(filePath) {
     return result;
 }
 
-async function getFirstAirdropResult(account) {
+async function getGasRefundResult(account) {
     if (!firstAirdropJson) {
         firstAirdropJson = await convertCSVtoJson(csv1FilePath);
     }
@@ -65,55 +78,83 @@ async function getFirstAirdropResult(account) {
     if (accountAirdrop) {
         result = { ...airdropFirstDefaultValue };
         result.amount = `${BN(accountAirdrop.amount).toFormat(2)}`;
+        result.amount_to_claim = new BN(accountAirdrop.amount).multipliedBy(
+            DECIMAL
+        );
         result.participated = 'true';
         result.claimed = 'true';
+        result.claimable = 'true';
     }
     return result;
 }
 
-async function getSecondAirdropResult(account) {
-    if (!secondAirdropJson) {
-        secondAirdropJson = await convertCSVtoJson(csv2FilePath);
+async function getAirdropResultWithProof(account, endBlock, airdropFilePath) {
+    if (!airdropCache[airdropFilePath]) {
+        airdropCache[airdropFilePath] = await readAirdropFile(airdropFilePath);
     }
-    account = account.toLowerCase();
-    const accountAirdrop = secondAirdropJson[account];
-    let result = airdropSecondDefaultValue;
+    account = ethers.utils.getAddress(account);
+    const {
+        merkleIndex,
+        name,
+        display_name,
+        token,
+        timestamp,
+        claimable,
+        proofs,
+    } = airdropCache[airdropFilePath];
+    const accountAirdrop = proofs[account];
+    const result = { ...airdropDefaultValue };
+    result.name = name;
+    result.display_name = display_name;
+    result.token = token;
+    result.timestamp = timestamp;
+    result.merkle_root_index = merkleIndex.toString();
     if (accountAirdrop) {
-        const amount = `${BN(accountAirdrop.amount).toFixed(2)}`;
-        result = { ...airdropSecondDefaultValue };
-        if (amount !== '0.00') {
-            result.amount = amount;
+        // result = { ...airdropDefaultValue };
+        const { amount, proof } = accountAirdrop;
+        const amountBn = new BN(amount);
+        if (!amountBn.isZero()) {
+            const claimed = await getAirdropClaimed(merkleIndex, account);
+            if (claimed) {
+                const txList = await getAirdropClaimEvents(
+                    account,
+                    airdropConfig.start_block,
+                    endBlock
+                );
+                result.hash = txList[merkleIndex];
+            } else {
+                result.proofs = proof;
+            }
             result.participated = 'true';
-        }
-    }
-    return result;
-}
-
-async function getThirdAirdropResult(account) {
-    if (!thirdAirdropJson) {
-        thirdAirdropJson = await convertCSVtoJson(csv3FilePath);
-    }
-    account = account.toLowerCase();
-    const accountAirdrop = thirdAirdropJson[account];
-    let result = airdropThirdDefaultValue;
-    if (accountAirdrop) {
-        const amount = `${BN(accountAirdrop.amount).toFixed(2)}`;
-        result = { ...airdropThirdDefaultValue };
-        if (amount !== '0.00') {
-            result.amount = amount;
-            result.participated = 'true';
+            result.amount_to_claim = amount;
+            result.amount = amountBn.dividedBy(DECIMAL).toFixed(2);
+            result.claimable = claimable;
+            result.claimed = claimed.toString();
         }
     }
     return result;
 }
 
 async function updateOGAirdropFile() {
-    thirdAirdropJson = await convertCSVtoJson(csv3FilePath);
+    console.log('');
+}
+
+async function getAllAirdropResults(address, endBlock) {
+    const airdrop1 = await getGasRefundResult(address);
+    const airdrop2 = await getAirdropResultWithProof(
+        address,
+        endBlock,
+        airdrop2FilePath
+    );
+    const airdrop3 = await getAirdropResultWithProof(
+        address,
+        endBlock,
+        airdrop3FilePath
+    );
+    return [airdrop1, airdrop2, airdrop3];
 }
 
 module.exports = {
-    getFirstAirdropResult,
-    getSecondAirdropResult,
-    getThirdAirdropResult,
     updateOGAirdropFile,
+    getAllAirdropResults,
 };

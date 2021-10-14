@@ -23,6 +23,10 @@ module.exports = {
         '0x4C4A81298CC85c5BBF8092bd241fCc5dD6Ec3f74',
         '0xc94dDeACff69bd206CEDdFe2b601a277225D23D6',
     ],
+    airdrop: {
+        address: '0x5CbA95DC6FcdF68b085086315886b2c9dB9b8960',
+        start_block: 11226281,
+    },
     buoy_start_block: 13304056,
     blockchain: {
         network: 'mainnet',
