@@ -141,14 +141,14 @@ async function generateProof(
     for (let i = 0; i < items.length; i += 1) {
         totalAmount = totalAmount.plus(new BN(items[i].amount));
         proofs[items[i].address] = {
-            amount: `${items[i].amount}`,
+            amount: `${items[i].amount.toFixed(0)}`,
             proof: trees.getProof(items[i].node),
         };
     }
 
     const result = {
         ...metadata,
-        totalAmount: `${totalAmount}`,
+        totalAmount: `${totalAmount.toFixed(0)}`,
         merkleIndex: parseInt(merkleIndex, 10),
         root,
         proofs,
