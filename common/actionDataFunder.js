@@ -114,7 +114,7 @@ async function getInvestKeyData(
         const { logs } = transactionReceipt;
         const eventFragment = getEventFragment(erc20ABI, 'Transfer');
         if (eventFragment) {
-            logger.info(`Transfer topic: ${eventFragment.topic}`);
+            // logger.info(`Transfer topic: ${eventFragment.topic}`);
             for (let i = 0; i < logs.length; i += 1) {
                 const { topics, address, data } = logs[i];
                 if (
@@ -232,7 +232,7 @@ async function getMintOrBurnGToken(
             ].address.toLowerCase();
         const eventFragment = getEventFragment(erc20ABI, 'Transfer');
         if (eventFragment) {
-            logger.info(`Transfer topic: ${eventFragment.topic}`);
+            // logger.info(`Transfer topic: ${eventFragment.topic}`);
             if (!isPWRD) {
                 gtoken =
                     getLatestContractsAddress()[

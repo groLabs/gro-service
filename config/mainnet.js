@@ -24,8 +24,8 @@ module.exports = {
         '0xc94dDeACff69bd206CEDdFe2b601a277225D23D6',
     ],
     airdrop: {
-        address: '0x5CbA95DC6FcdF68b085086315886b2c9dB9b8960',
-        start_block: 11226281,
+        address: '0x6b1bFf72F00cC147b5Dc7A5b156Fe7A6Fd206ddA',
+        start_block: 13417433,
     },
     buoy_start_block: 13304056,
     blockchain: {

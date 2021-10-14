@@ -179,7 +179,7 @@ function getDefaultProvider() {
 function getAlchemyRpcProvider(providerKey) {
     // only for test
     const providerKeys = Object.keys(rpcProviders);
-    logger.info(`providerKeys: ${JSON.stringify(providerKeys)}`);
+    // logger.info(`providerKeys: ${JSON.stringify(providerKeys)}`);
     // =====================
     let result;
     providerKey = providerKey || DEFAULT_PROVIDER_KEY;

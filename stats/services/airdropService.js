@@ -12,8 +12,8 @@ const csvFolder = getConfig('airdrop_csv_folder');
 const airdropConfig = getConfig('airdrop');
 
 const csv1FilePath = `${csvFolder}/airdrop1_result.csv`;
-const airdrop2FilePath = `${csvFolder}/airdrop_early_frens.json`;
-const airdrop3FilePath = `${csvFolder}/airdrop_og_drop_01.json`;
+const airdrop2FilePath = `${csvFolder}/airdrop-1-proofs.json`;
+const airdrop3FilePath = `${csvFolder}/airdrop-0-proofs.json`;
 
 const DECIMAL = new BN('1000000000000000000');
 const airdropCache = new Map();
