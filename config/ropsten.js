@@ -17,6 +17,10 @@ module.exports = {
         address: '0xAbCe0853782181c82B8b55c4B922E16BE6132C28',
         start_block: 11091286,
     },
+    airdrop: {
+        address: '0x5CbA95DC6FcdF68b085086315886b2c9dB9b8960',
+        start_block: 11226281,
+    },
     buoy_start_block: 10633347,
     blockchain: {
         network: 'ropsten',
@@ -241,7 +245,8 @@ module.exports = {
         },
         // Only mainnet (data from subgraphs)
         balancer_v2_8020_gro_weth_5: {
-            deposit_url: 'https://app.balancer.fi/#/pool/0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
+            deposit_url:
+                'https://app.balancer.fi/#/pool/0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
             display_order: '0',
             pid: '5',
             disable: 'false',
@@ -285,10 +290,14 @@ module.exports = {
         },
     },
     subgraph: {
-        uniswapV2_graph_url: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2',
-        uniswapV2_pair_id_gro_usdc: '0x45078a6dc55299D1cE68f624cE564eee80E644DB',
+        uniswapV2_graph_url:
+            'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2',
+        uniswapV2_pair_id_gro_usdc:
+            '0x45078a6dc55299D1cE68f624cE564eee80E644DB',
         uniswapV2_pair_id_gvt_gro: '0x02910bC117C6F1E7347aEF1A8e94a0B45041EF3F',
-        balancerV2_graph_url: 'https://thegraph.com/legacy-explorer/subgraph/balancer-labs/balancer-v2',
-        balancerV2_pool_id_gro_weth: '0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
-    }
+        balancerV2_graph_url:
+            'https://thegraph.com/legacy-explorer/subgraph/balancer-labs/balancer-v2',
+        balancerV2_pool_id_gro_weth:
+            '0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
+    },
 };
