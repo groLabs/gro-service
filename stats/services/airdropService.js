@@ -2,18 +2,16 @@ const csvtojson = require('csvtojson');
 const BN = require('bignumber.js');
 const fs = require('fs');
 const { ethers } = require('ethers');
+const logger = require('../statsLogger');
 const { getConfig } = require('../../common/configUtil');
 const {
     getAirdropClaimEvents,
     getAirdropClaimed,
 } = require('../handler/airdropClaimHandler');
 
-const csvFolder = getConfig('airdrop_csv_folder');
 const airdropConfig = getConfig('airdrop');
 
-const csv1FilePath = `${csvFolder}/airdrop1_result.csv`;
-const airdrop2FilePath = `${csvFolder}/airdrop-1-proofs.json`;
-const airdrop3FilePath = `${csvFolder}/airdrop-0-proofs.json`;
+const gasRefundFilePath = `${airdropConfig.folder}/${airdropConfig.gas_pwrd}`;
 
 const DECIMAL = new BN('1000000000000000000');
 const airdropCache = new Map();
@@ -70,7 +68,7 @@ async function convertCSVtoJson(filePath) {
 
 async function getGasRefundResult(account) {
     if (!firstAirdropJson) {
-        firstAirdropJson = await convertCSVtoJson(csv1FilePath);
+        firstAirdropJson = await convertCSVtoJson(gasRefundFilePath);
     }
     account = account.toLowerCase();
     const accountAirdrop = firstAirdropJson[account];
@@ -83,7 +81,6 @@ async function getGasRefundResult(account) {
         );
         result.participated = 'true';
         result.claimed = 'true';
-        result.claimable = 'true';
     }
     return result;
 }
@@ -109,6 +106,7 @@ async function getAirdropResultWithProof(account, endBlock, airdropFilePath) {
     result.token = token;
     result.timestamp = timestamp;
     result.merkle_root_index = merkleIndex.toString();
+    result.claimable = claimable;
     if (accountAirdrop) {
         // result = { ...airdropDefaultValue };
         const { amount, proof } = accountAirdrop;
@@ -122,13 +120,13 @@ async function getAirdropResultWithProof(account, endBlock, airdropFilePath) {
                     endBlock
                 );
                 result.hash = txList[merkleIndex];
+                result.claimable = 'false';
             } else {
                 result.proofs = proof;
             }
             result.participated = 'true';
             result.amount_to_claim = amount;
             result.amount = amountBn.dividedBy(DECIMAL).toFixed(2);
-            result.claimable = claimable;
             result.claimed = claimed.toString();
         }
     }
@@ -136,22 +134,27 @@ async function getAirdropResultWithProof(account, endBlock, airdropFilePath) {
 }
 
 async function updateOGAirdropFile() {
-    console.log('');
+    logger.info('');
 }
 
 async function getAllAirdropResults(address, endBlock) {
-    const airdrop1 = await getGasRefundResult(address);
-    const airdrop2 = await getAirdropResultWithProof(
-        address,
-        endBlock,
-        airdrop2FilePath
-    );
-    const airdrop3 = await getAirdropResultWithProof(
-        address,
-        endBlock,
-        airdrop3FilePath
-    );
-    return [airdrop1, airdrop2, airdrop3];
+    const airdropGasPwrd = await getGasRefundResult(address);
+    const airdrops = [airdropGasPwrd];
+    for (let i = 0; i < airdropConfig.files.length; i += 1) {
+        const filePath = `${airdropConfig.folder}/${airdropConfig.files[i]}`;
+        if (fs.existsSync(filePath)) {
+            // eslint-disable-next-line no-await-in-loop
+            const airdropWithProof = await getAirdropResultWithProof(
+                address,
+                endBlock,
+                filePath
+            );
+            airdrops.push(airdropWithProof);
+        } else {
+            logger.error(`airdrop file does not exist ${filePath}`);
+        }
+    }
+    return airdrops;
 }
 
 module.exports = {

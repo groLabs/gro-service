@@ -26,7 +26,6 @@ module.exports = {
         crit: { high: 12500, low: 8000 },
         warn: { high: 11000, low: 9000 },
     },
-    airdrop_csv_folder: '../airdrop',
     etherscan_api_key: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
     base_gas: [50000000000, 75000000000, 100000000000],
     timeout_retry: 2,
