@@ -86,6 +86,68 @@ const initContracts = async () => {
     groWethLpToken = new ethers.Contract(groWethAddress, GroWethABI, provider)
 }
 
+const checkPosition = async (addr, date) => {
+    try {
+        await initContracts();
+
+        const day = moment.utc(date, "DD/MM/YYYY")
+            .add(23, 'hours')
+            .add(59, 'minutes')
+            .add(59, 'seconds');
+        const blockTag = {
+            blockTag: (await findBlockByDate(day, false)).block
+        }
+
+        const [
+            staked_gro,
+            staked_gro_gvt,
+            staked_gro_usdc,
+            staked_gvt,
+            staked_pwrd,
+            staked_gro_weth,
+            unstaked_gro,
+            unstaked_gro_gvt,
+            unstaked_gro_usdc,
+            unstaked_gvt,
+            unstaked_pwrd,
+            unstaked_pwrd_pool,
+            unstaked_gro_weth,
+        ] = await Promise.all([
+            lpTokenStaker.userInfo(0, addr, blockTag),   // staked Gro
+            lpTokenStaker.userInfo(1, addr, blockTag),   // staked Gro/Gvt
+            lpTokenStaker.userInfo(2, addr, blockTag),   // staked Gro/Usdc
+            lpTokenStaker.userInfo(3, addr, blockTag),   // staked Gvt
+            lpTokenStaker.userInfo(4, addr, blockTag),   // staked Pwrd
+            lpTokenStaker.userInfo(5, addr, blockTag),   // staked Gvt/Weth
+            //-------------------------------------------------------
+            groToken.balanceOf(addr, blockTag),          // unstaked Gro
+            uniswapGroGvtPool.balanceOf(addr, blockTag), // unstaked Gro/Gvt [Uniswap pool]
+            uniswapGroUsdcPool.balanceOf(addr, blockTag),// unstaked Gro/Usdc pool [Uniswap pool]
+            groVault.balanceOf(addr, blockTag),          // unstaked Gvt
+            groPwrd.balanceOf(addr, blockTag),           // unstaked Pwrd
+            groPwrdUsdcLpToken.balanceOf(addr, blockTag),// unstaked Pwrd-3crv [Curve 3crv pool]
+            groWethLpToken.balanceOf(addr, blockTag),    //  Unstaked Gro/Weth
+        ]);
+
+        logger.info(`staked_gro: ${staked_gro}`);
+        logger.info(`staked_gro_gvt: ${staked_gro_gvt}`);
+        logger.info(`staked_gro_usdc: ${staked_gro_usdc}`);
+        logger.info(`staked_gvt: ${staked_gvt}`);
+        logger.info(`staked_pwrd: ${staked_pwrd}`);
+        logger.info(`staked_gro_weth: ${staked_gro_weth}`);
+        logger.info(`unstaked_gro: ${unstaked_gro}`);
+        logger.info(`unstaked_gro_gvt: ${unstaked_gro_gvt}`);
+        logger.info(`unstaked_gro_usdc: ${unstaked_gro_usdc}`);
+        logger.info(`unstaked_gvt: ${unstaked_gvt}`);
+        logger.info(`unstaked_pwrd: ${unstaked_pwrd}`);
+        logger.info(`unstaked_pwrd_pool: ${unstaked_pwrd_pool}`);
+        logger.info(`unstaked_gro_weth: ${unstaked_gro_weth}`);
+
+    } catch (err) {
+        logger.error(`**DB: Error in airdrop4Handler.js->checkPosition(): ${err}`);
+    }
+}
+
 /// @notice Load token amounts for elegible wallets having GVT or PWRD
 /// @param  from The start position in the wallets list to start loading data
 /// @param  end The end position in the wallets list to finish loading data
@@ -197,7 +259,7 @@ const airdrop4HandlerV2 = async (from, to, date) => {
             .add(23, 'hours')
             .add(59, 'minutes')
             .add(59, 'seconds');
-        
+
         logger.info(`using date: ${day}`);
         const block = (await findBlockByDate(day, false)).block;
         logger.info(`using block ${block}`);
@@ -280,4 +342,5 @@ const airdrop4HandlerV2 = async (from, to, date) => {
 module.exports = {
     airdrop4Handler,
     airdrop4HandlerV2,
+    checkPosition,
 }

@@ -20,6 +20,13 @@ module.exports = {
     airdrop: {
         address: '0x5CbA95DC6FcdF68b085086315886b2c9dB9b8960',
         start_block: 11226281,
+        folder: '../airdrop',
+        gas_pwrd: 'airdrop1_result.csv',
+        files: [
+            'airdrop-0-proofs.json',
+            'airdrop-1-proofs.json',
+            'airdrop-2-proofs.json',
+        ],
     },
     buoy_start_block: 10633347,
     blockchain: {
