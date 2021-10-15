@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const { soliditySha3, toHex, toChecksumAddress } = require('web3-utils');
 
 const { BigNumber: BN } = require('bignumber.js');
@@ -75,11 +76,55 @@ async function generateProofFile(fileName, content) {
     fs.writeFileSync(filePath, JSON.stringify(content));
 }
 
+async function validateFile(filePath) {
+    const extName = path.extname(filePath);
+    if (extName.toLowerCase() !== '.csv') {
+        throw new Error('Passed file must be CSV file.');
+    }
+
+    const data = fs.readFileSync(filePath, { flag: 'r' });
+    const content = data.toString();
+    const items = content.split('\n');
+    const headNames = items[0].split(',');
+    const addressIndex = headNames.indexOf('address');
+    const amountIndex = headNames.indexOf('amount');
+    if (addressIndex < 0 || amountIndex < 0) {
+        throw new Error(
+            'The passed file must include address and amount titles.'
+        );
+    }
+
+    const totalAddresses = [];
+
+    for (let i = 1; i < items.length; i += 1) {
+        const values = items[i].split(',');
+        const addressValue = values[addressIndex];
+        const amountValue = values[amountIndex];
+        if (addressValue.length !== 42) {
+            throw new Error(
+                `Line ${i + 1} : the address:${addressValue} is invalid.`
+            );
+        }
+        if (isNaN(amountValue)) {
+            throw new Error(
+                `Line ${i + 1} : the amount:${amountValue} is invalid.`
+            );
+        }
+
+        if (totalAddresses.includes(addressValue.toLowerCase())) {
+            throw new Error(
+                `Line ${i + 1} : the address:${addressValue} already exists.`
+            );
+        }
+        totalAddresses.push(addressValue.toLowerCase());
+    }
+}
+
 async function generateProof(
     filePath,
     merkleIndex,
     decimals = 0,
-    metadataString,
+    metadataString = '',
     distFileName = 'merkleTreeProofs'
 ) {
     if (!filePath) {
@@ -88,9 +133,20 @@ async function generateProof(
         );
         return;
     }
+    if (isNaN(merkleIndex)) {
+        console.log(`parameter merkleIndex:${merkleIndex} is not number`);
+        return;
+    }
+    if (isNaN(decimals)) {
+        console.log(`parameter decimals:${decimals} is not number`);
+        return;
+    }
+
     console.log(
         `filePath: ${filePath}\nmerkleIndex: ${merkleIndex}\ndistFileName: ${distFileName}\ndecimals: ${decimals}`
     );
+
+    validateFile(filePath);
     const airDropResult = await csvtojson().fromFile(filePath);
     // console.log(`before length: ${airDropResult.length}`);
     // handle fake airdrop
@@ -105,6 +161,9 @@ async function generateProof(
     const metadata = {};
     metaStringArray.forEach((item) => {
         const pair = item.split('=');
+        if (pair.length < 2) {
+            throw new Error(`paramter metadata:${metadataString} is invalid.`);
+        }
         const metaName = pair[0].trim();
         const metaValue = pair[1].trim();
         metadata[metaName] = metaValue;
@@ -141,14 +200,14 @@ async function generateProof(
     for (let i = 0; i < items.length; i += 1) {
         totalAmount = totalAmount.plus(new BN(items[i].amount));
         proofs[items[i].address] = {
-            amount: `${items[i].amount.toFixed(0)}`,
+            amount: items[i].amount.toFixed(0),
             proof: trees.getProof(items[i].node),
         };
     }
 
     const result = {
         ...metadata,
-        totalAmount: `${totalAmount.toFixed(0)}`,
+        totalAmount: totalAmount.toFixed(0),
         merkleIndex: parseInt(merkleIndex, 10),
         root,
         proofs,
