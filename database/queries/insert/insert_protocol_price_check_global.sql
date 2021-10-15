@@ -5,7 +5,9 @@ INSERT INTO gro."PROTOCOL_PRICE_CHECK_GLOBAL" (
         "network_id",
         "safety_check_bound",
         "safety_check",
-        "creation_date"
+        "creation_date",
+        "oracle_check_tolerance",
+        "curve_check_tolerance"
     )
 VALUES (
         $1,
@@ -14,5 +16,7 @@ VALUES (
         $4,
         $5,
         $6,
-        $7
+        $7,
+        $8,
+        $9
     );

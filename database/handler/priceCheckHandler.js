@@ -15,6 +15,8 @@ const getPriceCheckGlobal = async () => {
                 "block_date": global.block_date,
                 "safety_check_bound": parseFloat(global.safety_check_bound),
                 "safety_check": global.safety_check,
+                "oracle_check_tolerance": parseFloat(global.oracle_check_tolerance),
+                "curve_check_tolerance": parseFloat(global.curve_check_tolerance),
             }
         } else {
             return {}

@@ -170,6 +170,8 @@ CREATE TABLE gro."PROTOCOL_PRICE_CHECK_GLOBAL" (
     safety_check_bound NUMERIC (20, 8) NULL,
     safety_check BOOLEAN NULL,
     creation_date TIMESTAMP (6) NULL,
+    oracle_check_tolerance NUMERIC (20, 8) NULL,
+    curve_check_tolerance NUMERIC (20, 8) NULL,
     CONSTRAINT "PROTOCOL_PRICE_CHECK_GLOBAL_pkey" PRIMARY KEY (block_number) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 

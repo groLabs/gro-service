@@ -46,6 +46,8 @@ const getPriceGlobal = (prices) => {
         prices.safety_check_bound,
         prices.safety_check,
         moment.utc(),
+        0,  // TODO: oracle_check_tolerance
+        0,  // TODO: curve_check_tolerance
     ];
 }
 
