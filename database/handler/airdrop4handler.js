@@ -12,7 +12,7 @@ const providerKey = 'stats_gro';
 const moment = require('moment');
 // const { airdrop4Addr: AIRDROP4_ADDRESSES } = require('../files/airdrop4Addr');
 // const { airdrop4AddrGvtStaking: AIRDROP4_ADDRESSES } = require('../files/airdrop4AddrGvtStaking');
-const { airdrop4StakingFinal: AIRDROP4_ADDRESSES } = require('../files/airdrop4StakingFinal');
+const { airdrop4StakingFinal: AIRDROP4_ADDRESSES } = require('../files/airdrop4stakingFinal');
 const {
     loadAirdrop4,
     loadTempAirdrop4,

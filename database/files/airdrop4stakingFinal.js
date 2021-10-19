@@ -1,4 +1,4 @@
-// Walets staking in gvt, pwrd-3crv, gro/gvt or unstaked in gro/gvt, pwrd-3crv
+// Wallets staking in gvt, pwrd-3crv, gro/gvt or unstaked in gro/gvt, pwrd-3crv
 const airdrop4StakingFinal = [
     '0x00000000005ef87f8ca7014309ece7260bbcdaeb',
     '0x0000000506063a51c6ce59906d8c40f7d7fe92a7',
