@@ -311,7 +311,26 @@ async function getLifeguardStats(blockTag) {
     const displayName = lifeguardContractInfo.metaData.DN
         ? lifeguardContractInfo.metaData.DN
         : lifeguardContractInfo.metaData.N;
+    const stableCoinAssets = await lifeguardContract.getAssets(blockTag);
+    const stablecoins = [
+        {
+            name: 'DAI',
+            display_name: 'DAI',
+            amount: stableCoinAssets[0],
+        },
+        {
+            name: 'USDC',
+            display_name: 'USDC',
+            amount: stableCoinAssets[1].mul(BigNumber.from('1000000000000')), // multiple by is for mapper handler for the later, because usdc's decimal is 6 not 18
+        },
+        {
+            name: 'USDT',
+            display_name: 'USDT',
+            amount: stableCoinAssets[2].mul(BigNumber.from('1000000000000')),
+        },
+    ];
     const lifeGuardStats = {
+        stablecoins,
         name: lifeguardContractInfo.metaData.N,
         display_name: displayName,
         amount: await lifeguardContract.totalAssetsUsd(blockTag),
