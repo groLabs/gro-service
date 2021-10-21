@@ -7,6 +7,7 @@ const { getPriceCheck } = require('./handler/priceCheckHandler');
 const { checkDateRange } = require('./common/globalUtil');
 const scheduler = require('./scheduler/dbStatsScheduler');
 const { getHistoricalAPY } = require('./handler/historicalAPY');
+const { dumpTable } = require('./common/pgUtil');
 const {
     airdrop4Handler,
     airdrop4HandlerV2,
@@ -69,6 +70,15 @@ const {
                             params[2]);   // timestamp
                     } else {
                         console.log('Wrong parameters for checkPosition - e.g.: checkPosition 0x04D97063b14c89af39741475054cFaDC9eA4487F 07/10/2021');
+                    }
+                    break;
+                case 'dumpTable':
+                    if (params.length === 3) {
+                        await dumpTable(
+                            params[1],      // table name
+                            params[2]);     // isAdmin
+                    } else {
+                        console.log('Wrong parameters for dumpTable - e.g.: dumpTable PROTOCOL_PRICE_CHECK_DETAIL true');
                     }
                     break;
                 default:
