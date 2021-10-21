@@ -209,6 +209,14 @@ async function getGroPrice(blockNumberStr) {
     const oracleCheckTolerance = await buoyInstance.oracle_check_tolerance(
         blockTag
     );
+    let curveCheckTolerance = oracleCheckTolerance;
+    try {
+        curveCheckTolerance = await buoyInstance.curve_check_tolerance(
+            blockTag
+        );
+    } catch (e) {
+        logger.info(`${e}`);
+    }
     logger.info(`oracleCheckTolerance ${oracleCheckTolerance}`);
     const curvePoolAddr = await buoyInstance.curvePool();
     logger.info(`curvePoolAddr ${curvePoolAddr}`);
@@ -243,6 +251,8 @@ async function getGroPrice(blockNumberStr) {
         safety_check_bound: oracleCheckTolerance.toString(),
         safety_check: safetyCheck,
         block_number: blockNumber.toString(),
+        curve_check_tolerance: curveCheckTolerance.toString(),
+        oracle_check_tolerance: oracleCheckTolerance.toString(),
     };
     return pricing;
 }
