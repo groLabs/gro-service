@@ -32,6 +32,8 @@ const eventSummarySchedulerSetting =
 const failedAlertTimes = getConfig('call_failed_time', false) || 2;
 const failedTimes = { apyGenerator: 0, eventTrade: 0, eventSumary: 0 };
 
+const eventDiscordMessageSending = getConfig('stats_bot_event_sending');
+
 async function generateStatsFile() {
     schedule.scheduleJob(generateStatsSchedulerSetting, async () => {
         try {
@@ -108,6 +110,7 @@ async function removeStatsFile() {
 }
 
 function depositWithdrawEventScheduler() {
+    if (!eventDiscordMessageSending) return;
     schedule.scheduleJob(depositWithdrawEventSchedulerSetting, async () => {
         try {
             const lastBlockNumber = getLastBlockNumber(
@@ -142,6 +145,7 @@ function depositWithdrawEventScheduler() {
 }
 
 function EventSummaryScheduler() {
+    if (!eventDiscordMessageSending) return;
     schedule.scheduleJob(eventSummarySchedulerSetting, async () => {
         try {
             const lastBlockNumber = getLastBlockNumber(

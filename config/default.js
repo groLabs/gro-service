@@ -1,5 +1,6 @@
 module.exports = {
     private_transaction: false,
+    stats_bot_event_sending: false,
     // lbp: {
     //     start_block: 12331109,
     //     end_block: 12350508,
