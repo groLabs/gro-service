@@ -27,7 +27,8 @@
         "USDTPrimary",
         "USDTSecondary",
         "3CrvPrimary",
-        "BalancerWeightedPool"
+        "BalancerWeightedPool",
+        "TokenCounter"
     ],
     "latestContracts": {
         "GroVault": {
@@ -294,15 +295,9 @@
             "startBlock": 12857465,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "DAI"
-            ],
-            "protocols": [
-                "Compound"
-            ],
-            "protocolsDisplayName": [
-                "Compound"
-            ],
+            "tokens": ["DAI"],
+            "protocols": ["Compound"],
+            "protocolsDisplayName": ["Compound"],
             "metaData": {
                 "N": "Lev Comp",
                 "DN": "Lev Comp - DAI",
@@ -316,15 +311,9 @@
             "startBlock": 12836674,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "DAI"
-            ],
-            "protocols": [
-                "Aave"
-            ],
-            "protocolsDisplayName": [
-                "Aave"
-            ],
+            "tokens": ["DAI"],
+            "protocols": ["Aave"],
+            "protocolsDisplayName": ["Aave"],
             "metaData": {
                 "N": "Aave",
                 "DN": "Aave - DAI",
@@ -341,15 +330,9 @@
             "startBlock": 12857475,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "USDC"
-            ],
-            "protocols": [
-                "Compound"
-            ],
-            "protocolsDisplayName": [
-                "Compound"
-            ],
+            "tokens": ["USDC"],
+            "protocols": ["Compound"],
+            "protocolsDisplayName": ["Compound"],
             "metaData": {
                 "N": "Lev Comp",
                 "DN": "Lev Comp - USDC",
@@ -363,15 +346,9 @@
             "startBlock": 12836674,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "USDC"
-            ],
-            "protocols": [
-                "Cream"
-            ],
-            "protocolsDisplayName": [
-                "CREAM"
-            ],
+            "tokens": ["USDC"],
+            "protocols": ["Cream"],
+            "protocolsDisplayName": ["CREAM"],
             "metaData": {
                 "N": "Cream",
                 "DN": "CREAM - USDC",
@@ -388,19 +365,9 @@
             "startBlock": 12836674,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "USDT"
-            ],
-            "protocols": [
-                "Idle",
-                "Compound",
-                "Aave"
-            ],
-            "protocolsDisplayName": [
-                "Idle",
-                "Compound",
-                "Aave"
-            ],
+            "tokens": ["USDT"],
+            "protocols": ["Idle", "Compound", "Aave"],
+            "protocolsDisplayName": ["Idle", "Compound", "Aave"],
             "metaData": {
                 "N": "Idle",
                 "DN": "Idle - USDT",
@@ -414,15 +381,9 @@
             "startBlock": 12836674,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "USDT"
-            ],
-            "protocols": [
-                "Cream"
-            ],
-            "protocolsDisplayName": [
-                "CREAM"
-            ],
+            "tokens": ["USDT"],
+            "protocols": ["Cream"],
+            "protocolsDisplayName": ["CREAM"],
             "metaData": {
                 "N": "Cream",
                 "DN": "CREAM - USDT",
@@ -439,21 +400,9 @@
             "startBlock": 13328566,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "USDN"
-            ],
-            "protocols": [
-                "Curve",
-                "Yearn",
-                "Convex",
-                "Neutrino"
-            ],
-            "protocolsDisplayName": [
-                "Curve",
-                "Yearn",
-                "Convex",
-                "Neutrino"
-            ],
+            "tokens": ["USDN"],
+            "protocols": ["Curve", "Yearn", "Convex", "Neutrino"],
+            "protocolsDisplayName": ["Curve", "Yearn", "Convex", "Neutrino"],
             "metaData": {
                 "N": "XPool",
                 "DN": "Curve - XPool",
@@ -464,11 +413,22 @@
         },
         "BalancerWeightedPool": {
             "address": "0x702605f43471183158938c1a3e5f5a359d7b31ba",
+            "deployedBlock": 13459791,
+            "startBlock": 13459791,
+            "abiVersion": "fa8e260",
+            "tag": "Other",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        },
+        "TokenCounter": {
+            "address": "0xa646109d183f83225e861c0aCB7Fe53e78D21f90",
             "deployedBlock": 13360980,
             "startBlock": 13360980,
-            "endBlock": null,
             "abiVersion": "fa8e260",
-            "tag": "Core",
+            "tag": "Other",
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
@@ -1284,15 +1244,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "DAI"
-                ],
-                "protocols": [
-                    "Compound"
-                ],
-                "protocolsDisplayName": [
-                    "Compound"
-                ],
+                "tokens": ["DAI"],
+                "protocols": ["Compound"],
+                "protocolsDisplayName": ["Compound"],
                 "metaData": {
                     "N": "Lev Comp",
                     "DN": "Lev Comp - DAI",
@@ -1322,15 +1276,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "DAI"
-                ],
-                "protocols": [
-                    "Cream"
-                ],
-                "protocolsDisplayName": [
-                    "CREAM"
-                ],
+                "tokens": ["DAI"],
+                "protocols": ["Cream"],
+                "protocolsDisplayName": ["CREAM"],
                 "metaData": {
                     "N": "Cream",
                     "DN": "CREAM - DAI",
@@ -1389,15 +1337,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDC"
-                ],
-                "protocols": [
-                    "Compound"
-                ],
-                "protocolsDisplayName": [
-                    "Compound"
-                ],
+                "tokens": ["USDC"],
+                "protocols": ["Compound"],
+                "protocolsDisplayName": ["Compound"],
                 "metaData": {
                     "N": "Lev Comp",
                     "DN": "Lev Comp - USDC",
@@ -1427,15 +1369,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDC"
-                ],
-                "protocols": [
-                    "Cream"
-                ],
-                "protocolsDisplayName": [
-                    "CREAM"
-                ],
+                "tokens": ["USDC"],
+                "protocols": ["Cream"],
+                "protocolsDisplayName": ["CREAM"],
                 "metaData": {
                     "N": "Cream",
                     "DN": "CREAM - USDC",
@@ -1481,19 +1417,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDT"
-                ],
-                "protocols": [
-                    "Idle",
-                    "Compound",
-                    "Aave"
-                ],
-                "protocolsDisplayName": [
-                    "Idle",
-                    "Compound",
-                    "Aave"
-                ],
+                "tokens": ["USDT"],
+                "protocols": ["Idle", "Compound", "Aave"],
+                "protocolsDisplayName": ["Idle", "Compound", "Aave"],
                 "metaData": {
                     "N": "Idle",
                     "DN": "Idle - USDT",
@@ -1523,15 +1449,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDT"
-                ],
-                "protocols": [
-                    "Cream"
-                ],
-                "protocolsDisplayName": [
-                    "CREAM"
-                ],
+                "tokens": ["USDT"],
+                "protocols": ["Cream"],
+                "protocolsDisplayName": ["CREAM"],
                 "metaData": {
                     "N": "Cream",
                     "DN": "CREAM - USDT",
@@ -1577,15 +1497,8 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDN"
-                ],
-                "protocols": [
-                    "Curve",
-                    "Yearn",
-                    "Convex",
-                    "Neutrino"
-                ],
+                "tokens": ["USDN"],
+                "protocols": ["Curve", "Yearn", "Convex", "Neutrino"],
                 "protocolsDisplayName": [
                     "Curve",
                     "Yearn",
@@ -1607,7 +1520,22 @@
                 "startBlock": 13360980,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
-                "tag": "Core",
+                "tag": "Other",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "TokenCounter": [
+            {
+                "address": "0xa646109d183f83225e861c0aCB7Fe53e78D21f90",
+                "deployedBlock": 13360980,
+                "startBlock": 13360980,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Other",
                 "tokens": [],
                 "protocols": [],
                 "protocolsDisplayName": [],

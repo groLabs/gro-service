@@ -51,6 +51,7 @@ const ContractNames = {
     CRVVaultAdaptor: '3CRVVaultAdaptor',
     CRVPrimary: '3CrvPrimary',
     BalancerWeightedPool: 'BalancerWeightedPool',
+    TokenCounter: 'TokenCounter',
 };
 
 const ContractABIMapping = {};
@@ -82,6 +83,7 @@ ContractABIMapping[ContractNames.CRVVault] = 'Vault';
 ContractABIMapping[ContractNames.CRVVaultAdaptor] = 'VaultAdaptorYearnV2_032';
 ContractABIMapping[ContractNames.CRVPrimary] = 'BaseStrategy';
 ContractABIMapping[ContractNames.BalancerWeightedPool] = 'BalancerWeightedPool';
+ContractABIMapping[ContractNames.TokenCounter] = 'TokenCounter';
 
 function readLocalContractConfig(isReload = false) {
     if (isReload || !localContractConfig) {
