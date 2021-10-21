@@ -10,10 +10,12 @@ const LPTokenStakerABI = require('../../abi/LPTokenStaker.json');
 const GROVestingABI = require('../../abi/GROVesting.json');
 
 const poolInfos = getConfig('staker_pools');
-const LPTokenStakerInfo = getConfig('staker');
-const GROVestingInfo = getConfig('vesting');
+const LPTokenStakerInfo = getConfig('staker_pools.staker');
+const GROVestingInfo = getConfig('staker_pools.gro_vesting');
 const providerKey = 'stats_personal';
 const provider = getAlchemyRpcProvider(providerKey);
+const poolNames = {};
+const defaultDecimal = BN(10).pow(18);
 
 const lptokenStaker = new ethers.Contract(
     LPTokenStakerInfo.address,
@@ -26,6 +28,20 @@ const grovesting = new ethers.Contract(
     GROVestingABI,
     provider
 );
+
+function getPoolName(pid) {
+    let keys = Object.keys(poolNames);
+    if (keys.length > 0) return poolNames[pid];
+    keys = Object.keys(poolInfos);
+    for (let i = 0; i < keys.length; i += 1) {
+        const key = keys[i];
+        if (key.includes('_')) {
+            const { pid } = poolInfos[key];
+            poolNames[pid] = key;
+        }
+    }
+    return poolNames[pid];
+}
 
 async function fetchStakeAndUnstakeTransactions(account, endBlock) {
     // stake event
@@ -59,6 +75,7 @@ async function fetchStakeAndUnstakeTransactions(account, endBlock) {
     return events;
 }
 
+// TODO : requirement is not clear now
 async function fetchClaimAndExitEvents(account, endBlock) {
     // claim event
     const vestFilter = grovesting.filters.LogVest(account);
@@ -81,8 +98,9 @@ async function fetchClaimAndExitEvents(account, endBlock) {
     const logs = await Promise.all(eventPromise);
     logs[0].forEach((log) => {
         log.tx_type = 'entry';
+        log.coin_amount = log.args[2].toString();
     });
-    logs[0].forEach((log) => {
+    logs[1].forEach((log) => {
         log.tx_type = 'exit';
         log.coin_amount = log.args[3].toString();
     });
@@ -90,27 +108,18 @@ async function fetchClaimAndExitEvents(account, endBlock) {
     events.push(...logs[0]);
     events.push(...logs[1]);
 
-    events.forEach((log) => {
-        log.lp_token_amount = log.args[2].toString();
-        log.pool_id = log.args[1].toString();
-    });
-
     return events;
 }
 
 function parseStakeUnstakeEvents(events) {
     const result = [];
     events.forEach((event) => {
-        const poolId = `pool_${event.pool_id}`;
+        const poolId = `${event.pool_id}`;
         const log = {
-            pool: poolInfos[`pool_${event.pool_id}`].name,
+            pool: getPoolName(poolId),
             hash: event.transactionHash,
             timestamp: event.timestamp,
-            lp_token_amount: div(
-                event.lp_token_amount,
-                BN(10).pow(poolInfos[poolId].decimals),
-                2
-            ),
+            lp_token_amount: div(event.lp_token_amount, defaultDecimal, 2),
             usd_amount: '0.00', // TODO
             block_number: event.block_number,
         };
@@ -124,7 +133,24 @@ function parseStakeUnstakeEvents(events) {
     return result;
 }
 
-async function getPoolTransactions(account, endBlock = 'latest') {
+function parseClaimExistEvents(events) {
+    const result = [];
+    events.forEach((event) => {
+        const log = {
+            token: 'gro',
+            hash: event.transactionHash,
+            tx_type: event.tx_type,
+            timestamp: event.timestamp,
+            coin_amount: div(event.lp_token_amount, defaultDecimal, 2),
+            usd_amount: '0.00', // TODO
+            block_number: event.block_number,
+        };
+        result.push(log);
+    });
+    return result;
+}
+
+async function getPoolsTransactions(account, endBlock = 'latest') {
     const result = [];
     const stakeAndUnstakeEvents = await fetchStakeAndUnstakeTransactions(
         account,
@@ -139,6 +165,17 @@ async function getPoolTransactions(account, endBlock = 'latest') {
     return result;
 }
 
+async function getRewardsTransactions(account, endBlock = 'latest') {
+    const result = [];
+    const claimAndExitEvents = await fetchClaimAndExitEvents(account, endBlock);
+    await appendEventTimestamp(claimAndExitEvents, provider);
+
+    const claimAndExitTransactions = parseClaimExistEvents(claimAndExitEvents);
+    result.push(...claimAndExitTransactions);
+    return result;
+}
+
 module.exports = {
-    getPoolTransactions,
+    getPoolsTransactions,
+    getRewardsTransactions,
 };

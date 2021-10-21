@@ -30,7 +30,7 @@ const {
 
 const { getLatestSystemContract } = require('../common/contractStorage');
 const { getAllAirdropResults } = require('./airdropService');
-// const { getPoolTransactions } = require('./lpoolService');
+const { getPoolsTransactions } = require('./lpoolService');
 
 const erc20ABI = require('../../abi/ERC20.json');
 
@@ -782,8 +782,8 @@ async function generateReport(account) {
     // airdrops.push(await getFirstAirdropResult(account));
     // airdrops.push(await getSecondAirdropResult(account));
     // airdrops.push(await getThirdAirdropResult(account));
-    // const pools = await getPoolTransactions(account, latestBlock.number);
-    // transaction.pools = pools;
+    const pools = await getPoolsTransactions(account, latestBlock.number);
+    transaction.pools = pools;
     const result = {
         airdrops,
         transaction,

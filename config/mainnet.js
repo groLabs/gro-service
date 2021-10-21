@@ -223,6 +223,14 @@ module.exports = {
             balancer_gro_weth_pool_address:
                 '0x702605f43471183158938c1a3e5f5a359d7b31ba',
         },
+        staker: {
+            address: '0x001C249c09090D79Dc350A286247479F08c7aaD7',
+            start_block: 13326459,
+        },
+        gro_vesting: {
+            address: '0xA28693bf01Dc261887b238646Bb9636cB3a3730B',
+            start_block: 13405101,
+        },
         single_staking_100_gro_0: {
             deposit_url: '',
             display_order: '1',

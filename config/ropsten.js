@@ -9,14 +9,6 @@ module.exports = {
         '0xb8082aAeE3fC604FB5E09d895297B138973fA981': {},
     },
     old_pnl: ['0x6E50c4d3b3917a4aa4196F4F90C2533C2d2e1634'],
-    staker: {
-        address: '0x53C1F46b1584Fc4D0b51a6B19D45151e974B3f7B',
-        start_block: 11091289,
-    },
-    vesting: {
-        address: '0xAbCe0853782181c82B8b55c4B922E16BE6132C28',
-        start_block: 11091286,
-    },
     airdrop: {
         address: '0x5CbA95DC6FcdF68b085086315886b2c9dB9b8960',
         start_block: 11226281,
@@ -214,6 +206,14 @@ module.exports = {
                 '0x613081F24c4d5D797dca6480ccA67611224d7f41',
             curve_3pool_address: '0x930e1D35BeF80A1FF7Cb70DcFf295Ed97D187c58',
             curve_3crv_address: '0xF92594660CAE88FC36C63d542266eA57575a08BC',
+        },
+        staker: {
+            address: '0xCD72ccA707C61C2d7361F99B6c66bC312dB50BF7',
+            start_block: 11116690,
+        },
+        gro_vesting: {
+            address: '0x41d4e48Cb245187d0A5C22b16AEE35cae9aE9302',
+            start_block: 11220033,
         },
         single_staking_100_gro_0: {
             deposit_url: '',
