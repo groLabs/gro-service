@@ -211,7 +211,7 @@ module.exports = {
             address: '0xCD72ccA707C61C2d7361F99B6c66bC312dB50BF7',
             start_block: 11116690,
         },
-        gro_vesting: {
+        vesting: {
             address: '0x41d4e48Cb245187d0A5C22b16AEE35cae9aE9302',
             start_block: 11220033,
         },
@@ -227,6 +227,7 @@ module.exports = {
             display_order: '2',
             pid: '0',
             disable: 'false',
+            lp_token: '0x02910bC117C6F1E7347aEF1A8e94a0B45041EF3F',
             start_block: 11117850,
         },
         uniswap_v2_5050_gro_usdc_2: {
@@ -235,6 +236,7 @@ module.exports = {
             display_order: '3',
             pid: '6',
             disable: 'false',
+            lp_token: '0x45078a6dc55299D1cE68f624cE564eee80E644DB',
             start_block: 11136489,
         },
         single_staking_100_gvt_3: {

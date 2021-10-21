@@ -1,6 +1,5 @@
 const BN = require('bignumber.js');
 const { ethers } = require('ethers');
-const logger = require('../statsLogger');
 const { getFilterEvents } = require('../../common/logFilter-new');
 const { getAlchemyRpcProvider } = require('../../common/chainUtil');
 const { div } = require('../../common/digitalUtil');
@@ -8,14 +7,17 @@ const { appendEventTimestamp } = require('./generatePersonTransaction');
 const { getConfig } = require('../../common/configUtil');
 const LPTokenStakerABI = require('../../abi/LPTokenStaker.json');
 const GROVestingABI = require('../../abi/GROVesting.json');
+const ERC20ABI = require('../../abi/ERC20.json');
 
 const poolInfos = getConfig('staker_pools');
 const LPTokenStakerInfo = getConfig('staker_pools.staker');
-const GROVestingInfo = getConfig('staker_pools.gro_vesting');
+const GROVestingInfo = getConfig('staker_pools.vesting');
 const providerKey = 'stats_personal';
 const provider = getAlchemyRpcProvider(providerKey);
 const poolNames = {};
 const defaultDecimal = BN(10).pow(18);
+const addressZero = '0x0000000000000000000000000000000000000000';
+const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 
 const lptokenStaker = new ethers.Contract(
     LPTokenStakerInfo.address,
@@ -29,18 +31,21 @@ const grovesting = new ethers.Contract(
     provider
 );
 
-function getPoolName(pid) {
+function getPoolName(nameKey) {
     let keys = Object.keys(poolNames);
-    if (keys.length > 0) return poolNames[pid];
+    if (keys.length > 0) return poolNames[nameKey];
     keys = Object.keys(poolInfos);
     for (let i = 0; i < keys.length; i += 1) {
         const key = keys[i];
         if (key.includes('_')) {
-            const { pid } = poolInfos[key];
+            const { pid, lp_token: lpToken } = poolInfos[key];
             poolNames[pid] = key;
+            if (lpToken) {
+                poolNames[lpToken.toLowerCase()] = key;
+            }
         }
     }
-    return poolNames[pid];
+    return poolNames[nameKey];
 }
 
 async function fetchStakeAndUnstakeTransactions(account, endBlock) {
@@ -73,6 +78,134 @@ async function fetchStakeAndUnstakeTransactions(account, endBlock) {
     });
 
     return events;
+}
+
+async function tokenTransferEvents(account, lpToken, startBlock, endBlock) {
+    const token = new ethers.Contract(lpToken, ERC20ABI, provider);
+
+    // transfer in
+    const transferInFilter = token.filters.Transfer(null, account);
+    transferInFilter.fromBlock = startBlock;
+    transferInFilter.toBlock = endBlock;
+
+    // transfer out
+    const transferOutFilter = token.filters.Transfer(account);
+    transferOutFilter.fromBlock = startBlock;
+    transferOutFilter.toBlock = endBlock;
+
+    const eventPromise = [];
+    eventPromise.push(
+        getFilterEvents(transferInFilter, token.interface, providerKey)
+    );
+    eventPromise.push(
+        getFilterEvents(transferOutFilter, token.interface, providerKey)
+    );
+
+    const events = [];
+    const logs = await Promise.all(eventPromise);
+    events.push(...logs[0]);
+    events.push(...logs[1]);
+    return events;
+}
+
+async function uniswapAndBalancerLiquidity(
+    account,
+    lpToken,
+    startBlock,
+    endBlock
+) {
+    const transferEvents = await tokenTransferEvents(
+        account,
+        lpToken,
+        startBlock,
+        endBlock
+    );
+    const result = [];
+    transferEvents.forEach((item) => {
+        const { address, blockNumber, transactionHash, args } = item;
+        const { from, to, value } = args;
+        if (from === addressZero || to === addressZero) {
+            result.push({
+                pool: getPoolName(address.toLowerCase()),
+                hash: transactionHash,
+                tx_type:
+                    from === addressZero ? 'add_liquidity' : 'remove_liquidity',
+                lp_token_amount: div(value, defaultDecimal, amountDecimal),
+                usd_amount: '0.00',
+                block_number: blockNumber,
+            });
+        }
+    });
+    return result;
+}
+
+async function curveMetaPoolLiquidity(
+    account,
+    lpToken,
+    curveFinancePool,
+    startBlock,
+    endBlock
+) {
+    const transferEvents = await tokenTransferEvents(
+        account,
+        lpToken,
+        startBlock,
+        endBlock
+    );
+    const result = [];
+    transferEvents.forEach((item) => {
+        const { address, blockNumber, transactionHash, args } = item;
+        const { from, to, value } = args;
+        if (from === addressZero || to.toLowerCase() === curveFinancePool) {
+            result.push({
+                pool: getPoolName(address.toLowerCase()),
+                hash: transactionHash,
+                tx_type:
+                    from === addressZero ? 'add_liquidity' : 'remove_liquidity',
+                lp_token_amount: div(value, defaultDecimal, amountDecimal),
+                usd_amount: '0.00',
+                block_number: blockNumber,
+            });
+        }
+    });
+    return result;
+}
+
+async function fetchAddRemoveLiquidityTransactions(account, endBlock) {
+    const keys = Object.keys(poolInfos);
+    const liquidityPromises = [];
+    for (let i = 0; i < keys.length; i += 1) {
+        const {
+            lp_token: lpToken,
+            start_block: startBlock,
+            curve_finance_pool: curvePool,
+        } = poolInfos[keys[i]];
+        if (lpToken) {
+            if (curvePool) {
+                liquidityPromises.push(
+                    curveMetaPoolLiquidity(
+                        account,
+                        lpToken,
+                        curvePool.toLowerCase(),
+                        startBlock,
+                        endBlock
+                    )
+                );
+            } else {
+                liquidityPromises.push(
+                    uniswapAndBalancerLiquidity(
+                        account,
+                        lpToken,
+                        startBlock,
+                        endBlock
+                    )
+                );
+            }
+        }
+    }
+
+    const result = await Promise.all(liquidityPromises);
+    return result.flat(2); // flat the different pools's liquidity events to an arrary
 }
 
 // TODO : requirement is not clear now
@@ -119,7 +252,11 @@ function parseStakeUnstakeEvents(events) {
             pool: getPoolName(poolId),
             hash: event.transactionHash,
             timestamp: event.timestamp,
-            lp_token_amount: div(event.lp_token_amount, defaultDecimal, 2),
+            lp_token_amount: div(
+                event.lp_token_amount,
+                defaultDecimal,
+                amountDecimal
+            ),
             usd_amount: '0.00', // TODO
             block_number: event.block_number,
         };
@@ -141,7 +278,11 @@ function parseClaimExistEvents(events) {
             hash: event.transactionHash,
             tx_type: event.tx_type,
             timestamp: event.timestamp,
-            coin_amount: div(event.lp_token_amount, defaultDecimal, 2),
+            coin_amount: div(
+                event.lp_token_amount,
+                defaultDecimal,
+                amountDecimal
+            ),
             usd_amount: '0.00', // TODO
             block_number: event.block_number,
         };
@@ -152,6 +293,7 @@ function parseClaimExistEvents(events) {
 
 async function getPoolsTransactions(account, endBlock = 'latest') {
     const result = [];
+    // stake & unstake
     const stakeAndUnstakeEvents = await fetchStakeAndUnstakeTransactions(
         account,
         endBlock
@@ -162,6 +304,15 @@ async function getPoolsTransactions(account, endBlock = 'latest') {
         stakeAndUnstakeEvents
     );
     result.push(...stakeAndUnstakeTransactions);
+
+    // add & remove liquidity
+    const liquidityEvents = await fetchAddRemoveLiquidityTransactions(
+        account,
+        endBlock
+    );
+    await appendEventTimestamp(liquidityEvents, provider);
+    result.push(...liquidityEvents);
+
     return result;
 }
 

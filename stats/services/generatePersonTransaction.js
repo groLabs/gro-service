@@ -8,7 +8,7 @@ const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 async function getBlockNumberTimestamp(blockNumber, provider) {
     if (!blockNumberTimestamp[blockNumber]) {
         logger.info(`Append timestamp for blockNumber ${blockNumber}`);
-        const blockObject = await provider.getBlock(blockNumber);
+        const blockObject = await provider.getBlock(blockNumber); // only pass number type
         blockNumberTimestamp[blockNumber] = `${blockObject.timestamp}`;
     }
     return blockNumberTimestamp[blockNumber];

@@ -227,7 +227,7 @@ module.exports = {
             address: '0x001C249c09090D79Dc350A286247479F08c7aaD7',
             start_block: 13326459,
         },
-        gro_vesting: {
+        vesting: {
             address: '0xA28693bf01Dc261887b238646Bb9636cB3a3730B',
             start_block: 13405101,
         },
@@ -243,6 +243,7 @@ module.exports = {
             display_order: '2',
             pid: '1',
             disable: 'false',
+            lp_token: '0x2ac5bC9ddA37601EDb1A5E29699dEB0A5b67E9bB',
             start_block: 13318236,
         },
         uniswap_v2_5050_gro_usdc_2: {
@@ -251,6 +252,7 @@ module.exports = {
             display_order: '3',
             pid: '2',
             disable: 'false',
+            lp_token: '0x21C5918CcB42d20A2368bdCA8feDA0399EbfD2f6',
             start_block: 13327380,
         },
         single_staking_100_gvt_3: {
@@ -264,6 +266,8 @@ module.exports = {
             display_order: '5',
             pid: '4',
             disable: 'false',
+            lp_token: '0xbcb91E689114B9Cc865AD7871845C95241Df4105',
+            curve_finance_pool: '0xa79828df1850e8a3a3064576f380d90aecdd3359',
             start_block: 13314356,
         },
         balancer_v2_8020_gro_weth_5: {
@@ -272,6 +276,7 @@ module.exports = {
             display_order: '0',
             pid: '5',
             disable: 'false',
+            lp_token: '0x702605f43471183158938c1a3e5f5a359d7b31ba',
             start_block: 13355180,
         },
     },
