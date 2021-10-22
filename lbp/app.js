@@ -21,6 +21,9 @@ const logger = require(`../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const { getProvider } = require('../database/common/globalUtil');
 const { findBlockByDate } = require('../database/common/globalUtil');
+const { LBP_TX_1 } = require('./files/lbp_tx_1');
+const { LBP_TX_2 } = require('./files/lbp_tx_2');
+
 
 (async () => {
     try {
@@ -75,23 +78,44 @@ const { findBlockByDate } = require('../database/common/globalUtil');
         // console.log(block);
 
         // Dump swaps into file
-        let result = '';
-        const swaps = await getSwaps(
-            moment().unix(),
-            0,
-            []
-        );
-        for (const swap of swaps) {
-            result += `${swap.caller}| ${swap.timestamp}| ${swap.tokenInSym}| ${swap.tokenOutSym}| ${swap.tokenAmountIn}| ${swap.tokenAmountOut}\n`;
+        // let result = '';
+        // const swaps = await getSwaps(
+        //     moment().unix(),
+        //     0,
+        //     []
+        // );
+        // for (const swap of swaps) {
+        //     result += `${swap.caller}| ${swap.timestamp}| ${swap.tokenInSym}| ${swap.tokenOutSym}| ${swap.tokenAmountIn}| ${swap.tokenAmountOut}| ${swap.tx} \n`;
+        // }
+
+        // const fs = require('fs');
+        // fs.writeFileSync('swaps.csv', result, function (err) {
+        //     if (err) {
+        //         console.log(err);
+        //         return;
+        //     }
+        // });
+
+        // Check Argent stuff
+        const TX = LBP_TX_2;
+
+        for (const item of TX) {
+            const txReceipt = await getProvider()
+                .getTransactionReceipt(item)
+                .catch((err) => {
+                    console.log(err);
+                });
+            if (txReceipt.logs.length > 5)
+                console.log(`from: ${txReceipt.from} -> tx: ${item}`);
         }
 
-        const fs = require('fs');
-        fs.writeFileSync('swaps.csv', result, function (err) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-        });
+        // const txReceipt = await getProvider()
+        //     .getTransactionReceipt('0x6404ee69955a591b6c7394b5249fabe86b87e7e9f81796f9c7fb10dedfdd83be')
+        //     // .getTransactionReceipt('0x3495dd90cc9a1e968d1fec0246208724bd3e3327b439a703bd686f1d46ab20d6')
+        //     .catch((err) => {
+        //         console.log(err);
+        //     });
+        // console.log(txReceipt.logs.length);
 
         process.exit(0);
     } catch (err) {

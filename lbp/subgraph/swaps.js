@@ -17,6 +17,7 @@ const swaps = (poolId, targetTimestamp, first, skip) => (
           tokenAmountOut
           caller
           timestamp
+          tx
       }
   }`
 );
