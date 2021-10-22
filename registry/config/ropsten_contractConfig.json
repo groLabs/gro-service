@@ -27,7 +27,8 @@
         "USDTPrimary",
         "USDTSecondary",
         "3CrvPrimary",
-        "BalancerWeightedPool"
+        "BalancerWeightedPool",
+        "TokenCounter"
     ],
     "latestContracts": {
         "DAISecondary": {
@@ -36,15 +37,9 @@
             "startBlock": 12836674,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "DAI"
-            ],
-            "protocols": [
-                "Aave"
-            ],
-            "protocolsDisplayName": [
-                "Aave"
-            ],
+            "tokens": ["DAI"],
+            "protocols": ["Aave"],
+            "protocolsDisplayName": ["Aave"],
             "metaData": {
                 "N": "Aave",
                 "DN": "Aave - DAI",
@@ -67,6 +62,18 @@
             "protocolsDisplayName": [],
             "metaData": {},
             "active": true
+        },
+        "TokenCounter": {
+            "address": "0xc669255369B87dE14377d3c68EEaCab2AD62ccdf",
+            "deployedBlock": 11277035,
+            "startBlock": 11277035,
+            "abiVersion": "fa8e260",
+            "tag": "Other",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
         }
     },
     "contractHistories": {
@@ -78,6 +85,21 @@
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Core",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "TokenCounter": [
+            {
+                "address": "0xc669255369B87dE14377d3c68EEaCab2AD62ccdf",
+                "deployedBlock": 11277035,
+                "startBlock": 11277035,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Other",
                 "tokens": [],
                 "protocols": [],
                 "protocolsDisplayName": [],
