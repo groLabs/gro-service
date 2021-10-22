@@ -8,6 +8,7 @@ const { getAllStats } = require('../handler/groStatsHandler');
 const { getPriceCheck } = require('../handler/priceCheckHandler');
 const { getHistoricalAPY } = require('../handler/historicalAPY');
 const { getPersonalStats } = require('../handler/personalStatsHandler');
+const { dumpTable } = require('../common/pgUtil');
 const { validate } = require('../../stats/common/validate');
 const { personalStatsMessage } = require('../../discordMessage/statsMessage');
 
@@ -113,6 +114,30 @@ router.get(
         res.json(groStats);
     })
 );
+
+// router.get(
+//     '/table_dump',
+//     validate([
+//         query('network')
+//             .trim()
+//             .notEmpty()
+//             .withMessage(`network can't be empty.`),
+//         query('table')
+//             .trim()
+//             .notEmpty()
+//             .withMessage(`table can't be empty.`),
+//     ]),
+//     wrapAsync(async (req, res) => {
+//         let { network, table } = req.query;
+//         network = network || '';
+//         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+//             throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats');
+//         }
+//         const tableDump = await dumpTable(table, false);
+//         res.set('Content-Type', 'application/octet-stream');
+//         res.send(tableDump);
+//     })
+// );
 
 module.exports = router;
 

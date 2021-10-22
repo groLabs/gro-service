@@ -132,5 +132,6 @@ const batchQuery = async (q, file, op, params) => {
 };
 
 module.exports = {
-    query
+    query,
+    pool,
 };
