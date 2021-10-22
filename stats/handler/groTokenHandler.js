@@ -764,7 +764,7 @@ const calcFees = async (pool, block24hAgo) => {
 
         const isUniswap =
             pool === 'uniswap_v2_5050_gro_gvt_1' ||
-                pool === 'uniswap_v2_5050_gro_usdc_2'
+            pool === 'uniswap_v2_5050_gro_usdc_2'
                 ? true
                 : false;
 
@@ -776,10 +776,10 @@ const calcFees = async (pool, block24hAgo) => {
             pool === 'uniswap_v2_5050_gro_gvt_1'
                 ? sgGvtGroPoolId
                 : pool === 'uniswap_v2_5050_gro_usdc_2'
-                    ? sgGroUsdcPoolId
-                    : pool === 'balancer_v2_8020_gro_weth_5'
-                        ? sgGroWethPoolId
-                        : -1;
+                ? sgGroUsdcPoolId
+                : pool === 'balancer_v2_8020_gro_weth_5'
+                ? sgGroWethPoolId
+                : -1;
 
         if (poolId === -1) {
             logger.error(
@@ -817,7 +817,8 @@ const calcFees = async (pool, block24hAgo) => {
             const v24h = parseFloat(vol24h.pair.untrackedVolumeUSD);
             const swapFees24h = (vNow - v24h) * UNISWAP_SWAP_FEE;
             logger.info(
-                `Fees calc => vol now: ${vNow}, vol 24h: ${v24h}, vol diff: ${vNow - v24h
+                `Fees calc => vol now: ${vNow}, vol 24h: ${v24h}, vol diff: ${
+                    vNow - v24h
                 }, vol incl. fee: ${swapFees24h}`
             );
             return floatToBN(swapFees24h);
@@ -826,7 +827,8 @@ const calcFees = async (pool, block24hAgo) => {
             const v24h = parseFloat(vol24h.pools[0].totalSwapFee);
             const swapFees24h = vNow - v24h;
             logger.info(
-                `Fees calc => feeVol now: ${vNow}, feeVol 24h: ${v24h}, vol diff: ${vNow - v24h
+                `Fees calc => feeVol now: ${vNow}, feeVol 24h: ${v24h}, vol diff: ${
+                    vNow - v24h
                 }`
             );
             return floatToBN(swapFees24h);
@@ -1043,6 +1045,7 @@ async function getPools(currentApy, latestBlock) {
     const pools = [
         {
             deposit_url: pool0Config.deposit_url,
+            remove_url: pool0Config.remove_url,
             name: 'single_staking_100_gro_0',
             display_name: 'GRO',
             type: 'ss_1',
@@ -1070,6 +1073,7 @@ async function getPools(currentApy, latestBlock) {
         },
         {
             deposit_url: pool1Config.deposit_url,
+            remove_url: pool1Config.remove_url,
             name: 'uniswap_v2_5050_gro_gvt_1',
             display_name: 'GRO / Vault',
             type: 'uniswap_v2',
@@ -1097,6 +1101,7 @@ async function getPools(currentApy, latestBlock) {
         },
         {
             deposit_url: pool2Config.deposit_url,
+            remove_url: pool2Config.remove_url,
             name: 'uniswap_v2_5050_gro_usdc_2',
             display_name: 'GRO / USDC',
             type: 'uniswap_v2',
@@ -1124,6 +1129,7 @@ async function getPools(currentApy, latestBlock) {
         },
         {
             deposit_url: pool3Config.deposit_url,
+            remove_url: pool3Config.remove_url,
             name: 'single_staking_100_gvt_3',
             display_name: 'Vault',
             type: 'ss_1',
@@ -1151,6 +1157,7 @@ async function getPools(currentApy, latestBlock) {
         },
         {
             deposit_url: pool4Config.deposit_url,
+            remove_url: pool4Config.remove_url,
             name: 'curve_meta_pwrd_3crv_4',
             display_name: 'PWRD-3CRV',
             type: 'curve_meta',
@@ -1176,6 +1183,7 @@ async function getPools(currentApy, latestBlock) {
         },
         {
             deposit_url: pool5Config.deposit_url,
+            remove_url: pool5Config.remove_url,
             name: 'balancer_v2_8020_gro_weth_5',
             display_name: 'GRO 80% / WETH 20%',
             type: 'balancer_v2',

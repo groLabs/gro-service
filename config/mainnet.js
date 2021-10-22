@@ -224,7 +224,8 @@ module.exports = {
                 '0x702605f43471183158938c1a3e5f5a359d7b31ba',
         },
         single_staking_100_gro_0: {
-            deposit_url: '',
+            deposit_url: 'NA',
+            remove_url: 'NA',
             display_order: '1',
             pid: '0',
             disable: 'false',
@@ -232,6 +233,8 @@ module.exports = {
         uniswap_v2_5050_gro_gvt_1: {
             deposit_url:
                 'https://app.uniswap.org/#/add/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0x3ADb04E127b9C0a5D36094125669d4603AC52a0c',
+            remove_url:
+                'https://app.uniswap.org/#/remove/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0x3ADb04E127b9C0a5D36094125669d4603AC52a0c',
             display_order: '2',
             pid: '1',
             disable: 'false',
@@ -240,19 +243,23 @@ module.exports = {
         uniswap_v2_5050_gro_usdc_2: {
             deposit_url:
                 'https://app.uniswap.org/#/add/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+            remove_url:
+                'https://app.uniswap.org/#/remove/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
             display_order: '3',
             pid: '2',
             disable: 'false',
             start_block: 13327380,
         },
         single_staking_100_gvt_3: {
-            deposit_url: '',
+            deposit_url: 'NA',
+            remove_url: 'NA',
             display_order: '4',
             pid: '3',
             disable: 'false',
         },
         curve_meta_pwrd_3crv_4: {
             deposit_url: 'https://curve.fi/factory/44/deposit',
+            remove_url: 'https://curve.fi/factory/44/withdraw',
             display_order: '5',
             pid: '4',
             disable: 'false',
@@ -261,6 +268,7 @@ module.exports = {
         balancer_v2_8020_gro_weth_5: {
             deposit_url:
                 'https://app.balancer.fi/#/pool/0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
+            remove_url: 'NA',
             display_order: '0',
             pid: '5',
             disable: 'false',
