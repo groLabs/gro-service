@@ -79,8 +79,6 @@ const loadUserBalances2 = async () => {
             13464125  // EOD 21/10/2021
         );
 
-        
-
         console.log('gvt', res1);
         console.log('old gvt', res3a);
         console.log('pwrd', res2);
