@@ -7,6 +7,7 @@ const { getPriceCheck } = require('./handler/priceCheckHandler');
 const { checkDateRange } = require('./common/globalUtil');
 const scheduler = require('./scheduler/dbStatsScheduler');
 const { getHistoricalAPY } = require('./handler/historicalAPY');
+const { loadUserBalances2 } = require('./loader/loadUserBalances2');
 const { dumpTable } = require('./common/pgUtil');
 const {
     airdrop4Handler,
@@ -113,6 +114,10 @@ const {
         // Testing personal stats cache
         // await loadContractInfoFromRegistry();
         // await etlPersonalStatsCache('0xb5bE4d2510294d0BA77214F26F704d2956a99072');
+
+        // Testing user balances with tokenCounter
+        await loadContractInfoFromRegistry();
+        await loadUserBalances2('21/10/2021','21/10/2021',null);
 
         process.exit(0);
     } catch (err) {

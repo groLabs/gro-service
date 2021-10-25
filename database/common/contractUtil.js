@@ -20,6 +20,11 @@ const getPowerD = () => {
         .contract;
 }
 
+const getTokenCounter = () => {
+    return getLatestSystemContract(ContractNames.TokenCounter, getProviderKey())
+        .contract;
+}
+
 const getBuoy = () => {
     return getLatestSystemContract(ContractNames.buoy3Pool, getProviderKey())
         .contract;
@@ -80,4 +85,5 @@ module.exports = {
     getPowerD,
     getBuoy,
     getStables,
+    getTokenCounter,
 };
