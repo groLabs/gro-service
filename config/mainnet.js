@@ -32,6 +32,7 @@ module.exports = {
             'airdrop-0-proofs.json',
             'airdrop-1-proofs.json',
             'airdrop-2-proofs.json',
+            'airdrop-3-proofs.json',
         ],
     },
     buoy_start_block: 13304056,
