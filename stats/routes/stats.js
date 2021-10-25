@@ -8,6 +8,7 @@ const { ParameterError } = require('../../common/error');
 const {
     getGroStatsContent,
     getArgentStatsContent,
+    getExternalStatsContent,
     reloadContractsFromRegistry,
 } = require('../services/statsService');
 const { generateReport } = require('../services/accountService');
@@ -131,6 +132,19 @@ router.get(
         }
         const groStats = await getArgentStatsContent();
         res.json({ gro_argent_stats: groStats });
+    })
+);
+
+router.get(
+    '/gro_external_stats',
+    wrapAsync(async (req, res) => {
+        let { network } = req.query;
+        network = network || '';
+        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+            throw new ParameterError('Parameter network failed.');
+        }
+        const groStats = await getExternalStatsContent();
+        res.json({ gro_external_stats: groStats });
     })
 );
 
