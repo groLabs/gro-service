@@ -424,9 +424,9 @@
             "active": true
         },
         "TokenCounter": {
-            "address": "0xa646109d183f83225e861c0aCB7Fe53e78D21f90",
-            "deployedBlock": 13360980,
-            "startBlock": 13360980,
+            "address": "0xaffbd08b4754c3423f3583398c5749bc22f26ad7",
+            "deployedBlock": 13492579,
+            "startBlock": 13492579,
             "abiVersion": "fa8e260",
             "tag": "Other",
             "tokens": [],
