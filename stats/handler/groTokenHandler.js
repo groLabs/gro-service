@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 const { ethers, BigNumber } = require('ethers');
+const fetch = require('node-fetch');
 const { BigNumber: BN } = require('bignumber.js');
 const logger = require('../statsLogger');
 const { ContractNames } = require('../../registry/registry');
@@ -12,6 +13,7 @@ const moment = require('moment');
 const { findBlockByDate } = require('../../database/common/globalUtil');
 const { callSubgraph } = require('../../common/subgraphCaller');
 const { floatToBN } = require('../../common/digitalUtil');
+
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 
 // ABI
@@ -27,6 +29,7 @@ const ZERO = BigNumber.from('0');
 const YEAR = BigNumber.from('365');
 const BLOCKS_PER_YEAR = BigNumber.from(2252571);
 const BLOCKS_PER_DAY = 6400;
+const WEEKS_PER_YEAR = BigNumber.from(52);
 const GTOKEN_SCALE = BigNumber.from('1000000000000');
 const providerKey = 'stats_gro';
 
@@ -165,6 +168,27 @@ async function initContracts() {
         LpTokenABI,
         provider
     );
+}
+
+async function getCoingeckoPrice(id) {
+    let price = BigNumber.from(0);
+    try {
+        const res = await fetch(
+            `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`
+        );
+        if (res) {
+            const data = await res.json();
+            logger.info(`usd ${data.balancer.usd}`);
+            price = floatToBN(data.balancer.usd);
+        } else {
+            logger.error('Parser price data failed.');
+            return price;
+        }
+    } catch (error) {
+        logger.error(error);
+        return price;
+    }
+    return price;
 }
 
 async function readUniswapPool(
@@ -863,6 +887,7 @@ const getBalancerGroWethStats = async (
                 feeApy: ZERO,
                 rewardApy: ZERO,
                 unstaked: ZERO,
+                poolIncentive: BigNumber.from('139300000000000000'),
             };
 
         // Pull data from Balancer v2 subgraph
@@ -887,6 +912,7 @@ const getBalancerGroWethStats = async (
                 feeApy: 'NA',
                 rewardApy: 'NA',
                 unstaked: 'NA',
+                poolIncentive: 'NA',
             };
         } else {
             pools = res.pools[0];
@@ -956,8 +982,15 @@ const getBalancerGroWethStats = async (
             block24hAgo
         );
         const feeApy = groWethFees.mul(YEAR).mul(ONE).div(tvlBN);
-
-        const totalAPY = feeApy.add(tokenApy).add(rewardApy);
+        const balPrice = await getCoingeckoPrice('balancer');
+        const balRewardPerWeek = BigNumber.from(pool5Config.bal_per_week);
+        const balApy = balPrice
+            .mul(WEEKS_PER_YEAR)
+            .mul(balRewardPerWeek)
+            .mul(ONE)
+            .div(tvlBN);
+        logger.info(`balPrice ${balPrice} balApy ${balApy}`);
+        const totalAPY = feeApy.add(tokenApy).add(rewardApy).add(balApy);
 
         const metaPoolInfo = {
             tvl: tvlBN,
@@ -970,6 +1003,7 @@ const getBalancerGroWethStats = async (
             feeApy: feeApy,
             rewardApy: rewardApy,
             unstaked: unstaked,
+            poolIncentive: balApy,
         };
         return metaPoolInfo;
     } catch (err) {
@@ -1204,6 +1238,7 @@ async function getPools(currentApy, latestBlock) {
             lp_usd_price: isNaN(poolBalancerGroWethStats.lpPrice)
                 ? NAH
                 : printUsd(poolBalancerGroWethStats.lpPrice),
+            pool_incentive_token: 'bal',
             apy: {
                 current: {
                     total: isNaN(poolBalancerGroWethStats.totalApy)
@@ -1218,6 +1253,11 @@ async function getPools(currentApy, latestBlock) {
                     reward: isNaN(poolBalancerGroWethStats.rewardApy)
                         ? NAH
                         : printPercent(poolBalancerGroWethStats.rewardApy),
+                    pool_incentive: isNaN(
+                        poolBalancerGroWethStats.poolIncentive
+                    )
+                        ? NAH
+                        : printPercent(poolBalancerGroWethStats.poolIncentive),
                 },
             },
         },
