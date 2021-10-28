@@ -64,9 +64,9 @@
             "active": true
         },
         "TokenCounter": {
-            "address": "0xc669255369B87dE14377d3c68EEaCab2AD62ccdf",
-            "deployedBlock": 11277035,
-            "startBlock": 11277035,
+            "address": "0x862C238b96A4C89d7d4549fcdd74144131b96CF5",
+            "deployedBlock": 11312954,
+            "startBlock": 11312954,
             "abiVersion": "fa8e260",
             "tag": "Other",
             "tokens": [],
@@ -94,9 +94,9 @@
         ],
         "TokenCounter": [
             {
-                "address": "0xc669255369B87dE14377d3c68EEaCab2AD62ccdf",
-                "deployedBlock": 11277035,
-                "startBlock": 11277035,
+                "address": "0x862C238b96A4C89d7d4549fcdd74144131b96CF5",
+                "deployedBlock": 11312954,
+                "startBlock": 11312954,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Other",
