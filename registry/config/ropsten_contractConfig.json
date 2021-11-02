@@ -31,6 +31,22 @@
         "TokenCounter"
     ],
     "latestContracts": {
+        "3CRVVaultAdaptor": {
+            "address": "0xBF0fbDA0a9F7bBeBA9F5D7C14ffbDdEFF36985Dc",
+            "deployedBlock": 10631080,
+            "startBlock": 10633479,
+            "abiVersion": "551353c",
+            "tag": "Vault",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "Curve yVault",
+                "CN": "3CRV",
+                "DN": "3CRVUSDx"
+            },
+            "active": true
+        },
         "DAISecondary": {
             "address": "0xDe70653B9414b0B39b3126cd2656f1978031B87c",
             "deployedBlock": 12832421,
@@ -119,13 +135,13 @@
                 "Curve",
                 "Yearn",
                 "Convex",
-                "Neutrino"
+                "Unit"
             ],
             "protocolsDisplayName": [
                 "Curve",
                 "Yearn",
                 "Convex",
-                "Neutrino"
+                "Unit"
             ],
             "metaData": {
                 "N": "XPool",
