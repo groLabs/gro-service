@@ -7,7 +7,8 @@ const { getPriceCheck } = require('./handler/priceCheckHandler');
 const { checkDateRange } = require('./common/globalUtil');
 const scheduler = require('./scheduler/dbStatsScheduler');
 const { getHistoricalAPY } = require('./handler/historicalAPY');
-const { loadUserBalances2 } = require('./loader/loadUserBalances2');
+const { loadUserBalances2, loadUserBalances4 } = require('./loader/loadUserBalances2');
+const {loadTokenPrice} = require('./loader/loadTokenPrice');
 const { dumpTable } = require('./common/pgUtil');
 const {
     airdrop4Handler,
@@ -15,6 +16,9 @@ const {
     checkPosition,
 } = require('./handler/airdrop4handler');
 
+
+// test
+const { calcLoadingDateRange } = require('./common/personalUtil');
 
 (async () => {
     try {
@@ -117,7 +121,16 @@ const {
 
         // Testing user balances with tokenCounter
         await loadContractInfoFromRegistry();
-        await loadUserBalances2('21/10/2021','21/10/2021',null);
+        // await loadUserBalances4('26/10/2021', '26/10/2021', null);
+        await loadUserBalances4('26/10/2021', '26/10/2021', '0xa31f8afd785EC32df8Df77Ab83978E49Cc0349Ac');
+        // await loadTokenPrice('25/10/2021');
+
+        // const res = await calcLoadingDateRange();
+        // if (res.length > 0) {
+        //     console.log('load', res);
+        // } else {
+        //     console.log('no load!')
+        // }
 
         process.exit(0);
     } catch (err) {

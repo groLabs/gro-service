@@ -11,20 +11,29 @@ const {
     handleErr,
     isPlural,
 } = require('../common/personalUtil');
-const {
-    parseAmount,
-} = require('../parser/personalStatsParser');
+const { parseAmount } = require('../parser/personalStatsParser');
 const {
     getGroVault,
     getPowerD,
     getTokenCounter,
 } = require('../common/contractUtil');
 const { QUERY_ERROR } = require('../constants');
-const { getBalances } = require('../common/balanceUtil');
+const {
+    getBalances,
+    getBalancesUniBalLP,
+    getBalancesCrvLP,
+} = require('../common/balanceUtil');
 
 
+const { getConfig } = require('../../common/configUtil');
+const GRO_ADDRESS = getConfig('staker_pools.contracts.gro_address');
+const GRO_GVT_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_gvt_pool_address');
+const GRO_USDC_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_usdc_pool_address');
+const CRV_PWRD_ADDRESS = getConfig('staker_pools.contracts.curve_pwrd3crv_pool_address');
+const GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address');
 
-/// dev: ****** TokenCounter only available in mainnet from 21/10/2021
+
+/// dev: ****** TokenCounter only available in mainnet from 26/10/2021
 const loadUserBalances2 = async () => {
     try {
 
@@ -35,56 +44,55 @@ const loadUserBalances2 = async () => {
 
         const res1 = await getBalances(
             GVT_ADDRESS,
-            ['0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E'], // MAT
-            // ['0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD'], // SJS
+            ['0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD'], // MAT, SJS
             // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
-            13464125  // EOD 21/10/2021
+            13493374 // now
         );
 
         const res2 = await getBalances(
             PWRD_ADDRESS,
-            ['0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E'], // MAT
-            // ['0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD'], // SJS
+            ['0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD'], // MAT, SJS
             // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
-            13464125  // EOD 21/10/2021
+            13493374 // now
         );
-
-        const res3a = parseAmount(await getGroVault().getAssets(
-            '0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', // MAT
-            // '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD', // SJS
-            // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
-            { blockTag: 13464125 }),
-            'USD');
-
-        const res3b = parseAmount(await getPowerD().getAssets(
-            '0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', // MAT
-            // '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD', // SJS
-            // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
-            { blockTag: 13464125 }),
-            'USD');
-
+        /*
+                const res3a = parseAmount(await getGroVault().getAssets(
+                    '0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', // MAT
+                    // '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD', // SJS
+                    // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
+                    // { blockTag: 13464125 }),
+                    { blockTag: 13493374 }),
+                    'USD');
+        
+                const res3b = parseAmount(await getPowerD().getAssets(
+                    '0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', // MAT
+                    // '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD', // SJS
+                    // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
+                    // { blockTag: 13464125 }),
+                    { blockTag: 13493374 }),
+                    'USD');
+        */
         const res4 = await getBalances(
             CRV_POOL_ADDRESS,
-            ['0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E'], // MAT
-            // ['0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD'], // SJS
+            ['0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD'], // MAT, SJS
             // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
-            13464125  // EOD 21/10/2021
+            // 13464125  // EOD 21/10/2021
+            13493374 // now
         );
 
         const res5 = await getBalances(
             GRO_ADDRESS,
-            ['0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E'], // MAT
-            // ['0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD'], // SJS
+            ['0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD'], // MAT, SJS
             // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
-            13464125  // EOD 21/10/2021
+            13493374 // now
         );
 
-        console.log('gvt', res1);
-        console.log('old gvt', res3a);
-        console.log('pwrd', res2);
-        console.log('old pwrd', res3b);
+        console.log('new gvt', res1);
+        // console.log('old gvt', res3a);
+        console.log('new pwrd', res2);
+        // console.log('old pwrd', res3b);
         console.log('pwrd crv', res4);
-        console.log('gro', res5);
+        console.log('new gro', res5);
 
     } catch (err) {
         console.log('Errorin', err);
@@ -141,48 +149,107 @@ const loadUserBalances4 = async (
             let rowCount = 0;
             let rowExcluded = 0;
 
-            const GVT_ADDRESS = await getGroVault().address;
-            const PWRD_ADDRESS = await getPowerD().address;
+            const GVT_ADDRESS = getGroVault().address;
+            const PWRD_ADDRESS = getPowerD().address;
             const block = (await findBlockByDate(day, false)).block;
 
-            const gvtValue = await getBalances(
-                GVT_ADDRESS,
-                users,
-                block,
-            );
+            logger.info(`**DB: Checking balances in TokenCounter() for ${users.length} users...`);
 
-            const pwrdValue = await getBalances(
-                PWRD_ADDRESS,
-                users,
-                block,
-            );
+            // TODO: perhaps make it recursive and build the arrays in buckets of 500?
+            const [
+                gvtValue,
+                pwrdValue,
+                groValue,
+                lpGroGvt,
+                lpGroUsdc,
+                lpCrvPwrd,
+                lpGroWeth,
+            ] = await Promise.all([
+                getBalances(GVT_ADDRESS, users, block),
+                getBalances(PWRD_ADDRESS, users, block),
+                getBalances(GRO_ADDRESS, users, block),
+                getBalancesUniBalLP(GRO_GVT_ADDRESS, users, block),
+                getBalancesUniBalLP(GRO_USDC_ADDRESS, users, block),
+                getBalancesCrvLP(CRV_PWRD_ADDRESS, users, block),
+                getBalancesUniBalLP(GRO_WETH_ADDRESS, users, block),
+            ]);
 
             for (let i = 0; i < users.length; i++) {
+
                 const addr = users[i];
-                // const gvtValue = parseAmount(await getGroVault().getAssets(addr, blockTag), 'USD');
-                // const pwrdValue = parseAmount(await getPowerD().getAssets(addr, blockTag), 'USD');
-                const totalValue = gvtValue[i] + pwrdValue[i];
-                const params = [
+                const isUnstakedBalance = (
+                    gvtValue[0].amount_unstaked[i]
+                    + pwrdValue[0].amount_unstaked[i]
+                    + groValue[0].amount_unstaked[i]
+                    > 0)
+                    ? true
+                    : false;
+
+                const unstakedParams = [
                     day,
                     getNetworkId(),
                     addr,
-                    totalValue,
-                    gvtValue[i],
-                    pwrdValue[i],
-                    moment.utc()
+                    gvtValue[0].amount_unstaked[i],     // unstaked gvt amount
+                    pwrdValue[0].amount_unstaked[i],    // unstaked pwrd amount
+                    groValue[0].amount_unstaked[i],     // unstaked gro amount
+                    moment.utc(),
                 ];
-                // zero balance accounts are excluded
-                if (totalValue !== 0) {
+
+                const stakedParams = [
+                    day,
+                    getNetworkId(),
+                    addr,
+                    groValue[1].amount_staked[i],       // pool0_staked_amount
+                    lpGroGvt[1].amount_staked_lp[i],    // pool1_staked_amount
+                    lpGroUsdc[1].amount_staked_lp[i],   // pool2_staked_amount
+                    gvtValue[1].amount_staked[i],       // pool3_staked_amount
+                    lpCrvPwrd[1].amount_staked_lp[i],   // pool4_staked_amount
+                    lpGroWeth[1].amount_staked_lp[i],   // pool5_staked_amount
+                    moment.utc(),
+                ];
+
+                const pooledParams = [
+                    day,
+                    getNetworkId(),
+                    addr,
+                    lpGroGvt[0].amount_unstaked_lp[i],  // pool1_lp_amount
+                    lpGroGvt[2].lp_position[i][0],      // pool1_gro_amount
+                    lpGroGvt[2].lp_position[i][1],      // pool1_gvt_amount
+                    lpGroUsdc[0].amount_unstaked_lp[i], // pool2_lp_amount
+                    lpGroUsdc[2].lp_position[i][0],     // pool2_gro_amount
+                    lpGroUsdc[2].lp_position[i][1],     // pool2_usdc_amount
+                    lpCrvPwrd[0].amount_unstaked_lp[0], // pool4_lp_amount
+                    lpCrvPwrd[2].lp_position[i],        // poll4_pwrd_amount
+                    lpGroWeth[0].amount_unstaked_lp[i], // pool5_lp_amount
+                    lpGroWeth[2].lp_position[i][0],     // pool5_gro_amount
+                    lpGroWeth[2].lp_position[i][1],     // pool5_weth_amount
+                    moment.utc(),
+                ];
+
+                // Unstaked amounts
+                if (isUnstakedBalance) {
                     const q = (account)
-                        ? 'insert_user_cache_fact_balances.sql'
-                        : 'insert_user_std_fact_balances.sql';
-                    const result = await query(q, params);
+                        // ? 'insert_user_cache_fact_balances.sql'  // **** TODO ****
+                        ? 'insert_user_std_fact_balances_unstaked.sql'  // **** for TESTING ONLY *****
+                        : 'insert_user_std_fact_balances_unstaked.sql';
+                    const result = await query(q, unstakedParams);
                     if (result.status === QUERY_ERROR)
                         return false;
                     rowCount += result.rowCount;
                 } else {
                     rowExcluded++;
                 }
+
+                // Staked amounts
+                // TODO: rowCount, cache
+                const q = 'insert_user_std_fact_balances_staked.sql';
+                await query(q, stakedParams);
+
+                // Pooled amounts
+                // TODO: rowCount, cache
+                const q2 = 'insert_user_std_fact_balances_pooled.sql';
+                await query(q2, pooledParams);
+
             }
             let msg = `**DB${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} `;
             msg += `added into USER_STD_FACT_BALANCES `;
@@ -205,4 +272,5 @@ const loadUserBalances4 = async (
 
 module.exports = {
     loadUserBalances2,
+    loadUserBalances4,
 };

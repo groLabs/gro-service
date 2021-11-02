@@ -19,80 +19,97 @@ const BAL_POOL_GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro
 
 const getBalances = async (tokenAddress, userAddresses, blockNumber) => {
     try {
-        let balances;
-        let result = [];
         const blockTag = { blockTag: blockNumber };
 
-        const GVT_ADDRESS = getGroVault().address;
-        const PWRD_ADDRESS = getPowerD().address;
+        const result = await getTokenCounter().getTokenAmounts(
+            tokenAddress,
+            userAddresses,
+            blockTag,
+        );
 
-        // Retrieve token amounts
+        return [
+            { amount_unstaked: result[0].map(unstaked => parseAmount(unstaked, 'USD')) },
+            { amount_staked: result[1].map(staked => parseAmount(staked, 'USD')) }, // only for single-sided pools (gvt, gro)
+        ];
+    } catch (err) {
+        logger.error(`**DB: Error in balanceUtil.js->getBalances(): ${err}`);
+    }
+}
+
+//TODO: only for LP
+const getBalancesUniBalLP = async (tokenAddress, userAddresses, blockNumber) => {
+    try {
+        let result = [];
+        const blockTag = { blockTag: blockNumber };
         switch (tokenAddress) {
-            case GVT_ADDRESS:
-            case PWRD_ADDRESS:
-            case GRO_ADDRESS:
-                // TODO: perhaps to be replaced by:
-                // const [result_unstaked, result_staked] = balances;
-                balances = await getTokenCounter().getTokenAmounts(
-                    tokenAddress,
-                    userAddresses,
-                    blockTag,
-                );
-                break;
             case UNI_POOL_GVT_GRO_ADDRESS:
             case UNI_POOL_GVT_USDC_ADDRESS:
-                balances = await getTokenCounter().getLpAmountsUni(
+                result = await getTokenCounter().getLpAmountsUni(
                     tokenAddress,
                     userAddresses,
                     blockTag,
                 );
                 break;
             case BAL_POOL_GRO_WETH_ADDRESS:
-                balances = await getTokenCounter().getLpAmountsBalancer(
+                result = await getTokenCounter().getLpAmountsBalancer(
                     tokenAddress,
                     userAddresses,
                     blockTag,
                 );
-                break;
-            case CRV_POOL_PWRD_ADDRESS:
-                balances = await getTokenCounter().getCurvePwrd(
-                    tokenAddress,
-                    userAddresses,
-                    blockTag,
-                );
+                //console.log('balancer:', result);
                 break;
             default:
                 console.log('Unrecognised token address');
+                // TODO: return [] ?
                 break;
         }
-
-        // Calc value (when necessary)
-        // TODO: probably better to replace it by if GVT, do this, else, do that
-        switch (tokenAddress) {
-            case GVT_ADDRESS:
-                const pricePerShareGVT = await getGroVault().getPricePerShare(blockTag);
-                for (const balance of balances) {
-                    const value = BigNumber.from(balance).mul(BigNumber.from(pricePerShareGVT)).div(ONE);
-                    result.push(value);
-                }
-                break;
-            case PWRD_ADDRESS:
-            case GRO_ADDRESS:
-            case CRV_POOL_PWRD_ADDRESS:
-                result = balances;
-                break;
-            default:
-                break;
-        }
-
-        // Parse values to floats
-        return result.map(value => parseAmount(value, 'USD'));
-
+        return [
+            { amount_unstaked_lp: result[0].map(unstaked => parseAmount(unstaked, 'USD')) },
+            { amount_staked_lp: result[1].map(staked => parseAmount(staked, 'USD')) },
+            { lp_position: result[2].map(
+                lp_positions => [
+                    parseAmount(lp_positions[0], 'USD'),
+                    parseAmount(lp_positions[1], (tokenAddress === UNI_POOL_GVT_USDC_ADDRESS) ? 'USDC' : 'USD'),
+                ])
+            }
+        ];
     } catch (err) {
-        logger.error(`**DB: Error in balanceUtil.js->getBalances(): ${err}`);
+        logger.error(`**DB: Error in balanceUtil.js->getBalancesUniBalLP(): ${err}`);
+    }
+}
+
+const getBalancesCrvLP = async (tokenAddress, userAddresses, blockNumber) => {
+    try {
+        const blockTag = { blockTag: blockNumber };
+        const result = await getTokenCounter().getCurvePwrd(
+            tokenAddress,
+            userAddresses,
+            blockTag,
+        );
+        return [
+            { amount_unstaked_lp: result[0].map(unstaked => parseAmount(unstaked, 'USD')) },
+            { amount_staked_lp: result[1].map(staked => parseAmount(staked, 'USD')) },
+            { lp_position: result[2].map(lp_position => parseAmount(lp_position, 'USD'))}
+        ];
+    } catch (err) {
+        logger.error(`**DB: Error in balanceUtil.js->getBalancesCrvLP(): ${err}`);
     }
 }
 
 module.exports = {
     getBalances,
+    getBalancesUniBalLP,
+    getBalancesCrvLP,
 }
+
+
+
+
+            // case GVT_ADDRESS:
+            //     const pricePerShareGVT = await getGroVault().getPricePerShare(blockTag);
+            //     for (const balance of balances) {
+            //         const value_unstaked = BigNumber.from(balance[0]).mul(BigNumber.from(pricePerShareGVT)).div(ONE);
+            //         const value_staked = BigNumber.from(balance[1]).mul(BigNumber.from(pricePerShareGVT)).div(ONE);
+            //         result.push([value_unstaked, value_staked]);
+            //     }
+            //     break;

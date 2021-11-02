@@ -2,9 +2,7 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');
-const {
-    handleErr,
-} = require('../common/personalUtil');
+const { handleErr } = require('../common/personalUtil');
 const { QUERY_ERROR } = require('../constants');
 
 /// @notice Stores the last load time and number of records loaded into SYS_USER_LOADS
