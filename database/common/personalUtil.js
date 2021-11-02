@@ -117,8 +117,8 @@ function getStableCoinIndex(tokenSymbol) {
 }
 
 /// @notice Generates a collection of dates from a given start date to an end date
-/// @param _fromDate Start date
-/// @param _toDdate End date
+/// @param _fromDate Start date [date format: 'DD/MM/YYYY]
+/// @param _toDdate End date [date format: 'DD/MM/YYYY]
 /// @return An array with all dates from the start to the end date
 const generateDateRange = (_fromDate, _toDate) => {
     try {
@@ -149,6 +149,42 @@ const generateDateRange = (_fromDate, _toDate) => {
         );
     }
 };
+
+/// @notice Calculate the start and end date to load personal stats based on the last
+///         successful load
+/// @dev    - personal stats are only loaded when a day is completed, so the latest 
+///         possible day to be loaded will always D-1 (yesterday), but never the current day
+///         - Last successful load is retrieved from table SYS_USER_LOADS
+/// @return An array with the start and end date to load personal stats
+///         eg: ['21/10/2021', '24/10/2021']
+const calcLoadingDateRange = async () => {
+    try {
+        const res = await query('select_last_user_load.sql', []);
+        if (res.status === QUERY_ERROR || res.rows.length === 0 || !res.rows[0].max_user_date) {
+            if (res.rows.length === 0 || !res.rows[0].max_user_date)
+                logger.error('**DB: No dates found in DB to load personal stats');
+            return [];
+        } else {
+            const lastLoad = moment
+                .utc(res.rows[0].max_user_date)
+                .add(1, 'days')
+                .set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+            const yesterday = moment
+                .utc()
+                .subtract(1, 'days')
+                .set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+            return (yesterday.diff(lastLoad, 'days') >= 0)
+                ? [
+                    lastLoad.format('DD/MM/YYYY'),
+                    yesterday.format('DD/MM/YYYY')
+                ]
+                : [];
+        }
+    } catch (err) {
+        handleErr(`personalUtil->generateLoadingDateRange()`, err);
+        return [];
+    }
+}
 
 // Get all approval events for a given block range
 // TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
@@ -253,7 +289,7 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 break;
             default:
                 handleErr(
-                    `personalUtil->checkEventType()->switch: Invalid event`,
+                    `personalUtil->getTransferEvents2()->switch: Invalid event`,
                     null
                 );
                 return false;
@@ -318,7 +354,7 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
 
         return logResults;
     } catch (err) {
-        handleErr(`personalUtil->checkEventType() [side: ${side}]`, err);
+        handleErr(`personalUtil->getTransferEvents2() [side: ${side}]`, err);
         return false;
     }
 };
@@ -391,6 +427,7 @@ module.exports = {
     getNetworkId,
     getStableCoinIndex,
     generateDateRange,
+    calcLoadingDateRange,
     getApprovalEvents2,
     getTransferEvents2,
     getGTokenFromTx,
