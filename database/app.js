@@ -7,8 +7,8 @@ const { getPriceCheck } = require('./handler/priceCheckHandler');
 const { checkDateRange } = require('./common/globalUtil');
 const scheduler = require('./scheduler/dbStatsScheduler');
 const { getHistoricalAPY } = require('./handler/historicalAPY');
-const { loadUserBalances2, loadUserBalances4 } = require('./loader/loadUserBalances2');
-const {loadTokenPrice} = require('./loader/loadTokenPrice');
+const { loadUserBalances2 } = require('./loader/loadUserBalances2');
+const { loadTokenPrice } = require('./loader/loadTokenPrice');
 const { dumpTable } = require('./common/pgUtil');
 const {
     airdrop4Handler,
@@ -16,9 +16,6 @@ const {
     checkPosition,
 } = require('./handler/airdrop4handler');
 
-
-// test
-const { calcLoadingDateRange } = require('./common/personalUtil');
 
 (async () => {
     try {
@@ -54,6 +51,18 @@ const { calcLoadingDateRange } = require('./common/personalUtil');
                             params[2]);             // end date
                     } else {
                         console.log('Wrong parameters for personal stats ETL - e.g.: personalStatsETL 28/06/2021 29/06/2021');
+                    }
+                    break;
+                // load only balances for personal stats
+                case 'balances2':
+                    if (params.length === 3 && checkDateRange(params[1], params[2])) {
+                        await loadContractInfoFromRegistry();
+                        await loadUserBalances2(
+                            params[1],              // start date
+                            params[2],              // end date
+                            null);                  // account
+                    } else {
+                        console.log('Wrong parameters for balances2 - e.g.: balances2 28/06/2021 29/06/2021');
                     }
                     break;
                 case 'airdrop4':
@@ -121,16 +130,9 @@ const { calcLoadingDateRange } = require('./common/personalUtil');
 
         // Testing user balances with tokenCounter
         await loadContractInfoFromRegistry();
-        // await loadUserBalances4('26/10/2021', '26/10/2021', null);
-        await loadUserBalances4('26/10/2021', '26/10/2021', '0xa31f8afd785EC32df8Df77Ab83978E49Cc0349Ac');
+        await loadUserBalances2('26/10/2021', '26/10/2021', null);
+        // await loadUserBalances2('26/10/2021', '26/10/2021', '0xa31f8afd785EC32df8Df77Ab83978E49Cc0349Ac');
         // await loadTokenPrice('25/10/2021');
-
-        // const res = await calcLoadingDateRange();
-        // if (res.length > 0) {
-        //     console.log('load', res);
-        // } else {
-        //     console.log('no load!')
-        // }
 
         process.exit(0);
     } catch (err) {

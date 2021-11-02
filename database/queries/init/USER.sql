@@ -284,3 +284,59 @@ CREATE TABLE gro."USER_STD_TMP_WITHDRAWALS" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."USER_STD_TMP_WITHDRAWALS" OWNER to postgres;
+
+CREATE TABLE gro."USER_STD_FACT_BALANCES_POOLED" (
+   balance_date         TIMESTAMP (6) NOT NULL,
+   network_id           SMALLINT NULL,
+   user_address         CHARACTER VARYING (42) NOT NULL,
+   pool1_lp_amount      NUMERIC (20, 8) NULL,
+   pool1_gro_amount     NUMERIC (20, 8) NULL,
+   pool1_gvt_amount     NUMERIC (20, 8) NULL,
+   pool2_lp_amount      NUMERIC (20, 8) NULL,
+   pool2_gro_amount     NUMERIC (20, 8) NULL,
+   pool2_usdc_amount    NUMERIC (20, 8) NULL,
+   pool4_lp_amount      NUMERIC (20, 8) NULL,
+   pool4_pwrd_amount    NUMERIC (20, 8) NULL,
+   pool5_lp_amount      NUMERIC (20, 8) NULL,
+   pool5_gro_amount     NUMERIC (20, 8) NULL,
+   pool5_weth_amount    NUMERIC (20, 8) NULL,
+   creation_date        TIMESTAMP (6) NULL,
+   CONSTRAINT "USER_STD_FACT_BALANCES_POOLED_pkey" PRIMARY KEY
+      (balance_date, user_address)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."USER_STD_FACT_BALANCES_POOLED" OWNER to postgres;
+
+CREATE TABLE gro."USER_STD_FACT_BALANCES_STAKED" (
+   balance_date     TIMESTAMP (6) NOT NULL,
+   network_id       SMALLINT NULL,
+   user_address     CHARACTER VARYING (42) NOT NULL,
+   pool0_amount     NUMERIC (20, 8) NULL,
+   pool1_amount     NUMERIC (20, 8) NULL,
+   pool2_amount     NUMERIC (20, 8) NULL,
+   pool3_amount     NUMERIC (20, 8) NULL,
+   pool4_amount     NUMERIC (20, 8) NULL,
+   pool5_amount     NUMERIC (20, 8) NULL,
+   creation_date    TIMESTAMP (6) NULL,
+   CONSTRAINT "USER_STD_FACT_BALANCES_STAKED_pkey" PRIMARY KEY
+      (balance_date, user_address)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."USER_STD_FACT_BALANCES_STAKED" OWNER to postgres;
+
+CREATE TABLE gro."USER_STD_FACT_BALANCES_UNSTAKED" (
+   balance_date     TIMESTAMP (6) NOT NULL,
+   network_id       SMALLINT NULL,
+   user_address     CHARACTER VARYING (42) NOT NULL,
+   gvt_amount       NUMERIC (20, 8) NULL,
+   pwrd_amount      NUMERIC (20, 8) NULL,
+   gro_amount       NUMERIC (20, 8) NULL,
+   creation_date    TIMESTAMP (6) NULL,
+   CONSTRAINT "USER_STD_FACT_BALANCES_UNSTAKED_pkey" PRIMARY KEY
+      (balance_date, user_address)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."USER_STD_FACT_BALANCES_UNSTAKED" OWNER to postgres;

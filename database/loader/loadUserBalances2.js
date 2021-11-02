@@ -32,84 +32,15 @@ const GRO_USDC_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_usdc_pool
 const CRV_PWRD_ADDRESS = getConfig('staker_pools.contracts.curve_pwrd3crv_pool_address');
 const GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address');
 
-
-/// dev: ****** TokenCounter only available in mainnet from 26/10/2021
-const loadUserBalances2 = async () => {
-    try {
-
-        const GVT_ADDRESS = await getGroVault().address;
-        const PWRD_ADDRESS = await getPowerD().address;
-        const GRO_ADDRESS = '0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7';
-        const CRV_POOL_ADDRESS = '0xbcb91E689114B9Cc865AD7871845C95241Df4105';
-
-        const res1 = await getBalances(
-            GVT_ADDRESS,
-            ['0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD'], // MAT, SJS
-            // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
-            13493374 // now
-        );
-
-        const res2 = await getBalances(
-            PWRD_ADDRESS,
-            ['0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD'], // MAT, SJS
-            // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
-            13493374 // now
-        );
-        /*
-                const res3a = parseAmount(await getGroVault().getAssets(
-                    '0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', // MAT
-                    // '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD', // SJS
-                    // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
-                    // { blockTag: 13464125 }),
-                    { blockTag: 13493374 }),
-                    'USD');
-        
-                const res3b = parseAmount(await getPowerD().getAssets(
-                    '0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', // MAT
-                    // '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD', // SJS
-                    // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
-                    // { blockTag: 13464125 }),
-                    { blockTag: 13493374 }),
-                    'USD');
-        */
-        const res4 = await getBalances(
-            CRV_POOL_ADDRESS,
-            ['0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD'], // MAT, SJS
-            // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
-            // 13464125  // EOD 21/10/2021
-            13493374 // now
-        );
-
-        const res5 = await getBalances(
-            GRO_ADDRESS,
-            ['0xBCc4C6Fb05Ff417398289D228C095352dcFa5c5E', '0x60ff7DcB4a9c1a89B18Fa2D1Bb9444143BbEA9BD'], // MAT, SJS
-            // ['0xd212B36369Df04CF29e744d978D5ACA035280360'],
-            13493374 // now
-        );
-
-        console.log('new gvt', res1);
-        // console.log('old gvt', res3a);
-        console.log('new pwrd', res2);
-        // console.log('old pwrd', res3b);
-        console.log('pwrd crv', res4);
-        console.log('new gro', res5);
-
-    } catch (err) {
-        console.log('Errorin', err);
-    }
-
-
-}
-
-
 /// @notice Load balances into USER_STD_FACT_BALANCES
-/// @dev    Data is sourced from SC calls to users' balances at a certain block number
+/// @dev    - Data is sourced from SC calls to users' balances at a certain block number
 ///         according to the dates provided
+///         - TokenCounter SC only available in mainnet from 26/10/2021
 /// @param  fromDate Start date to load balances (date format: 'DD/MM/YYYY')
 /// @param  toDdate End date to load balances (date format: 'DD/MM/YYYY')
 /// @param  account User address for cache loading; null for daily loads
 /// @return True if no exceptions found, false otherwise
-const loadUserBalances4 = async (
+const loadUserBalances2 = async (
     fromDate,
     toDate,
     account,
@@ -146,8 +77,12 @@ const loadUserBalances4 = async (
                 .add(59, 'minutes')
                 .add(59, 'seconds');
 
-            let rowCount = 0;
-            let rowExcluded = 0;
+            let rowCountStaked = 0;
+            let rowExcludedStaked = 0;
+            let rowCountUnstaked = 0;
+            let rowExcludedUnstaked = 0;
+            let rowCountPooled = 0;
+            let rowExcludedPooled = 0;
 
             const GVT_ADDRESS = getGroVault().address;
             const PWRD_ADDRESS = getPowerD().address;
@@ -177,10 +112,38 @@ const loadUserBalances4 = async (
             for (let i = 0; i < users.length; i++) {
 
                 const addr = users[i];
+
                 const isUnstakedBalance = (
                     gvtValue[0].amount_unstaked[i]
                     + pwrdValue[0].amount_unstaked[i]
                     + groValue[0].amount_unstaked[i]
+                    > 0)
+                    ? true
+                    : false;
+
+                const isStakedBalance = (
+                    groValue[1].amount_staked[i]
+                    + lpGroGvt[1].amount_staked_lp[i]
+                    + lpGroUsdc[1].amount_staked_lp[i]
+                    + gvtValue[1].amount_staked[i]
+                    + lpCrvPwrd[1].amount_staked_lp[i]
+                    + lpGroWeth[1].amount_staked_lp[i]
+                    > 0)
+                    ? true
+                    : false;
+
+                const isPooledBalance = (
+                    lpGroGvt[0].amount_unstaked_lp[i] +
+                    lpGroGvt[2].lp_position[i][0] +
+                    lpGroGvt[2].lp_position[i][1] +
+                    lpGroUsdc[0].amount_unstaked_lp[i] +
+                    lpGroUsdc[2].lp_position[i][0] +
+                    lpGroUsdc[2].lp_position[i][1] +
+                    lpCrvPwrd[0].amount_unstaked_lp[0] +
+                    lpCrvPwrd[2].lp_position[i] +
+                    lpGroWeth[0].amount_unstaked_lp[i] +
+                    lpGroWeth[2].lp_position[i][0] +
+                    lpGroWeth[2].lp_position[i][1]
                     > 0)
                     ? true
                     : false;
@@ -235,27 +198,40 @@ const loadUserBalances4 = async (
                     const result = await query(q, unstakedParams);
                     if (result.status === QUERY_ERROR)
                         return false;
-                    rowCount += result.rowCount;
+                    rowCountUnstaked += result.rowCount;
                 } else {
-                    rowExcluded++;
+                    rowExcludedUnstaked++;
                 }
 
                 // Staked amounts
-                // TODO: rowCount, cache
-                const q = 'insert_user_std_fact_balances_staked.sql';
-                await query(q, stakedParams);
+                // TODO: cache
+                if (isStakedBalance) {
+                    const q = 'insert_user_std_fact_balances_staked.sql';
+                    const result = await query(q, stakedParams);
+                    if (result.status === QUERY_ERROR)
+                        return false;
+                    rowCountStaked += result.rowCount;
+                } else {
+                    rowExcludedStaked++;
+                }
 
                 // Pooled amounts
-                // TODO: rowCount, cache
-                const q2 = 'insert_user_std_fact_balances_pooled.sql';
-                await query(q2, pooledParams);
+                // TODO: cache
+                if (isPooledBalance) {
+                    const q = 'insert_user_std_fact_balances_pooled.sql';
+                    const result = await query(q, pooledParams);
+                    if (result.status === QUERY_ERROR)
+                        return false;
+                    rowCountPooled += result.rowCount;
+                } else {
+                    rowExcludedPooled++;
+                }
 
             }
-            let msg = `**DB${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} `;
-            msg += `added into USER_STD_FACT_BALANCES `;
-            msg += (rowExcluded !== 0) ? ` (excluded ${rowExcluded} with 0-balance) ` : '';
-            msg += `for date ${moment(date).format('DD/MM/YYYY')}`;
-            logger.info(msg);
+
+            showMsg(account, date, rowCountUnstaked, rowExcludedUnstaked, 'USER_STD_FACT_BALANCES_UNSTAKED');
+            showMsg(account, date, rowCountStaked, rowExcludedStaked, 'USER_STD_FACT_BALANCES_STAKED');
+            showMsg(account, date, rowCountPooled, rowExcludedPooled, 'USER_STD_FACT_BALANCES_POOLED');
         }
         // Update table SYS_USER_LOADS with the last loads
         if (account) {
@@ -270,7 +246,14 @@ const loadUserBalances4 = async (
     }
 }
 
+const showMsg = (account, date, rowCount, rowExcluded, table) => {
+    let msg3 = `**DB${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} `;
+    msg3 += `added into ${table} `;
+    msg3 += (rowExcluded !== 0) ? `(excluded ${rowExcluded} with 0-balance) ` : '';
+    msg3 += `for date ${moment(date).format('DD/MM/YYYY')}`;
+    logger.info(msg3);
+}
+
 module.exports = {
     loadUserBalances2,
-    loadUserBalances4,
 };
