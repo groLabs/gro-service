@@ -266,6 +266,7 @@ module.exports = {
             pid: '5',
             disable: 'false',
             start_block: 13355180,
+            bal_per_week: 1000,
         },
     },
     discord: {
