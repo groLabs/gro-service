@@ -12,6 +12,7 @@ const {
 const { botBalanceMessage } = require('../discordMessage/botBalanceMessage');
 const { sendAlertMessage } = require('./alertMessageSender');
 const { getConfig } = require('./configUtil');
+const { PrivateProvider } = require('./privateProvider');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require

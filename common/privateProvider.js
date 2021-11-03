@@ -19,7 +19,7 @@ class PrivateProvider extends UrlJsonRpcProvider {
         let host = null;
         switch (network.name) {
             case 'homestead':
-                host = 'api.taichi.network:10001/rpc/';
+                host = 'rpc.ethermine.org';
                 break;
             default:
                 logger.throwArgumentError(
