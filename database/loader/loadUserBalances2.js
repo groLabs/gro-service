@@ -43,7 +43,7 @@ const getBalancesSC = async (users, block, offset, gvt, pwrd, gro, lpGroGvt, lpG
 
         const userBatch = users.slice(offset, newOffset);
 
-        logger.info(`**DB: Reading balances from TokenCounter() for users ${offset} to ${newOffset}...`);
+        logger.info(`**DB: Reading balances from TokenCounter() in block ${block} for users ${offset} to ${newOffset}...`);
 
         const [
             gvtUpdate,
@@ -114,8 +114,20 @@ const loadUserBalances2 = async (
     fromDate,
     toDate,
     account,
+    time,
 ) => {
     try {
+        let hours, minutes, seconds;
+
+        const isTimeOK = moment(time, 'HH:mm:ss', true).isValid();
+        if (!isTimeOK) {
+            return false;
+        } else {
+            hours = parseInt(time.substring(0,2));
+            minutes = parseInt(time.substring(3,5));
+            seconds = parseInt(time.substring(6,8));
+        }
+
         // Get all distinct users with any transfer
         let res;
         let users;
@@ -143,9 +155,9 @@ const loadUserBalances2 = async (
         for (const date of dates) {
 
             const day = moment.utc(date, "DD/MM/YYYY")
-                .add(23, 'hours')
-                .add(59, 'minutes')
-                .add(59, 'seconds');
+                .add(hours, 'hours')
+                .add(minutes, 'minutes')
+                .add(seconds, 'seconds');
 
             let rowCountStaked = 0;
             let rowExcludedStaked = 0;
@@ -155,8 +167,6 @@ const loadUserBalances2 = async (
             let rowExcludedPooled = 0;
 
             const block = (await findBlockByDate(day, false)).block;
-
-            // logger.info(`**DB: Checking balances in TokenCounter() for ${users.length} users...`);
 
             const [
                 gvt,
