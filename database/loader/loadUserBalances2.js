@@ -118,14 +118,24 @@ const loadUserBalances2 = async (
 ) => {
     try {
         let hours, minutes, seconds;
+        // TODO: replace by config/registry data (this is mainnet deployment)
+        const tokenCounterStartDate = moment.utc('26/10/2021', 'DD/MM/YYYY')
+            .add(10, 'hours')
+            .add(55, 'minutes')
+            .add(42, 'seconds');
 
         const isTimeOK = moment(time, 'HH:mm:ss', true).isValid();
-        if (!isTimeOK) {
-            return false;
+        if (!time) {
+            hours = 23;
+            minutes = 59;
+            seconds = 59;
+        } else if (isTimeOK) {
+            hours = parseInt(time.substring(0, 2));
+            minutes = parseInt(time.substring(3, 5));
+            seconds = parseInt(time.substring(6, 8));
         } else {
-            hours = parseInt(time.substring(0,2));
-            minutes = parseInt(time.substring(3,5));
-            seconds = parseInt(time.substring(6,8));
+            handleErr(`loadUserBalances2->loadUserBalances2(): invalid time format`, time);
+            return false;
         }
 
         // Get all distinct users with any transfer
@@ -139,16 +149,16 @@ const loadUserBalances2 = async (
                 }],
             }
         } else {
+            // TODO: select distinct transfers where day <= target date (for future data reloads)
             res = await query('select_distinct_users_transfers.sql', []);
             if (res.status === QUERY_ERROR)
                 return false;
         }
 
-        // Extract value from object
+        // Extract value from array of object [user_address: 0x...]
         users = res.rows.map(key => key.user_address);
 
-        // For each date, check each gvt & pwrd balance and insert data into USER_STD_FACT_BALANCES
-        // TODO: *** select transfers where date < target date (for future data reloads)
+        // For each date, check each gvt & pwrd balance and insert data into USER_STD_FACT_BALANCES*
         const dates = generateDateRange(fromDate, toDate);
         logger.info(`**DB${account ? ' CACHE' : ''}: Processing ${users.length} user balance${isPlural(users.length)}...`);
 
@@ -158,6 +168,13 @@ const loadUserBalances2 = async (
                 .add(hours, 'hours')
                 .add(minutes, 'minutes')
                 .add(seconds, 'seconds');
+
+            // Check if day >= deployment date of TokenCounter SC
+            if (!day.isSameOrAfter(tokenCounterStartDate)) {
+                const msg = `target date [${day}] before TokenCounter date [${tokenCounterStartDate}]`;
+                logger.error(`loadUserBalances2->loadUserBalances2(): ${msg}`);
+                return false;
+            }
 
             let rowCountStaked = 0;
             let rowExcludedStaked = 0;
@@ -273,8 +290,8 @@ const loadUserBalances2 = async (
                 }
 
                 // Staked amounts
-                // TODO: cache
                 if (isStakedBalance) {
+                    // TODO: add cache query
                     const q = 'insert_user_std_fact_balances_staked.sql';
                     const result = await query(q, stakedParams);
                     if (result.status === QUERY_ERROR)
@@ -285,8 +302,8 @@ const loadUserBalances2 = async (
                 }
 
                 // Pooled amounts
-                // TODO: cache
                 if (isPooledBalance) {
+                    // TODO: add cache query
                     const q = 'insert_user_std_fact_balances_pooled.sql';
                     const result = await query(q, pooledParams);
                     if (result.status === QUERY_ERROR)
@@ -295,7 +312,6 @@ const loadUserBalances2 = async (
                 } else {
                     rowExcludedPooled++;
                 }
-
             }
 
             showMsg(account, date, rowCountUnstaked, rowExcludedUnstaked, 'USER_STD_FACT_BALANCES_UNSTAKED');
@@ -307,8 +323,16 @@ const loadUserBalances2 = async (
         if (account) {
             return true;
         } else {
-            const res = await loadTableUpdates('USER_STD_FACT_BALANCES', fromDate, toDate);
-            return (res) ? true : false;
+            const [
+                resUnStaked,
+                resStaked,
+                resPooled
+            ] = await Promise.all([
+                loadTableUpdates('USER_STD_FACT_BALANCES_UNSTAKED', fromDate, toDate),
+                loadTableUpdates('USER_STD_FACT_BALANCES_STAKED', fromDate, toDate),
+                loadTableUpdates('USER_STD_FACT_BALANCES_POOLED', fromDate, toDate)
+            ]);
+            return (resUnStaked && resStaked && resPooled) ? true : false;
         }
 
     } catch (err) {
