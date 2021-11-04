@@ -2,7 +2,7 @@
 const { pendingTransactions } = require('./storage');
 const { getVaultStableCoins } = require('../contract/allContracts');
 const { getAlchemyRpcProvider } = require('./chainUtil');
-const { BlockChainCallError } = require('./error').default;
+const { BlockChainCallError } = require('../dist/common/error').default;
 const { getPnlKeyData, getInvestKeyData, getHarvestKeyData, getRebalanceKeyData, } = require('./actionDataFunder');
 const { MESSAGE_TYPES } = require('../dist/common/discord/discordService').default;
 const botEnv = process.env.BOT_ENV.toLowerCase();

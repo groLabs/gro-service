@@ -4,7 +4,7 @@ const { getInsurance, getExposure, getLifeguard, getVaults, getStrategyLength, g
 const { pendingTransactions } = require('../../common/storage');
 const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
 const { getConfig } = require('../../common/configUtil');
-const { PendingTransactionError, ContractCallError, } = require('../../common/error').default;
+const { PendingTransactionError, ContractCallError, } = require('../../dist/common/error').default;
 const { investTriggerMessage } = require('../../discordMessage/investMessage');
 const { rebalanceTriggerMessage, } = require('../../discordMessage/rebalanceMessage');
 const { harvestTriggerMessage, } = require('../../discordMessage/harvestMessage');

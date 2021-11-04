@@ -1,6 +1,6 @@
 "use strict";
 const config = require('config');
-const { SettingError } = require('./error').default;
+const { SettingError } = require('../dist/common/error').default;
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);

@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 const fs = require('fs');
 const { ethers } = require('ethers');
 const { getConfig } = require('../common/configUtil');
@@ -88,11 +88,7 @@ function readLocalContractConfig(isReload = false) {
             content = '{}';
         }
         localContractConfig = JSON.parse(content);
-        logger.info(
-            `Load config file from : ${filePath}:\n${JSON.stringify(
-                localContractConfig
-            )}`
-        );
+        logger.info(`Load config file from : ${filePath}:\n${JSON.stringify(localContractConfig)}`);
     }
     return localContractConfig;
 }
@@ -101,7 +97,8 @@ async function getActiveContractNames() {
         const localConfig = readLocalContractConfig();
         if (localConfig.contractNames) {
             activeContractNames.push(...localConfig.contractNames);
-        } else {
+        }
+        else {
             const result = await registry.getKeys().catch((error) => {
                 logger.error(error);
                 return [];
@@ -135,13 +132,14 @@ async function parseProtocolExposure(protocols, metaData) {
         const protocolName = await registry
             .getProtocol(protocols[i])
             .catch((error) => {
-                logger.error(error);
-                return '';
-            });
+            logger.error(error);
+            return '';
+        });
         protocolsName.push(protocolName);
         if (metaData.PDN && metaData.PDN[protocolIndex]) {
             protocolsDisplayName.push(metaData.PDN[protocolIndex]);
-        } else {
+        }
+        else {
             protocolsDisplayName.push(protocolName);
         }
     }
@@ -154,8 +152,8 @@ async function parseTokenExposure(tokens) {
         const tokenAddress = await registry
             .getToken(tokens[i])
             .catch((error) => {
-                logger.error(error);
-            });
+            logger.error(error);
+        });
         let tokenSymbol = '';
         if (tokenAddress) {
             const token = new ethers.Contract(tokenAddress, erc20ABI, provider);
@@ -172,32 +170,27 @@ async function parseTokenExposure(tokens) {
 async function getActiveContractInfoByName(contractName) {
     const localConfig = readLocalContractConfig();
     let result = {};
-    if (
-        localConfig.latestContracts &&
-        localConfig.latestContracts[contractName]
-    ) {
+    if (localConfig.latestContracts &&
+        localConfig.latestContracts[contractName]) {
         result = localConfig.latestContracts[contractName];
-    } else {
+    }
+    else {
         const contractAddress = await registry
             .getActive(contractName)
             .catch((error) => {
-                throw error;
-            });
+            throw error;
+        });
         const contractInfo = await registry
             .getActiveData(contractName)
             .catch((error) => {
-                throw error;
-            });
-        const latestStartBlock =
-            contractInfo.startBlock[contractInfo.startBlock.length - 1];
+            throw error;
+        });
+        const latestStartBlock = contractInfo.startBlock[contractInfo.startBlock.length - 1];
         const metaData = contractInfo.metaData.trim().length
             ? contractInfo.metaData
             : '{}';
         const metaDataObject = JSON.parse(metaData);
-        const protocolInfo = await parseProtocolExposure(
-            contractInfo.protocols,
-            metaDataObject
-        );
+        const protocolInfo = await parseProtocolExposure(contractInfo.protocols, metaDataObject);
         const tokenNames = await parseTokenExposure(contractInfo.tokens);
         result = {
             address: contractAddress,
@@ -218,9 +211,9 @@ async function getContracts(contractName) {
     const addresses = await registry
         .getContractMap(contractName)
         .catch((error) => {
-            logger.error(error);
-            return [];
-        });
+        logger.error(error);
+        return [];
+    });
     return addresses;
 }
 async function getContractInfoByAddress(address) {
@@ -228,17 +221,15 @@ async function getContractInfoByAddress(address) {
     const result = [];
     if (localConfig.contractInfo && localConfig.contractInfo[address]) {
         result.push(...localConfig.contractInfo[address]);
-    } else {
+    }
+    else {
         const info = await registry.getContractData(address).catch((error) => {
             logger.error(error);
             return {};
         });
         const metaData = info.metaData.trim().length ? info.metaData : '{}';
         const metaDataObject = JSON.parse(metaData);
-        const protocolInfo = await parseProtocolExposure(
-            info.protocols,
-            metaDataObject
-        );
+        const protocolInfo = await parseProtocolExposure(info.protocols, metaDataObject);
         const tokenNames = await parseTokenExposure(info.tokens);
         if (info.startBlock) {
             for (let i = 0; i < info.startBlock.length; i += 1) {
@@ -263,12 +254,11 @@ async function getContractInfoByAddress(address) {
 async function getContractHistory(contractName) {
     const localConfig = readLocalContractConfig();
     let contractHistory = [];
-    if (
-        localConfig.contractHistories &&
-        localConfig.contractHistories[contractName]
-    ) {
+    if (localConfig.contractHistories &&
+        localConfig.contractHistories[contractName]) {
         contractHistory = localConfig.contractHistories[contractName];
-    } else {
+    }
+    else {
         const contracts = await getContracts(contractName);
         const resultPromise = [];
         for (let i = 0; i < contracts.length; i += 1) {
@@ -293,7 +283,8 @@ async function getLatestContracts(isByAddress = false) {
         if (isByAddress) {
             result[i].contractName = contractNames[i];
             contracts[result[i].address] = result[i];
-        } else {
+        }
+        else {
             contracts[contractNames[i]] = result[i];
         }
     }

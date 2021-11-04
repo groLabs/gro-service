@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 require('dotenv').config();
 const createError = require('http-errors');
 const express = require('express');
@@ -6,10 +6,8 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
-const { SettingError, ParameterError, ContractCallError } =
-    require('../dist/common/error').default;
-const { sendMessage, DISCORD_CHANNELS } =
-    require('../dist/common/discord/discordService').default;
+const { SettingError, ParameterError, ContractCallError } = require('../dist/common/error').default;
+const { sendMessage, DISCORD_CHANNELS } = require('../dist/common/discord/discordService').default;
 const customLogger = require('./databaseLogger');
 const statsRouter = require('./routes/database');
 const scheduler = require('./scheduler/dbStatsScheduler');
@@ -32,7 +30,8 @@ app.use((error, req, res, next) => {
     customLogger.error(error);
     if (error instanceof SettingError) {
         res.status(400).json({ message: `${error.name}: ${error.message}` });
-    } else {
+    }
+    else {
         next(error);
     }
 });
@@ -40,7 +39,8 @@ app.use((error, req, res, next) => {
     customLogger.error(error);
     if (error instanceof ParameterError) {
         res.status(400).json({ message: `${error.name}: ${error.message}` });
-    } else {
+    }
+    else {
         next(error);
     }
 });
@@ -51,7 +51,8 @@ app.use((error, req, res, next) => {
         sendMessage(DISCORD_CHANNELS.botLogs, {
             message: `${error}, Url ${req.originalUrl}`,
         });
-    } else {
+    }
+    else {
         next(error);
     }
 });

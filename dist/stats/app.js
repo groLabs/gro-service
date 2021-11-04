@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 require('dotenv').config();
 const createError = require('http-errors');
 const express = require('express');
@@ -7,10 +7,8 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
 const actuator = require('express-actuator');
-const { SettingError, ParameterError, ContractCallError } =
-    require('../dist/common/error').default;
-const { sendMessage, DISCORD_CHANNELS } =
-    require('../dist/common/discord/discordService').default;
+const { SettingError, ParameterError, ContractCallError } = require('../dist/common/error').default;
+const { sendMessage, DISCORD_CHANNELS } = require('../dist/common/discord/discordService').default;
 const customLogger = require('./statsLogger');
 const statsRouter = require('./routes/stats');
 const scheduler = require('./scheduler/statsScheduler');
@@ -23,11 +21,9 @@ const app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
-app.use(
-    logger('dev', {
-        stream: { write: (message) => customLogger.info(message) },
-    })
-);
+app.use(logger('dev', {
+    stream: { write: (message) => customLogger.info(message) },
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -42,7 +38,8 @@ app.use((error, req, res, next) => {
     customLogger.error(error);
     if (error instanceof SettingError) {
         res.status(400).json({ message: `${error.name}: ${error.message}` });
-    } else {
+    }
+    else {
         next(error);
     }
 });
@@ -50,7 +47,8 @@ app.use((error, req, res, next) => {
     customLogger.error(error);
     if (error instanceof ParameterError) {
         res.status(400).json({ message: `${error.name}: ${error.message}` });
-    } else {
+    }
+    else {
         next(error);
     }
 });
@@ -69,7 +67,8 @@ app.use((error, req, res, next) => {
                 },
             });
         }
-    } else {
+    }
+    else {
         next(error);
     }
 });

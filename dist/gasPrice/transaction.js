@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 const { BigNumber } = require('ethers');
 const { getAlchemyPriorityPrice } = require('./priceManager');
 const { getWalletNonceManager } = require('../common/chainUtil');
@@ -16,37 +16,22 @@ function getBaseGas(resendTime = 0) {
 }
 async function wrapSendTransaction(contract, methodName, params = []) {
     const method = contract[methodName];
-    const maxPriorityFeePerGas = BigNumber.from(
-        await getAlchemyPriorityPrice()
-    );
+    const maxPriorityFeePerGas = BigNumber.from(await getAlchemyPriorityPrice());
     // const block = await contract.provider.getBlock('latest');
     // const maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
     const baseGas = getBaseGas(0);
     const maxFeePerGas = baseGas.add(maxPriorityFeePerGas);
-    logger.info(
-        `send tx maxPriorityFeePerGas ${maxPriorityFeePerGas} maxBaseFeePerGas ${baseGas} maxFeePerGas ${maxFeePerGas}`
-    );
+    logger.info(`send tx maxPriorityFeePerGas ${maxPriorityFeePerGas} maxBaseFeePerGas ${baseGas} maxFeePerGas ${maxFeePerGas}`);
     return method(...params, {
         maxPriorityFeePerGas,
         maxFeePerGas,
     });
 }
 async function pendingTransactionResend(type, oldTransaction) {
-    const {
-        label: msgLabel,
-        blockNumber,
-        hash,
-        providerKey,
-        walletKey,
-        reSendTimes,
-        methodName,
-        transactionRequest,
-    } = oldTransaction;
+    const { label: msgLabel, blockNumber, hash, providerKey, walletKey, reSendTimes, methodName, transactionRequest, } = oldTransaction;
     const reSendTime = reSendTimes + 1;
     const newBaseGas = getBaseGas(reSendTime);
-    const maxPriorityFeePerGas = BigNumber.from(
-        await getAlchemyPriorityPrice()
-    );
+    const maxPriorityFeePerGas = BigNumber.from(await getAlchemyPriorityPrice());
     const maxFeePerGas = newBaseGas.add(maxPriorityFeePerGas);
     const newTransactionRequest = {
         maxPriorityFeePerGas,
@@ -59,34 +44,20 @@ async function pendingTransactionResend(type, oldTransaction) {
         chainId: transactionRequest.chainId,
         from: transactionRequest.from,
     };
-    logger.info(
-        `New TransactionRequest: ${JSON.stringify(newTransactionRequest)}`
-    );
-    const transactionResponse = await getWalletNonceManager(
-        providerKey,
-        walletKey
-    )
+    logger.info(`New TransactionRequest: ${JSON.stringify(newTransactionRequest)}`);
+    const transactionResponse = await getWalletNonceManager(providerKey, walletKey)
         .sendTransaction(newTransactionRequest)
         .catch((error) => {
-            logger.error(error);
-            throw new BlockChainCallError(
-                `Resend transaction: ${hash} failed.`,
-                msgLabel
-            );
-        });
-    addPendingTransaction(
-        type,
-        {
-            blockNumber,
-            methodName,
-            reSendTimes: reSendTime,
-            label: msgLabel,
-        },
-        transactionResponse
-    );
-    logger.info(
-        `${type} transaction resend with maxFeePerGas: ${maxFeePerGas}, maxPriorityFeePerGas: ${maxPriorityFeePerGas} and resend times: ${reSendTime}`
-    );
+        logger.error(error);
+        throw new BlockChainCallError(`Resend transaction: ${hash} failed.`, msgLabel);
+    });
+    addPendingTransaction(type, {
+        blockNumber,
+        methodName,
+        reSendTimes: reSendTime,
+        label: msgLabel,
+    }, transactionResponse);
+    logger.info(`${type} transaction resend with maxFeePerGas: ${maxFeePerGas}, maxPriorityFeePerGas: ${maxPriorityFeePerGas} and resend times: ${reSendTime}`);
 }
 module.exports = {
     wrapSendTransaction,

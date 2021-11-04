@@ -1,7 +1,7 @@
 "use strict";
 const { ethers } = require('ethers');
 const { getDepositHandler, getWithdrawHandler, getGvt: getGroVault, getPwrd: getPowerD, getUnderlyTokens, } = require('../contract/allContracts');
-const { ContractCallError } = require('./error').default;
+const { ContractCallError } = require('../dist/common/error').default;
 const { getDefaultProvider } = require('./chainUtil');
 const depositHandlerABI = require('../contract/abis/DepositHandler.json');
 const withdrawHandlerABI = require('../contract/abis/WithdrawHandler.json');

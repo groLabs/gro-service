@@ -1,9 +1,6 @@
-'use strict';
+"use strict";
 const { ethers } = require('ethers');
-const {
-    getAlchemyRpcProvider,
-    getWalletNonceManager,
-} = require('../common/chainUtil');
+const { getAlchemyRpcProvider, getWalletNonceManager, } = require('../common/chainUtil');
 const { ContractCallError } = require('../dist/common/error').default;
 const { getConfig } = require('../common/configUtil');
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -58,21 +55,13 @@ const providerConnectedContracts = {};
 const managerConnectedContracts = {};
 function initController() {
     const controllerAddress = getConfig('contracts.controller');
-    controller = new ethers.Contract(
-        controllerAddress,
-        controllerABI,
-        nonceManager
-    );
+    controller = new ethers.Contract(controllerAddress, controllerABI, nonceManager);
     logger.info('controller done!');
 }
 async function initInsurance() {
     const insuranceAddress = await controller.insurance();
     logger.info(`insurance address: ${insuranceAddress}`);
-    insurance = new ethers.Contract(
-        insuranceAddress,
-        insuranceABI,
-        nonceManager
-    );
+    insurance = new ethers.Contract(insuranceAddress, insuranceABI, nonceManager);
     const exposureAddress = await insurance.exposure();
     logger.info(`exposure address: ${exposureAddress}`);
     exposure = new ethers.Contract(exposureAddress, exposureABI, nonceManager);
@@ -82,31 +71,18 @@ async function initPnl() {
     logger.info(`pnl address: ${pnlAddress}`);
     pnl = new ethers.Contract(pnlAddress, pnlABI, nonceManager);
 }
-async function initVaultStrategyLabel(
-    adapterIndex,
-    vaultAdapter,
-    strategyLength,
-    vaultNameConfig = 'vault_name',
-    strategyNameConfig = 'strategy_name',
-    strategyDisplayNameConfig = 'strategy_display_name'
-) {
+async function initVaultStrategyLabel(adapterIndex, vaultAdapter, strategyLength, vaultNameConfig = 'vault_name', strategyNameConfig = 'strategy_name', strategyDisplayNameConfig = 'strategy_display_name') {
     const yearnVaultAddress = await vaultAdapter.vault();
     const strategyName = getConfig(strategyNameConfig);
     const strategyDisplayName = getConfig(strategyDisplayNameConfig);
     const vaultName = getConfig(vaultNameConfig);
-    logger.info(
-        `adapterIndex: ${adapterIndex}, strategyLength: ${strategyLength}`
-    );
+    logger.info(`adapterIndex: ${adapterIndex}, strategyLength: ${strategyLength}`);
     vaultAndStrategyLabels[vaultAdapter.address] = {
         address: vaultAdapter.address,
         name: vaultName[adapterIndex],
         strategies: [],
     };
-    const yearnVault = new ethers.Contract(
-        yearnVaultAddress,
-        VaultABI,
-        nonceManager
-    );
+    const yearnVault = new ethers.Contract(yearnVaultAddress, VaultABI, nonceManager);
     yearnVaults.push(yearnVault);
     const strategiesAddressesPromise = [];
     for (let i = 0; i < strategyLength; i += 1) {
@@ -118,29 +94,17 @@ async function initVaultStrategyLabel(
             name: strategyName[adapterIndex * 2 + j],
             displayName: strategyDisplayName[adapterIndex * 2 + j],
             address: strategyAddresses[j],
-            strategy: new ethers.Contract(
-                strategyAddresses[j],
-                strategyABI,
-                nonceManager
-            ),
+            strategy: new ethers.Contract(strategyAddresses[j], strategyABI, nonceManager),
         });
     }
 }
 async function initVaults() {
     // Stable coin vault
     const vaultAddresses = await controller.vaults();
-    logger.info(
-        `vaultAddresses.length: ${vaultAddresses.length}: ${JSON.stringify(
-            vaultAddresses
-        )}`
-    );
+    logger.info(`vaultAddresses.length: ${vaultAddresses.length}: ${JSON.stringify(vaultAddresses)}`);
     for (let i = 0; i < vaultAddresses.length; i += 1) {
         const address = vaultAddresses[i];
-        const vault = new ethers.Contract(
-            address,
-            vaultAdapterABI,
-            nonceManager
-        );
+        const vault = new ethers.Contract(address, vaultAdapterABI, nonceManager);
         vaults.push(vault);
         // eslint-disable-next-line no-await-in-loop
         const strategiesLength = await vault.getStrategiesLength();
@@ -151,27 +115,17 @@ async function initVaults() {
     }
     // Curve vault
     const curveVaultAddress = await controller.curveVault();
-    const tcurveVault = new ethers.Contract(
-        curveVaultAddress,
-        vaultAdapterABI,
-        nonceManager
-    );
+    const tcurveVault = new ethers.Contract(curveVaultAddress, vaultAdapterABI, nonceManager);
     vaults.push(tcurveVault);
     const curveVaultStrategyLength = await tcurveVault.getStrategiesLength();
-    logger.info(
-        `curve vault ${curveVaultAddress} has ${curveVaultStrategyLength} strategies.`
-    );
+    logger.info(`curve vault ${curveVaultAddress} has ${curveVaultStrategyLength} strategies.`);
     strategyLength.push(curveVaultStrategyLength);
     await initVaultStrategyLabel(3, tcurveVault, curveVaultStrategyLength);
 }
 async function initCurveVault() {
     const curveVaultAddress = await controller.curveVault();
     logger.info(`curve vault address: ${curveVaultAddress}`);
-    curveVault = new ethers.Contract(
-        curveVaultAddress,
-        vaultAdapterABI,
-        nonceManager
-    );
+    curveVault = new ethers.Contract(curveVaultAddress, vaultAdapterABI, nonceManager);
 }
 function renameDuplicatedFactorEntry(abi) {
     const keys = abi.keys();
@@ -187,11 +141,7 @@ function renameDuplicatedFactorEntry(abi) {
 async function initGvt() {
     const gvtAddresses = await controller.gvt();
     logger.info(`gvt address: ${gvtAddresses}`);
-    gvt = new ethers.Contract(
-        gvtAddresses,
-        renameDuplicatedFactorEntry(gvtABI),
-        nonceManager
-    );
+    gvt = new ethers.Contract(gvtAddresses, renameDuplicatedFactorEntry(gvtABI), nonceManager);
     const symbio = await gvt.symbol();
     const decimals = await gvt.decimals();
     vaultStableCoins.decimals[gvtAddresses] = decimals.toString();
@@ -200,11 +150,7 @@ async function initGvt() {
 async function initPwrd() {
     const pwrdAddresses = await controller.pwrd();
     logger.info(`pwrd address: ${pwrdAddresses}`);
-    pwrd = new ethers.Contract(
-        pwrdAddresses,
-        renameDuplicatedFactorEntry(pwrdABI),
-        nonceManager
-    );
+    pwrd = new ethers.Contract(pwrdAddresses, renameDuplicatedFactorEntry(pwrdABI), nonceManager);
     const symbio = await pwrd.symbol();
     const decimals = await pwrd.decimals();
     vaultStableCoins.decimals[pwrdAddresses] = decimals.toString();
@@ -213,36 +159,25 @@ async function initPwrd() {
 async function initDepositHandler() {
     const depositHandlerAddress = await controller.depositHandler();
     logger.info(`depositHandler address: ${depositHandlerAddress}`);
-    depositHandler = new ethers.Contract(
-        depositHandlerAddress,
-        depositHandlerABI,
-        nonceManager
-    );
+    depositHandler = new ethers.Contract(depositHandlerAddress, depositHandlerABI, nonceManager);
 }
 async function initWithdrawHandler() {
     const withdrawHandlerAddress = await controller.withdrawHandler();
     logger.info(`withdrawHandler address: ${withdrawHandlerAddress}`);
-    withdrawHandler = new ethers.Contract(
-        withdrawHandlerAddress,
-        withdrawHandlerABI,
-        nonceManager
-    );
+    withdrawHandler = new ethers.Contract(withdrawHandlerAddress, withdrawHandlerABI, nonceManager);
 }
 async function initLifeguard() {
     const lifeguardAddresses = await controller.lifeGuard();
     logger.info(`lifeguard address: ${lifeguardAddresses}`);
-    lifeguard = new ethers.Contract(
-        lifeguardAddresses,
-        lifeguardABI,
-        nonceManager
-    );
+    lifeguard = new ethers.Contract(lifeguardAddresses, lifeguardABI, nonceManager);
     const buoyAddresses = await lifeguard.buoy();
     logger.info(`bouy address: ${buoyAddresses}`);
     buoy = new ethers.Contract(buoyAddresses, buoyABI, nonceManager);
 }
 async function initVaultStableCoins() {
     const lastIndex = vaults.length - 1;
-    if (lastIndex < 0) return;
+    if (lastIndex < 0)
+        return;
     vaultStableCoins.tokens[vaults[lastIndex].address] = [];
     for (let i = 0; i < lastIndex; i += 1) {
         // eslint-disable-next-line no-await-in-loop
@@ -298,12 +233,7 @@ async function initDatabaseContracts() {
     });
     logger.info('Init contracts done!.');
 }
-function getOrCreateContract(
-    contractInsurance,
-    contractKey,
-    providerKey,
-    signerKey
-) {
+function getOrCreateContract(contractInsurance, contractKey, providerKey, signerKey) {
     let contract;
     if (signerKey) {
         if (!managerConnectedContracts[providerKey]) {
@@ -319,7 +249,8 @@ function getOrCreateContract(
             contract = contractInsurance.connect(wallet);
             providerContracts[signerKey][contractKey] = contract;
         }
-    } else {
+    }
+    else {
         if (!providerConnectedContracts[providerKey]) {
             providerConnectedContracts[providerKey] = {};
         }
@@ -333,12 +264,7 @@ function getOrCreateContract(
     }
     return contract;
 }
-function getOrCreateContracts(
-    contractsInstance,
-    contractKey,
-    providerKey,
-    signerKey
-) {
+function getOrCreateContracts(contractsInstance, contractKey, providerKey, signerKey) {
     let distContracts;
     if (signerKey) {
         if (!managerConnectedContracts[providerKey]) {
@@ -357,7 +283,8 @@ function getOrCreateContracts(
             }
             providerContracts[signerKey][contractKey] = distContracts;
         }
-    } else {
+    }
+    else {
         if (!providerConnectedContracts[providerKey]) {
             providerConnectedContracts[providerKey] = {};
         }
@@ -375,74 +302,66 @@ function getOrCreateContracts(
     return distContracts;
 }
 function getController(providerKey, signerKey) {
-    if (!providerKey) return controller;
-    return getOrCreateContract(
-        controller,
-        'controller',
-        providerKey,
-        signerKey
-    );
+    if (!providerKey)
+        return controller;
+    return getOrCreateContract(controller, 'controller', providerKey, signerKey);
 }
 function getInsurance(providerKey, signerKey) {
-    if (!providerKey) return insurance;
+    if (!providerKey)
+        return insurance;
     return getOrCreateContract(insurance, 'insurance', providerKey, signerKey);
 }
 function getExposure(providerKey, signerKey) {
-    if (!providerKey) return exposure;
+    if (!providerKey)
+        return exposure;
     return getOrCreateContract(exposure, 'exposure', providerKey, signerKey);
 }
 function getVaults(providerKey, signerKey) {
-    if (!providerKey) return vaults;
+    if (!providerKey)
+        return vaults;
     return getOrCreateContracts(vaults, 'vaults', providerKey, signerKey);
 }
 function getCurveVault(providerKey, signerKey) {
-    if (!providerKey) return curveVault;
-    return getOrCreateContract(
-        curveVault,
-        'curveVault',
-        providerKey,
-        signerKey
-    );
+    if (!providerKey)
+        return curveVault;
+    return getOrCreateContract(curveVault, 'curveVault', providerKey, signerKey);
 }
 function getPnl(providerKey, signerKey) {
-    if (!providerKey) return pnl;
+    if (!providerKey)
+        return pnl;
     return getOrCreateContract(pnl, 'pnl', providerKey, signerKey);
 }
 function getGvt(providerKey, signerKey) {
-    if (!providerKey) return gvt;
+    if (!providerKey)
+        return gvt;
     return getOrCreateContract(gvt, 'gvt', providerKey, signerKey);
 }
 function getPwrd(providerKey, signerKey) {
-    if (!providerKey) return pwrd;
+    if (!providerKey)
+        return pwrd;
     return getOrCreateContract(pwrd, 'pwrd', providerKey, signerKey);
 }
 function getLifeguard(providerKey, signerKey) {
-    if (!providerKey) return lifeguard;
+    if (!providerKey)
+        return lifeguard;
     return getOrCreateContract(lifeguard, 'lifeguard', providerKey, signerKey);
 }
 function getStrategyLength() {
     return strategyLength;
 }
 function getDepositHandler(providerKey, signerKey) {
-    if (!providerKey) return depositHandler;
-    return getOrCreateContract(
-        depositHandler,
-        'depositHandler',
-        providerKey,
-        signerKey
-    );
+    if (!providerKey)
+        return depositHandler;
+    return getOrCreateContract(depositHandler, 'depositHandler', providerKey, signerKey);
 }
 function getWithdrawHandler(providerKey, signerKey) {
-    if (!providerKey) return withdrawHandler;
-    return getOrCreateContract(
-        withdrawHandler,
-        'withdrawHandler',
-        providerKey,
-        signerKey
-    );
+    if (!providerKey)
+        return withdrawHandler;
+    return getOrCreateContract(withdrawHandler, 'withdrawHandler', providerKey, signerKey);
 }
 function getBuoy(providerKey, signerKey) {
-    if (!providerKey) return buoy;
+    if (!providerKey)
+        return buoy;
     return getOrCreateContract(buoy, 'buoy', providerKey, signerKey);
 }
 function getVaultAndStrategyLabels() {
@@ -452,22 +371,14 @@ function getVaultStableCoins() {
     return vaultStableCoins;
 }
 function getUnderlyTokens(providerKey, signerKey) {
-    if (!providerKey) return underlyTokens;
-    return getOrCreateContracts(
-        underlyTokens,
-        'underlyTokens',
-        providerKey,
-        signerKey
-    );
+    if (!providerKey)
+        return underlyTokens;
+    return getOrCreateContracts(underlyTokens, 'underlyTokens', providerKey, signerKey);
 }
 function getYearnVaults(providerKey, signerKey) {
-    if (!providerKey) return yearnVaults;
-    return getOrCreateContracts(
-        yearnVaults,
-        'yearnVaults',
-        providerKey,
-        signerKey
-    );
+    if (!providerKey)
+        return yearnVaults;
+    return getOrCreateContracts(yearnVaults, 'yearnVaults', providerKey, signerKey);
 }
 module.exports = {
     initAllContracts,
