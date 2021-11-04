@@ -6,7 +6,7 @@ const {
     getPwrd: getPowerD,
     getUnderlyTokens,
 } = require('../contract/allContracts');
-const { ContractCallError } = require('./error');
+const { ContractCallError } = require('./error').default;
 const { getDefaultProvider } = require('./chainUtil');
 const depositHandlerABI = require('../contract/abis/DepositHandler.json');
 const withdrawHandlerABI = require('../contract/abis/WithdrawHandler.json');

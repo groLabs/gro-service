@@ -16,7 +16,7 @@ const { getConfig } = require('../../common/configUtil');
 const {
     PendingTransactionError,
     ContractCallError,
-} = require('../../common/error');
+} = require('../../common/error').default;
 const { investTriggerMessage } = require('../../discordMessage/investMessage');
 const {
     rebalanceTriggerMessage,

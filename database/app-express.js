@@ -5,15 +5,10 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
-const {
-    SettingError,
-    ParameterError,
-    ContractCallError,
-} = require('../common/error');
-const {
-    sendMessage,
-    DISCORD_CHANNELS,
-} = require('../dist/common/discord/discordService').default;
+const { SettingError, ParameterError, ContractCallError } =
+    require('../dist/common/error').default;
+const { sendMessage, DISCORD_CHANNELS } =
+    require('../dist/common/discord/discordService').default;
 const customLogger = require('./databaseLogger');
 
 const statsRouter = require('./routes/database');
@@ -82,6 +77,5 @@ app.use((error, req, res, next) => {
 // initAllContracts().then(() => {
 scheduler.startDbStatsJobs();
 // });
-
 
 module.exports = app;

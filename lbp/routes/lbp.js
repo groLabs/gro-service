@@ -5,11 +5,11 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { query } = require('express-validator');
-const { ParameterError } = require('../../common/error');
+const { ParameterError } = require('../../common/error').default;
 const { validate } = require('../../stats/common/validate');
 const { personalStatsMessage } = require('../../discordMessage/statsMessage');
-const { 
-    getLbpStatsDB, 
+const {
+    getLbpStatsDB,
     getLbpStatsFile
 } = require('../handler/lbpHandler');
 

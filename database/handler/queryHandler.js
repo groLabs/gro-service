@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { getConfig } = require('../../common/configUtil');
 
-const { DatabaseCallError } = require('../../common/error');
+const { DatabaseCallError } = require('../../common/error').default;
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -55,21 +55,21 @@ const query = async (file, params) => {
             // default: return QUERY_ERROR;
             default: return ERROR;
         }
-    
+
         const q = fs.readFileSync(path.join(__dirname, `/../queries/${option}/${file}`), 'utf8');
-    
+
         const result = (
-            // file === 'insert_tmp_user_deposits.sql' || 
-            file === 'insert_user_std_tmp_deposits.sql' || 
+            // file === 'insert_tmp_user_deposits.sql' ||
+            file === 'insert_user_std_tmp_deposits.sql' ||
             // file === 'insert_tmp_user_withdrawals.sql' ||
             file === 'insert_user_std_tmp_withdrawals.sql' ||
-            //file === 'insert_cache_tmp_user_deposits.sql' || 
-            file === 'insert_user_cache_tmp_deposits.sql' || 
+            //file === 'insert_cache_tmp_user_deposits.sql' ||
+            file === 'insert_user_cache_tmp_deposits.sql' ||
             // file === 'insert_cache_tmp_user_withdrawals.sql')
             file === 'insert_user_cache_tmp_withdrawals.sql')
             ? await batchQuery(q, file, option, params)
             : await singleQuery(q, file, option, params);
-    
+
         if (result === QUERY_ERROR) {
             return ERROR;
         } else {

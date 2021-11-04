@@ -3,7 +3,7 @@ const {
     getAlchemyRpcProvider,
     getWalletNonceManager,
 } = require('../common/chainUtil');
-const { ContractCallError } = require('../common/error');
+const { ContractCallError } = require('../dist/common/error').default;
 const { getConfig } = require('../common/configUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();

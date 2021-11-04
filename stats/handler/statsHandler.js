@@ -19,7 +19,7 @@ const {
     getExposureStats,
 } = require('./systemHandler');
 const { getPools } = require('./groTokenHandler');
-const { ParameterError } = require('../../common/error');
+const { ParameterError } = require('../../common/error').default;
 const { apyStatsMessage } = require('../../discordMessage/statsMessage');
 const logger = require('../statsLogger');
 

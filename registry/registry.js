@@ -2,7 +2,7 @@ const fs = require('fs');
 const { ethers } = require('ethers');
 const { getConfig } = require('../common/configUtil');
 const { getAlchemyRpcProvider } = require('../common/chainUtil');
-const { SettingError } = require('../common/error');
+const { SettingError } = require('../dist/common/error').default;
 const registryABI = require('./Registry.json');
 const erc20ABI = require('../abi/ERC20.json');
 

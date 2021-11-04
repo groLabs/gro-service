@@ -7,15 +7,10 @@ const logger = require('morgan');
 const cors = require('cors');
 const actuator = require('express-actuator');
 
-const {
-    SettingError,
-    ParameterError,
-    ContractCallError,
-} = require('../common/error');
-const {
-    sendMessage,
-    DISCORD_CHANNELS,
-} = require('../dist/common/discord/discordService').default;
+const { SettingError, ParameterError, ContractCallError } =
+    require('../dist/common/error').default;
+const { sendMessage, DISCORD_CHANNELS } =
+    require('../dist/common/discord/discordService').default;
 const customLogger = require('./statsLogger');
 
 const statsRouter = require('./routes/stats');

@@ -1,7 +1,7 @@
 const { pendingTransactions } = require('./storage');
 const { getVaultStableCoins } = require('../contract/allContracts');
 const { getAlchemyRpcProvider } = require('./chainUtil');
-const { BlockChainCallError } = require('./error');
+const { BlockChainCallError } = require('./error').default;
 const {
     getPnlKeyData,
     getInvestKeyData,

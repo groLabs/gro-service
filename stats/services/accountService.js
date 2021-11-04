@@ -6,7 +6,7 @@ const {
     getAlchemyRpcProvider,
     getTimestampByBlockNumber,
 } = require('../../common/chainUtil');
-const { ContractCallError, ParameterError } = require('../../common/error');
+const { ContractCallError, ParameterError } = require('../../common/error').default;
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
 const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
 const { getConfig } = require('../../common/configUtil');

@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { getConfig } = require('../../common/configUtil');
 
-const { DatabaseCallError } = require('../../common/error');
+const { DatabaseCallError } = require('../../common/error').default;
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -50,11 +50,11 @@ const query = async (file, params) => {
                 break;
             default: return ERROR;
         }
-    
+
         const q = fs.readFileSync(path.join(__dirname, `/../queries/${option}/${file}`), 'utf8');
-    
+
         const result = await singleQuery(q, file, option, params);
-    
+
         if (result === QUERY_ERROR) {
             return ERROR;
         } else {

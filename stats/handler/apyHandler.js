@@ -6,7 +6,7 @@ dayjs.extend(utc);
 const BlocksScanner = require('../common/blockscanner');
 const logger = require('../statsLogger');
 const { getTimestampByBlockNumber } = require('../../common/chainUtil');
-const { BlockChainCallError } = require('../../common/error');
+const { BlockChainCallError } = require('../../common/error').default;
 const { getConfig } = require('../../common/configUtil');
 const { getLatestSystemContract } = require('../common/contractStorage');
 const { ContractNames } = require('../../registry/registry');
