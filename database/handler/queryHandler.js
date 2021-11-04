@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { getConfig } = require('../../common/configUtil');
 
-const { DatabaseCallError } = require('../../common/error').default;
+const { DatabaseCallError } = require('../../dist/common/error').default;
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require

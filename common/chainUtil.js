@@ -2,7 +2,7 @@ const { ethers } = require('ethers');
 const fs = require('fs');
 const { BigNumber } = require('ethers');
 const { NonceManager } = require('@ethersproject/experimental');
-const { SettingError, BlockChainCallError } = require('./error').default;
+const { SettingError, BlockChainCallError } = require('../dist/common/error').default;
 const { shortAccount } = require('./digitalUtil');
 const {
     sendMessageToChannel,
