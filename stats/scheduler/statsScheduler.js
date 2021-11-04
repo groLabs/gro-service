@@ -86,11 +86,14 @@ async function removeStatsFile() {
                 const statsFiles = fs.readdirSync(statsDir);
                 const groApyFiles = [];
                 const argentApyFiles = [];
+                const externalFiles = [];
                 statsFiles.forEach((item) => {
                     if (item.indexOf('gro') > -1) {
                         groApyFiles.push(item);
                     } else if (item.indexOf('argent') > -1) {
                         argentApyFiles.push(item);
+                    } else if (item.indexOf('external') > -1) {
+                        externalFiles.push(item);
                     }
                 });
                 // remove gro apy files
@@ -98,6 +101,9 @@ async function removeStatsFile() {
 
                 // remove argent files
                 removeFile(argentApyFiles, 'argent');
+
+                // remove external files
+                removeFile(externalFiles, 'external');
             } else {
                 logger.error(`${statsDir} folder doesn't exist.`);
             }

@@ -77,6 +77,21 @@ function formatArgentResponse(stats) {
     return argentStats;
 }
 
+function formatExternalResponse(stats) {
+    const externalStats = {};
+    externalStats.current_timestamp = stats.current_timestamp;
+    externalStats.launch_timestamp = stats.launch_timestamp;
+    externalStats.network = stats.network;
+    externalStats.apy = {};
+    externalStats.apy.last7d = stats.apy.last7d;
+    externalStats.apy.current = stats.apy.current;
+    externalStats.tvl = {};
+    externalStats.tvl.pwrd = stats.tvl.pwrd;
+    externalStats.tvl.gvt = stats.tvl.gvt;
+    externalStats.tvl.total = stats.tvl.total;
+    return externalStats;
+}
+
 async function generateGroStatsFile() {
     const latestBlock = await provider.getBlock();
     const latestBlockTag = {
@@ -132,9 +147,15 @@ async function generateGroStatsFile() {
         argentStatsFilename,
         JSON.stringify(formatArgentResponse(stats))
     );
+    const externalStatsFilename = `${statsDir}/external-stats-${latestBlock.timestamp}.json`;
+    fs.writeFileSync(
+        externalStatsFilename,
+        JSON.stringify(formatExternalResponse(stats))
+    );
     const latestFilename = {
         filename: statsFilename,
         argentFilename: argentStatsFilename,
+        externalFilename: externalStatsFilename,
     };
     fs.writeFileSync(statsLatest, JSON.stringify(latestFilename));
     logger.info(

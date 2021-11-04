@@ -55,12 +55,13 @@ const {
                     break;
                 // load only balances for personal stats
                 case 'balances2':
-                    if (params.length === 3 && checkDateRange(params[1], params[2])) {
+                    if (params.length === 5 && checkDateRange(params[1], params[2])) {
                         await loadContractInfoFromRegistry();
                         await loadUserBalances2(
                             params[1],              // start date
                             params[2],              // end date
-                            null);                  // account
+                            params[3],              // account
+                            params[4]);             // time      
                     } else {
                         console.log('Wrong parameters for balances2 - e.g.: balances2 28/06/2021 29/06/2021');
                     }
@@ -130,9 +131,9 @@ const {
 
         // Testing user balances with tokenCounter
         await loadContractInfoFromRegistry();
-        await loadUserBalances2('26/10/2021', '26/10/2021', null);
+        // await loadUserBalances2('26/10/2021', '26/10/2021', null);
         // await loadUserBalances2('26/10/2021', '26/10/2021', '0xa31f8afd785EC32df8Df77Ab83978E49Cc0349Ac');
-        // await loadTokenPrice('25/10/2021');
+        await loadTokenPrice('27/10/2021');
 
         process.exit(0);
     } catch (err) {
