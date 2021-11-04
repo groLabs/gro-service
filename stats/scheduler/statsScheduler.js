@@ -6,7 +6,7 @@ const { getConfig } = require('../../common/configUtil');
 const { checkServerHealth } = require('../../common/checkBotHealth');
 const {
     sendErrorMessageToLogChannel,
-} = require('../../common/discord/discordService');
+} = require('../../dist/common/discord/discordService').default;
 const {
     getLastBlockNumber,
     generateDepositAndWithdrawReport,

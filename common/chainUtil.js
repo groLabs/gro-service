@@ -8,7 +8,7 @@ const {
     sendMessageToChannel,
     MESSAGE_TYPES,
     DISCORD_CHANNELS,
-} = require('./discord/discordService');
+} = require('../dist/common/discord/discordService').default;
 const { botBalanceMessage } = require('../discordMessage/botBalanceMessage');
 const { sendAlertMessage } = require('./alertMessageSender');
 const { getConfig } = require('./configUtil');

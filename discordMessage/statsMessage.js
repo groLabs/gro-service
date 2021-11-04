@@ -4,7 +4,7 @@ const {
     MESSAGE_EMOJI,
     DISCORD_CHANNELS,
     sendMessageToChannel,
-} = require('../common/discord/discordService');
+} = require('../dist/common/discord/discordService').default;
 const { formatNumber } = require('../common/digitalUtil');
 
 function personalStatsMessage(content) {

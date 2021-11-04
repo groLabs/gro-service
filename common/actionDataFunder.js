@@ -3,7 +3,7 @@ const { getAlchemyRpcProvider } = require('./chainUtil');
 const { getLatestContractsAddress } = require('../registry/registryLoader');
 const { ContractNames } = require('../registry/registry');
 const { BlockChainCallError } = require('./error');
-const { MESSAGE_TYPES } = require('./discord/discordService');
+const { MESSAGE_TYPES } = require('../dist/common/discord/discordService').default;
 const { adjustDecimal, toSum } = require('./digitalUtil');
 const {
     getVaultStableCoins,

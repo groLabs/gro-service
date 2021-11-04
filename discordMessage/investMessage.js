@@ -4,7 +4,7 @@ const {
     DISCORD_CHANNELS,
     sendMessage,
     sendMessageToChannel,
-} = require('../common/discord/discordService');
+} = require('../dist/common/discord/discordService').default;
 const { getVaultAndStrategyLabels } = require('../contract/allContracts');
 const { shortAccount } = require('../common/digitalUtil');
 const { sendAlertMessage } = require('../common/alertMessageSender');

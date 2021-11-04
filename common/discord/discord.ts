@@ -1,9 +1,9 @@
-const Discord = require('discord.js');
+import Discord from 'discord.js';
 
-const { DiscordError } = require('./discordError');
-const { getConfig } = require('../configUtil');
+import DiscordError from './discordError';
+import { getConfig } from '../configUtil';
 
-const botEnv = process.env.BOT_ENV.toLowerCase();
+const botEnv = process.env.BOT_ENV?.toLowerCase();
 const discordClient = new Discord.Client();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -23,13 +23,10 @@ discordClient.on('error', (err) => {
     logger.error(err);
 });
 
-function getDiscordClient() {
+export function getDiscordClient() {
     if (isClientReady) return discordClient;
     const err = new DiscordError('Discord Service is not readly.');
     logger.error(err);
     throw err;
 }
 
-module.exports = {
-    getDiscordClient,
-};

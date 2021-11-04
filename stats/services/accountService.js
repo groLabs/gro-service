@@ -8,7 +8,7 @@ const {
 } = require('../../common/chainUtil');
 const { ContractCallError, ParameterError } = require('../../common/error');
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
-const { MESSAGE_TYPES } = require('../../common/discord/discordService');
+const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
 const { getConfig } = require('../../common/configUtil');
 const {
     getTransactions,

@@ -3,7 +3,7 @@ const {
     MESSAGE_EMOJI,
     DISCORD_CHANNELS,
     sendMessageToChannel,
-} = require('../common/discord/discordService');
+} = require('../dist/common/discord/discordService').default;
 const { getConfig } = require('../common/configUtil');
 const { shortAccount } = require('../common/digitalUtil');
 const { sendAlertMessage } = require('../common/alertMessageSender');

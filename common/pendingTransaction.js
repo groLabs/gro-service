@@ -8,7 +8,7 @@ const {
     getHarvestKeyData,
     getRebalanceKeyData,
 } = require('./actionDataFunder');
-const { MESSAGE_TYPES } = require('./discord/discordService');
+const { MESSAGE_TYPES } = require('../dist/common/discord/discordService').default;
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require

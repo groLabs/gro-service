@@ -1,22 +1,20 @@
-const { getConfig } = require('../configUtil');
-const { getDiscordClient } = require('./discord');
-
-const botEnv = process.env.BOT_ENV.toLowerCase();
+"use strict";
+var _a;
+Object.defineProperty(exports, "__esModule", { value: true });
+const configUtil_1 = require("../configUtil");
+const discord_1 = require("./discord");
+const botEnv = (_a = process.env.BOT_ENV) === null || _a === void 0 ? void 0 : _a.toLowerCase();
 /* eslint-disable import/no-dynamic-require */
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-const RETRY_TIMES = getConfig('discord.retry', false) || 2;
-const RESEND_DELAY_SETTING = getConfig('discord.resend_delay', false) || 2000;
-
+const RETRY_TIMES = (0, configUtil_1.getConfig)('discord.retry', false) || 2;
+const RESEND_DELAY_SETTING = (0, configUtil_1.getConfig)('discord.resend_delay', false) || 2000;
 const DISCORD_CHANNELS = {};
-DISCORD_CHANNELS.trades = getConfig('discord.channel.trades');
-DISCORD_CHANNELS.protocolAssets = getConfig('discord.channel.protocol_assets');
-DISCORD_CHANNELS.protocolEvents = getConfig('discord.channel.protocol_events');
-DISCORD_CHANNELS.critActionEvents = getConfig(
-    'discord.channel.crit_action_events'
-);
-DISCORD_CHANNELS.botAlerts = getConfig('discord.channel.bot_alerts');
-DISCORD_CHANNELS.botLogs = getConfig('discord.channel.bot_logs');
-
+DISCORD_CHANNELS.trades = (0, configUtil_1.getConfig)('discord.channel.trades');
+DISCORD_CHANNELS.protocolAssets = (0, configUtil_1.getConfig)('discord.channel.protocol_assets');
+DISCORD_CHANNELS.protocolEvents = (0, configUtil_1.getConfig)('discord.channel.protocol_events');
+DISCORD_CHANNELS.critActionEvents = (0, configUtil_1.getConfig)('discord.channel.crit_action_events');
+DISCORD_CHANNELS.botAlerts = (0, configUtil_1.getConfig)('discord.channel.bot_alerts');
+DISCORD_CHANNELS.botLogs = (0, configUtil_1.getConfig)('discord.channel.bot_logs');
 const MESSAGE_TYPES = {
     depositEvent: 'Deposit Event',
     withdrawEvent: 'Withdraw Event',
@@ -46,60 +44,58 @@ const MESSAGE_TYPES = {
     distributeCurveVault: 'Distribute Curve Vault',
     other: 'Others',
 };
-
 const MESSAGE_EMOJI = {};
 MESSAGE_EMOJI.Vault =
-    getConfig('emoji.gvt', false) || '<:Vault:834796096797802507>';
+    (0, configUtil_1.getConfig)('emoji.gvt', false) || '<:Vault:834796096797802507>';
 MESSAGE_EMOJI.PWRD =
-    getConfig('emoji.pwrd', false) || '<:PWRD:834796096915767306>';
-MESSAGE_EMOJI.error = getConfig('emoji.error', false) || '';
+    (0, configUtil_1.getConfig)('emoji.pwrd', false) || '<:PWRD:834796096915767306>';
+MESSAGE_EMOJI.error = (0, configUtil_1.getConfig)('emoji.error', false) || '';
 MESSAGE_EMOJI.company =
-    getConfig('emoji.company', false) || '<:GRO:834796096685211689>';
-MESSAGE_EMOJI.reverted = getConfig('emoji.reverted', false) || '';
+    (0, configUtil_1.getConfig)('emoji.company', false) || '<:GRO:834796096685211689>';
+MESSAGE_EMOJI.reverted = (0, configUtil_1.getConfig)('emoji.reverted', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.miniStatsPersonal] =
-    getConfig('emoji.miniStatsPersonal', false) || '';
-MESSAGE_EMOJI[MESSAGE_TYPES.stats] = getConfig('emoji.stats', false) || '';
+    (0, configUtil_1.getConfig)('emoji.miniStatsPersonal', false) || '';
+MESSAGE_EMOJI[MESSAGE_TYPES.stats] = (0, configUtil_1.getConfig)('emoji.stats', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.depositEvent] =
-    getConfig('emoji.depositEvent', false) || '';
+    (0, configUtil_1.getConfig)('emoji.depositEvent', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.withdrawEvent] =
-    getConfig('emoji.withdrawEvent', false) || '';
+    (0, configUtil_1.getConfig)('emoji.withdrawEvent', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.transferEvent] =
-    getConfig('emoji.transferEvent', false) || '';
+    (0, configUtil_1.getConfig)('emoji.transferEvent', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.investTrigger] =
-    getConfig('emoji.investTrigger', false) || '';
+    (0, configUtil_1.getConfig)('emoji.investTrigger', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.curveInvestTrigger] =
-    getConfig('emoji.curveInvestTrigger', false) || '';
-MESSAGE_EMOJI[MESSAGE_TYPES.invest] = getConfig('emoji.invest', false) || '';
+    (0, configUtil_1.getConfig)('emoji.curveInvestTrigger', false) || '';
+MESSAGE_EMOJI[MESSAGE_TYPES.invest] = (0, configUtil_1.getConfig)('emoji.invest', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.curveInvest] =
-    getConfig('emoji.curveInvest', false) || '';
+    (0, configUtil_1.getConfig)('emoji.curveInvest', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.harvestTrigger] =
-    getConfig('emoji.harvestTrigger', false) || '';
-MESSAGE_EMOJI[MESSAGE_TYPES.harvest] = getConfig('emoji.harvest', false) || '';
+    (0, configUtil_1.getConfig)('emoji.harvestTrigger', false) || '';
+MESSAGE_EMOJI[MESSAGE_TYPES.harvest] = (0, configUtil_1.getConfig)('emoji.harvest', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.pnlTrigger] =
-    getConfig('emoji.pnlTrigger', false) || '';
-MESSAGE_EMOJI[MESSAGE_TYPES.pnl] = getConfig('emoji.pnl', false) || '';
+    (0, configUtil_1.getConfig)('emoji.pnlTrigger', false) || '';
+MESSAGE_EMOJI[MESSAGE_TYPES.pnl] = (0, configUtil_1.getConfig)('emoji.pnl', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.rebalanceTrigger] =
-    getConfig('emoji.rebalanceTrigger', false) || '';
+    (0, configUtil_1.getConfig)('emoji.rebalanceTrigger', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.rebalance] =
-    getConfig('emoji.rebalance', false) || '';
+    (0, configUtil_1.getConfig)('emoji.rebalance', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.curveCheck] =
-    getConfig('emoji.curveCheck', false) || '';
+    (0, configUtil_1.getConfig)('emoji.curveCheck', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.regularBot] =
-    getConfig('emoji.regularBot', false) || '';
+    (0, configUtil_1.getConfig)('emoji.regularBot', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.statsBot] =
-    getConfig('emoji.statsBot', false) || '';
+    (0, configUtil_1.getConfig)('emoji.statsBot', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.criticalBot] =
-    getConfig('emoji.criticalBot', false) || '';
+    (0, configUtil_1.getConfig)('emoji.criticalBot', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.chainPrice] =
-    getConfig('emoji.curveCheck', false) || '';
-
+    (0, configUtil_1.getConfig)('emoji.curveCheck', false) || '';
 function generateLink(urlDetail) {
-    const nodeEnv = process.env.NODE_ENV.toLowerCase();
+    var _a;
+    const nodeEnv = (_a = process.env.NODE_ENV) === null || _a === void 0 ? void 0 : _a.toLowerCase();
     let host = `https://${nodeEnv}.etherscan.io`;
     if (nodeEnv === 'mainnet') {
         host = 'https://etherscan.io';
     }
-
     let url = '';
     switch (urlDetail.type) {
         case 'account':
@@ -113,11 +109,9 @@ function generateLink(urlDetail) {
     }
     return url;
 }
-
 function generateEmbedMessage(obj) {
     logger.info(`embed msg: ${JSON.stringify(obj)}`);
     const prefixEmojis = obj.emojis.join(' ');
-
     if (obj.urls) {
         for (let i = 0; i < obj.urls.length; i += 1) {
             const urlInfo = obj.urls[i];
@@ -128,7 +122,6 @@ function generateEmbedMessage(obj) {
     }
     return { description: `${prefixEmojis} ${obj.description}` };
 }
-
 function formatMessage(obj) {
     let msg = '';
     msg += `Message: ${obj.message}\n`;
@@ -139,69 +132,48 @@ function formatMessage(obj) {
     if (obj.result) {
         msg += `Result: ${JSON.stringify(obj.result)}\n`;
     }
-
     if (obj.transactionHash) {
         msg += `Transaction: ${obj.transactionHash}`;
     }
-
     const icon = obj.icon || '';
-
     return `${icon}**${obj.type || 'Others'}**\n${'```'}${msg}${'```'}`;
 }
-
 async function sendEmbedMessage(channelId, msgObj, retry = 0) {
-    if (!msgObj.description) return;
+    if (!msgObj.description)
+        return;
     if (retry > RETRY_TIMES) {
-        logger.info(
-            `Discord message retry: ${retry} channel:${channelId}; msg: ${JSON.stringify(
-                msgObj
-            )}`
-        );
+        logger.info(`Discord message retry: ${retry} channel:${channelId}; msg: ${JSON.stringify(msgObj)}`);
         return;
     }
     try {
-        const discordClient = getDiscordClient();
+        const discordClient = (0, discord_1.getDiscordClient)();
         const channel = await discordClient.channels.fetch(channelId);
         channel.send({ embed: generateEmbedMessage(msgObj) });
-    } catch (error) {
+    }
+    catch (error) {
         logger.error(error);
-        setTimeout(
-            sendEmbedMessage,
-            RESEND_DELAY_SETTING,
-            channelId,
-            msgObj,
-            retry + 1
-        );
+        setTimeout(sendEmbedMessage, RESEND_DELAY_SETTING, channelId, msgObj, retry + 1);
     }
 }
-
 async function sendMessage(channelId, msgObj, retry = 0) {
-    if (!msgObj.message) return;
+    if (!msgObj.message)
+        return;
     if (retry > RETRY_TIMES) {
-        logger.info(
-            `Discord message retry: ${retry} channel:${channelId}; msg: ${JSON.stringify(
-                msgObj
-            )}`
-        );
+        logger.info(`Discord message retry: ${retry} channel:${channelId}; msg: ${JSON.stringify(msgObj)}`);
         return;
     }
-    if (!msgObj.timestamp) msgObj.timestamp = new Date();
+    if (!msgObj.timestamp)
+        msgObj.timestamp = new Date();
     try {
-        const discordClient = getDiscordClient();
+        const discordClient = (0, discord_1.getDiscordClient)();
         const channel = await discordClient.channels.fetch(channelId);
         channel.send(formatMessage(msgObj));
-    } catch (error) {
+    }
+    catch (error) {
         logger.error(error);
-        setTimeout(
-            sendMessage,
-            RESEND_DELAY_SETTING,
-            channelId,
-            msgObj,
-            retry + 1
-        );
+        setTimeout(sendMessage, RESEND_DELAY_SETTING, channelId, msgObj, retry + 1);
     }
 }
-
 function sendMessageToChannel(channel, msgObj) {
     if (!msgObj.emojis) {
         msgObj.emojis = [];
@@ -212,7 +184,6 @@ function sendMessageToChannel(channel, msgObj) {
     sendEmbedMessage(channel, msgObj);
     sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
 }
-
 function sendMessageToAlertChannel(error) {
     logger.error(error);
     const msgObj = {
@@ -226,7 +197,6 @@ function sendMessageToAlertChannel(error) {
     sendEmbedMessage(DISCORD_CHANNELS.botLogs, msgObj);
     sendMessage(DISCORD_CHANNELS.botAlerts, msgObj);
 }
-
 function sendErrorMessageToLogChannel(error) {
     logger.error(error);
     const msgObj = {
@@ -239,8 +209,7 @@ function sendErrorMessageToLogChannel(error) {
     };
     sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
 }
-
-module.exports = {
+exports.default = {
     DISCORD_CHANNELS,
     MESSAGE_TYPES,
     MESSAGE_EMOJI,

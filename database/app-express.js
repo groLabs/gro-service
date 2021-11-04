@@ -13,7 +13,7 @@ const {
 const {
     sendMessage,
     DISCORD_CHANNELS,
-} = require('../common/discord/discordService');
+} = require('../dist/common/discord/discordService').default;
 const customLogger = require('./databaseLogger');
 
 const statsRouter = require('./routes/database');
