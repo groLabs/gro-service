@@ -53,6 +53,16 @@ const {
                         console.log('Wrong parameters for personal stats ETL - e.g.: personalStatsETL 28/06/2021 29/06/2021');
                     }
                     break;
+                case 'loadTokenPrice':
+                    if (params.length === 3) {
+                        await loadContractInfoFromRegistry();
+                        await loadTokenPrice(
+                            params[1],          // start date
+                            params[2]);         // end date     
+                    } else {
+                        console.log('Wrong parameters for token price - e.g.: loadTokenPrice 01/11/2021 04/11/2021');
+                    }
+                    break;
                 // load only balances for personal stats
                 case 'balances2':
                     if (params.length === 5 && checkDateRange(params[1], params[2])) {
@@ -63,7 +73,7 @@ const {
                             params[3],              // account
                             params[4]);             // time      
                     } else {
-                        console.log('Wrong parameters for balances2 - e.g.: balances2 28/06/2021 29/06/2021');
+                        console.log(`Wrong parameters for balances2 - e.g.: balances2 28/06/2021 29/06/2021 "" 15:00:00`);
                     }
                     break;
                 case 'airdrop4':
@@ -130,10 +140,10 @@ const {
         // await etlPersonalStatsCache('0xb5bE4d2510294d0BA77214F26F704d2956a99072');
 
         // Testing user balances with tokenCounter
-        await loadContractInfoFromRegistry();
+        // await loadContractInfoFromRegistry();
         // await loadUserBalances2('26/10/2021', '26/10/2021', null);
         // await loadUserBalances2('26/10/2021', '26/10/2021', '0xa31f8afd785EC32df8Df77Ab83978E49Cc0349Ac');
-        await loadTokenPrice('27/10/2021');
+        // await loadTokenPrice('27/10/2021');
 
         process.exit(0);
     } catch (err) {
