@@ -34,8 +34,8 @@ const loadTableUpdates = async (tableName, _fromDate, _toDate) => {
             case 'USER_STD_FACT_BALANCES_POOLED':
                 q = 'insert_sys_load_user_balances_pooled.sql';
                 break;
-            case 'USER_STD_FACT_NET_RESULTS_UNSTAKED':
-                q = 'insert_sys_load_user_net_results_unstaked.sql';
+            case 'USER_STD_FACT_NET_RETURNS_UNSTAKED':
+                q = 'insert_sys_load_user_net_returns_unstaked.sql';
                 break;
             case 'USER_STD_FACT_TRANSFERS':
                 q = 'insert_sys_load_user_transfers.sql';

@@ -10,10 +10,10 @@ const {
 } = require('../common/personalUtil');
 const { QUERY_ERROR } = require('../constants');
 
-/// @notice Loads net results into USER_STD_FACT_NET_RESULTS
+/// @notice Load net returns into USER_STD_FACT_NET_RETURNS_UNSTAKED
 /// @dev    Data sourced from USER_STD_FACT_DEPOSITS & USER_STD_FACT_TRANSACTIONS (full load w/o filters)
-/// @param  fromDate Start date to load net results
-/// @param  toDdate End date to load net results
+/// @param  fromDate Start date to load net returns
+/// @param  toDdate End date to load net returns
 /// @param  account User address for cache loading; null for daily loads
 const loadUserNetReturns = async (
     fromDate,
@@ -27,7 +27,7 @@ const loadUserNetReturns = async (
             /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
             const q = (account)
                 ? 'insert_user_cache_fact_net_returns.sql' //TODO
-                : 'insert_user_std_fact_net_results_unstaked.sql';
+                : 'insert_user_std_fact_net_returns_unstaked.sql';
             const params = (account)
                 ? [account]
                 : [moment(date)
@@ -37,12 +37,12 @@ const loadUserNetReturns = async (
                 return false;
             const numResults = result.rowCount;
             let msg = `**DB${account ? ' CACHE' : ''}: ${numResults} record${isPlural(numResults)} added into `;
-            msg += `USER_STD_FACT_NET_RESULTS_UNSTAKED for date ${moment(date).format('DD/MM/YYYY')}`;
+            msg += `USER_STD_FACT_NET_RETURNS_UNSTAKED for date ${moment(date).format('DD/MM/YYYY')}`;
             logger.info(msg);
         }
         // Update table SYS_USER_LOADS with the last loads
         if (!account)
-            await loadTableUpdates('USER_STD_FACT_NET_RESULTS_UNSTAKED', fromDate, toDate);
+            await loadTableUpdates('USER_STD_FACT_NET_RETURNS_UNSTAKED', fromDate, toDate);
     } catch (err) {
         handleErr(`loadUserNetReturns->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}]`, err);
     }
