@@ -26,22 +26,23 @@ const loadUserNetReturns = async (
         for (const date of dates) {
             /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
             const q = (account)
-                ? 'insert_user_cache_fact_net_returns.sql'
-                : 'insert_user_std_fact_net_results.sql';
+                ? 'insert_user_cache_fact_net_returns.sql' //TODO
+                : 'insert_user_std_fact_net_results_unstaked.sql';
             const params = (account)
                 ? [account]
-                : [moment(date).format('MM/DD/YYYY')];
+                : [moment(date)
+                    .format('MM/DD/YYYY')];
             const result = await query(q, params);
             if (result.status === QUERY_ERROR)
                 return false;
             const numResults = result.rowCount;
             let msg = `**DB${account ? ' CACHE' : ''}: ${numResults} record${isPlural(numResults)} added into `;
-            msg += `USER_STD_FACT_NET_RESULTS for date ${moment(date).format('DD/MM/YYYY')}`;
+            msg += `USER_STD_FACT_NET_RESULTS_UNSTAKED for date ${moment(date).format('DD/MM/YYYY')}`;
             logger.info(msg);
         }
         // Update table SYS_USER_LOADS with the last loads
         if (!account)
-            await loadTableUpdates('USER_STD_FACT_NET_RESULTS', fromDate, toDate);
+            await loadTableUpdates('USER_STD_FACT_NET_RESULTS_UNSTAKED', fromDate, toDate);
     } catch (err) {
         handleErr(`loadUserNetReturns->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}]`, err);
     }

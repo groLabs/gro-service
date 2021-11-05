@@ -90,7 +90,8 @@ const remove = async (fromDate, toDate) => {
                 balancesStaked,
                 balancesUnstaked,
                 balancesPooled,
-                netReturns,
+                netResults,
+                netResultsUnstaked,
                 approvals,
                 loads,
                 price
@@ -101,6 +102,7 @@ const remove = async (fromDate, toDate) => {
                 query('delete_user_std_fact_balances_staked.sql', params),
                 query('delete_user_std_fact_balances_pooled.sql', params),
                 query('delete_user_std_fact_net_results.sql', params),
+                query('delete_user_std_fact_net_results_unstaked.sql', params),
                 query('delete_user_std_fact_approvals.sql', params),
                 query('delete_table_loads.sql', params),
                 query('delete_token_price.sql', params),
@@ -111,7 +113,8 @@ const remove = async (fromDate, toDate) => {
             balancesStaked && 
             balancesUnstaked && 
             balancesPooled && 
-            netReturns && 
+            netResults &&
+            netResultsUnstaked &&
             approvals &&
             loads &&
             price) {
@@ -141,9 +144,14 @@ const remove = async (fromDate, toDate) => {
                 )} deleted from USER_STD_FACT_BALANCES_POOLED`
             );
             logger.info(
-                `**DB: ${netReturns.rowCount} record${isPlural(
-                    netReturns.rowCount
+                `**DB: ${netResults.rowCount} record${isPlural(
+                    netResults.rowCount
                 )} deleted from USER_STD_FACT_NET_RESULTS`
+            );
+            logger.info(
+                `**DB: ${netResultsUnstaked.rowCount} record${isPlural(
+                    netResultsUnstaked.rowCount
+                )} deleted from USER_STD_FACT_NET_RESULTS_UNSTAKED`
             );
             logger.info(
                 `**DB: ${approvals.rowCount} record${isPlural(
@@ -209,10 +217,8 @@ const reload = async (fromDate, toDate) => {
                         // if (await loadUserApprovals(fromDate, toDate, null))
                         // if (await loadUserBalances(fromDate, toDate, null))
                         if (await loadUserBalances2(fromDate, toDate, null, null)) {
-                            await Promise.all([
-                                loadUserNetReturns(fromDate, toDate, null),
-                                loadTokenPrice(fromDate, toDate),
-                            ]);
+                            await loadTokenPrice(fromDate, toDate);
+                            await loadUserNetReturns(fromDate, toDate, null);
                         }
 
             } else {
@@ -269,10 +275,8 @@ const etlPersonalStats = async (fromDate, toDate) => {
     try {
         if (checkDateRange(fromDate, toDate))
             await reload(fromDate, toDate);
-
-        // Personal Stats
-        // const res = await getPersonalStats('06/07/2021', '0xb5bE4d2510294d0BA77214F26F704d2956a99072');
-        // console.log(res);
+        // TODO: log with 'successful load' if everything went well.
+        
         console.log('personalStats loading complete');
     } catch (err) {
         handleErr(`etlPersonalStats->etlPersonalStats()`, err);
