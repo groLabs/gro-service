@@ -8,8 +8,8 @@ const {
     getBuoy,
 } = require('../../contract/allContracts');
 const { addPendingTransaction } = require('../../common/storage');
-const { ContractSendError, ContractCallError } = require('../../common/error');
-const { MESSAGE_TYPES } = require('../../common/discord/discordService');
+const { ContractSendError, ContractCallError } = require('../../dist/common/error').default;
+const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
 const { investMessage } = require('../../discordMessage/investMessage');
 const { rebalanceMessage } = require('../../discordMessage/rebalanceMessage');
 const { harvestMessage } = require('../../discordMessage/harvestMessage');

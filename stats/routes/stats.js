@@ -4,7 +4,7 @@ const cors = require('cors');
 const router = express.Router();
 const { query } = require('express-validator');
 const { wrapAsync } = require('../common/wrap');
-const { ParameterError } = require('../../common/error');
+const { ParameterError } = require('../../dist/common/error').default;
 const {
     getGroStatsContent,
     getArgentStatsContent,

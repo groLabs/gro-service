@@ -9,7 +9,7 @@ const { checkPendingTransactions } = require('../../common/pendingTransaction');
 const { pendingTransactions } = require('../../common/storage');
 const {
     sendErrorMessageToLogChannel,
-} = require('../../common/discord/discordService');
+} = require('../../dist/common/discord/discordService').default;
 const { pendingTransactionResend } = require('../../gasPrice/transaction');
 const {
     investTrigger,

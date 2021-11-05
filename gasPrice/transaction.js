@@ -2,7 +2,7 @@ const { BigNumber } = require('ethers');
 const { getAlchemyPriorityPrice } = require('./priceManager');
 const { getWalletNonceManager } = require('../common/chainUtil');
 const { addPendingTransaction } = require('../common/storage');
-const { BlockChainCallError } = require('../common/error');
+const { BlockChainCallError } = require('../dist/common/error').default;
 const { getConfig } = require('../common/configUtil');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();

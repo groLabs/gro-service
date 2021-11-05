@@ -2,13 +2,13 @@ const { ethers } = require('ethers');
 const fs = require('fs');
 const { BigNumber } = require('ethers');
 const { NonceManager } = require('@ethersproject/experimental');
-const { SettingError, BlockChainCallError } = require('./error');
+const { SettingError, BlockChainCallError } = require('../dist/common/error').default;
 const { shortAccount } = require('./digitalUtil');
 const {
     sendMessageToChannel,
     MESSAGE_TYPES,
     DISCORD_CHANNELS,
-} = require('./discord/discordService');
+} = require('../dist/common/discord/discordService').default;
 const { botBalanceMessage } = require('../discordMessage/botBalanceMessage');
 const { sendAlertMessage } = require('./alertMessageSender');
 const { getConfig } = require('./configUtil');

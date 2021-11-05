@@ -8,7 +8,7 @@ const {
 const { checkServerHealth } = require('../../common/checkBotHealth');
 const {
     sendErrorMessageToLogChannel,
-} = require('../../common/discord/discordService');
+} = require('../../dist/common/discord/discordService').default;
 const { checkAccountsBalance } = require('../../common/chainUtil');
 const {
     checkCurveCoinRatio,

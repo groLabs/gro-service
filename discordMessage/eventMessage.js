@@ -5,7 +5,7 @@ const {
     MESSAGE_EMOJI,
     DISCORD_CHANNELS,
     sendMessageToChannel,
-} = require('../common/discord/discordService');
+} = require('../dist/common/discord/discordService').default;
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 /* eslint-disable import/no-dynamic-require */

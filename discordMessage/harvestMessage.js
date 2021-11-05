@@ -5,7 +5,7 @@ const {
     DISCORD_CHANNELS,
     sendMessage,
     sendMessageToChannel,
-} = require('../common/discord/discordService');
+} = require('../dist/common/discord/discordService').default;
 const {
     getVaultAndStrategyLabels,
     getVaultStableCoins,

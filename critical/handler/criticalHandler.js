@@ -2,9 +2,9 @@ const { BigNumber } = require('ethers');
 const { ethers } = require('ethers');
 const { getBuoy, getController } = require('../../contract/allContracts');
 
-const { ContractCallError } = require('../../common/error');
+const { ContractCallError } = require('../../common/error').default;
 
-const { MESSAGE_TYPES } = require('../../common/discord/discordService');
+const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
 const { getConfig } = require('../../common/configUtil');
 const {
     getCurrentBlockNumber,

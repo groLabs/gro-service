@@ -4,7 +4,7 @@ const {
     MESSAGE_TYPES,
     DISCORD_CHANNELS,
     sendMessageToChannel,
-} = require('../../common/discord/discordService');
+} = require('../../dist/common/discord/discordService').default;
 const logger = require('../statsLogger');
 const { getCurrentApy } = require('./currentApyHandler');
 const { ContractNames } = require('../../registry/registry');

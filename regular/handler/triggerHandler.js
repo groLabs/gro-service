@@ -11,12 +11,12 @@ const {
     getBuoy,
 } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
-const { MESSAGE_TYPES } = require('../../common/discord/discordService');
+const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
 const { getConfig } = require('../../common/configUtil');
 const {
     PendingTransactionError,
     ContractCallError,
-} = require('../../common/error');
+} = require('../../dist/common/error').default;
 const { investTriggerMessage } = require('../../discordMessage/investMessage');
 const {
     rebalanceTriggerMessage,
