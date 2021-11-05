@@ -52,20 +52,17 @@ const query = async (file, params) => {
             case 'upda':
                 option = 'update';
                 break;
-            // default: return QUERY_ERROR;
+            case 'view':
+                option = 'view';
             default: return ERROR;
         }
 
         const q = fs.readFileSync(path.join(__dirname, `/../queries/${option}/${file}`), 'utf8');
 
         const result = (
-            // file === 'insert_tmp_user_deposits.sql' ||
             file === 'insert_user_std_tmp_deposits.sql' ||
-            // file === 'insert_tmp_user_withdrawals.sql' ||
             file === 'insert_user_std_tmp_withdrawals.sql' ||
-            //file === 'insert_cache_tmp_user_deposits.sql' ||
             file === 'insert_user_cache_tmp_deposits.sql' ||
-            // file === 'insert_cache_tmp_user_withdrawals.sql')
             file === 'insert_user_cache_tmp_withdrawals.sql')
             ? await batchQuery(q, file, option, params)
             : await singleQuery(q, file, option, params);

@@ -1,3 +1,9 @@
+/*
+This query is currently replaced by:
+- insert_sys_load_user_balances_pooled.sql
+- insert_sys_load_user_balances_staked.sql
+- insert_sys_load_user_balances_unstaked.sql
+*/
 INSERT INTO gro."SYS_USER_LOADS" (
 		table_name,
 		network_id,

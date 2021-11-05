@@ -258,6 +258,7 @@ const loadPooledBalance = (account, i, day, addr) => {
     });
 }
 
+/// @notice Initialise global vars to 0 or empty
 const cleanseVars = (scope) => {
     if (scope === 'all') {
         gvt = [];
@@ -381,7 +382,6 @@ const loadUserBalances2 = async (
     time,
 ) => {
     try {
-
         // Retrieve target time to load balances (23:59:59 by default)
         const [hours, minutes, seconds] = checkTime(time);
         if (hours === -1)
