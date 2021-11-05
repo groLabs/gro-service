@@ -199,6 +199,7 @@ export const staker_pools = {
         curve_pwrd3crv_pool_address: '0x613081F24c4d5D797dca6480ccA67611224d7f41',
         curve_3pool_address: '0x930e1D35BeF80A1FF7Cb70DcFf295Ed97D187c58',
         curve_3crv_address: '0xF92594660CAE88FC36C63d542266eA57575a08BC',
+        balancer_gro_weth_pool_address: '0x702605f43471183158938c1a3e5f5a359d7b31ba',
     },
     single_staking_100_gro_0: {
         deposit_url: 'NA',
