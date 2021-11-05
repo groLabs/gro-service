@@ -17,7 +17,8 @@ const {
     loadUserApprovals,
     loadTmpUserApprovals,
 } = require('../loader/loadUserApprovals');
-const { loadUserBalances } = require('../loader/loadUserBalances');
+// const { loadUserBalances } = require('../loader/loadUserBalances');
+const { loadUserBalances2 } = require('../loader/loadUserBalances2');
 const { loadUserNetReturns } = require('../loader/loadUserNetReturns');
 const { QUERY_ERROR } = require('../constants');
 
@@ -117,7 +118,9 @@ const loadCache = async (account) => {
                 if (await loadTmpUserApprovals(fromBlock, 'latest', account))
                     if (await loadUserTransfers(null, null, account))
                         if (await loadUserApprovals(null, null, account))
-                            if (await loadUserBalances(fromDate, toDate, account))
+                            // if (await loadUserBalances(fromDate, toDate, account))
+                            // TODO: time should be now(), otherwise it will take 23:59:59
+                            if (await loadUserBalances2(fromDate, toDate, account, null))
                                 await loadUserNetReturns(fromDate, toDate, account);
             } else {
                 logger.warn(`**DB: Error/s found in etlPersonalStatsCache.js->loadCache()`);

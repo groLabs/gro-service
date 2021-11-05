@@ -27,7 +27,9 @@ const {
     loadUserApprovals,
     loadTmpUserApprovals,
 } = require('../loader/loadUserApprovals');
-const { loadUserBalances } = require('../loader/loadUserBalances');
+// const { loadUserBalances } = require('../loader/loadUserBalances');
+const { loadUserBalances2 } = require('../loader/loadUserBalances2');
+const { loadTokenPrice } = require('../loader/loadTokenPrice');
 const { loadUserNetReturns } = require('../loader/loadUserNetReturns');
 const { checkDateRange } = require('../common/globalUtil');
 const { QUERY_ERROR } = require('../constants');
@@ -83,25 +85,60 @@ const remove = async (fromDate, toDate) => {
         const fromDateParsed = moment(fromDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
         const toDateParsed = moment(toDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
         const params = [fromDateParsed, toDateParsed];
-        const [transfers, balances, netReturns, approvals, loads] =
-            await Promise.all([
+        const [
+                transfers, /*, balances,*/
+                balancesStaked,
+                balancesUnstaked,
+                balancesPooled,
+                netReturns,
+                approvals,
+                loads,
+                price
+            ] = await Promise.all([
                 query('delete_user_std_fact_transfers.sql', params),
-                query('delete_user_std_fact_balances.sql', params),
+                // query('delete_user_std_fact_balances.sql', params),
+                query('delete_user_std_fact_balances_unstaked.sql', params),
+                query('delete_user_std_fact_balances_staked.sql', params),
+                query('delete_user_std_fact_balances_pooled.sql', params),
                 query('delete_user_std_fact_net_results.sql', params),
                 query('delete_user_std_fact_approvals.sql', params),
                 query('delete_table_loads.sql', params),
+                query('delete_token_price.sql', params),
             ]);
 
-        if (transfers && balances && netReturns && approvals && loads) {
+        if (transfers && 
+            /*balances*/
+            balancesStaked && 
+            balancesUnstaked && 
+            balancesPooled && 
+            netReturns && 
+            approvals &&
+            loads &&
+            price) {
             logger.info(
                 `**DB: ${transfers.rowCount} record${isPlural(
                     transfers.rowCount
                 )} deleted from USER_STD_FACT_TRANSFERS`
             );
+            // logger.info(
+            //     `**DB: ${balances.rowCount} record${isPlural(
+            //         balances.rowCount
+            //     )} deleted from USER_STD_FACT_BALANCES`
+            // );
             logger.info(
-                `**DB: ${balances.rowCount} record${isPlural(
-                    balances.rowCount
-                )} deleted from USER_STD_FACT_BALANCES`
+                `**DB: ${balancesStaked.rowCount} record${isPlural(
+                    balancesStaked.rowCount
+                )} deleted from USER_STD_FACT_BALANCES_STAKED`
+            );
+            logger.info(
+                `**DB: ${balancesUnstaked.rowCount} record${isPlural(
+                    balancesUnstaked.rowCount
+                )} deleted from USER_STD_FACT_BALANCES_UNSTAKED`
+            );
+            logger.info(
+                `**DB: ${balancesPooled.rowCount} record${isPlural(
+                    balancesPooled.rowCount
+                )} deleted from USER_STD_FACT_BALANCES_POOLED`
             );
             logger.info(
                 `**DB: ${netReturns.rowCount} record${isPlural(
@@ -117,6 +154,11 @@ const remove = async (fromDate, toDate) => {
                 `**DB: ${loads.rowCount} record${isPlural(
                     loads.rowCount
                 )} deleted from SYS_USER_LOADS`
+            );
+            logger.info(
+                `**DB: ${price.rowCount} record${isPlural(
+                    price.rowCount
+                )} deleted from TOKEN_PRICE`
             );
         } else {
             const params = `Dates [${fromDate} - ${toDate}]`;
@@ -150,6 +192,7 @@ const reload = async (fromDate, toDate) => {
 
         // Reload transfers, balances & net results
         if (fromBlock > 0 && toBlock > 0 && dates) {
+
             const res = await Promise.all([
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null),
@@ -164,25 +207,24 @@ const reload = async (fromDate, toDate) => {
                 if (await remove(fromDate, toDate))
                     if (await loadUserTransfers(fromDate, toDate, null))
                         // if (await loadUserApprovals(fromDate, toDate, null))
-                        if (await loadUserBalances(fromDate, toDate, null))
-                            await loadUserNetReturns(fromDate, toDate, null);
+                        // if (await loadUserBalances(fromDate, toDate, null))
+                        if (await loadUserBalances2(fromDate, toDate, null, null)) {
+                            await Promise.all([
+                                loadUserNetReturns(fromDate, toDate, null),
+                                loadTokenPrice(fromDate, toDate),
+                            ]);
+                        }
+
             } else {
-                logger.warn(
-                    `**DB: Error/s found in etlPersonalStats.js->reload()`
-                );
+                logger.warn(`**DB: Error/s found in etlPersonalStats.js->reload()`);
             }
+
         } else {
             const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
-            handleErr(
-                `etlPersonalStats->reload() Error with parameters: ${params}`,
-                null
-            );
+            handleErr(`etlPersonalStats->reload() Error with parameters: ${params}`, null);
         }
     } catch (err) {
-        handleErr(
-            `etlPersonalStats->reload() [from: ${fromDate}, to: ${toDate}]`,
-            err
-        );
+        handleErr(`etlPersonalStats->reload() [from: ${fromDate}, to: ${toDate}]`, err);
     }
 };
 
@@ -211,17 +253,15 @@ const load = async (fromDate, toDate) => {
             if (await loadTmpUserApprovals(fromBlock, toBlock, null))
                 if (await loadUserTransfers(fromDate, toDate, null))
                     if (await loadUserApprovals(fromDate, toDate, null))
-                        if (await loadUserBalances(fromDate, toDate, null))
+                        // if (await loadUserBalances(fromDate, toDate, null))
+                        if (await loadUserBalances2(fromDate, toDate, null, null))
                             await loadUserNetReturns(fromDate, toDate, null);
         } else {
             logger.warn(`**DB: Error/s found in etlPersonalStats.js->load()`);
         }
     } else {
         const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
-        handleErr(
-            `etlPersonalStats->load() Error with parameters: ${params}`,
-            null
-        );
+        handleErr(`etlPersonalStats->load() Error with parameters: ${params}`, null);
     }
 };
 
