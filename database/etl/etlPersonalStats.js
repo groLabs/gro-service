@@ -34,9 +34,9 @@ const { loadUserNetReturns } = require('../loader/loadUserNetReturns');
 const { checkDateRange } = require('../common/globalUtil');
 const { QUERY_ERROR } = require('../constants');
 
-/// @notice Truncates temporaty tables & calculates blocks and dates to be processed
-/// @param fromDate Start date to process data
-/// @param toDdate End date to process data
+/// @notice Truncate temporary tables & calculate blocks and dates to be processed
+/// @param fromDate Start date to process data [format: 'DD/MM/YYYY']
+/// @param toDdate End date to process data [format: 'DD/MM/YYYY']
 /// @return Array with start block, end block and list of dates to be processed
 const preload = async (_fromDate, _toDate) => {
     try {
@@ -54,7 +54,7 @@ const preload = async (_fromDate, _toDate) => {
         )
             return;
 
-        // Calculate dates & blocks to process
+        // Calculate dates & blocks to be processed
         const dates = generateDateRange(_fromDate, _toDate);
         const fromDate = dates[0].clone();
         const toDate = dates[dates.length - 1]
@@ -75,23 +75,25 @@ const preload = async (_fromDate, _toDate) => {
     }
 };
 
-/// @notice Deletes transfers, approvals, balances and net returns for the given dates interval
-/// @param fromDate Start date to delete data
-/// @param toDdate End date to delete data
-/// @return True if no exceptions found, false otherwise
+/// @notice Delete transfers, approvals, balances, net returns & prices for a given time interval
+/// @dev    Date format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
+/// @param  fromDate Start date to delete data
+/// @param  toDdate End date to delete data
+/// @return True if no exceptions found; false otherwise
 const remove = async (fromDate, toDate) => {
     try {
-        /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
+        
         const fromDateParsed = moment(fromDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
         const toDateParsed = moment(toDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
         const params = [fromDateParsed, toDateParsed];
         const [
-                transfers, /*, balances,*/
+                transfers,
+                // balances,
                 balancesStaked,
                 balancesUnstaked,
                 balancesPooled,
-                netResults,
-                netResultsUnstaked,
+                netReturns,
+                netReturnsUnstaked,
                 approvals,
                 loads,
                 price
@@ -101,8 +103,8 @@ const remove = async (fromDate, toDate) => {
                 query('delete_user_std_fact_balances_unstaked.sql', params),
                 query('delete_user_std_fact_balances_staked.sql', params),
                 query('delete_user_std_fact_balances_pooled.sql', params),
-                query('delete_user_std_fact_net_results.sql', params),
-                query('delete_user_std_fact_net_results_unstaked.sql', params),
+                query('delete_user_std_fact_net_returns.sql', params),
+                query('delete_user_std_fact_net_returns_unstaked.sql', params),
                 query('delete_user_std_fact_approvals.sql', params),
                 query('delete_table_loads.sql', params),
                 query('delete_token_price.sql', params),
@@ -113,8 +115,8 @@ const remove = async (fromDate, toDate) => {
             balancesStaked && 
             balancesUnstaked && 
             balancesPooled && 
-            netResults &&
-            netResultsUnstaked &&
+            netReturns &&
+            netReturnsUnstaked &&
             approvals &&
             loads &&
             price) {
@@ -144,14 +146,14 @@ const remove = async (fromDate, toDate) => {
                 )} deleted from USER_STD_FACT_BALANCES_POOLED`
             );
             logger.info(
-                `**DB: ${netResults.rowCount} record${isPlural(
-                    netResults.rowCount
-                )} deleted from USER_STD_FACT_NET_RESULTS`
+                `**DB: ${netReturns.rowCount} record${isPlural(
+                    netReturns.rowCount
+                )} deleted from USER_STD_FACT_NET_RETURNS`
             );
             logger.info(
-                `**DB: ${netResultsUnstaked.rowCount} record${isPlural(
-                    netResultsUnstaked.rowCount
-                )} deleted from USER_STD_FACT_NET_RESULTS_UNSTAKED`
+                `**DB: ${netReturnsUnstaked.rowCount} record${isPlural(
+                    netReturnsUnstaked.rowCount
+                )} deleted from USER_STD_FACT_NET_RETURNS_UNSTAKED`
             );
             logger.info(
                 `**DB: ${approvals.rowCount} record${isPlural(
@@ -171,7 +173,7 @@ const remove = async (fromDate, toDate) => {
         } else {
             const params = `Dates [${fromDate} - ${toDate}]`;
             handleErr(
-                `etlPersonalStats->remove() Delete query didn't return results. Params: ${params}`,
+                `etlPersonalStats->remove() Delete query didn't return data. Params: ${params}`,
                 null
             );
             return false;
@@ -189,16 +191,17 @@ const remove = async (fromDate, toDate) => {
 // TODO (specially for mainnet)
 const reloadApprovals = async () => { };
 
-/// @notice Reloads user transfers, balances & net results for a given time interval
-/// @dev    - Previous data for the given time interval will be overwritten
+/// @notice Reload user transfers, balances, net returns & prices for a given time interval
+/// @dev    - Previous data for the given time interval will be removed
+///         - If any data load fails, execution is stopped (to avoid data inconsistency)
 /// @param fromDate Start date to reload data
 /// @param toDdate End date to reload data
 const reload = async (fromDate, toDate) => {
     try {
-        // Truncates TMP tables and calculates dates & blocks to be processed
+        // Truncate temporary tables and calculate dates & blocks to be processed
         const [fromBlock, toBlock, dates] = await preload(fromDate, toDate);
 
-        // Reload transfers, balances & net results
+        // Reload transfers, balances, net returns & prices
         if (fromBlock > 0 && toBlock > 0 && dates) {
 
             const res = await Promise.all([
@@ -219,22 +222,22 @@ const reload = async (fromDate, toDate) => {
                         if (await loadUserBalances2(fromDate, toDate, null, null)) {
                             await loadTokenPrice(fromDate, toDate);
                             await loadUserNetReturns(fromDate, toDate, null);
+                            return true;
                         }
-
             } else {
                 logger.warn(`**DB: Error/s found in etlPersonalStats.js->reload()`);
             }
-
         } else {
             const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
             handleErr(`etlPersonalStats->reload() Error with parameters: ${params}`, null);
         }
+        return false;
     } catch (err) {
         handleErr(`etlPersonalStats->reload() [from: ${fromDate}, to: ${toDate}]`, err);
     }
 };
 
-/// @notice Loads user transfers, balances & net results for a given time interval
+/// @notice Load user transfers, balances, net returns & prices for a given time interval
 /// @dev    - If previous data was loaded for the same interval, there will be errors
 ///         referring to duplicated primary key
 ///         - If any data load fails, execution is stopped (to avoid data inconsistency)
@@ -244,8 +247,9 @@ const load = async (fromDate, toDate) => {
     // Truncates TMP tables and calculate dates & blocks to be processed
     const [fromBlock, toBlock] = await preload(fromDate, toDate);
 
-    // Reload transfers, balances & net results
+    // Reload transfers, balances & net returns
     if (fromBlock > 0 && toBlock > 0) {
+
         const res = await Promise.all([
             loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null),
             loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null),
@@ -260,8 +264,11 @@ const load = async (fromDate, toDate) => {
                 if (await loadUserTransfers(fromDate, toDate, null))
                     if (await loadUserApprovals(fromDate, toDate, null))
                         // if (await loadUserBalances(fromDate, toDate, null))
-                        if (await loadUserBalances2(fromDate, toDate, null, null))
+                        if (await loadUserBalances2(fromDate, toDate, null, null)) {
+                            await loadTokenPrice(fromDate, toDate);
                             await loadUserNetReturns(fromDate, toDate, null);
+                            return true;
+                        }
         } else {
             logger.warn(`**DB: Error/s found in etlPersonalStats.js->load()`);
         }
@@ -269,15 +276,19 @@ const load = async (fromDate, toDate) => {
         const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
         handleErr(`etlPersonalStats->load() Error with parameters: ${params}`, null);
     }
+    return false;
 };
 
 const etlPersonalStats = async (fromDate, toDate) => {
     try {
-        if (checkDateRange(fromDate, toDate))
-            await reload(fromDate, toDate);
-        // TODO: log with 'successful load' if everything went well.
-        
-        console.log('personalStats loading complete');
+        if (checkDateRange(fromDate, toDate)) {
+            const res = await reload(fromDate, toDate);
+            if (res) {
+                logger.info(`**DB: Personal stats load from ${fromDate} to ${toDate} is completed ;)`);
+            } else {
+                logger.error(`**DB: Personal stats load from ${fromDate} to ${toDate} is NOT completed :/`);
+            } 
+        }
     } catch (err) {
         handleErr(`etlPersonalStats->etlPersonalStats()`, err);
     }
