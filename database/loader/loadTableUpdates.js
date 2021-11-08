@@ -5,7 +5,7 @@ const { query } = require('../handler/queryHandler');
 const { handleErr } = require('../common/personalUtil');
 const { QUERY_ERROR } = require('../constants');
 
-/// @notice Stores the last load time and number of records loaded into SYS_USER_LOADS
+/// @notice Stores the last load time and amount of records loaded into SYS_USER_LOADS
 ///         for each day of a given time range
 /// @param tableName Name of the table that has been loaded
 /// @param _fromDate Start date of loading process
@@ -42,6 +42,9 @@ const loadTableUpdates = async (tableName, _fromDate, _toDate) => {
                 break;
             case 'USER_STD_FACT_APPROVALS':
                 q = 'insert_sys_load_user_approvals.sql';
+                break;
+            case 'TOKEN_PRICE':
+                q = 'insert_sys_load_token_price.sql';
                 break;
             default:
                 handleErr(`loadTableUpdates->loadTableUpdates(): table name '${tableName}' not found`, null);

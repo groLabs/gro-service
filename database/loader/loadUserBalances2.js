@@ -447,8 +447,7 @@ const loadUserBalances2 = async (
         cleanseVars('all');
 
         // Update table SYS_USER_LOADS with the last loads
-        const finalResult = await updateSysTable(account, fromDate, toDate);
-        return finalResult;
+        return await updateSysTable(account, fromDate, toDate);
 
     } catch (err) {
         handleErr(`loadUserBalances2->loadUserBalances2() [from: ${fromDate}, to: ${toDate}]`, err);

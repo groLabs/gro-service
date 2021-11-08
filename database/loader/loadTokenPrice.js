@@ -4,6 +4,7 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { findBlockByDate } = require('../common/globalUtil');
 const { apiCaller } = require('../common/apiCaller');
 const { query } = require('../handler/queryHandler');
+const { loadTableUpdates } = require('./loadTableUpdates');
 const {
     getNetworkId,
     generateDateRange,
@@ -56,6 +57,11 @@ const getGroPriceFromCoingecko = async (date) => {
 
 const loadTokenPrice = async (fromDate, toDate) => {
     try {
+        // Remove previous data
+        const fromDateParsed = moment(fromDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
+        const toDateParsed = moment(toDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
+        const params = [fromDateParsed, toDateParsed];
+        await query('delete_token_price.sql', params);
 
         const dates = generateDateRange(fromDate, toDate);
 
@@ -91,8 +97,11 @@ const loadTokenPrice = async (fromDate, toDate) => {
                 const tokenPrices = `Vault: ${priceGVT}, PWRD: ${pricePWRD}, GRO: ${priceGRO}`;
                 logger.info(`**DB: Added token prices for ${dateString} => ${tokenPrices}`);
             }
-                
         }
+        
+        // Update table SYS_USER_LOADS with the last loads
+        return await loadTableUpdates('TOKEN_PRICE', fromDate, toDate);
+
     } catch (err) {
         logger.error(`**DB: Error in loadTokenPrice.js->loadTokenPrice(): ${err}`);
     }

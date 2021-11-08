@@ -359,6 +359,20 @@ CREATE TABLE gro."USER_STD_FACT_NET_RETURNS_UNSTAKED" (
 
 ALTER TABLE gro."USER_STD_FACT_NET_RETURNS_UNSTAKED" OWNER to postgres;
 
+CREATE TABLE gro."TOKEN_PRICE" (
+   price_date       TIMESTAMP (6) NOT NULL,
+   network_id       SMALLINT NULL,
+   gvt_value        NUMERIC (20, 8) NULL,
+   pwrd_value       NUMERIC (20, 8) NULL,
+   gro_value        NUMERIC (20, 8) NULL,
+   creation_date    TIMESTAMP (6) NULL,
+   CONSTRAINT "TOKEN_PRICE_pkey" PRIMARY KEY (price_date)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."TOKEN_PRICE" OWNER to postgres;
+
+
 CREATE OR REPLACE VIEW gro."USER_STD_FACT_V_BALANCES_UNSTAKED" AS
 SELECT bal."balance_date",
     bal."user_address",

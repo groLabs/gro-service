@@ -41,8 +41,10 @@ const loadUserNetReturns = async (
             logger.info(msg);
         }
         // Update table SYS_USER_LOADS with the last loads
-        if (!account)
-            await loadTableUpdates('USER_STD_FACT_NET_RETURNS_UNSTAKED', fromDate, toDate);
+        if (!account) {
+            return await loadTableUpdates('USER_STD_FACT_NET_RETURNS_UNSTAKED', fromDate, toDate);
+        }
+            
     } catch (err) {
         handleErr(`loadUserNetReturns->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}]`, err);
     }

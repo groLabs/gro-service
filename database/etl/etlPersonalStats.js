@@ -82,44 +82,41 @@ const preload = async (_fromDate, _toDate) => {
 /// @return True if no exceptions found; false otherwise
 const remove = async (fromDate, toDate) => {
     try {
-        
+
         const fromDateParsed = moment(fromDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
         const toDateParsed = moment(toDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
         const params = [fromDateParsed, toDateParsed];
         const [
-                transfers,
-                // balances,
-                balancesStaked,
-                balancesUnstaked,
-                balancesPooled,
-                netReturns,
-                netReturnsUnstaked,
-                approvals,
-                loads,
-                price
-            ] = await Promise.all([
-                query('delete_user_std_fact_transfers.sql', params),
-                // query('delete_user_std_fact_balances.sql', params),
-                query('delete_user_std_fact_balances_unstaked.sql', params),
-                query('delete_user_std_fact_balances_staked.sql', params),
-                query('delete_user_std_fact_balances_pooled.sql', params),
-                query('delete_user_std_fact_net_returns.sql', params),
-                query('delete_user_std_fact_net_returns_unstaked.sql', params),
-                query('delete_user_std_fact_approvals.sql', params),
-                query('delete_table_loads.sql', params),
-                query('delete_token_price.sql', params),
-            ]);
+            transfers,
+            // balances,
+            balancesStaked,
+            balancesUnstaked,
+            balancesPooled,
+            netReturns,
+            netReturnsUnstaked,
+            approvals,
+            loads,
+        ] = await Promise.all([
+            query('delete_user_std_fact_transfers.sql', params),
+            // query('delete_user_std_fact_balances.sql', params),
+            query('delete_user_std_fact_balances_unstaked.sql', params),
+            query('delete_user_std_fact_balances_staked.sql', params),
+            query('delete_user_std_fact_balances_pooled.sql', params),
+            query('delete_user_std_fact_net_returns.sql', params),
+            query('delete_user_std_fact_net_returns_unstaked.sql', params),
+            query('delete_user_std_fact_approvals.sql', params),
+            query('delete_table_loads.sql', params),
+        ]);
 
-        if (transfers && 
+        if (transfers &&
             /*balances*/
-            balancesStaked && 
-            balancesUnstaked && 
-            balancesPooled && 
+            balancesStaked &&
+            balancesUnstaked &&
+            balancesPooled &&
             netReturns &&
             netReturnsUnstaked &&
             approvals &&
-            loads &&
-            price) {
+            loads) {
             logger.info(
                 `**DB: ${transfers.rowCount} record${isPlural(
                     transfers.rowCount
@@ -164,11 +161,6 @@ const remove = async (fromDate, toDate) => {
                 `**DB: ${loads.rowCount} record${isPlural(
                     loads.rowCount
                 )} deleted from SYS_USER_LOADS`
-            );
-            logger.info(
-                `**DB: ${price.rowCount} record${isPlural(
-                    price.rowCount
-                )} deleted from TOKEN_PRICE`
             );
         } else {
             const params = `Dates [${fromDate} - ${toDate}]`;
@@ -219,11 +211,11 @@ const reload = async (fromDate, toDate) => {
                     if (await loadUserTransfers(fromDate, toDate, null))
                         // if (await loadUserApprovals(fromDate, toDate, null))
                         // if (await loadUserBalances(fromDate, toDate, null))
-                        if (await loadUserBalances2(fromDate, toDate, null, null)) {
-                            await loadTokenPrice(fromDate, toDate);
-                            await loadUserNetReturns(fromDate, toDate, null);
-                            return true;
-                        }
+                        if (await loadUserBalances2(fromDate, toDate, null, null))
+                            if (await loadTokenPrice(fromDate, toDate))
+                                if (await loadUserNetReturns(fromDate, toDate, null))
+                                    return true;
+
             } else {
                 logger.warn(`**DB: Error/s found in etlPersonalStats.js->reload()`);
             }
@@ -234,6 +226,7 @@ const reload = async (fromDate, toDate) => {
         return false;
     } catch (err) {
         handleErr(`etlPersonalStats->reload() [from: ${fromDate}, to: ${toDate}]`, err);
+        return false;
     }
 };
 
@@ -287,7 +280,7 @@ const etlPersonalStats = async (fromDate, toDate) => {
                 logger.info(`**DB: Personal stats load from ${fromDate} to ${toDate} is completed ;)`);
             } else {
                 logger.error(`**DB: Personal stats load from ${fromDate} to ${toDate} is NOT completed :/`);
-            } 
+            }
         }
     } catch (err) {
         handleErr(`etlPersonalStats->etlPersonalStats()`, err);
