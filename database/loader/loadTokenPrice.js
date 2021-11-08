@@ -100,8 +100,7 @@ const loadTokenPrice = async (fromDate, toDate) => {
         }
         
         // Update table SYS_USER_LOADS with the last loads
-        const finalResult = await loadTableUpdates('TOKEN_PRICE', fromDate, toDate);
-        return finalResult;
+        return await loadTableUpdates('TOKEN_PRICE', fromDate, toDate);
 
     } catch (err) {
         logger.error(`**DB: Error in loadTokenPrice.js->loadTokenPrice(): ${err}`);
