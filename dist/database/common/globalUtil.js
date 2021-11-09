@@ -1,4 +1,3 @@
-"use strict";
 const moment = require('moment');
 const botEnvLogger = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnvLogger}/${botEnvLogger}Logger`);

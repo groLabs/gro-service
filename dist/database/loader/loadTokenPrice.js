@@ -1,11 +1,11 @@
-"use strict";
 const moment = require('moment');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { findBlockByDate } = require('../common/globalUtil');
 const { apiCaller } = require('../common/apiCaller');
 const { query } = require('../handler/queryHandler');
-const { getNetworkId, handleErr, } = require('../common/personalUtil');
+const { loadTableUpdates } = require('./loadTableUpdates');
+const { getNetworkId, generateDateRange, handleErr, } = require('../common/personalUtil');
 const { parseAmount } = require('../parser/personalStatsParser');
 const { QUERY_ERROR } = require('../constants');
 const { getConfig } = require('../../common/configUtil');
@@ -47,35 +47,47 @@ const getGroPriceFromCoingecko = async (date) => {
         return null;
     }
 };
-const loadTokenPrice = async (date) => {
+const loadTokenPrice = async (fromDate, toDate) => {
     try {
-        logger.info(`**DB: Inserting token price for ${date}`);
-        // calc blockTag for target date
-        const day = moment.utc(date, "DD/MM/YYYY")
-            .add(23, 'hours')
-            .add(59, 'minutes')
-            .add(59, 'seconds');
-        const blockTag = {
-            blockTag: (await findBlockByDate(day, false)).block
-        };
-        // Retrieve token prices
-        const priceGVT = parseAmount(await getGroVault().getPricePerShare(blockTag), 'USD');
-        const pricePWRD = parseAmount(await getPowerD().getPricePerShare(blockTag), 'USD');
-        const priceGRO = await getGroPriceFromCoingecko(date);
-        // Store token prices into DB
-        const params = [
-            day,
-            getNetworkId(),
-            priceGVT,
-            pricePWRD,
-            priceGRO,
-            moment.utc()
-        ];
-        await query('insert_token_price.sql', params);
-        logger.info(`**DB: Added token prices for Vault: ${priceGVT}, PWRD: ${pricePWRD}, GRO: ${priceGRO}`);
+        // Remove previous data
+        const fromDateParsed = moment(fromDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
+        const toDateParsed = moment(toDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
+        const params = [fromDateParsed, toDateParsed];
+        await query('delete_token_price.sql', params);
+        const dates = generateDateRange(fromDate, toDate);
+        for (const date of dates) {
+            // calc blockTag for target date
+            const day = date
+                .add(23, 'hours')
+                .add(59, 'minutes')
+                .add(59, 'seconds');
+            const blockTag = {
+                blockTag: (await findBlockByDate(day, false)).block
+            };
+            // Retrieve token prices
+            const dateString = moment(date).format('DD/MM/YYYY');
+            const priceGVT = parseAmount(await getGroVault().getPricePerShare(blockTag), 'USD');
+            const pricePWRD = parseAmount(await getPowerD().getPricePerShare(blockTag), 'USD');
+            const priceGRO = await getGroPriceFromCoingecko(dateString);
+            // Store token prices into DB
+            const params = [
+                day,
+                getNetworkId(),
+                priceGVT,
+                pricePWRD,
+                priceGRO,
+                moment.utc()
+            ];
+            const result = await query('insert_token_price.sql', params);
+            if (result.status !== QUERY_ERROR) {
+                const tokenPrices = `Vault: ${priceGVT}, PWRD: ${pricePWRD}, GRO: ${priceGRO}`;
+                logger.info(`**DB: Added token prices for ${dateString} => ${tokenPrices}`);
+            }
+        }
+        // Update table SYS_USER_LOADS with the last loads
+        return await loadTableUpdates('TOKEN_PRICE', fromDate, toDate);
     }
     catch (err) {
-        // handleErr(`loadTokenPrice->loadTokenPrice()`, err);
         logger.error(`**DB: Error in loadTokenPrice.js->loadTokenPrice(): ${err}`);
     }
 };

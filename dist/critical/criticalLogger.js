@@ -1,11 +1,15 @@
 "use strict";
-const config = require('config');
-const { createLogger, format, transports } = require('winston');
-const { combine, timestamp, printf, errors } = format;
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const config_1 = __importDefault(require("config"));
+const winston_1 = require("winston");
+const { combine, timestamp, printf, errors } = winston_1.format;
 require('winston-daily-rotate-file');
 let logFolder = './';
-if (config.has('log_folder')) {
-    logFolder = config.get('log_folder');
+if (config_1.default.has('log_folder')) {
+    logFolder = config_1.default.get('log_folder');
 }
 const logMsgFormat = printf(({ level, message, timestamp, stack }) => {
     if (stack) {
@@ -13,10 +17,10 @@ const logMsgFormat = printf(({ level, message, timestamp, stack }) => {
     }
     return `${timestamp} ${level}: ${message}`;
 });
-const criticalLogger = createLogger({
+const criticalLogger = (0, winston_1.createLogger)({
     format: combine(errors({ stack: true }), timestamp(), logMsgFormat),
     transports: [
-        new transports.DailyRotateFile({
+        new winston_1.transports.DailyRotateFile({
             filename: 'critical-error-%DATE%.log',
             level: 'error',
             datePattern: 'YYYY-MM-DD',
@@ -26,7 +30,7 @@ const criticalLogger = createLogger({
             maxSize: '10m',
             maxFiles: '30d',
         }),
-        new transports.DailyRotateFile({
+        new winston_1.transports.DailyRotateFile({
             filename: 'critical-%DATE%.log',
             datePattern: 'YYYY-MM-DD',
             dirname: `${logFolder}/criticalLogs`,
@@ -37,7 +41,7 @@ const criticalLogger = createLogger({
         }),
     ],
     exceptionHandlers: [
-        new transports.DailyRotateFile({
+        new winston_1.transports.DailyRotateFile({
             filename: 'critical-exception-%DATE%.log',
             datePattern: 'YYYY-MM-DD',
             dirname: `${logFolder}//criticalLogs`,
@@ -48,7 +52,7 @@ const criticalLogger = createLogger({
         }),
     ],
     rejectionHandlers: [
-        new transports.DailyRotateFile({
+        new winston_1.transports.DailyRotateFile({
             filename: 'critical-rejection-%DATE%.log',
             datePattern: 'YYYY-MM-DD',
             dirname: `${logFolder}/criticalLogs`,
@@ -61,7 +65,7 @@ const criticalLogger = createLogger({
     exitOnError: false,
 });
 if (process.env.NODE_ENV !== 'production') {
-    criticalLogger.add(new transports.Console({
+    criticalLogger.add(new winston_1.transports.Console({
         format: logMsgFormat,
     }));
 }

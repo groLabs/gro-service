@@ -1,4 +1,3 @@
-"use strict";
 const { validationResult } = require('express-validator');
 const validate = function validate(validations) {
     return async (req, res, next) => {

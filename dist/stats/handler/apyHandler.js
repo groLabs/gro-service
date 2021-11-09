@@ -1,4 +1,3 @@
-"use strict";
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const { BigNumber } = require('ethers');

@@ -1,4 +1,3 @@
-"use strict";
 const { query } = require('./queryHandler');
 // const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');

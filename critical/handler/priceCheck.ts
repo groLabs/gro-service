@@ -1,10 +1,10 @@
-const { ethers, BigNumber } = require('ethers');
+import { ethers, BigNumber } from 'ethers';
 
-const { getAlchemyRpcProvider } = require('../../common/chainUtil');
-const { sendAlertMessage } = require('../../common/alertMessageSender');
-const { getBuoy } = require('../../contract/allContracts');
-const { formatNumber } = require('../../common/digitalUtil');
-const curve3PoolABI = require('./ICurve3Pool.json');
+import { getAlchemyRpcProvider } from '../../common/chainUtil';
+import { sendAlertMessage } from '../../common/alertMessageSender';
+import { getBuoy } from '../../contract/allContracts';
+import { formatNumber } from '../../common/digitalUtil';
+import curve3PoolABI from './ICurve3Pool.json';
 
 const stableCoin = ['DAI', 'USDC', 'USDT'];
 const stableCoinDecimals = [
@@ -21,10 +21,10 @@ async function curveStableCoinBalanceCheck(providerKey) {
         curve3PoolABI,
         provider
     );
-    const coinBalances = [];
-    const coinRatios = [];
+    const coinBalances: any[] = [];
+    const coinRatios: any[] = [];
     let total = BigNumber.from(0);
-    const balancePromises = [];
+    const balancePromises: any[] = [];
     for (let i = 0; i < stableCoin.length; i += 1) {
         balancePromises.push(curve3Pool.balances(i));
     }
@@ -44,10 +44,10 @@ async function curveStableCoinBalanceCheck(providerKey) {
     return coinRatios;
 }
 
-async function checkCurveCoinRatio(providerKey, configCoinRatios) {
+export async function checkCurveCoinRatio(providerKey, configCoinRatios) {
     const coinRatios = await curveStableCoinBalanceCheck(providerKey);
     const coinRatiosLenght = coinRatios.length;
-    const ratioAbnormal = [];
+    const ratioAbnormal: any[] = [];
     for (let i = 0; i < coinRatiosLenght; i += 1) {
         const ratio = coinRatios[i];
         if (ratio.lte(BigNumber.from(configCoinRatios.emery))) {
@@ -95,9 +95,9 @@ async function checkCurveCoinRatio(providerKey, configCoinRatios) {
     }
 }
 
-async function checkChainlinkPrice(price, configPrice) {
+export async function checkChainlinkPrice(price, configPrice) {
     const { emery, crit, warn } = configPrice;
-    const ratioAbnormal = [];
+    const ratioAbnormal: any[] = [];
     if (price.high.value.gte(BigNumber.from(emery.high))) {
         ratioAbnormal.push({
             key: price.high.key,
@@ -135,8 +135,3 @@ async function checkChainlinkPrice(price, configPrice) {
         });
     }
 }
-
-module.exports = {
-    checkCurveCoinRatio,
-    checkChainlinkPrice,
-};

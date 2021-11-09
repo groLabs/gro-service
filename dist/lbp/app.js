@@ -1,4 +1,3 @@
-"use strict";
 const { getLbpStatsDB, getLbpStatsFile, } = require('./handler/lbpHandler');
 const { etlLbpStats, etlLbpStatsHDL, etlRecovery, } = require('./etl/etlLbpStats');
 const { etlLbpStatsV2, etlLbpStatsV2_vol, etlLbpStatsHDLV2, getSwaps, } = require('./etl/etlLbpStatsV2');

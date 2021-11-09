@@ -1,4 +1,3 @@
-"use strict";
 const axios = require('axios');
 const logger = require('../statsLogger');
 const { getConfig } = require('../../common/configUtil');

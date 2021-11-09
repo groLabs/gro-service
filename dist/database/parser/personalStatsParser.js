@@ -1,4 +1,3 @@
-"use strict";
 const BN = require('bignumber.js');
 const moment = require('moment');
 const { getConfig } = require('../../common/configUtil');

@@ -1,4 +1,3 @@
-"use strict";
 /* eslint-disable import/no-dynamic-require */
 const { ethers } = require('ethers');
 const { getWalletNonceManager, getAlchemyRpcProvider, } = require('../common/chainUtil');

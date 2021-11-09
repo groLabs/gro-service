@@ -1,4 +1,3 @@
-"use strict";
 const moment = require('moment');
 const { query } = require('./queryHandler');
 const botEnv = process.env.BOT_ENV.toLowerCase();

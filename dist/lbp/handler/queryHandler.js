@@ -1,4 +1,3 @@
-"use strict";
 require('dotenv').config();
 const pg = require('pg');
 const fs = require('fs');

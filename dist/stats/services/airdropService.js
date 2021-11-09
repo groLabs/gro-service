@@ -1,4 +1,3 @@
-"use strict";
 const csvtojson = require('csvtojson');
 const BN = require('bignumber.js');
 const fs = require('fs');

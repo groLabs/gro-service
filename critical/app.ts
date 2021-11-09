@@ -1,13 +1,13 @@
 require('dotenv').config();
-const createError = require('http-errors');
-const express = require('express');
-const path = require('path');
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
-const actuator = require('express-actuator');
+import createError from 'http-errors';
+import express from 'express';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
+import actuator from 'express-actuator';
 
-const { initAllContracts } = require('../contract/allContracts');
-const scheduler = require('./scheduler/criticalScheduler.js');
+import { initAllContracts } from '../contract/allContracts';
+import startCriticalJobs from './scheduler/criticalScheduler';
 const criticalLogger = require('./criticalLogger');
 
 const app = express();
@@ -33,7 +33,7 @@ app.use((req, res, next) => {
 
 // start the schedule task
 initAllContracts().then(() => {
-    scheduler.startCriticalJobs();
+    startCriticalJobs();
 });
 
 module.exports = app;

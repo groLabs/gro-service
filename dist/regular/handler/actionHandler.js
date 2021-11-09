@@ -1,4 +1,3 @@
-"use strict";
 const { getController, getInsurance, getLifeguard, getVaults, getVaultAndStrategyLabels, getCurveVault, getBuoy, } = require('../../contract/allContracts');
 const { addPendingTransaction } = require('../../common/storage');
 const { ContractSendError, ContractCallError } = require('../../dist/common/error').default;

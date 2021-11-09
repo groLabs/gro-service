@@ -1,4 +1,3 @@
-"use strict";
 const fetch = require('node-fetch');
 const { sendAlertMessage } = require('./alertMessageSender');
 async function sendHealthCheckFailedAlert(type, url) {

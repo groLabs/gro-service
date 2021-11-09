@@ -1,4 +1,3 @@
-"use strict";
 const uniswapVolume = (pairId, block) => (`{
         pair(
             id: "${pairId}",

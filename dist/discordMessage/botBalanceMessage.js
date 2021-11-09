@@ -1,7 +1,6 @@
-"use strict";
 const BN = require('bignumber.js');
 const { shortAccount, div } = require('../common/digitalUtil');
-const { MESSAGE_TYPES } = require('../dist/common/discord/discordService').default;
+const { MESSAGE_TYPES } = require('../common/discord/discordService').default;
 const { sendAlertMessage } = require('../common/alertMessageSender');
 const ETH_DECIMAL = BN(10).pow(18);
 function botBalanceMessage(content) {

@@ -1,4 +1,3 @@
-"use strict";
 const { getMintOrBurnGToken } = require('../../common/actionDataFunder');
 async function AppendGTokenMintOrBurnAmountToLog(logs) {
     const parsePromises = [];

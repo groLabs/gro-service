@@ -1,23 +1,25 @@
 "use strict";
-const { BigNumber } = require('ethers');
-const { ethers } = require('ethers');
-const { getBuoy, getController } = require('../../contract/allContracts');
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.strategyCheck = exports.buoyHealthCheckAcrossBlocks = exports.curvePriceCheck = void 0;
+const ethers_1 = require("ethers");
+const ethers_2 = require("ethers");
+const allContracts_1 = require("../../contract/allContracts");
 const { ContractCallError } = require('../../common/error').default;
 const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
-const { getConfig } = require('../../common/configUtil');
-const { getCurrentBlockNumber, getWalletNonceManager, } = require('../../common/chainUtil');
-const { curvePriceMessage, chainlinkPriceMessage, strategyCheckMessage, } = require('../../discordMessage/criticalMessage');
+const configUtil_1 = require("../../common/configUtil");
+const chainUtil_1 = require("../../common/chainUtil");
+const criticalMessage_1 = require("../../discordMessage/criticalMessage");
 const dependencyStrategyABI = require('../abis/DependencyStrategy.json').abi;
-const beforeBlock = getConfig('before_block', false) || 30;
-const perPriceFailedPercentage = getConfig('fail_percentage_pre_price', false) || 50;
-const totalFailedPercentage = getConfig('fail_percentage_total', false) || 1000;
-const harvestStrategies = getConfig('harvest_strategy_dependency');
-const creamStrategies = getConfig('cream_strategy_dependency');
-const curvePoolStrategy = getConfig('curve_strategy_dependency');
-const ratioUpperBond = BigNumber.from(getConfig('ratioUpperBond'));
-const ratioLowerBond = BigNumber.from(getConfig('ratioLowerBond'));
-const curveRatioLowerBond = BigNumber.from(getConfig('curveRatioLowerBond'));
-const PERCENT_DECIAML = BigNumber.from(10).pow(BigNumber.from(4));
+const beforeBlock = (0, configUtil_1.getConfig)('before_block', false) || 30;
+const perPriceFailedPercentage = (0, configUtil_1.getConfig)('fail_percentage_pre_price', false) || 50;
+const totalFailedPercentage = (0, configUtil_1.getConfig)('fail_percentage_total', false) || 1000;
+const harvestStrategies = (0, configUtil_1.getConfig)('harvest_strategy_dependency');
+const creamStrategies = (0, configUtil_1.getConfig)('cream_strategy_dependency');
+const curvePoolStrategy = (0, configUtil_1.getConfig)('curve_strategy_dependency');
+const ratioUpperBond = ethers_1.BigNumber.from((0, configUtil_1.getConfig)('ratioUpperBond'));
+const ratioLowerBond = ethers_1.BigNumber.from((0, configUtil_1.getConfig)('ratioLowerBond'));
+const curveRatioLowerBond = ethers_1.BigNumber.from((0, configUtil_1.getConfig)('curveRatioLowerBond'));
+const PERCENT_DECIAML = ethers_1.BigNumber.from(10).pow(ethers_1.BigNumber.from(4));
 const logger = require('../criticalLogger');
 function getFailedEmbedMessage(messageType, criticalType) {
     return {
@@ -39,7 +41,7 @@ function handleError(error, content) {
     }
 }
 async function getStableCoins(providerKey, walletKey) {
-    const stableCoins = await getController(providerKey, walletKey)
+    const stableCoins = await (0, allContracts_1.getController)(providerKey, walletKey)
         .stablecoins()
         .catch((error) => {
         handleError(error, {
@@ -106,7 +108,7 @@ function chainlinkPricePairCheck(coinPrices) {
     return { high, low };
 }
 async function curvePriceCheck(providerKey, walletKey) {
-    const buoyInstance = getBuoy(providerKey, walletKey);
+    const buoyInstance = (0, allContracts_1.getBuoy)(providerKey, walletKey);
     const price0 = await buoyInstance.getPriceFeed(0);
     const price1 = await buoyInstance.getPriceFeed(1);
     const price2 = await buoyInstance.getPriceFeed(2);
@@ -138,16 +140,17 @@ async function curvePriceCheck(providerKey, walletKey) {
         //     });
         curvePrice = false;
     }
-    chainlinkPriceMessage({
+    (0, criticalMessage_1.chainlinkPriceMessage)({
         needStop: coinIndex < 3,
         abnormalIndex: coinIndex,
     });
     return { curvePrice, chainlinkPricePair };
 }
+exports.curvePriceCheck = curvePriceCheck;
 async function buoyHealthCheck(providerKey, walletKey, currentBlockNumber, previousHealth) {
     try {
         // const stableCoins = await getStableCoins(providerKey, walletKey);
-        const buoyInstance = getBuoy(providerKey, walletKey);
+        const buoyInstance = (0, allContracts_1.getBuoy)(providerKey, walletKey);
         logger.info(`buoyInstance ${buoyInstance.address}`);
         // any stable coin less than 10% in curve will return false;
         const checkResult = await buoyInstance.healthCheck(curveRatioLowerBond, {
@@ -174,7 +177,7 @@ async function buoyHealthCheck(providerKey, walletKey, currentBlockNumber, previ
                     //     });
                 }
             }
-            curvePriceMessage({
+            (0, criticalMessage_1.curvePriceMessage)({
                 needStop: coinIndex < 3,
                 abnormalIndex: coinIndex,
             });
@@ -187,7 +190,7 @@ async function buoyHealthCheck(providerKey, walletKey, currentBlockNumber, previ
     return [false, undefined];
 }
 async function buoyHealthCheckAcrossBlocks(providerKey, walletKey) {
-    const currentBlockNumber = await getCurrentBlockNumber(providerKey).catch((error) => {
+    const currentBlockNumber = await (0, chainUtil_1.getCurrentBlockNumber)(providerKey).catch((error) => {
         handleError(error, {
             strategyCheck: {
                 message: 'Get current block number failed',
@@ -201,9 +204,10 @@ async function buoyHealthCheckAcrossBlocks(providerKey, walletKey) {
     }
     return health;
 }
+exports.buoyHealthCheckAcrossBlocks = buoyHealthCheckAcrossBlocks;
 async function checkSingleStrategy(strategyAddress, method, failedPercentage, beforeBlockNumber, nonceManager) {
     let failed = 0;
-    const strategy = new ethers.Contract(strategyAddress, dependencyStrategyABI, nonceManager);
+    const strategy = new ethers_2.ethers.Contract(strategyAddress, dependencyStrategyABI, nonceManager);
     const currentSharePrice = await strategy[method]().catch((error) => {
         handleError(error, {
             strategyCheck: {
@@ -223,23 +227,23 @@ async function checkSingleStrategy(strategyAddress, method, failedPercentage, be
     if (currentSharePrice.lt(preSharePrice)) {
         const decrease = preSharePrice.sub(currentSharePrice);
         const maxDecrease = preSharePrice
-            .mul(BigNumber.from(failedPercentage))
-            .div(BigNumber.from(10000));
+            .mul(ethers_1.BigNumber.from(failedPercentage))
+            .div(ethers_1.BigNumber.from(10000));
         failed = decrease.gt(maxDecrease);
     }
     else {
         const increase = currentSharePrice.sub(preSharePrice);
         const percent = increase
-            .mul(BigNumber.from(10000))
+            .mul(ethers_1.BigNumber.from(10000))
             .div(currentSharePrice);
         logger.info(`pre-${method} ${preSharePrice} current-${method} ${currentSharePrice} changePercent ${percent}`);
     }
     return failed;
 }
 async function strategyCheck(providerKey, walletKey) {
-    const nonceManager = getWalletNonceManager(providerKey, walletKey);
+    const nonceManager = (0, chainUtil_1.getWalletNonceManager)(providerKey, walletKey);
     // Harvest strategy check
-    const currentBlockNumber = await getCurrentBlockNumber(providerKey).catch((error) => {
+    const currentBlockNumber = await (0, chainUtil_1.getCurrentBlockNumber)(providerKey).catch((error) => {
         handleError(error, {
             strategyCheck: {
                 message: 'Get current block number failed',
@@ -303,11 +307,7 @@ async function strategyCheck(providerKey, walletKey) {
         //         });
         //     });
     }
-    strategyCheckMessage({ failedNumber: strategyFailedTotal });
+    (0, criticalMessage_1.strategyCheckMessage)({ failedNumber: strategyFailedTotal });
     return strategyFailedTotal;
 }
-module.exports = {
-    curvePriceCheck,
-    strategyCheck,
-    buoyHealthCheckAcrossBlocks,
-};
+exports.strategyCheck = strategyCheck;

@@ -1,4 +1,3 @@
-"use strict";
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { getConfig } = require('../../common/configUtil');

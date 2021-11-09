@@ -1,4 +1,3 @@
-"use strict";
 const { BigNumber } = require('ethers');
 const pendingTransactions = new Map();
 const blockNumberTimestamp = [];

@@ -1,4 +1,3 @@
-"use strict";
 // Walets with gvt, pwrd, gvt-gro or pwrd-3rv
 const airdrop4Addr = [
     '0x000000000a38444e0a6e37d3b630d7e855a7cb13',

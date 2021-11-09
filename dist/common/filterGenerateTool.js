@@ -1,4 +1,3 @@
-"use strict";
 const { ethers } = require('ethers');
 const { ContractNames } = require('../registry/registry');
 const { getContractsHistory, getLatestContractsAddress, } = require('../registry/registryLoader');

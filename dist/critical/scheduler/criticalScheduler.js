@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const schedule = require('node-schedule');
 const { getConfig } = require('../../common/configUtil');
 const { curvePriceCheck, strategyCheck, buoyHealthCheckAcrossBlocks, } = require('../handler/criticalHandler');
@@ -98,6 +99,4 @@ function startCriticalJobs() {
     priceMonitor();
     botLiveCheckScheduler();
 }
-module.exports = {
-    startCriticalJobs,
-};
+exports.default = startCriticalJobs;

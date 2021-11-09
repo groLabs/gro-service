@@ -1,5 +1,7 @@
-const config = require('config');
-const { createLogger, format, transports } = require('winston');
+import config from 'config';
+import { createLogger, format, transports, LoggerOptions, Logger } from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+import * as Transport from 'winston-transport';
 
 const { combine, timestamp, printf, errors } = format;
 require('winston-daily-rotate-file');
@@ -17,7 +19,11 @@ const logMsgFormat = printf(({ level, message, timestamp, stack }) => {
     return `${timestamp} ${level}: ${message}`;
 });
 
-const criticalLogger = createLogger({
+interface CriticalLoggerOptions extends LoggerOptions {
+    rejectionHandlers: DailyRotateFile[];
+}
+
+const criticalLogger  = createLogger({
     format: combine(errors({ stack: true }), timestamp(), logMsgFormat),
     transports: [
         new transports.DailyRotateFile({
@@ -63,7 +69,7 @@ const criticalLogger = createLogger({
         }),
     ],
     exitOnError: false,
-});
+} as CriticalLoggerOptions);
 
 if (process.env.NODE_ENV !== 'production') {
     criticalLogger.add(

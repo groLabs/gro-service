@@ -1,4 +1,3 @@
-"use strict";
 const BN = require('bignumber.js');
 const { BigNumber } = require('ethers');
 const botEnv = process.env.BOT_ENV.toLowerCase();

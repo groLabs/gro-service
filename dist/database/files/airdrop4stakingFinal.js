@@ -1,4 +1,3 @@
-"use strict";
 // Wallets staking in gvt, pwrd-3crv, gro/gvt or unstaked in gro/gvt, pwrd-3crv
 const airdrop4StakingFinal = [
     '0x00000000005ef87f8ca7014309ece7260bbcdaeb',

@@ -1,4 +1,3 @@
-"use strict";
 const logger = require('../statsLogger');
 const { getDefaultProvider, getWalletNonceManager, } = require('../../common/chainUtil');
 const { pendingTransactions } = require('../../common/storage');

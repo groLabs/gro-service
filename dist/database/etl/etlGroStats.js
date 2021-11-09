@@ -1,4 +1,3 @@
-"use strict";
 const { query } = require('../handler/queryHandler');
 const { apiCaller } = require('../common/apiCaller');
 const { getConfig } = require('../../common/configUtil');

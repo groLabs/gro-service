@@ -1,4 +1,3 @@
-"use strict";
 const { BigNumber } = require('ethers');
 const { getInsurance, getExposure, getLifeguard, getVaults, getStrategyLength, getVaultAndStrategyLabels, getYearnVaults, getController, getBuoy, } = require('../../contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');

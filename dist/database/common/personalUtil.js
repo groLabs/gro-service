@@ -1,4 +1,3 @@
-"use strict";
 const ethers = require('ethers');
 const moment = require('moment');
 const { ContractNames } = require('../../registry/registry');

@@ -1,4 +1,3 @@
-"use strict";
 const moment = require('moment');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const hostEnv = process.env.HOST_ENV.toLowerCase();

@@ -1,4 +1,3 @@
-"use strict";
 const axios = require('axios');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../${botEnv}/${botEnv}Logger`);

@@ -1,4 +1,3 @@
-"use strict";
 const BN = require('bignumber.js');
 const { formatNumber, shortAccount } = require('../common/digitalUtil');
 const { MESSAGE_TYPES, MESSAGE_EMOJI, DISCORD_CHANNELS, sendMessageToChannel, } = require('../dist/common/discord/discordService').default;

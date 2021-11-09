@@ -1,4 +1,3 @@
-"use strict";
 const { getConfig } = require('../common/configUtil');
 const SERVICE_ID = getConfig('pagerduty.service');
 const ESCALATION_POLICY_ID = getConfig('pagerduty.policy');

@@ -1,4 +1,3 @@
-"use strict";
 const LBP_TX_2 = [
     '0xdbce631e6e4f7b69283c677138b52f15c63ccd689cdc73436a7dfcbe368f1cd7',
     '0xa4df296ca6003aef8b55dbc66321fa2ed22b77bada262154d4427c90f47e3ab7',

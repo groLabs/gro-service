@@ -1,4 +1,3 @@
-"use strict";
 const { ethers } = require('ethers');
 const { getDepositHandler, getWithdrawHandler, getGvt: getGroVault, getPwrd: getPowerD, getUnderlyTokens, } = require('../contract/allContracts');
 const { ContractCallError } = require('../dist/common/error').default;

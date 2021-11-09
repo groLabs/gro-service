@@ -1,4 +1,3 @@
-"use strict";
 const { BigNumber } = require('ethers');
 const { getAlchemyPriorityPrice } = require('./priceManager');
 const { getWalletNonceManager } = require('../common/chainUtil');

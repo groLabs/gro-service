@@ -1,4 +1,3 @@
-"use strict";
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -9,7 +8,8 @@ const { findBlockByDate } = require('../common/globalUtil');
 const { handleErr, Transfer, } = require('../common/personalUtil');
 const { loadUserTransfers, loadTmpUserTransfers, } = require('../loader/loadUserTransfers');
 const { loadUserApprovals, loadTmpUserApprovals, } = require('../loader/loadUserApprovals');
-const { loadUserBalances } = require('../loader/loadUserBalances');
+// const { loadUserBalances } = require('../loader/loadUserBalances');
+const { loadUserBalances2 } = require('../loader/loadUserBalances2');
 const { loadUserNetReturns } = require('../loader/loadUserNetReturns');
 const { QUERY_ERROR } = require('../constants');
 /// @notice - Deletes all data in cache tables for a given user address
@@ -93,7 +93,9 @@ const loadCache = async (account) => {
                 if (await loadTmpUserApprovals(fromBlock, 'latest', account))
                     if (await loadUserTransfers(null, null, account))
                         if (await loadUserApprovals(null, null, account))
-                            if (await loadUserBalances(fromDate, toDate, account))
+                            // if (await loadUserBalances(fromDate, toDate, account))
+                            // TODO: time should be now(), otherwise it will take 23:59:59
+                            if (await loadUserBalances2(fromDate, toDate, account, null))
                                 await loadUserNetReturns(fromDate, toDate, account);
             }
             else {

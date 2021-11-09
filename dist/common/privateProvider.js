@@ -1,4 +1,3 @@
-"use strict";
 const { UrlJsonRpcProvider } = require('@ethersproject/providers');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require

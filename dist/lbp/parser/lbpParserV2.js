@@ -1,4 +1,3 @@
-"use strict";
 const moment = require('moment');
 const { getNetworkId } = require('../common/lbpUtil');
 const botEnv = process.env.BOT_ENV.toLowerCase();

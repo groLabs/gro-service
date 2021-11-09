@@ -1,4 +1,3 @@
-"use strict";
 /* eslint-disable no-await-in-loop */
 const { BigNumber } = require('ethers');
 const { MESSAGE_TYPES, DISCORD_CHANNELS, sendMessageToChannel, } = require('../../dist/common/discord/discordService').default;

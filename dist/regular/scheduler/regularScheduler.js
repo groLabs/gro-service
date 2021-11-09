@@ -1,4 +1,3 @@
-"use strict";
 const schedule = require('node-schedule');
 const { syncManagerNonce, checkAccountsBalance, getCurrentBlockNumber, } = require('../../common/chainUtil');
 const { checkServerHealth } = require('../../common/checkBotHealth');

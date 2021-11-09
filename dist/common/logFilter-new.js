@@ -1,4 +1,3 @@
-"use strict";
 const { getInfruraRpcProvider } = require('./chainUtil');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require

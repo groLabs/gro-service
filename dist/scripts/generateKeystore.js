@@ -1,4 +1,3 @@
-"use strict";
 const { ethers } = require('ethers');
 function generateKeystore(privateKey, password) {
     try {

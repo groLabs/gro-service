@@ -1,4 +1,3 @@
-"use strict";
 const { pendingTransactions } = require('./storage');
 const { getVaultStableCoins } = require('../contract/allContracts');
 const { getAlchemyRpcProvider } = require('./chainUtil');

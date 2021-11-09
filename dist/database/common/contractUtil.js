@@ -1,4 +1,3 @@
-"use strict";
 const { ethers } = require('ethers');
 const { getProvider, getProviderKey, } = require('./globalUtil');
 const { ContractNames } = require('../../registry/registry');

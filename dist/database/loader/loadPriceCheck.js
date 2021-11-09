@@ -1,4 +1,3 @@
-"use strict";
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const { getNetworkId, getBlockData, } = require('../common/personalUtil');

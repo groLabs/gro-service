@@ -1,4 +1,3 @@
-"use strict";
 // Walets with any interaction with Gvt, Pwrd staker or pools and not included in gvt, pwrd [airdrop4Addr.js]
 const airdrop4AddrGvtStaking = [
     '0x00000000005ef87f8ca7014309ece7260bbcdaeb',

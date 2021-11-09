@@ -1,4 +1,3 @@
-"use strict";
 const { newSystemLatestContracts, newSystemLatestVaultStrategyContracts, } = require('../../registry/contracts');
 const latestSystemContracts = {};
 const latestVaultStrategyContracts = {};

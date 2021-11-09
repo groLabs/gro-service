@@ -1,4 +1,3 @@
-"use strict";
 const { BigNumber: BN } = require('bignumber.js');
 const mapObject = require('map-obj');
 const { ethers, BigNumber } = require('ethers');

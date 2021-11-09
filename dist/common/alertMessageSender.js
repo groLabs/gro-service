@@ -1,5 +1,4 @@
-"use strict";
-const { DISCORD_CHANNELS, sendMessageToChannel, } = require('../dist/common/discord/discordService').default;
+const { DISCORD_CHANNELS, sendMessageToChannel, } = require('./discord/discordService').default;
 const { createIncident } = require('../pagerduty/pagerdutyService');
 function sendMessageToDiscord(discordMessage) {
     sendMessageToChannel(DISCORD_CHANNELS.botAlerts, discordMessage);

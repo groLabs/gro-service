@@ -1,4 +1,3 @@
-"use strict";
 const latestPriceAndBalance = (poolId) => (`{
     poolTokens (
         where: {

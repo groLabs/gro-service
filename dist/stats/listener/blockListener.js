@@ -1,4 +1,3 @@
-"use strict";
 const { getDefaultProvider } = require('../../common/chainUtil');
 const logger = require('../statsLogger');
 const BlockWorker = require('./blockWorker');

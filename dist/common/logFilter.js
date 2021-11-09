@@ -1,4 +1,3 @@
-"use strict";
 const { ethers } = require('ethers');
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const { getDepositHandler, getWithdrawHandler, getGvt: getGroVault, getPwrd: getPowerD, getUnderlyTokens, } = require('../contract/allContracts');

@@ -1,4 +1,3 @@
-"use strict";
 /* eslint-disable no-await-in-loop */
 const { ethers, BigNumber } = require('ethers');
 const fetch = require('node-fetch');

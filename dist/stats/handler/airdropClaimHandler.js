@@ -1,4 +1,3 @@
-"use strict";
 const { ethers } = require('ethers');
 const { getFilterEvents } = require('../../common/logFilter-new');
 const { getConfig } = require('../../common/configUtil');

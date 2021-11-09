@@ -1,4 +1,3 @@
-"use strict";
 const { MESSAGE_TYPES, DISCORD_CHANNELS, sendMessage, sendMessageToChannel, } = require('../dist/common/discord/discordService').default;
 const { sendAlertMessage } = require('../common/alertMessageSender');
 const stableCoin = ['DAI', 'USDC', 'USDT'];

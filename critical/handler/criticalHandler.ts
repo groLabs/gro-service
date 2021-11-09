@@ -1,20 +1,13 @@
-const { BigNumber } = require('ethers');
-const { ethers } = require('ethers');
-const { getBuoy, getController } = require('../../contract/allContracts');
+import { BigNumber } from 'ethers';
+import { ethers } from 'ethers';
+import { getBuoy, getController } from '../../contract/allContracts';
 
 const { ContractCallError } = require('../../common/error').default;
 
 const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
-const { getConfig } = require('../../common/configUtil');
-const {
-    getCurrentBlockNumber,
-    getWalletNonceManager,
-} = require('../../common/chainUtil');
-const {
-    curvePriceMessage,
-    chainlinkPriceMessage,
-    strategyCheckMessage,
-} = require('../../discordMessage/criticalMessage');
+import { getConfig } from '../../common/configUtil';
+import { getCurrentBlockNumber, getWalletNonceManager } from '../../common/chainUtil';
+import { curvePriceMessage, chainlinkPriceMessage, strategyCheckMessage } from '../../discordMessage/criticalMessage';
 const dependencyStrategyABI = require('../abis/DependencyStrategy.json').abi;
 
 const beforeBlock = getConfig('before_block', false) || 30;
@@ -31,14 +24,14 @@ const PERCENT_DECIAML = BigNumber.from(10).pow(BigNumber.from(4));
 
 const logger = require('../criticalLogger');
 
-function getFailedEmbedMessage(messageType, criticalType) {
+function getFailedEmbedMessage(messageType: any, criticalType: string) {
     return {
         type: messageType,
         description: `**${criticalType}** an internal call error has occurred`,
     };
 }
 
-function handleError(error, content) {
+function handleError(error: any, content: { curveCheck?: any; strategyCheck?: any; }) {
     logger.error(error);
     if (content.curveCheck) {
         throw new ContractCallError(
@@ -66,10 +59,10 @@ function handleError(error, content) {
     }
 }
 
-async function getStableCoins(providerKey, walletKey) {
+async function getStableCoins(providerKey: any, walletKey: any) {
     const stableCoins = await getController(providerKey, walletKey)
         .stablecoins()
-        .catch((error) => {
+        .catch((error: any) => {
             handleError(error, {
                 curveCheck: { message: 'Get underlyingTokens failed' },
             });
@@ -77,7 +70,7 @@ async function getStableCoins(providerKey, walletKey) {
     return stableCoins;
 }
 
-function outOfRange(value) {
+function outOfRange(value: BigNumber) {
     // const upperBond = decimal.mul(ratioUpperBond).div(BigNumber.from(10000));
     // const lowerBond = decimal.mul(ratioLowerBond).div(BigNumber.from(10000));
     logger.info(
@@ -86,7 +79,7 @@ function outOfRange(value) {
     return value.lt(ratioLowerBond) || value.gt(ratioUpperBond);
 }
 
-function findBrokenToken(price01, price02, price12) {
+function findBrokenToken(price01: BigNumber, price02: BigNumber, price12: BigNumber) {
     if (outOfRange(price01)) {
         // one of 0,1 has issue
         if (outOfRange(price02)) {
@@ -109,7 +102,7 @@ function findBrokenToken(price01, price02, price12) {
     return 3;
 }
 
-function chainlinkPricePairCheck(coinPrices) {
+function chainlinkPricePairCheck(coinPrices: { daiPrice: BigNumber; usdcPrice: BigNumber; usdtPrice: BigNumber; }) {
     const { daiPrice, usdcPrice, usdtPrice } = coinPrices;
 
     const daiToUsdcPrice = daiPrice.mul(PERCENT_DECIAML).div(usdcPrice);
@@ -133,7 +126,7 @@ function chainlinkPricePairCheck(coinPrices) {
     let low = { key: keys[0], value: pricePairs[keys[0]] };
     for (let i = 1; i < keys.length; i += 1) {
         const key = keys[i];
-        const value = pricePairs[key];
+        const value: BigNumber = pricePairs[key];
         if (value.gt(high.value)) {
             high = { key, value };
         }
@@ -145,7 +138,7 @@ function chainlinkPricePairCheck(coinPrices) {
     return { high, low };
 }
 
-async function curvePriceCheck(providerKey, walletKey) {
+export async function curvePriceCheck(providerKey: any, walletKey: any) {
     const buoyInstance = getBuoy(providerKey, walletKey);
     const price0 = await buoyInstance.getPriceFeed(0);
     const price1 = await buoyInstance.getPriceFeed(1);
@@ -244,7 +237,7 @@ async function buoyHealthCheck(
     return [false, undefined];
 }
 
-async function buoyHealthCheckAcrossBlocks(providerKey, walletKey) {
+export async function buoyHealthCheckAcrossBlocks(providerKey, walletKey) {
     const currentBlockNumber = await getCurrentBlockNumber(providerKey).catch(
         (error) => {
             handleError(error, {
@@ -323,7 +316,12 @@ async function checkSingleStrategy(
     return failed;
 }
 
-async function strategyCheck(providerKey, walletKey) {
+interface MsgLabel {
+    name: string;
+    address: string;
+}
+
+export async function strategyCheck(providerKey, walletKey) {
     const nonceManager = getWalletNonceManager(providerKey, walletKey);
     // Harvest strategy check
     const currentBlockNumber = await getCurrentBlockNumber(providerKey).catch(
@@ -337,7 +335,7 @@ async function strategyCheck(providerKey, walletKey) {
     );
     const beforeBlockNumber = currentBlockNumber - beforeBlock;
     let strategyFailedTotal = 0;
-    const msgLabel = [];
+    const msgLabel: MsgLabel[] = [];
     for (let i = 0; i < harvestStrategies.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         const harvestStrategyResult = await checkSingleStrategy(
@@ -420,9 +418,3 @@ async function strategyCheck(providerKey, walletKey) {
     strategyCheckMessage({ failedNumber: strategyFailedTotal });
     return strategyFailedTotal;
 }
-
-module.exports = {
-    curvePriceCheck,
-    strategyCheck,
-    buoyHealthCheckAcrossBlocks,
-};

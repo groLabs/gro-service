@@ -1,4 +1,3 @@
-"use strict";
 const { MESSAGE_TYPES, MESSAGE_EMOJI, DISCORD_CHANNELS, sendMessageToChannel, } = require('../dist/common/discord/discordService').default;
 const { getConfig } = require('../common/configUtil');
 const { shortAccount } = require('../common/digitalUtil');

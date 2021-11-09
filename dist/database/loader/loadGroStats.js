@@ -1,4 +1,3 @@
-"use strict";
 // TODO: error handler
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');

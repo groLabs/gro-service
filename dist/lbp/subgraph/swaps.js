@@ -1,4 +1,3 @@
-"use strict";
 const swaps = (poolId, targetTimestamp, first, skip) => (`{
       swaps (
           first: ${first}

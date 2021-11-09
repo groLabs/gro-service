@@ -1,4 +1,3 @@
-"use strict";
 const { ethers } = require('ethers');
 const { getAlchemyRpcProvider } = require('../common/chainUtil');
 const botEnv = process.env.BOT_ENV.toLowerCase();

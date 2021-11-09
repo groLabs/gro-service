@@ -1,4 +1,3 @@
-"use strict";
 const BN = require('bignumber.js');
 const { ethers } = require('ethers');
 const logger = require('../statsLogger');

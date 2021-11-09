@@ -1,4 +1,3 @@
-"use strict";
 const { BigNumber } = require('ethers');
 const { MESSAGE_TYPES, MESSAGE_EMOJI, DISCORD_CHANNELS, sendMessage, sendMessageToChannel, } = require('../dist/common/discord/discordService').default;
 const { getVaultAndStrategyLabels, getVaultStableCoins, } = require('../contract/allContracts');

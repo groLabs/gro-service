@@ -1,4 +1,3 @@
-"use strict";
 const fs = require('fs');
 const { ethers } = require('ethers');
 const { getConfig } = require('../common/configUtil');

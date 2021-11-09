@@ -1,35 +1,40 @@
 "use strict";
-const { ethers, BigNumber } = require('ethers');
-const { getAlchemyRpcProvider } = require('../../common/chainUtil');
-const { sendAlertMessage } = require('../../common/alertMessageSender');
-const { getBuoy } = require('../../contract/allContracts');
-const { formatNumber } = require('../../common/digitalUtil');
-const curve3PoolABI = require('./ICurve3Pool.json');
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.checkChainlinkPrice = exports.checkCurveCoinRatio = void 0;
+const ethers_1 = require("ethers");
+const chainUtil_1 = require("../../common/chainUtil");
+const alertMessageSender_1 = require("../../common/alertMessageSender");
+const allContracts_1 = require("../../contract/allContracts");
+const digitalUtil_1 = require("../../common/digitalUtil");
+const ICurve3Pool_json_1 = __importDefault(require("./ICurve3Pool.json"));
 const stableCoin = ['DAI', 'USDC', 'USDT'];
 const stableCoinDecimals = [
-    BigNumber.from('1000000000000000000'),
-    BigNumber.from('1000000'),
-    BigNumber.from('1000000'),
+    ethers_1.BigNumber.from('1000000000000000000'),
+    ethers_1.BigNumber.from('1000000'),
+    ethers_1.BigNumber.from('1000000'),
 ];
 async function curveStableCoinBalanceCheck(providerKey) {
-    const provider = getAlchemyRpcProvider(providerKey);
-    const curve3PoolAddress = await getBuoy().curvePool();
-    const curve3Pool = new ethers.Contract(curve3PoolAddress, curve3PoolABI, provider);
+    const provider = (0, chainUtil_1.getAlchemyRpcProvider)(providerKey);
+    const curve3PoolAddress = await (0, allContracts_1.getBuoy)().curvePool();
+    const curve3Pool = new ethers_1.ethers.Contract(curve3PoolAddress, ICurve3Pool_json_1.default, provider);
     const coinBalances = [];
     const coinRatios = [];
-    let total = BigNumber.from(0);
+    let total = ethers_1.BigNumber.from(0);
     const balancePromises = [];
     for (let i = 0; i < stableCoin.length; i += 1) {
         balancePromises.push(curve3Pool.balances(i));
     }
     const balancePromisesResult = await Promise.all(balancePromises);
     for (let i = 0; i < stableCoin.length; i += 1) {
-        const balance = balancePromisesResult[i].mul(BigNumber.from('1000000000000000000').div(stableCoinDecimals[i]));
+        const balance = balancePromisesResult[i].mul(ethers_1.BigNumber.from('1000000000000000000').div(stableCoinDecimals[i]));
         total = total.add(balance);
         coinBalances.push(balance);
     }
     for (let i = 0; i < stableCoin.length; i += 1) {
-        const ratio = coinBalances[i].mul(BigNumber.from(10000)).div(total);
+        const ratio = coinBalances[i].mul(ethers_1.BigNumber.from(10000)).div(total);
         coinRatios.push(ratio);
     }
     return coinRatios;
@@ -40,28 +45,28 @@ async function checkCurveCoinRatio(providerKey, configCoinRatios) {
     const ratioAbnormal = [];
     for (let i = 0; i < coinRatiosLenght; i += 1) {
         const ratio = coinRatios[i];
-        if (ratio.lte(BigNumber.from(configCoinRatios.emery))) {
+        if (ratio.lte(ethers_1.BigNumber.from(configCoinRatios.emery))) {
             ratioAbnormal.push({
                 ratio,
-                configRatio: BigNumber.from(configCoinRatios.emery),
+                configRatio: ethers_1.BigNumber.from(configCoinRatios.emery),
                 level: 'EMERG',
                 coin: stableCoin[i],
             });
             break;
         }
-        else if (ratio.lte(BigNumber.from(configCoinRatios.crit))) {
+        else if (ratio.lte(ethers_1.BigNumber.from(configCoinRatios.crit))) {
             ratioAbnormal.push({
                 ratio,
-                configRatio: BigNumber.from(configCoinRatios.crit),
+                configRatio: ethers_1.BigNumber.from(configCoinRatios.crit),
                 level: 'CRIT',
                 coin: stableCoin[i],
             });
             break;
         }
-        else if (ratio.lte(BigNumber.from(configCoinRatios.warn))) {
+        else if (ratio.lte(ethers_1.BigNumber.from(configCoinRatios.warn))) {
             ratioAbnormal.push({
                 ratio,
-                configRatio: BigNumber.from(configCoinRatios.warn),
+                configRatio: ethers_1.BigNumber.from(configCoinRatios.warn),
                 level: 'WARN',
                 coin: stableCoin[i],
             });
@@ -71,9 +76,9 @@ async function checkCurveCoinRatio(providerKey, configCoinRatios) {
     if (ratioAbnormal.length) {
         const { ratio, configRatio, level, coin } = ratioAbnormal[0];
         const urgency = level === 'EMERG' ? 'high' : 'low';
-        const ratioPercent = ratio.div(BigNumber.from(100));
-        const configRatioPercent = configRatio.div(BigNumber.from(100));
-        sendAlertMessage({
+        const ratioPercent = ratio.div(ethers_1.BigNumber.from(100));
+        const configRatioPercent = configRatio.div(ethers_1.BigNumber.from(100));
+        (0, alertMessageSender_1.sendAlertMessage)({
             discord: {
                 description: `[${level}] P5 - Curve coin balance compare | Coin ${coin} is ${ratioPercent}% below ${configRatioPercent}% of tri-pool`,
             },
@@ -85,24 +90,25 @@ async function checkCurveCoinRatio(providerKey, configCoinRatios) {
         });
     }
 }
+exports.checkCurveCoinRatio = checkCurveCoinRatio;
 async function checkChainlinkPrice(price, configPrice) {
     const { emery, crit, warn } = configPrice;
     const ratioAbnormal = [];
-    if (price.high.value.gte(BigNumber.from(emery.high))) {
+    if (price.high.value.gte(ethers_1.BigNumber.from(emery.high))) {
         ratioAbnormal.push({
             key: price.high.key,
             level: 'EMERG',
             value: price.high.value,
         });
     }
-    else if (price.high.value.gte(BigNumber.from(crit.high))) {
+    else if (price.high.value.gte(ethers_1.BigNumber.from(crit.high))) {
         ratioAbnormal.push({
             key: price.high.key,
             level: 'CRIT',
             value: price.high.value,
         });
     }
-    else if (price.high.value.gte(BigNumber.from(warn.high))) {
+    else if (price.high.value.gte(ethers_1.BigNumber.from(warn.high))) {
         ratioAbnormal.push({
             key: price.high.key,
             level: 'WARN',
@@ -112,9 +118,9 @@ async function checkChainlinkPrice(price, configPrice) {
     if (ratioAbnormal.length) {
         const { key, level, value } = ratioAbnormal[0];
         const urgency = level === 'EMERG' ? 'high' : 'low';
-        const pricePairValue = formatNumber(value, 4, 2);
+        const pricePairValue = (0, digitalUtil_1.formatNumber)(value, 4, 2);
         const pridePair = key.toUpperCase().split('TO');
-        sendAlertMessage({
+        (0, alertMessageSender_1.sendAlertMessage)({
             discord: {
                 description: `[${level}] P4 - Chainlink coin pair compare | Ratio between ${pridePair[0]} and ${pridePair[1]} is ${pricePairValue}, threshold 1.4`,
             },
@@ -126,7 +132,4 @@ async function checkChainlinkPrice(price, configPrice) {
         });
     }
 }
-module.exports = {
-    checkCurveCoinRatio,
-    checkChainlinkPrice,
-};
+exports.checkChainlinkPrice = checkChainlinkPrice;

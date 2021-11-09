@@ -1,4 +1,3 @@
-"use strict";
 const { query } = require('../handler/queryHandler');
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const botEnv = process.env.BOT_ENV.toLowerCase();

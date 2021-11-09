@@ -1,4 +1,3 @@
-"use strict";
 const schedule = require('node-schedule');
 const { getConfig } = require('../../common/configUtil');
 const { etlGroStats } = require('../etl/etlGroStats');

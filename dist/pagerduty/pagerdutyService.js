@@ -1,4 +1,3 @@
-"use strict";
 const { api: pagerdutyAPI } = require('@pagerduty/pdjs');
 const { getIncidentBody } = require('./incidentBody');
 const { getConfig } = require('../common/configUtil');

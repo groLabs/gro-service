@@ -1,4 +1,3 @@
-"use strict";
 const QUERY_ERROR = 400;
 const QUERY_SUCCESS = 200;
 const INTERVAL = 300; // 5 minutes (time interval for historical loads)

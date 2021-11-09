@@ -1,4 +1,3 @@
-"use strict";
 /* eslint-disable no-await-in-loop */
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');

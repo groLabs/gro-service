@@ -117,13 +117,10 @@ function botLiveCheckScheduler() {
     });
 }
 
-function startCriticalJobs() {
+export default function startCriticalJobs() {
     checkCurveHealth();
     checkBotAccountBalance();
     priceMonitor();
     botLiveCheckScheduler();
 }
 
-module.exports = {
-    startCriticalJobs,
-};

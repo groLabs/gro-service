@@ -1,7 +1,6 @@
-"use strict";
 const { ethers } = require('ethers');
 const { getAlchemyRpcProvider, getWalletNonceManager, } = require('../common/chainUtil');
-const { ContractCallError } = require('../dist/common/error').default;
+const { ContractCallError } = require('../common/error').default;
 const { getConfig } = require('../common/configUtil');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
