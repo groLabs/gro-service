@@ -53,15 +53,9 @@
             "startBlock": 12836674,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "DAI"
-            ],
-            "protocols": [
-                "Aave"
-            ],
-            "protocolsDisplayName": [
-                "Aave"
-            ],
+            "tokens": ["DAI"],
+            "protocols": ["Aave"],
+            "protocolsDisplayName": ["Aave"],
             "metaData": {
                 "N": "Aave",
                 "DN": "Aave - DAI",
@@ -78,15 +72,9 @@
             "startBlock": 13502267,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "USDC"
-            ],
-            "protocols": [
-                "Aave"
-            ],
-            "protocolsDisplayName": [
-                "Aave"
-            ],
+            "tokens": ["USDC"],
+            "protocols": ["Aave"],
+            "protocolsDisplayName": ["Aave"],
             "metaData": {
                 "N": "Aave",
                 "DN": "Aave - USDC",
@@ -103,15 +91,9 @@
             "startBlock": 13502267,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "USDT"
-            ],
-            "protocols": [
-                "Aave"
-            ],
-            "protocolsDisplayName": [
-                "Aave"
-            ],
+            "tokens": ["USDT"],
+            "protocols": ["Aave"],
+            "protocolsDisplayName": ["Aave"],
             "metaData": {
                 "N": "Aave",
                 "DN": "Aave - USDT",
@@ -128,21 +110,9 @@
             "startBlock": 10633479,
             "abiVersion": "551353c",
             "tag": "Strategy",
-            "tokens": [
-                "USDP"
-            ],
-            "protocols": [
-                "Curve",
-                "Yearn",
-                "Convex",
-                "Unit"
-            ],
-            "protocolsDisplayName": [
-                "Curve",
-                "Yearn",
-                "Convex",
-                "Unit"
-            ],
+            "tokens": ["USDP"],
+            "protocols": ["Curve", "Yearn", "Convex", "Unit"],
+            "protocolsDisplayName": ["Curve", "Yearn", "Convex", "Unit"],
             "metaData": {
                 "N": "XPool",
                 "DN": "Curve - XPool",
@@ -165,9 +135,9 @@
             "active": true
         },
         "TokenCounter": {
-            "address": "0x862C238b96A4C89d7d4549fcdd74144131b96CF5",
-            "deployedBlock": 11312954,
-            "startBlock": 11312954,
+            "address": "0xd64eCA20ae640DCe7fF760aae02eCFF8A5C7372F",
+            "deployedBlock": 11391883,
+            "startBlock": 11391883,
             "abiVersion": "fa8e260",
             "tag": "Other",
             "tokens": [],
@@ -195,9 +165,9 @@
         ],
         "TokenCounter": [
             {
-                "address": "0x862C238b96A4C89d7d4549fcdd74144131b96CF5",
-                "deployedBlock": 11312954,
-                "startBlock": 11312954,
+                "address": "0xd64eCA20ae640DCe7fF760aae02eCFF8A5C7372F",
+                "deployedBlock": 11391883,
+                "startBlock": 11391883,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Other",
