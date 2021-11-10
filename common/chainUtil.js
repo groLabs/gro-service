@@ -13,6 +13,7 @@ const { botBalanceMessage } = require('../discordMessage/botBalanceMessage');
 const { sendAlertMessage } = require('./alertMessageSender');
 const { getConfig } = require('./configUtil');
 const { PrivateProvider } = require('./privateProvider');
+const { AvaxPrcProvider } = require('./avaxRpcProvider');
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -209,6 +210,31 @@ function getAlchemyRpcProvider(providerKey) {
             rpcProviders[providerKey] = result;
         }
     }
+    return result;
+}
+
+function getAvaxRpcProvider(providerKey) {
+    // only for test
+    const providerKeys = Object.keys(rpcProviders);
+    // logger.info(`providerKeys: ${JSON.stringify(providerKeys)}`);
+    // =====================
+    let result;
+    providerKey = providerKey || DEFAULT_PROVIDER_KEY;
+
+    result = rpcProviders[providerKey];
+    if (!result) {
+        const key = `blockchain.alchemy_api_keys.${providerKey}`;
+        if (process.env.NODE_ENV === 'develop') {
+            result = ethers.providers.getDefaultProvider(network);
+        } else {
+            const avaxProvider = new AvaxPrcProvider(network, key);
+            result = createProxyForProvider(avaxProvider, key);
+        }
+
+        logger.info(`Create a new ${providerKey} Rpc provider.`);
+        rpcProviders[providerKey] = result;
+    }
+
     return result;
 }
 
@@ -479,4 +505,5 @@ module.exports = {
     checkAccountsBalance,
     getCurrentBlockNumber,
     getTimestampByBlockNumber,
+    getAvaxRpcProvider,
 };
