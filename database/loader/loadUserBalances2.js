@@ -1,4 +1,5 @@
 const botEnv = process.env.BOT_ENV.toLowerCase();
+const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');
@@ -84,7 +85,9 @@ const getBalancesSC = async (users, block, offset) => {
             getBalancesUniBalLP(GRO_GVT_ADDRESS, userBatch, block),
             getBalancesUniBalLP(GRO_USDC_ADDRESS, userBatch, block),
             getBalancesCrvLP(CRV_PWRD_ADDRESS, userBatch, block),
-            getBalancesUniBalLP(GRO_WETH_ADDRESS, userBatch, block),
+            (nodeEnv === 'mainnet')
+                ? getBalancesUniBalLP(GRO_WETH_ADDRESS, userBatch, block)
+                : [],
         ]);
 
         if (gvt.length === 0) {
@@ -111,9 +114,15 @@ const getBalancesSC = async (users, block, offset) => {
             lpCrvPwrd[0].amount_unstaked_lp.push(...lpCrvPwrdUpdate[0].amount_unstaked_lp);
             lpCrvPwrd[1].amount_staked_lp.push(...lpCrvPwrdUpdate[1].amount_staked_lp);
             lpCrvPwrd[2].lp_position.push(...lpCrvPwrdUpdate[2].lp_position);
-            lpGroWeth[0].amount_unstaked_lp.push(...lpGroWethUpdate[0].amount_unstaked_lp);
-            lpGroWeth[1].amount_staked_lp.push(...lpGroWethUpdate[1].amount_staked_lp);
-            lpGroWeth[2].lp_position.push(...lpGroWethUpdate[2].lp_position);
+            (nodeEnv === 'mainnet')
+                ? lpGroWeth[0].amount_unstaked_lp.push(...lpGroWethUpdate[0].amount_unstaked_lp)
+                : [];
+            (nodeEnv === 'mainnet')
+                ? lpGroWeth[1].amount_staked_lp.push(...lpGroWethUpdate[1].amount_staked_lp)
+                : [];
+            (nodeEnv === 'mainnet')
+                ? lpGroWeth[2].lp_position.push(...lpGroWethUpdate[2].lp_position)
+                : [];
         }
 
         return (newOffset >= users.length)
@@ -131,12 +140,14 @@ const loadStakedBalance = (account, i, day, addr) => {
 
         const isStakedBalance = (
             gro[1].amount_staked[i]
-            + lpGroGvt[1].amount_staked_lp[i]
-            + lpGroUsdc[1].amount_staked_lp[i]
-            + gvt[1].amount_staked[i]
-            + lpCrvPwrd[1].amount_staked_lp[i]
-            + lpGroWeth[1].amount_staked_lp[i]
-            > 0)
+                + lpGroGvt[1].amount_staked_lp[i]
+                + lpGroUsdc[1].amount_staked_lp[i]
+                + gvt[1].amount_staked[i]
+                + lpCrvPwrd[1].amount_staked_lp[i]
+                + (nodeEnv === 'mainnet')
+                ? lpGroWeth[1].amount_staked_lp[i]
+                : 0
+                > 0)
             ? true
             : false;
 
@@ -149,14 +160,16 @@ const loadStakedBalance = (account, i, day, addr) => {
             lpGroUsdc[1].amount_staked_lp[i],   // pool2_staked_amount
             gvt[1].amount_staked[i],            // pool3_staked_amount
             lpCrvPwrd[1].amount_staked_lp[i],   // pool4_staked_amount
-            lpGroWeth[1].amount_staked_lp[i],   // pool5_staked_amount
+            (nodeEnv === 'mainnet') ?
+                lpGroWeth[1].amount_staked_lp[i]// pool5_staked_amount
+                : 0,
             moment.utc(),
         ];
 
         if (isStakedBalance) {
             const q = (account)
-            ? 'insert_user_cache_fact_balances_staked.sql'
-            : 'insert_user_std_fact_balances_staked.sql';
+                ? 'insert_user_cache_fact_balances_staked.sql'
+                : 'insert_user_std_fact_balances_staked.sql';
             const result = await query(q, stakedParams);
             if (result.status === QUERY_ERROR)
                 resolve(false);
@@ -218,9 +231,13 @@ const loadPooledBalance = (account, i, day, addr) => {
             lpGroUsdc[2].lp_position[i][1] +
             lpCrvPwrd[0].amount_unstaked_lp[i] +
             lpCrvPwrd[2].lp_position[i] +
-            lpGroWeth[0].amount_unstaked_lp[i] +
-            lpGroWeth[2].lp_position[i][0] +
-            lpGroWeth[2].lp_position[i][1]
+            ((nodeEnv === 'mainnet')
+                ? (
+                    lpGroWeth[0].amount_unstaked_lp[i] +
+                    lpGroWeth[2].lp_position[i][0] +
+                    lpGroWeth[2].lp_position[i][1]
+                )
+                : 0)
             > 0)
             ? true
             : false;
@@ -237,17 +254,23 @@ const loadPooledBalance = (account, i, day, addr) => {
             lpGroUsdc[2].lp_position[i][1],     // pool2_usdc_amount
             lpCrvPwrd[0].amount_unstaked_lp[i], // pool4_lp_amount
             lpCrvPwrd[2].lp_position[i],        // poll4_pwrd_amount
-            lpGroWeth[0].amount_unstaked_lp[i], // pool5_lp_amount
-            lpGroWeth[2].lp_position[i][0],     // pool5_gro_amount
-            lpGroWeth[2].lp_position[i][1],     // pool5_weth_amount
+            (nodeEnv === 'mainnet')
+                ? lpGroWeth[0].amount_unstaked_lp[i]
+                : 0,                            // pool5_lp_amount
+            (nodeEnv === 'mainnet')
+                ? lpGroWeth[2].lp_position[i][0]
+                : 0,                            // pool5_gro_amount
+            (nodeEnv === 'mainnet')
+                ? lpGroWeth[2].lp_position[i][1]
+                : 0,                            // pool5_weth_amount
             moment.utc(),
         ];
 
         if (isPooledBalance) {
             // TODO: add cache query
             const q = (account)
-            ? 'insert_user_cache_fact_balances_pooled.sql'
-            : 'insert_user_std_fact_balances_pooled.sql';
+                ? 'insert_user_cache_fact_balances_pooled.sql'
+                : 'insert_user_std_fact_balances_pooled.sql';
             const result = await query(q, pooledParams);
             if (result.status === QUERY_ERROR)
                 resolve(false);

@@ -2,7 +2,6 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');
-const { loadEthBlocks } = require('./loadEthBlocks');
 const { loadTableUpdates } = require('./loadTableUpdates');
 const { findBlockByDate } = require('../common/globalUtil');
 const {

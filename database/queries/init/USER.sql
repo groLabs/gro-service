@@ -348,9 +348,6 @@ CREATE TABLE gro."USER_STD_FACT_NET_RETURNS_UNSTAKED" (
    total_value         NUMERIC (20, 8) NULL,
    pwrd_value          NUMERIC (20, 8) NULL,
    gvt_value           NUMERIC (20, 8) NULL,
-   total_ratio_value   NUMERIC (20, 8) NULL,
-   pwrd_ratio_value    NUMERIC (20, 8) NULL,
-   gvt_ratio_value     NUMERIC (20, 8) NULL,
    creation_date       TIMESTAMP (6) NULL,
    CONSTRAINT "USER_STD_FACT_NET_RETURNS_UNSTAKED_pkey" PRIMARY KEY
       (balance_date, user_address)
@@ -453,9 +450,6 @@ CREATE TABLE gro."USER_CACHE_FACT_NET_RETURNS_UNSTAKED" (
    total_value         NUMERIC (20, 8) NULL,
    pwrd_value          NUMERIC (20, 8) NULL,
    gvt_value           NUMERIC (20, 8) NULL,
-   total_ratio_value   NUMERIC (20, 8) NULL,
-   pwrd_ratio_value    NUMERIC (20, 8) NULL,
-   gvt_ratio_value     NUMERIC (20, 8) NULL,
    creation_date       TIMESTAMP (6) NULL,
    CONSTRAINT "USER_CACHE_FACT_NET_RETURNS_UNSTAKED_pkey" PRIMARY KEY
       (balance_date, user_address)
@@ -463,3 +457,24 @@ CREATE TABLE gro."USER_CACHE_FACT_NET_RETURNS_UNSTAKED" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."USER_CACHE_FACT_NET_RETURNS_UNSTAKED" OWNER to postgres;
+
+CREATE OR REPLACE VIEW gro."USER_CACHE_FACT_V_BALANCES_UNSTAKED" AS
+SELECT bal.balance_date,
+    bal.user_address,
+    bal.network_id,
+    bal.gvt_amount,
+    bal.pwrd_amount,
+    bal.gro_amount,
+    (bal.gvt_amount * pri.gvt_value) AS gvt_value,
+    (bal.pwrd_amount * pri.pwrd_value) AS pwrd_value,
+    (bal.gro_amount * pri.gro_value) AS gro_value
+FROM (
+        gro."USER_CACHE_FACT_BALANCES_UNSTAKED" bal
+        LEFT JOIN gro."TOKEN_PRICE" pri ON (
+            (
+                to_char(bal.balance_date, 'DD/MM/YYYY') = to_char(pri.price_date, 'DD/MM/YYYY')
+            )
+        )
+    );
+
+ALTER TABLE gro."USER_CACHE_FACT_V_BALANCES_UNSTAKED" OWNER to postgres;

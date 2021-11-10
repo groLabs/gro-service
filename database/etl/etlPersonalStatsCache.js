@@ -41,7 +41,8 @@ const preloadCache = async (account) => {
             balancesUnstaked,
             balancesStaked,
             balancesPooled,
-            netReturns,
+            // netReturns,
+            netReturnsUnstaked,
             transfers,
             _fromDate,
         ] = await Promise.all([
@@ -53,7 +54,8 @@ const preloadCache = async (account) => {
             query('delete_user_cache_fact_balances_unstaked.sql', params),
             query('delete_user_cache_fact_balances_staked.sql', params),
             query('delete_user_cache_fact_balances_pooled.sql', params),
-            query('delete_user_cache_fact_net_returns.sql', params),
+            // query('delete_user_cache_fact_net_returns.sql', params),
+            query('delete_user_cache_fact_net_returns_unstaked.sql', params),
             query('delete_user_cache_fact_transfers.sql', params),
             query('select_max_load_dates.sql', params),
         ]);
@@ -66,7 +68,8 @@ const preloadCache = async (account) => {
             balancesUnstaked.status === QUERY_ERROR ||
             balancesStaked.status === QUERY_ERROR ||
             balancesPooled.status === QUERY_ERROR ||
-            netReturns.status === QUERY_ERROR ||
+            // netReturns.status === QUERY_ERROR ||
+            netReturnsUnstaked.status === QUERY_ERROR ||
             transfers.status === QUERY_ERROR ||
             _fromDate.status === QUERY_ERROR)
             return [];
@@ -126,12 +129,17 @@ const loadCache = async (account) => {
             if (res.every(Boolean)) {
                 //if (await loadTmpUserApprovals(fromBlock, 'latest', account))
                     if (await loadUserTransfers(null, null, account))
-                        if (await loadUserApprovals(null, null, account))
+                        return true; // testing
+                        //if (await loadUserApprovals(null, null, account))
                             // if (await loadUserBalances(fromDate, toDate, account))
                             // TODO: time should be now(), otherwise it will take 23:59:59
+
+/*
                             if (await loadUserBalances2(fromDate, toDate, account, null))
                                 if (await loadUserNetReturns(fromDate, toDate, account))
                                     return true;
+*/
+
             } else {
                 logger.warn(`**DB: Error/s found in etlPersonalStatsCache.js->loadCache()`);
             }

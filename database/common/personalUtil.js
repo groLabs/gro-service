@@ -7,17 +7,11 @@ const {
     getContractHistoryEventFilters,
     getCoinApprovalFilters,
 } = require('../../common/filterGenerateTool');
-const { loadContractInfoFromRegistry } = require('../../registry/registryLoader');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { getProvider } = require('./globalUtil')
 const { query } = require('../handler/queryHandler');
-const {
-    EVENT_TYPE,
-    getEvents: getTransferEV,
-    getApprovalEvents: getApprovalEV,
-} = require('../../common/logFilter');
 const {
     QUERY_ERROR,
     ERC20_TRANSFER_SIGNATURE
@@ -73,7 +67,6 @@ const isDeposit = (side) => {
 };
 
 const getBlockData = async (blockNumber) => {
-    // const block = await getDefaultProvider()
     const block = await getProvider()
         .getBlock(blockNumber)
         .catch((err) => {
@@ -263,25 +256,25 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 sender = account;
                 receiver = null;
                 break;
-            case Transfer.EXTERNAL_GVT_DEPOSIT:
-                eventType = 'LogTransfer';
+            case Transfer.EXTERNAL_GVT_DEPOSIT:  // Rename TRANSFER_GVT_IN
+                eventType = 'Transfer';
                 contractName = ContractNames.groVault;
                 sender = null;
                 receiver = account;
                 break;
-            case Transfer.EXTERNAL_PWRD_DEPOSIT:
+            case Transfer.EXTERNAL_PWRD_DEPOSIT:  // Rename TRANSFER_PWRD_IN
                 eventType = 'Transfer';
                 contractName = ContractNames.powerD;
                 sender = null;
                 receiver = account;
                 break;
-            case Transfer.EXTERNAL_GVT_WITHDRAWAL:
-                eventType = 'LogTransfer';
+            case Transfer.EXTERNAL_GVT_WITHDRAWAL:  // Rename TRANSFER_GVT_OUT
+                eventType = 'Transfer';
                 contractName = ContractNames.groVault;
                 sender = account;
                 receiver = null;
                 break;
-            case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
+            case Transfer.EXTERNAL_PWRD_WITHDRAWAL:   // Rename TRANSFER_PWRD_OUT
                 eventType = 'Transfer';
                 contractName = ContractNames.powerD;
                 sender = account;
@@ -295,7 +288,6 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 return false;
         }
 
-        let logs;
         let events;
         if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) {
             // returns an array
@@ -321,15 +313,17 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
         }
 
         const logPromises = [];
+
         for (let i = 0; i < events.length; i += 1) {
             const transferEventFilter = events[i];
-            logPromises.push(
-                getFilterEvents(
-                    transferEventFilter.filter,
-                    transferEventFilter.interface,
-                    'default'
-                )
+            const result = await getFilterEvents(
+                transferEventFilter.filter,
+                transferEventFilter.interface,
+                'default'
             );
+            if (result.length > 0) {
+                logPromises.push(result);
+            }
         }
         let logResults = await Promise.all(logPromises);
 
@@ -374,21 +368,26 @@ const getGTokenFromTx = async (result, side, account) => {
 
         // For all transactions -> for all logs -> retrieve GToken
         for (const item of result) {
-            // const txReceipt = await getDefaultProvider()
             const txReceipt = await getProvider()
                 .getTransactionReceipt(item.tx_hash)
                 .catch((err) => {
                     console.log(err);
                 });
+
             for (const log of txReceipt.logs) {
                 // Only when signature is an ERC20 transfer: `Transfer(address from, address to, uint256 value)`
                 if (log.topics[0] === ERC20_TRANSFER_SIGNATURE) {
-                    const index = side === Transfer.DEPOSIT ? 1 : 2; // from is 0x0 : to is 0x0
+
+                    const index = (side === Transfer.DEPOSIT)
+                        ? 1     // from is 0x0
+                        : 2;    // to is 0x0
+
                     // Only when a token is minted (from: 0x)
                     if (log.topics[index] === ZERO_ADDRESS) {
                         const data = log.data;
                         const topics = log.topics;
                         const output = iface.parseLog({ data, topics });
+
                         // Update result array with the correct GTokens
                         if (item.gvt_amount !== 0) {
                             item.gvt_amount = parseFloat(

@@ -20,4 +20,5 @@ CREATE TABLE gro."AIRDROP4" (
     creation_date TIMESTAMP (6) NULL,
     CONSTRAINT "AIRDROP4_pkey" PRIMARY KEY (network_id, user_address) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) TABLESPACE pg_default;
+
 ALTER TABLE gro."AIRDROP4" OWNER to postgres;
