@@ -5,7 +5,10 @@ const {
     getCurrentBlockNumber,
 } = require('../../common/chainUtil');
 const { checkServerHealth } = require('../../common/checkBotHealth');
-const { checkPendingTransactions } = require('../../common/pendingTransaction');
+const {
+    checkPendingTransactions,
+    syncPendingTransactions,
+} = require('../../common/pendingTransaction');
 const { pendingTransactions } = require('../../common/storage');
 const {
     sendErrorMessageToLogChannel,
@@ -41,6 +44,9 @@ const {
 const {
     updatePriceTransactionMessage,
 } = require('../../discordMessage/otherMessage');
+const {
+    distributeCurveVaultTransactionMessage,
+} = require('../../discordMessage/distributeCurveMessage');
 const { sendAlertMessage } = require('../../common/alertMessageSender');
 const logger = require('../regularLogger');
 
@@ -188,6 +194,18 @@ function investTriggerScheduler() {
 
             const result = await checkPendingTransactions(keys);
             investTransactionMessage(result);
+
+            const vaultsStrategyLength = getStrategyLength();
+            const strategyKeys = [];
+            for (let i = 0; i < vaults.length; i += 1) {
+                const strategyLength = vaultsStrategyLength[i];
+                for (let j = 0; j < strategyLength; j += 1) {
+                    strategyKeys.push(`harvest-${vaults[i].address}-${j}`);
+                }
+            }
+            const strategyResult = await checkPendingTransactions(strategyKeys);
+            harvestTransactionMessage(strategyResult);
+
             const investTriggers = await investTrigger(providerKey, walletKey);
             logger.info(
                 `investTriggers needCall ${investTriggers.needCall} params ${investTriggers.params}`
@@ -265,8 +283,11 @@ function curveExposureMaintenanceScheduler() {
     const walletKey = 'fast';
     schedule.scheduleJob(rebalanceTriggerSchedulerSetting, async () => {
         try {
-            const result = await checkPendingTransactions(['curve-exposure']);
-            rebalanceTransactionMessage(result);
+            const result = await checkPendingTransactions([
+                'withdrawToAdapter',
+                'distributeCurveAssets',
+            ]);
+            distributeCurveVaultTransactionMessage(result);
 
             const triggerResult = await distributeCurveVaultTrigger(
                 providerKey,
@@ -291,12 +312,12 @@ function curveExposureMaintenanceScheduler() {
 
             const discordMessage = {
                 description:
-                    "[CRIT] B3 - CurveDistribute | CurveDistribute txn failed, CurveDistribute action didn't complete",
+                    "[CRIT] B15 - CurveDistribute | CurveDistribute txn failed, CurveDistribute action didn't complete",
             };
             sendAlertMessage({
                 discord: discordMessage,
                 pagerduty: {
-                    title: '[CRIT] B3 - CurveDistribute | CurveDistribute txn failed',
+                    title: '[CRIT] B15 - CurveDistribute | CurveDistribute txn failed',
                     description: discordMessage.description,
                     urgency: 'low',
                 },
@@ -371,6 +392,11 @@ function botLiveCheckScheduler() {
 }
 
 function startRegularJobs() {
+    try {
+        syncPendingTransactions();
+    } catch (e) {
+        console.log(e);
+    }
     checkBotAccountBalance();
     investTriggerScheduler();
     harvestTriggerScheduler();

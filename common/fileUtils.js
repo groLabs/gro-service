@@ -2,6 +2,7 @@ const fs = require('fs');
 const { getConfig } = require('./configUtil');
 
 const blockNumberFile = getConfig('blockNumberFile');
+const pendingTransactionFile = getConfig('pendingTransactionFile');
 
 function getLastBlockNumber(
     type,
@@ -27,7 +28,34 @@ function updateLastBlockNumber(blockNumber, type) {
     fs.writeFileSync(blockNumberFile, JSON.stringify(blockObj));
 }
 
+function readPendingTransaction() {
+    const pendingTransaction = fs.readFileSync(pendingTransactionFile, {
+        flag: 'a+',
+    });
+    const content = pendingTransaction.toString();
+    let pendingTransactionObj;
+    if (content.length === 0) {
+        pendingTransactionObj = new Map();
+    } else {
+        pendingTransactionObj = new Map(JSON.parse(content));
+    }
+    console.log(pendingTransactionObj);
+    return pendingTransactionObj;
+}
+
+function updatePendingTransaction(pendingTransactions) {
+    console.log(
+        `updatePendingTransaction ${JSON.stringify([...pendingTransactions])}`
+    );
+    fs.writeFileSync(
+        pendingTransactionFile,
+        JSON.stringify([...pendingTransactions])
+    );
+}
+
 module.exports = {
     getLastBlockNumber,
     updateLastBlockNumber,
+    readPendingTransaction,
+    updatePendingTransaction,
 };

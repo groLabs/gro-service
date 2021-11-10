@@ -37,7 +37,10 @@ const preloadCache = async (account) => {
             tmpDeposits,
             tmpWithdrawals,
             approvals,
-            balances,
+            // balances,
+            balancesUnstaked,
+            balancesStaked,
+            balancesPooled,
             netReturns,
             transfers,
             _fromDate,
@@ -46,7 +49,10 @@ const preloadCache = async (account) => {
             query('delete_user_cache_tmp_deposits.sql', params),
             query('delete_user_cache_tmp_withdrawals.sql', params),
             query('delete_user_cache_fact_approvals.sql', params),
-            query('delete_user_cache_fact_balances.sql', params),
+            // query('delete_user_cache_fact_balances.sql', params),
+            query('delete_user_cache_fact_balances_unstaked.sql', params),
+            query('delete_user_cache_fact_balances_staked.sql', params),
+            query('delete_user_cache_fact_balances_pooled.sql', params),
             query('delete_user_cache_fact_net_returns.sql', params),
             query('delete_user_cache_fact_transfers.sql', params),
             query('select_max_load_dates.sql', params),
@@ -56,7 +62,10 @@ const preloadCache = async (account) => {
             tmpDeposits.status === QUERY_ERROR ||
             tmpWithdrawals.status === QUERY_ERROR ||
             approvals.status === QUERY_ERROR ||
-            balances.status === QUERY_ERROR ||
+            // balances.status === QUERY_ERROR ||
+            balancesUnstaked.status === QUERY_ERROR ||
+            balancesStaked.status === QUERY_ERROR ||
+            balancesPooled.status === QUERY_ERROR ||
             netReturns.status === QUERY_ERROR ||
             transfers.status === QUERY_ERROR ||
             _fromDate.status === QUERY_ERROR)
@@ -115,13 +124,14 @@ const loadCache = async (account) => {
             ]);
 
             if (res.every(Boolean)) {
-                if (await loadTmpUserApprovals(fromBlock, 'latest', account))
+                //if (await loadTmpUserApprovals(fromBlock, 'latest', account))
                     if (await loadUserTransfers(null, null, account))
                         if (await loadUserApprovals(null, null, account))
                             // if (await loadUserBalances(fromDate, toDate, account))
                             // TODO: time should be now(), otherwise it will take 23:59:59
                             if (await loadUserBalances2(fromDate, toDate, account, null))
-                                await loadUserNetReturns(fromDate, toDate, account);
+                                if (await loadUserNetReturns(fromDate, toDate, account))
+                                    return true;
             } else {
                 logger.warn(`**DB: Error/s found in etlPersonalStatsCache.js->loadCache()`);
             }
@@ -130,6 +140,7 @@ const loadCache = async (account) => {
             const params = `user: ${account} fromBlock ${fromBlock}`;
             handleErr(`etlPersonalStatsCache->loadCache() Error with parameters: ${params}`, null);
         }
+        return false;
     } catch (err) {
         handleErr(`etlPersonalStatsCache->loadCache()`, err);
     }
@@ -137,7 +148,12 @@ const loadCache = async (account) => {
 
 const etlPersonalStatsCache = async (account) => {
     try {
-        await loadCache(account);
+        const res = await loadCache(account);
+        if (res) {
+            logger.info(`**DB: Personal stats for account ${account} is completed`);
+        } else {
+            logger.error(`**DB: Personal stats load for account ${account} is NOT completed`);
+        }
     } catch (err) {
         handleErr(`etlPersonalStatsCache->etlPersonalStatsCache()`, err);
     }
