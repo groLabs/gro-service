@@ -24,6 +24,9 @@ const {
 const {
     harvestTriggerMessage,
 } = require('../../discordMessage/harvestMessage');
+const {
+    distributeCurveVaultTriggerMessage,
+} = require('../../discordMessage/distributeCurveMessage');
 const logger = require('../regularLogger');
 
 const NONEED_TRIGGER = { needCall: false };
@@ -125,7 +128,7 @@ async function sortStrategyByLastHarvested(vaults) {
             // Get harvest callCost
             const callCostKey = `harvest_callcost.vault_${i}.strategy_${j}`;
             const baseCallCost = BigNumber.from(getConfig(callCostKey, false));
-            const callCost = baseCallCost.mul(gasPrice).div(GAS_PRICE_DECIMAL);
+            const callCost = baseCallCost.mul(gasPrice);
             logger.info(`callCost ${j} ${callCost}`);
 
             // eslint-disable-next-line no-await-in-loop
@@ -301,7 +304,7 @@ async function harvestOneTrigger(providerKey, walletKey) {
             // Get harvest callCost
             const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${strategyIndex}`;
             const baseCallCost = BigNumber.from(getConfig(callCostKey, false));
-            const callCost = baseCallCost.mul(gasPrice).div(GAS_PRICE_DECIMAL);
+            const callCost = baseCallCost.mul(gasPrice);
             logger.info(`callCost ${callCost}`);
             return {
                 needCall: true,
@@ -317,7 +320,7 @@ async function harvestOneTrigger(providerKey, walletKey) {
             // Get harvest callCost
             const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${strategyIndex}`;
             const baseCallCost = BigNumber.from(getConfig(callCostKey, false));
-            const callCost = baseCallCost.mul(gasPrice).div(GAS_PRICE_DECIMAL);
+            const callCost = baseCallCost.mul(gasPrice);
             const expectedReturn = estimatedTotalAssets.sub(totalDebt);
             logger.info(`curve callCost ${callCost} ${expectedReturn}`);
             // use 10000 here is to make expectedReturn lager than 3x real cost
@@ -402,9 +405,13 @@ async function distributeCurveVaultTrigger(providerKey, walletKey) {
         return NONEED_TRIGGER;
     }
 
-    if (pendingTransactions.get('curve-exposure')) {
+    if (
+        pendingTransactions.get('withdrawToAdapter') ||
+        pendingTransactions.get('distributeCurveAssets')
+    ) {
         const result = `Already has pending curve-exposure transaction: ${
-            pendingTransactions.get('curve-exposure').hash
+            pendingTransactions.get('withdrawToAdapter').hash ||
+            pendingTransactions.get('distributeCurveAssets').hash
         }`;
         logger.info(result);
         throw new PendingTransactionError(
@@ -451,7 +458,7 @@ async function distributeCurveVaultTrigger(providerKey, walletKey) {
             },
         };
     }
-    // rebalanceTriggerMessage({ isRebalance: needRebalance });
+    distributeCurveVaultTriggerMessage(distributeCurveVaultTriggerResult);
     return distributeCurveVaultTriggerResult;
 }
 

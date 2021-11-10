@@ -7,12 +7,18 @@ const {
     getCurveVault,
     getBuoy,
 } = require('../../contract/allContracts');
-const { addPendingTransaction } = require('../../common/storage');
+const { pendingTransactions } = require('../../common/storage');
+const { addPendingTransaction } = require('../../common/pendingTransaction');
 const { ContractSendError, ContractCallError } = require('../../dist/common/error').default;
+const { getWalletNonceManager } = require('../../common/chainUtil');
 const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
 const { investMessage } = require('../../discordMessage/investMessage');
 const { rebalanceMessage } = require('../../discordMessage/rebalanceMessage');
 const { harvestMessage } = require('../../discordMessage/harvestMessage');
+const {
+    withdrawMessage,
+    distributeMessage,
+} = require('../../discordMessage/distributeCurveMessage');
 const { safetyCheckMessage } = require('../../discordMessage/otherMessage');
 const { wrapSendTransaction } = require('../../gasPrice/transaction');
 const logger = require('../regularLogger');
@@ -27,6 +33,24 @@ async function adapterInvest(
     // This is to skip curve invest
     if (!isInvested) return;
     const vaultName = getVaultAndStrategyLabels()[vault.address].name;
+    // user invest override long-pending harvest
+    console.log(`pendingTransactions: ${JSON.stringify(pendingTransactions)}`);
+    const pendingKeys = Object.keys(pendingTransactions);
+    for (let i = 0; i < pendingKeys.length; i += 1) {
+        if (pendingKeys[i].startWith(`harvest-${vault.address}`)) {
+            const pendingHarvest = pendingTransactions.get(pendingKeys[i]);
+            const currentNonce = pendingHarvest.transactionRequest.nonce;
+            const result = `Already has pending harvest for ${vaultName}:${
+                vault.address
+            } transaction: ${
+                pendingTransactions.get(`invest-${vault.address}`).hash
+            }`;
+            getWalletNonceManager(providerKey, walletKey).setTransactionCount(
+                currentNonce
+            );
+            logger.info(result);
+        }
+    }
     const investResponse = await wrapSendTransaction(vault, 'invest').catch(
         (error) => {
             logger.error(error);
@@ -182,32 +206,6 @@ async function curveInvest(blockNumber, providerKey, walletKey) {
     });
 }
 
-async function execActions(blockNumber, triggerResult) {
-    // Handle invest
-    if (triggerResult[0].needCall) {
-        logger.info('invest');
-        await invest(blockNumber, triggerResult[0].params);
-    }
-
-    // Handle harvest
-    if (triggerResult[1].needCall) {
-        logger.info('harvest');
-        await harvest(blockNumber, triggerResult[1].params);
-    }
-
-    // Handle Rebalance
-    if (triggerResult[2].needCall) {
-        logger.info('rebalance');
-        await rebalance(blockNumber);
-    }
-
-    // Handle Curve invest
-    if (triggerResult[3].needCall) {
-        logger.info('curve invest');
-        await curveInvest(blockNumber);
-    }
-}
-
 async function priceSafetyCheck(providerKey) {
     const isSafety = await getBuoy(providerKey)
         .safetyCheck()
@@ -244,6 +242,22 @@ async function distributeCurveVault(
             MESSAGE_TYPES.distributeCurveVault
         );
     });
+
+    addPendingTransaction(
+        'withdrawToAdapter',
+        {
+            blockNumber,
+            providerKey,
+            walletKey,
+            reSendTimes: 0,
+            methodName: 'withdrawToAdapter',
+            label: MESSAGE_TYPES.distributeCurveVault,
+        },
+        withdrawResponse
+    );
+
+    withdrawMessage({ transactionHash: withdrawResponse.hash });
+
     const distributeCurveVaultResponse = await wrapSendTransaction(
         getController(providerKey, walletKey),
         'distributeCurveAssets',
@@ -257,7 +271,7 @@ async function distributeCurveVault(
     });
 
     addPendingTransaction(
-        'curve-exposure',
+        'distributeCurveAssets',
         {
             blockNumber,
             providerKey,
@@ -269,7 +283,7 @@ async function distributeCurveVault(
         distributeCurveVaultResponse
     );
 
-    rebalanceMessage({ transactionHash: distributeCurveVaultResponse.hash });
+    distributeMessage({ transactionHash: distributeCurveVaultResponse.hash });
 }
 
 module.exports = {
@@ -277,7 +291,6 @@ module.exports = {
     curveInvest,
     harvest,
     rebalance,
-    execActions,
     priceSafetyCheck,
     distributeCurveVault,
 };
