@@ -12,3 +12,4 @@ views/
 public/
 *.log
 *-audit.json
+types
