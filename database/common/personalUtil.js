@@ -325,28 +325,31 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 logPromises.push(result);
             }
         }
+
         let logResults = await Promise.all(logPromises);
 
-
         let logTrades = [];
-        if (side > 2 && side < 7) {
+
+        // Exclude mint or burn logs in transfers (sender or receiver address is 0x0)
+        if (side > 2 && side < 7 && logResults.length > 0) {
             for (let i = 0; i < logResults.length; i++) {
                 //console.log('Event type:', eventType, 'side:', side, 'logs:', logResults[i], 'args:');
                 for (let j = 0; j < logResults[i].length; j++) {
                     const elem = logResults[i][j];
-                    //console.log('transfer type: ', eventType, 'element:', elem, 'args:', elem.args);
-                    // Exclude events that are mint or burn (sender or receiver address is 0x0) only for transfers
+                    // console.log('transfer type: ', eventType, 'element:', elem, 'args:', elem.args);
                     if (elem.args[0] !== '0x0000000000000000000000000000000000000000'
                         && elem.args[1] !== '0x0000000000000000000000000000000000000000') {
                         logTrades.push(elem);
-
                     }
                 }
             }
-            logResults = [logTrades];
+            return (logTrades.length > 0) ? [logTrades] : [];
+        } else {
+            return logResults;
         }
 
-        return logResults;
+        //console.log('side', side, 'logResults', logResults[0][0]);
+
     } catch (err) {
         handleErr(`personalUtil->getTransferEvents2() [side: ${side}]`, err);
         return false;

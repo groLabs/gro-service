@@ -88,7 +88,6 @@ const loadTmpUserTransfers = async (
 ) => {
     try {
         const logs = await getTransferEvents2(side, fromBlock, toBlock, account);
-
         if (logs && logs.length > 0) {
             let result = [];
             for (let i = 0; i < logs.length; i++) {

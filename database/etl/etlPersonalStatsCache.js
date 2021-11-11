@@ -158,9 +158,9 @@ const etlPersonalStatsCache = async (account) => {
     try {
         const res = await loadCache(account);
         if (res) {
-            logger.info(`**DB: Personal stats for account ${account} is completed`);
+            logger.info(`**DB: Personal stats for account ${account} is completed ;)`);
         } else {
-            logger.error(`**DB: Personal stats load for account ${account} is NOT completed`);
+            logger.error(`**DB: Personal stats load for account ${account} is NOT completed :/`);
         }
     } catch (err) {
         handleErr(`etlPersonalStatsCache->etlPersonalStatsCache()`, err);

@@ -173,7 +173,8 @@ const parseTransferEvents = async (logs, side) => {
             const usd_value =
                 side === Transfer.DEPOSIT
                     ? parseAmount(log.args[3], 'USD') // LogNewDeposit.usdAmount
-                    : side === Transfer.WITHDRAWAL
+                    : (side === Transfer.WITHDRAWAL ||
+                        side === Transfer.TRANSFER_PWRD_OUT)
                         ? usd_return
                         : side === Transfer.TRANSFER_PWRD_IN
                             ? parseAmount(log.args[2], 'USD') // // Transfer.value
