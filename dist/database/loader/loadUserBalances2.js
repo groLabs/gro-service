@@ -118,8 +118,9 @@ const loadStakedBalance = (account, i, day, addr) => {
             moment.utc(),
         ];
         if (isStakedBalance) {
-            // TODO: add cache query
-            const q = 'insert_user_std_fact_balances_staked.sql';
+            const q = (account)
+                ? 'insert_user_cache_fact_balances_staked.sql'
+                : 'insert_user_std_fact_balances_staked.sql';
             const result = await query(q, stakedParams);
             if (result.status === QUERY_ERROR)
                 resolve(false);
@@ -150,8 +151,7 @@ const loadUnstakedBalance = (account, i, day, addr) => {
         ];
         if (isUnstakedBalance) {
             const q = (account)
-                // ? 'insert_user_cache_fact_balances.sql'  // **** TODO ****
-                ? 'insert_user_std_fact_balances_unstaked.sql' // **** for TESTING ONLY *****
+                ? 'insert_user_cache_fact_balances_unstaked.sql'
                 : 'insert_user_std_fact_balances_unstaked.sql';
             const result = await query(q, unstakedParams);
             if (result.status === QUERY_ERROR)
@@ -199,7 +199,9 @@ const loadPooledBalance = (account, i, day, addr) => {
         ];
         if (isPooledBalance) {
             // TODO: add cache query
-            const q = 'insert_user_std_fact_balances_pooled.sql';
+            const q = (account)
+                ? 'insert_user_cache_fact_balances_pooled.sql'
+                : 'insert_user_std_fact_balances_pooled.sql';
             const result = await query(q, pooledParams);
             if (result.status === QUERY_ERROR)
                 resolve(false);
@@ -270,8 +272,7 @@ const retrieveUsers = async (account) => {
             return [];
     }
     // Extract value from array of object [user_address: 0x...]
-    const users = res.rows.map(key => key.user_address);
-    return users;
+    return res.rows.map(key => key.user_address);
 };
 /// @notice Check if target date >= deployment date of TokenCounter SC
 /// @param  day The target day [format: DD/MM/YYYY]

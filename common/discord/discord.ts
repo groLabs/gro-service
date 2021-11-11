@@ -10,7 +10,7 @@ const discordClient = new Discord.Client();
 // eslint-disable-next-line import/no-dynamic-require
 const logger: Logger = require(`../../${botEnv}/${botEnv}Logger`);
 
-const TOKEN = getConfig('discord.token');
+const TOKEN = getConfig('discord.token') as string;
 let isClientReady = false;
 
 discordClient.login(TOKEN);

@@ -2,21 +2,26 @@ import { BigNumber } from 'ethers';
 import { ethers } from 'ethers';
 import { getBuoy, getController } from '../../contract/allContracts';
 
-const { ContractCallError } = require('../../common/error').default;
+import { ContractCallError } from '../../common/error';
 
-const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
+import { MESSAGE_TYPES } from '../../common/discord/discordService';
 import { getConfig } from '../../common/configUtil';
 import { getCurrentBlockNumber, getWalletNonceManager } from '../../common/chainUtil';
 import { curvePriceMessage, chainlinkPriceMessage, strategyCheckMessage } from '../../discordMessage/criticalMessage';
 const dependencyStrategyABI = require('../abis/DependencyStrategy.json').abi;
 
-const beforeBlock = getConfig('before_block', false) || 30;
+interface ICurvePoolStrategy {
+    yearn: string;
+    curve: string;
+}
+
+const beforeBlock = getConfig('before_block', false) as number || 30;
 const perPriceFailedPercentage =
-    getConfig('fail_percentage_pre_price', false) || 50;
-const totalFailedPercentage = getConfig('fail_percentage_total', false) || 1000;
-const harvestStrategies = getConfig('harvest_strategy_dependency');
-const creamStrategies = getConfig('cream_strategy_dependency');
-const curvePoolStrategy = getConfig('curve_strategy_dependency');
+    getConfig('fail_percentage_pre_price', false) as number || 50;
+const totalFailedPercentage = getConfig('fail_percentage_total', false) as number || 1000;
+const harvestStrategies = getConfig('harvest_strategy_dependency') as string[];
+const creamStrategies = getConfig('cream_strategy_dependency') as string[];
+const curvePoolStrategy = getConfig('curve_strategy_dependency') as ICurvePoolStrategy;
 const ratioUpperBond = BigNumber.from(getConfig('ratioUpperBond'));
 const ratioLowerBond = BigNumber.from(getConfig('ratioLowerBond'));
 const curveRatioLowerBond = BigNumber.from(getConfig('curveRatioLowerBond'));
@@ -38,6 +43,7 @@ function handleError(error: any, content: { curveCheck?: any; strategyCheck?: an
             content.curveCheck.message,
             MESSAGE_TYPES.curveCheck,
             {
+                //@ts-ignore
                 embedMessage: getFailedEmbedMessage(
                     MESSAGE_TYPES.curveCheck,
                     'Curve Price Check'
@@ -50,6 +56,7 @@ function handleError(error: any, content: { curveCheck?: any; strategyCheck?: an
             content.strategyCheck.message,
             MESSAGE_TYPES.strategyCheck,
             {
+                //@ts-ignore
                 embedMessage: getFailedEmbedMessage(
                     MESSAGE_TYPES.strategyCheck,
                     'Strategy Price Check'

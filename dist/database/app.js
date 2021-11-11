@@ -46,6 +46,15 @@ const { airdrop4Handler, airdrop4HandlerV2, checkPosition, } = require('./handle
                         console.log('Wrong parameters for personal stats ETL - e.g.: personalStatsETL 28/06/2021 29/06/2021');
                     }
                     break;
+                case 'personalStatsETLcache':
+                    if (params.length === 2) {
+                        await loadContractInfoFromRegistry();
+                        await etlPersonalStatsCache(params[1]); // account
+                    }
+                    else {
+                        console.log('Wrong parameters for personal stats ETL cache - e.g.: personalStatsETLcache 0x...');
+                    }
+                    break;
                 case 'loadTokenPrice':
                     if (params.length === 3) {
                         await loadContractInfoFromRegistry();

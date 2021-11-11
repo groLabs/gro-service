@@ -1,10 +1,14 @@
-const { ethers } = require('ethers');
-const nodeEnv = process.env.NODE_ENV.toLowerCase();
-const { getDepositHandler, getWithdrawHandler, getGvt: getGroVault, getPwrd: getPowerD, getUnderlyTokens, } = require('../contract/allContracts');
-const { ContractCallError } = require('../dist/common/error').default;
-const { getInfruraRpcProvider } = require('./chainUtil');
+"use strict";
+var _a;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getDepositWithdrawEvents = exports.getPnLEvents = exports.getVaultTransferEvents = exports.getStrategyHavestEvents = exports.getApprovalEvents = exports.getTransferEvents = exports.getEvents = exports.EVENT_TYPE = void 0;
+const ethers_1 = require("ethers");
+const allContracts_1 = require("../contract/allContracts");
+const error_1 = require("./error");
+const chainUtil_1 = require("./chainUtil");
 const depositHandlerABI = require('../contract/abis/DepositHandler.json');
 const withdrawHandlerABI = require('../contract/abis/WithdrawHandler.json');
+// const nodeEnv = process.env.NODE_ENV?.toLowerCase();
 // const depositHandlerABI = require((nodeEnv === 'mainnet')
 //     ? '../contract/abis/DepositHandler-old.json'
 //     : '../contract/abis/DepositHandler.json'
@@ -14,7 +18,7 @@ const withdrawHandlerABI = require('../contract/abis/WithdrawHandler.json');
 //     : '../contract/abis/WithdrawHandler.json'
 // );
 const { getConfig } = require('./configUtil');
-const botEnv = process.env.BOT_ENV.toLowerCase();
+const botEnv = (_a = process.env.BOT_ENV) === null || _a === void 0 ? void 0 : _a.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 const EVENT_TYPE = {
@@ -31,6 +35,7 @@ const EVENT_TYPE = {
     outPwrdTransfer: 'transfer-pwrd-out',
     pnl: 'pnl',
 };
+exports.EVENT_TYPE = EVENT_TYPE;
 const EVENT_FRAGMENT = {};
 // EVENT_FRAGMENT[EVENT_TYPE.deposit] = [(nodeEnv === 'mainnet')
 //     ? 'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)' // SJS PROD
@@ -67,9 +72,11 @@ EVENT_FRAGMENT[EVENT_TYPE.outPwrdTransfer] = [
 EVENT_FRAGMENT[EVENT_TYPE.stableCoinApprove] = [
     'event Approval(address indexed owner, address indexed spender, uint256 value)',
 ];
+//@ts-ignore
 EVENT_FRAGMENT[EVENT_TYPE.strategyHarvest] = [
     'event Harvested(uint256 profit, uint256 loss, uint256 debtPayment, uint256 debtOutstanding);',
 ];
+//@ts-ignore
 EVENT_FRAGMENT[EVENT_TYPE.vaultTransfer] = [
     'event Transfer(address indexed sender, address indexed recipient, uint256 value)',
 ];
@@ -84,8 +91,8 @@ EVENT_FRAGMENT[EVENT_TYPE.outGvtTransferFrom] = [
     'event Transfer(address indexed from, address indexed to, uint256 value)',
 ];
 async function getStableCoinApprovalFilters(account, providerKey) {
-    const stablecoins = getUnderlyTokens(providerKey);
-    const spender = getDepositHandler(providerKey).address;
+    const stablecoins = (0, allContracts_1.getUnderlyTokens)(providerKey);
+    const spender = (0, allContracts_1.getDepositHandler)(providerKey).address;
     const approvalFilters = [];
     for (let i = 0; i < stablecoins.length; i += 1) {
         approvalFilters.push(stablecoins[i].filters.Approval(account, spender));
@@ -93,8 +100,8 @@ async function getStableCoinApprovalFilters(account, providerKey) {
     return approvalFilters;
 }
 async function getGTokenApprovalFilters(account, providerKey) {
-    const groVault = getGroVault(providerKey);
-    const pwrd = getPowerD(providerKey);
+    const groVault = (0, allContracts_1.getGvt)(providerKey);
+    const pwrd = (0, allContracts_1.getPwrd)(providerKey);
     const approvalFilters = [];
     approvalFilters.push(groVault.filters.Approval(account, null));
     approvalFilters.push(pwrd.filters.Approval(account, null));
@@ -114,11 +121,11 @@ function getDepositWithdrawFilter(account, type, handlerAddresses) {
         logger.info(`handlerAddress: ${handlerAddress}; abiVersion: ${abiVersion}`);
         switch (type) {
             case EVENT_TYPE.deposit:
-                handler = new ethers.Contract(handlerAddress, require(`../contract/abis/DepositHandler${abiVersion}.json`));
+                handler = new ethers_1.ethers.Contract(handlerAddress, require(`../contract/abis/DepositHandler${abiVersion}.json`));
                 filters.push(handler.filters.LogNewDeposit(account));
                 break;
             case EVENT_TYPE.withdraw:
-                handler = new ethers.Contract(handlerAddress, require(`../contract/abis/WithdrawHandler${abiVersion}.json`));
+                handler = new ethers_1.ethers.Contract(handlerAddress, require(`../contract/abis/WithdrawHandler${abiVersion}.json`));
                 filters.push(handler.filters.LogNewWithdrawal(account));
                 break;
             default:
@@ -129,13 +136,13 @@ function getDepositWithdrawFilter(account, type, handlerAddresses) {
         return filters;
     switch (type) {
         case EVENT_TYPE.deposit:
-            handlerAddress = getDepositHandler().address;
-            handler = new ethers.Contract(handlerAddress, depositHandlerABI);
+            handlerAddress = (0, allContracts_1.getDepositHandler)().address;
+            handler = new ethers_1.ethers.Contract(handlerAddress, depositHandlerABI);
             filters.push(handler.filters.LogNewDeposit(account));
             break;
         case EVENT_TYPE.withdraw:
-            handlerAddress = getWithdrawHandler().address;
-            handler = new ethers.Contract(handlerAddress, withdrawHandlerABI);
+            handlerAddress = (0, allContracts_1.getWithdrawHandler)().address;
+            handler = new ethers_1.ethers.Contract(handlerAddress, withdrawHandlerABI);
             filters.push(handler.filters.LogNewWithdrawal(account));
             break;
         default:
@@ -144,10 +151,10 @@ function getDepositWithdrawFilter(account, type, handlerAddresses) {
     return filters;
 }
 function getFilter(account, type, providerKey) {
-    const depositHandler = getDepositHandler(providerKey);
-    const withdrawHandler = getWithdrawHandler(providerKey);
-    const groVault = getGroVault(providerKey);
-    const powerD = getPowerD(providerKey);
+    const depositHandler = (0, allContracts_1.getDepositHandler)(providerKey);
+    const withdrawHandler = (0, allContracts_1.getWithdrawHandler)(providerKey);
+    const groVault = (0, allContracts_1.getGvt)(providerKey);
+    const powerD = (0, allContracts_1.getPwrd)(providerKey);
     let filter;
     switch (type) {
         case EVENT_TYPE.deposit:
@@ -186,13 +193,13 @@ function getFilter(account, type, providerKey) {
     return filter;
 }
 async function getEventsByFilter(filter, eventType, providerKey, specialEventFragment) {
-    const provider = getInfruraRpcProvider(providerKey);
+    const provider = (0, chainUtil_1.getInfruraRpcProvider)(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
-        throw new ContractCallError(`Get ${eventType} logs failed.`);
+        throw new error_1.ContractCallError(`Get ${eventType} logs failed.`);
     });
     const fragment = specialEventFragment || EVENT_FRAGMENT[eventType];
-    const controllerInstance = new ethers.utils.Interface(fragment);
+    const controllerInstance = new ethers_1.ethers.utils.Interface(fragment);
     const logs = [];
     filterLogs.forEach((log) => {
         const eventInfo = {
@@ -227,6 +234,7 @@ async function getApprovalEvents(account, fromBlock, toBlock = 'latest', provide
     }
     return logs;
 }
+exports.getApprovalEvents = getApprovalEvents;
 async function getDepositWithdrawEvents(eventType, fromBlock, toBlock = 'latest', account = null, providerKey, handlerAddresses) {
     const filters = getDepositWithdrawFilter(account, eventType, handlerAddresses);
     const logs = [];
@@ -248,29 +256,31 @@ async function getDepositWithdrawEvents(eventType, fromBlock, toBlock = 'latest'
     }
     return logs;
 }
+exports.getDepositWithdrawEvents = getDepositWithdrawEvents;
 async function getEvents(eventType, fromBlock, toBlock = 'latest', account = null, providerKey) {
     const filter = getFilter(account, eventType, providerKey);
     if (!filter) {
-        throw new ContractCallError(`Get ${eventType} filter for account:${account || 'All'} failed.`);
+        throw new error_1.ContractCallError(`Get ${eventType} filter for account:${account || 'All'} failed.`);
     }
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
     const logs = await getEventsByFilter(filter, eventType, providerKey);
     return logs;
 }
+exports.getEvents = getEvents;
 async function getTransferEvents(eventType, fromBlock, toBlock = 'latest', account = null, providerKey) {
     const filter = getFilter(account, eventType, providerKey);
     if (!filter) {
-        throw new ContractCallError(`Get ${eventType} event logs of account:${account || 'All'} failed.`);
+        throw new error_1.ContractCallError(`Get ${eventType} event logs of account:${account || 'All'} failed.`);
     }
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = getInfruraRpcProvider(providerKey);
+    const provider = (0, chainUtil_1.getInfruraRpcProvider)(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
-        throw new ContractCallError(`Get ${eventType} event logs of ${account || 'all users'} failed.`);
+        throw new error_1.ContractCallError(`Get ${eventType} event logs of ${account || 'all users'} failed.`);
     });
-    const controllerInstance = new ethers.utils.Interface(EVENT_FRAGMENT[eventType]);
+    const controllerInstance = new ethers_1.ethers.utils.Interface(EVENT_FRAGMENT[eventType]);
     const logs = [];
     filterLogs.forEach((log) => {
         const eventInfo = {
@@ -286,15 +296,16 @@ async function getTransferEvents(eventType, fromBlock, toBlock = 'latest', accou
     });
     return logs;
 }
+exports.getTransferEvents = getTransferEvents;
 async function getStrategyHavestEvents(strategy, fromBlock, toBlock, providerKey) {
     logger.info(`from ${fromBlock} to ${toBlock}`);
     const filter = await strategy.filters.Harvested();
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = getInfruraRpcProvider(providerKey);
+    const provider = (0, chainUtil_1.getInfruraRpcProvider)(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
-        throw new ContractCallError('Get StrategyHavest logs failed.');
+        throw new error_1.ContractCallError('Get StrategyHavest logs failed.');
     });
     const logs = [];
     filterLogs.forEach((log) => {
@@ -308,14 +319,15 @@ async function getStrategyHavestEvents(strategy, fromBlock, toBlock, providerKey
     });
     return logs;
 }
+exports.getStrategyHavestEvents = getStrategyHavestEvents;
 async function getVaultTransferEvents(vault, fromBlock, toBlock = 'latest', providerKey) {
     const filter = await vault.filters.Transfer(null, '0x0000000000000000000000000000000000000000');
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = getInfruraRpcProvider(providerKey);
+    const provider = (0, chainUtil_1.getInfruraRpcProvider)(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
-        throw new ContractCallError('Get VaultTransfer logs failed.');
+        throw new error_1.ContractCallError('Get VaultTransfer logs failed.');
     });
     const logs = [];
     filterLogs.forEach((log) => {
@@ -329,16 +341,17 @@ async function getVaultTransferEvents(vault, fromBlock, toBlock = 'latest', prov
     });
     return logs;
 }
+exports.getVaultTransferEvents = getVaultTransferEvents;
 async function getPnLEvents(pnl, fromBlock, toBlock = 'latest', providerKey) {
     const filter = await pnl.filters.LogPnLExecution();
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = getInfruraRpcProvider(providerKey);
+    const provider = (0, chainUtil_1.getInfruraRpcProvider)(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
-        throw new ContractCallError('Get getPnLEvents logs failed.');
+        throw new error_1.ContractCallError('Get getPnLEvents logs failed.');
     });
-    const pnlInterface = new ethers.utils.Interface(EVENT_FRAGMENT[EVENT_TYPE.pnl]);
+    const pnlInterface = new ethers_1.ethers.utils.Interface(EVENT_FRAGMENT[EVENT_TYPE.pnl]);
     const logs = [];
     filterLogs.forEach((log) => {
         logger.info(`getPnLEvents ${log.address} ${log.blockNumber}`);
@@ -356,13 +369,4 @@ async function getPnLEvents(pnl, fromBlock, toBlock = 'latest', providerKey) {
     });
     return logs;
 }
-module.exports = {
-    EVENT_TYPE,
-    getEvents,
-    getTransferEvents,
-    getApprovalEvents,
-    getStrategyHavestEvents,
-    getVaultTransferEvents,
-    getPnLEvents,
-    getDepositWithdrawEvents,
-};
+exports.getPnLEvents = getPnLEvents;

@@ -17,35 +17,8 @@ function getPendingSmallest() {
     }
     return smallestNonce;
 }
-function addPendingTransaction(typeKey, basicInfo, transactionResponse) {
-    const { blockNumber, providerKey, walletKey, reSendTimes, methodName, label, } = basicInfo;
-    pendingTransactions.set(typeKey, {
-        blockNumber,
-        providerKey,
-        walletKey,
-        reSendTimes,
-        methodName,
-        label,
-        hash: transactionResponse.hash,
-        createdTime: new Date(),
-        timestamp: Date.now(),
-        transactionRequest: {
-            nonce: transactionResponse.nonce,
-            type: transactionResponse.type,
-            maxPriorityFeePerGas: transactionResponse.maxPriorityFeePerGas,
-            maxFeePerGas: transactionResponse.maxFeePerGas,
-            gasLimit: transactionResponse.gasLimit.hex,
-            to: transactionResponse.to,
-            value: transactionResponse.value.hex,
-            data: transactionResponse.data,
-            chainId: transactionResponse.chainId,
-            from: transactionResponse.from,
-        },
-    });
-}
 module.exports = {
     pendingTransactions,
     blockNumberTimestamp,
     getPendingSmallest,
-    addPendingTransaction,
 };

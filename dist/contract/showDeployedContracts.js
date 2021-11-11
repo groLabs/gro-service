@@ -1,15 +1,19 @@
-const { ethers } = require('ethers');
-const { getAlchemyRpcProvider } = require('../common/chainUtil');
-const botEnv = process.env.BOT_ENV.toLowerCase();
+"use strict";
+var _a;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getDeployedContracts = void 0;
+const ethers_1 = require("ethers");
+const chainUtil_1 = require("../common/chainUtil");
+const botEnv = (_a = process.env.BOT_ENV) === null || _a === void 0 ? void 0 : _a.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
-const provider = getAlchemyRpcProvider();
+const provider = (0, chainUtil_1.getAlchemyRpcProvider)();
 const controllerABI = require('./abis/Controller.json');
 const pnlABI = require('./abis/PnL.json');
 const depositHandlerABI = require('./abis/DepositHandler.json');
 const withdrawHandlerABI = require('./abis/WithdrawHandler.json');
 async function getDeployedContracts(controllerAddress) {
-    const controller = new ethers.Contract(controllerAddress, controllerABI, provider);
+    const controller = new ethers_1.ethers.Contract(controllerAddress, controllerABI, provider);
     // stable coins
     const stableCoinAddresses = await controller.stablecoins();
     for (let i = 0; i < stableCoinAddresses.length; i += 1) {
@@ -25,7 +29,7 @@ async function getDeployedContracts(controllerAddress) {
     // pnl
     const pnlAddress = await controller.pnl();
     logger.info(`pnl : ${pnlAddress}`);
-    const pnl = new ethers.Contract(pnlAddress, pnlABI, provider);
+    const pnl = new ethers_1.ethers.Contract(pnlAddress, pnlABI, provider);
     // pnl's pwrd
     const pwrdInPnlAddress = await pnl.pwrd();
     logger.info(`PWRD in PnL : ${pwrdInPnlAddress}`);
@@ -44,7 +48,7 @@ async function getDeployedContracts(controllerAddress) {
     // withdrawHandler
     const withdrawHandlerAddress = await controller.withdrawHandler();
     logger.info(`withdrawHandler : ${withdrawHandlerAddress}`);
-    const withdrawHandler = new ethers.Contract(withdrawHandlerAddress, withdrawHandlerABI, provider);
+    const withdrawHandler = new ethers_1.ethers.Contract(withdrawHandlerAddress, withdrawHandlerABI, provider);
     // withdrawHandler's pwrd
     const pwrdInWithdrawHandlerAddress = await withdrawHandler.pwrd();
     logger.info(`PWRD in WithdrawHandler : ${pwrdInWithdrawHandlerAddress}`);
@@ -54,7 +58,7 @@ async function getDeployedContracts(controllerAddress) {
     // depositHandler
     const depositHandlerAddress = await controller.depositHandler();
     logger.info(`depositHandler : ${depositHandlerAddress}`);
-    const depositHandler = new ethers.Contract(depositHandlerAddress, depositHandlerABI, provider);
+    const depositHandler = new ethers_1.ethers.Contract(depositHandlerAddress, depositHandlerABI, provider);
     // depositHandler's pwrd
     const pwrdInDepositHandlerAddress = await depositHandler.pwrd();
     logger.info(`PWRD in DepositHandler : ${pwrdInDepositHandlerAddress}`);
@@ -71,6 +75,4 @@ async function getDeployedContracts(controllerAddress) {
     const rewardAddress = await controller.reward();
     logger.info(`reward : ${rewardAddress}`);
 }
-module.exports = {
-    getDeployedContracts,
-};
+exports.getDeployedContracts = getDeployedContracts;

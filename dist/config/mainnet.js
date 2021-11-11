@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.subgraph = exports.lbp = exports.route = exports.database = exports.discord = exports.staker_pools = exports.contracts = exports.fail_percentage_pre_price = exports.fail_percentage_total = exports.before_block = exports.curveRatioLowerBond = exports.ratioLowerBond = exports.ratioUpperBond = exports.lifeguard_name = exports.health_endpoint = exports.curve_strategy_dependency = exports.cream_strategy_dependency = exports.harvest_strategy_dependency = exports.strategy_default_apy = exports.strategy_display_name = exports.strategy_name = exports.stable_coin = exports.vault_display_name = exports.vault_name = exports.stats_latest = exports.blockNumberFile = exports.log_folder = exports.stats_folder = exports.keep_stats_file_number = exports.transaction_long_pending = exports.emoji = exports.trigger_scheduler = exports.blockchain = exports.buoy_start_block = exports.airdrop = exports.old_pnl = exports.withdraw_handler_history = exports.deposit_handler_history = void 0;
+exports.subgraph = exports.lbp = exports.route = exports.database = exports.discord = exports.staker_pools = exports.contracts = exports.fail_percentage_pre_price = exports.fail_percentage_total = exports.before_block = exports.curveRatioLowerBond = exports.ratioLowerBond = exports.ratioUpperBond = exports.lifeguard_name = exports.health_endpoint = exports.curve_strategy_dependency = exports.cream_strategy_dependency = exports.harvest_strategy_dependency = exports.strategy_default_apy = exports.strategy_display_name = exports.strategy_name = exports.stable_coin = exports.vault_display_name = exports.vault_name = exports.pendingTransactionFile = exports.stats_latest = exports.blockNumberFile = exports.log_folder = exports.stats_folder = exports.keep_stats_file_number = exports.transaction_long_pending = exports.emoji = exports.trigger_scheduler = exports.blockchain = exports.buoy_start_block = exports.airdrop = exports.old_pnl = exports.withdraw_handler_history = exports.deposit_handler_history = void 0;
 exports.deposit_handler_history = {
     '0x79b14d909381D79B655C0700d0fdc2C7054635b9': {
         abi: 'old',
@@ -136,9 +136,9 @@ exports.emoji = {
     curveCheck: ':loudspeaker:',
 };
 exports.transaction_long_pending = {
-    invest: 120000,
-    investToCurveVault: 120000,
-    strategyHarvest: 120000,
+    invest: 86400000,
+    investToCurveVault: 86400000,
+    strategyHarvest: 86400000,
     execPnL: 60000,
     rebalance: 60000,
 };
@@ -147,6 +147,7 @@ exports.stats_folder = '../stats';
 exports.log_folder = '../logs';
 exports.blockNumberFile = '../stats/lastBlockNumber.json';
 exports.stats_latest = '../stats/gro-latest.json';
+exports.pendingTransactionFile = '../pendingTransaction.json';
 exports.vault_name = ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'];
 exports.vault_display_name = ['DAI', 'USDC', 'USDT', '3CRVUSDx'];
 exports.stable_coin = ['DAI', 'USDC', 'USDT'];

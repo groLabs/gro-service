@@ -1,5 +1,8 @@
-const { MESSAGE_TYPES, DISCORD_CHANNELS, sendMessage, sendMessageToChannel, } = require('../dist/common/discord/discordService').default;
-const { sendAlertMessage } = require('../common/alertMessageSender');
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.strategyCheckMessage = exports.curvePriceMessage = exports.chainlinkPriceMessage = void 0;
+const discordService_1 = require("../common/discord/discordService");
+const alertMessageSender_1 = require("../common/alertMessageSender");
 const stableCoin = ['DAI', 'USDC', 'USDT'];
 function curvePriceMessage(content) {
     const { needStop, abnormalIndex } = content;
@@ -9,20 +12,21 @@ function curvePriceMessage(content) {
     }
     const discordMessage = {
         message: msg,
-        type: MESSAGE_TYPES.curveCheck,
+        type: discordService_1.MESSAGE_TYPES.curveCheck,
         description: msg,
     };
     if (!needStop) {
-        sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
+        (0, discordService_1.sendMessage)(discordService_1.DISCORD_CHANNELS.botLogs, discordMessage);
     }
     else {
         const pagerdutyBody = {
             title: '[EMERG] B10 - Curve price check returned false',
             description: msg,
         };
-        sendAlertMessage({ discord: discordMessage, pagerduty: pagerdutyBody });
+        (0, alertMessageSender_1.sendAlertMessage)({ discord: discordMessage, pagerduty: pagerdutyBody });
     }
 }
+exports.curvePriceMessage = curvePriceMessage;
 function chainlinkPriceMessage(content) {
     const { needStop, abnormalIndex } = content;
     let msg = `Chainlink price check returned ${needStop} `;
@@ -31,20 +35,21 @@ function chainlinkPriceMessage(content) {
     }
     const discordMessage = {
         message: msg,
-        type: MESSAGE_TYPES.curveCheck,
+        type: discordService_1.MESSAGE_TYPES.curveCheck,
         description: msg,
     };
     if (!needStop) {
-        sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
+        (0, discordService_1.sendMessage)(discordService_1.DISCORD_CHANNELS.botLogs, discordMessage);
     }
     else {
         const pagerdutyBody = {
             title: '[EMERG] B9 - Chainlink price check returned false',
             description: msg,
         };
-        sendAlertMessage({ discord: discordMessage, pagerduty: pagerdutyBody });
+        (0, alertMessageSender_1.sendAlertMessage)({ discord: discordMessage, pagerduty: pagerdutyBody });
     }
 }
+exports.chainlinkPriceMessage = chainlinkPriceMessage;
 function strategyCheckMessage(content) {
     const strategyFailedTotal = content.failedNumber;
     let msg = 'All strategies are healthy';
@@ -58,18 +63,14 @@ function strategyCheckMessage(content) {
     }
     const discordMessage = {
         message: msg,
-        type: MESSAGE_TYPES.strategyCheck,
+        type: discordService_1.MESSAGE_TYPES.strategyCheck,
         description: msg,
     };
     if (strategyFailedTotal > 0) {
-        sendMessageToChannel(DISCORD_CHANNELS.critActionEvents, discordMessage);
+        (0, discordService_1.sendMessageToChannel)(discordService_1.DISCORD_CHANNELS.critActionEvents, discordMessage);
     }
     else {
-        sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
+        (0, discordService_1.sendMessage)(discordService_1.DISCORD_CHANNELS.botLogs, discordMessage);
     }
 }
-module.exports = {
-    chainlinkPriceMessage,
-    curvePriceMessage,
-    strategyCheckMessage,
-};
+exports.strategyCheckMessage = strategyCheckMessage;

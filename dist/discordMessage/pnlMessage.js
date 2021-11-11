@@ -1,33 +1,38 @@
-const { MESSAGE_TYPES, MESSAGE_EMOJI, DISCORD_CHANNELS, sendMessage, sendMessageToChannel, } = require('../dist/common/discord/discordService').default;
-const { shortAccount, formatNumber } = require('../common/digitalUtil');
-const botEnv = process.env.BOT_ENV.toLowerCase();
+"use strict";
+var _a;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.pnlTransactionMessage = exports.pnlMessage = exports.pnlTriggerMessage = void 0;
+const discordService_1 = require("../common/discord/discordService");
+const digitalUtil_1 = require("../common/digitalUtil");
+const botEnv = (_a = process.env.BOT_ENV) === null || _a === void 0 ? void 0 : _a.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 function pnlTriggerMessage(content) {
     const discordMessage = {
-        type: MESSAGE_TYPES.pnlTrigger,
+        type: discordService_1.MESSAGE_TYPES.pnlTrigger,
         message: 'No need run PnL.',
-        description: `${MESSAGE_EMOJI.company} PnlTrigger false, totalAssetsChangeTrigger false, ExecPnl not needed`,
+        description: `${discordService_1.MESSAGE_EMOJI.company} PnlTrigger false, totalAssetsChangeTrigger false, ExecPnl not needed`,
     };
     if (content.pnlTrigger) {
         discordMessage.message = 'PnlTrigger true, ExecPnl required';
-        discordMessage.description = `${MESSAGE_EMOJI.company} PnlTrigger true, ExecPnl required`;
+        discordMessage.description = `${discordService_1.MESSAGE_EMOJI.company} PnlTrigger true, ExecPnl required`;
     }
     if (content.totalTrigger) {
         discordMessage.message =
             'TotalAssetsChangeTrigger true, ExecPnl required';
-        discordMessage.description = `${MESSAGE_EMOJI.company} TotalAssetsChangeTrigger true, ExecPnl required`;
+        discordMessage.description = `${discordService_1.MESSAGE_EMOJI.company} TotalAssetsChangeTrigger true, ExecPnl required`;
     }
     logger.info(discordMessage.message);
-    sendMessage(DISCORD_CHANNELS.botLogs, discordMessage);
+    (0, discordService_1.sendMessage)(discordService_1.DISCORD_CHANNELS.botLogs, discordMessage);
 }
+exports.pnlTriggerMessage = pnlTriggerMessage;
 function pnlMessage(content) {
     const { transactionHash } = content;
-    const txLabel = shortAccount(transactionHash);
+    const txLabel = (0, digitalUtil_1.shortAccount)(transactionHash);
     const discordMessage = {
-        type: MESSAGE_TYPES.pnl,
+        type: discordService_1.MESSAGE_TYPES.pnl,
         message: 'Calling execPnL function',
-        description: `${MESSAGE_EMOJI.company} ${txLabel} Calling execPnL function`,
+        description: `${discordService_1.MESSAGE_EMOJI.company} ${txLabel} Calling execPnL function`,
         urls: [
             {
                 label: txLabel,
@@ -36,8 +41,9 @@ function pnlMessage(content) {
             },
         ],
     };
-    sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
+    (0, discordService_1.sendMessageToChannel)(discordService_1.DISCORD_CHANNELS.protocolEvents, discordMessage);
 }
+exports.pnlMessage = pnlMessage;
 function pnlTransactionMessage(content) {
     if (content.length === 0)
         return;
@@ -45,11 +51,11 @@ function pnlTransactionMessage(content) {
     const typeItems = type.split('-');
     let action = typeItems[0];
     action = action.replace(action[0], action[0].toUpperCase());
-    const label = shortAccount(hash);
+    const label = (0, digitalUtil_1.shortAccount)(hash);
     const discordMessage = {
         type: msgLabel,
         message: `${type} transaction ${hash} has mined to chain`,
-        description: `${MESSAGE_EMOJI.company} ${label} ${action} action confirmed to chain`,
+        description: `${discordService_1.MESSAGE_EMOJI.company} ${label} ${action} action confirmed to chain`,
         urls: [
             {
                 label,
@@ -64,20 +70,16 @@ function pnlTransactionMessage(content) {
     }
     else if (!transactionReceipt.status) {
         discordMessage.message = `${type} transaction ${hash} reverted.`;
-        discordMessage.description = `${MESSAGE_EMOJI.company} ${label} ${action} action is reverted`;
+        discordMessage.description = `${discordService_1.MESSAGE_EMOJI.company} ${label} ${action} action is reverted`;
     }
     if (additionalData && additionalData.length > 0) {
-        let pnlAmount = formatNumber(additionalData[1], 18, 2);
+        let pnlAmount = (0, digitalUtil_1.formatNumber)(additionalData[1], 18, 2);
         const profitOrLoss = pnlAmount.indexOf('-') === 0 ? 'loss' : 'profit';
         pnlAmount = pnlAmount.replace('-', '');
         discordMessage.message = `${discordMessage.message} - $${pnlAmount} ${profitOrLoss} realized`;
         discordMessage.description = `${discordMessage.description} - $${pnlAmount} ${profitOrLoss} realized`;
     }
     logger.info(discordMessage.message);
-    sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
+    (0, discordService_1.sendMessageToChannel)(discordService_1.DISCORD_CHANNELS.protocolEvents, discordMessage);
 }
-module.exports = {
-    pnlTriggerMessage,
-    pnlMessage,
-    pnlTransactionMessage,
-};
+exports.pnlTransactionMessage = pnlTransactionMessage;

@@ -1,0 +1,15 @@
+{
+    "lbp_stats": {
+        "gro_price_history": [],
+        "current_timestamp": "1631631600",
+        "launch_timestamp": "1631231600",
+        "lbp_start_date": "1631631600",
+        "lbp_end_date": "1631890800",
+        "network": "mainnet",
+        "gro_amount_total": "120000",
+        "gro_amount_current": "579500",
+        "gro_price_current": "115.9",
+        "gro_price_1h": "NA",
+        "usdc_raised": "NA"
+    }
+}

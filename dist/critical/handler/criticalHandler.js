@@ -4,8 +4,8 @@ exports.strategyCheck = exports.buoyHealthCheckAcrossBlocks = exports.curvePrice
 const ethers_1 = require("ethers");
 const ethers_2 = require("ethers");
 const allContracts_1 = require("../../contract/allContracts");
-const { ContractCallError } = require('../../common/error').default;
-const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
+const error_1 = require("../../common/error");
+const discordService_1 = require("../../common/discord/discordService");
 const configUtil_1 = require("../../common/configUtil");
 const chainUtil_1 = require("../../common/chainUtil");
 const criticalMessage_1 = require("../../discordMessage/criticalMessage");
@@ -30,13 +30,15 @@ function getFailedEmbedMessage(messageType, criticalType) {
 function handleError(error, content) {
     logger.error(error);
     if (content.curveCheck) {
-        throw new ContractCallError(content.curveCheck.message, MESSAGE_TYPES.curveCheck, {
-            embedMessage: getFailedEmbedMessage(MESSAGE_TYPES.curveCheck, 'Curve Price Check'),
+        throw new error_1.ContractCallError(content.curveCheck.message, discordService_1.MESSAGE_TYPES.curveCheck, {
+            //@ts-ignore
+            embedMessage: getFailedEmbedMessage(discordService_1.MESSAGE_TYPES.curveCheck, 'Curve Price Check'),
         });
     }
     if (content.strategyCheck) {
-        throw new ContractCallError(content.strategyCheck.message, MESSAGE_TYPES.strategyCheck, {
-            embedMessage: getFailedEmbedMessage(MESSAGE_TYPES.strategyCheck, 'Strategy Price Check'),
+        throw new error_1.ContractCallError(content.strategyCheck.message, discordService_1.MESSAGE_TYPES.strategyCheck, {
+            //@ts-ignore
+            embedMessage: getFailedEmbedMessage(discordService_1.MESSAGE_TYPES.strategyCheck, 'Strategy Price Check'),
         });
     }
 }

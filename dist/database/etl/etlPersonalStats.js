@@ -1,14 +1,9 @@
-const ethers = require('ethers');
 const { query } = require('../handler/queryHandler');
-const { getPersonalStats } = require('../handler/personalStatsHandler');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const { findBlockByDate } = require('../common/globalUtil');
-const { generateDateRange, handleErr, isPlural, Transfer, transferType, } = require('../common/personalUtil');
-const { parseAmount, parseApprovalEvents, parseTransferEvents, } = require('../parser/personalStatsParser');
-const { loadEthBlocks } = require('../loader/loadEthBlocks');
-const { loadTableUpdates } = require('../loader/loadTableUpdates');
+const { generateDateRange, handleErr, isPlural, Transfer, } = require('../common/personalUtil');
 const { loadUserTransfers, loadTmpUserTransfers, } = require('../loader/loadUserTransfers');
 const { loadUserApprovals, loadTmpUserApprovals, } = require('../loader/loadUserApprovals');
 // const { loadUserBalances } = require('../loader/loadUserBalances');

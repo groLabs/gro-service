@@ -1,13 +1,19 @@
-const BN = require('bignumber.js');
-const { shortAccount, div } = require('../common/digitalUtil');
-const { MESSAGE_TYPES } = require('../common/discord/discordService').default;
-const { sendAlertMessage } = require('../common/alertMessageSender');
-const ETH_DECIMAL = BN(10).pow(18);
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.botBalanceMessage = void 0;
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
+const digitalUtil_1 = require("../common/digitalUtil");
+const discordService_1 = require("../common/discord/discordService");
+const alertMessageSender_1 = require("../common/alertMessageSender");
+const ETH_DECIMAL = new bignumber_js_1.default(10).pow(18);
 function botBalanceMessage(content) {
-    const accountLabel = shortAccount(content.botAccount);
-    const balance = div(content.balance, ETH_DECIMAL, 4);
+    const accountLabel = (0, digitalUtil_1.shortAccount)(content.botAccount);
+    const balance = (0, digitalUtil_1.div)(content.balance, ETH_DECIMAL, 4);
     const discordMessage = {
-        type: MESSAGE_TYPES[content.botType],
+        type: discordService_1.MESSAGE_TYPES[content.botType],
         description: `${content.level} B6 - ${content.botType} ${accountLabel} only has ${balance} ETH, add more funds`,
         urls: [
             {
@@ -25,11 +31,9 @@ function botBalanceMessage(content) {
             urgency: 'low',
         };
     }
-    sendAlertMessage({
+    (0, alertMessageSender_1.sendAlertMessage)({
         pagerduty,
         discord: discordMessage,
     });
 }
-module.exports = {
-    botBalanceMessage,
-};
+exports.botBalanceMessage = botBalanceMessage;

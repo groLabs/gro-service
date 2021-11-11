@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.subgraph = exports.route = exports.database = exports.discord = exports.staker_pools = exports.contracts = exports.fail_percentage_pre_price = exports.fail_percentage_total = exports.before_block = exports.lifeguard_name = exports.curveRatioLowerBond = exports.ratioLowerBond = exports.ratioUpperBond = exports.health_endpoint = exports.curve_strategy_dependency = exports.cream_strategy_dependency = exports.harvest_strategy_dependency = exports.strategy_default_apy = exports.strategy_display_name = exports.strategy_name = exports.stable_coin = exports.vault_display_name = exports.vault_name = exports.stats_latest = exports.blockNumberFile = exports.log_folder = exports.stats_folder = exports.keep_stats_file_number = exports.transaction_long_pending = exports.emoji = exports.trigger_scheduler = exports.blockchain = exports.buoy_start_block = exports.airdrop = exports.vesting = exports.staker = exports.old_pnl = exports.withdraw_handler_history = exports.deposit_handler_history = exports.registry_address = void 0;
+exports.subgraph = exports.route = exports.database = exports.discord = exports.staker_pools = exports.contracts = exports.fail_percentage_pre_price = exports.fail_percentage_total = exports.before_block = exports.lifeguard_name = exports.curveRatioLowerBond = exports.ratioLowerBond = exports.ratioUpperBond = exports.health_endpoint = exports.curve_strategy_dependency = exports.cream_strategy_dependency = exports.harvest_strategy_dependency = exports.strategy_default_apy = exports.strategy_display_name = exports.strategy_name = exports.stable_coin = exports.vault_display_name = exports.vault_name = exports.pendingTransactionFile = exports.stats_latest = exports.blockNumberFile = exports.log_folder = exports.stats_folder = exports.keep_stats_file_number = exports.transaction_long_pending = exports.emoji = exports.trigger_scheduler = exports.blockchain = exports.buoy_start_block = exports.airdrop = exports.vesting = exports.staker = exports.old_pnl = exports.withdraw_handler_history = exports.deposit_handler_history = exports.registry_address = void 0;
 exports.registry_address = '0x5dF979799065F9c10860Ce3E2ac3e62627c6A3A5';
 exports.deposit_handler_history = {
     '0x4246529D7168FE98F0530d99d93d346092bf50F1': {},
@@ -140,6 +140,7 @@ exports.stats_folder = '../stats';
 exports.log_folder = '../logs';
 exports.blockNumberFile = '../stats/lastBlockNumber.json';
 exports.stats_latest = '../stats/gro-latest.json';
+exports.pendingTransactionFile = '../pendingTransaction.json';
 exports.vault_name = ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'];
 exports.vault_display_name = ['DAI', 'USDC', 'USDT', '3CRVUSDx'];
 exports.stable_coin = ['DAI', 'USDC', 'USDT'];

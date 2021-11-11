@@ -1,6 +1,7 @@
 "use strict";
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sendErrorMessageToLogChannel = exports.sendMessageToAlertChannel = exports.sendMessageToChannel = exports.sendEmbedMessage = exports.sendMessage = exports.MESSAGE_EMOJI = exports.MESSAGE_TYPES = exports.DISCORD_CHANNELS = void 0;
 const configUtil_1 = require("../configUtil");
 const discord_1 = require("./discord");
 const botEnv = (_a = process.env.BOT_ENV) === null || _a === void 0 ? void 0 : _a.toLowerCase();
@@ -9,6 +10,7 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const RETRY_TIMES = (0, configUtil_1.getConfig)('discord.retry', false) || 2;
 const RESEND_DELAY_SETTING = (0, configUtil_1.getConfig)('discord.resend_delay', false) || 2000;
 const DISCORD_CHANNELS = {};
+exports.DISCORD_CHANNELS = DISCORD_CHANNELS;
 DISCORD_CHANNELS.trades = (0, configUtil_1.getConfig)('discord.channel.trades');
 DISCORD_CHANNELS.protocolAssets = (0, configUtil_1.getConfig)('discord.channel.protocol_assets');
 DISCORD_CHANNELS.protocolEvents = (0, configUtil_1.getConfig)('discord.channel.protocol_events');
@@ -44,7 +46,9 @@ const MESSAGE_TYPES = {
     distributeCurveVault: 'Distribute Curve Vault',
     other: 'Others',
 };
+exports.MESSAGE_TYPES = MESSAGE_TYPES;
 const MESSAGE_EMOJI = {};
+exports.MESSAGE_EMOJI = MESSAGE_EMOJI;
 MESSAGE_EMOJI.Vault =
     (0, configUtil_1.getConfig)('emoji.gvt', false) || '<:Vault:834796096797802507>';
 MESSAGE_EMOJI.PWRD =
@@ -155,6 +159,7 @@ async function sendEmbedMessage(channelId, msgObj, retry = 0) {
         setTimeout(sendEmbedMessage, RESEND_DELAY_SETTING, channelId, msgObj, retry + 1);
     }
 }
+exports.sendEmbedMessage = sendEmbedMessage;
 async function sendMessage(channelId, msgObj, retry = 0) {
     if (!msgObj.message)
         return;
@@ -174,6 +179,7 @@ async function sendMessage(channelId, msgObj, retry = 0) {
         setTimeout(sendMessage, RESEND_DELAY_SETTING, channelId, msgObj, retry + 1);
     }
 }
+exports.sendMessage = sendMessage;
 function sendMessageToChannel(channel, msgObj) {
     if (!msgObj.emojis) {
         msgObj.emojis = [];
@@ -184,6 +190,7 @@ function sendMessageToChannel(channel, msgObj) {
     sendEmbedMessage(channel, msgObj);
     sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
 }
+exports.sendMessageToChannel = sendMessageToChannel;
 function sendMessageToAlertChannel(error) {
     logger.error(error);
     const msgObj = {
@@ -197,6 +204,7 @@ function sendMessageToAlertChannel(error) {
     sendEmbedMessage(DISCORD_CHANNELS.botLogs, msgObj);
     sendMessage(DISCORD_CHANNELS.botAlerts, msgObj);
 }
+exports.sendMessageToAlertChannel = sendMessageToAlertChannel;
 function sendErrorMessageToLogChannel(error) {
     logger.error(error);
     const msgObj = {
@@ -209,13 +217,4 @@ function sendErrorMessageToLogChannel(error) {
     };
     sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
 }
-exports.default = {
-    DISCORD_CHANNELS,
-    MESSAGE_TYPES,
-    MESSAGE_EMOJI,
-    sendMessage,
-    sendEmbedMessage,
-    sendMessageToChannel,
-    sendMessageToAlertChannel,
-    sendErrorMessageToLogChannel,
-};
+exports.sendErrorMessageToLogChannel = sendErrorMessageToLogChannel;
