@@ -139,19 +139,19 @@ const parseTransferEvents = async (logs, side) => {
             // const usd_return =
             //     side === Transfer.WITHDRAWAL
             //         ? -parseAmount(log.args[6], 'USD') // LogNewWithdrawal.returnUsd
-            //         : side === Transfer.EXTERNAL_GVT_WITHDRAWAL
+            //         : side === Transfer.TRANSFER_GVT_OUT
             //             ? -(
             //                 parseAmount(log.args[2], 'USD') /
             //                 parseAmount(log.args[3], 'USD')
             //             ) // LogTransfer.amount /  LogTransfer.ratio (GVT)
-            //             : side === Transfer.EXTERNAL_PWRD_WITHDRAWAL
+            //             : side === Transfer.TRANSFER_PWRD_OUT
             //                 ? -parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
             //                 : 0;
 
             const usd_return =
                 side === Transfer.WITHDRAWAL
                     ? -parseAmount(log.args[6], 'USD') // LogNewWithdrawal.returnUsd
-                    : side === Transfer.EXTERNAL_PWRD_WITHDRAWAL
+                    : side === Transfer.TRANSFER_PWRD_OUT
                         ? -parseAmount(log.args[2], 'USD') // Transfer.value
                         : 0;
 
@@ -159,13 +159,13 @@ const parseTransferEvents = async (logs, side) => {
             //     side === Transfer.DEPOSIT
             //         ? parseAmount(log.args[3], 'USD') // LogNewDeposit.usdAmount  ** TODO: retrieve the ratio!!!! **
             //         : side === Transfer.WITHDRAWAL ||
-            //             side === Transfer.EXTERNAL_GVT_WITHDRAWAL ||
-            //             side === Transfer.EXTERNAL_PWRD_WITHDRAWAL
+            //             side === Transfer.TRANSFER_GVT_OUT ||
+            //             side === Transfer.TRANSFER_PWRD_OUT
             //             ? usd_return
-            //             : side === Transfer.EXTERNAL_GVT_DEPOSIT
+            //             : side === Transfer.TRANSFER_GVT_IN
             //                 ? parseAmount(log.args[2], 'USD') /
             //                 parseAmount(log.args[3], 'USD') // LogTransfer.amount /  LogTransfer.ratio (GVT)
-            //                 : side === Transfer.EXTERNAL_PWRD_DEPOSIT
+            //                 : side === Transfer.TRANSFER_PWRD_IN
             //                     ? parseAmount(log.args[2], 'USD') // // LogTransfer.amount (PWRD) ** TODO: retrieve the ratio!!!! **
             //                     : 0;
 
@@ -175,7 +175,7 @@ const parseTransferEvents = async (logs, side) => {
                     ? parseAmount(log.args[3], 'USD') // LogNewDeposit.usdAmount
                     : side === Transfer.WITHDRAWAL
                         ? usd_return
-                        : side === Transfer.EXTERNAL_PWRD_DEPOSIT
+                        : side === Transfer.TRANSFER_PWRD_IN
                             ? parseAmount(log.args[2], 'USD') // // Transfer.value
                             : 0;
 
@@ -186,8 +186,8 @@ const parseTransferEvents = async (logs, side) => {
 
             const isGVT =
                 ((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && !log.args[2]) ||
-                    side === Transfer.EXTERNAL_GVT_DEPOSIT ||
-                    side === Transfer.EXTERNAL_GVT_WITHDRAWAL ||
+                    side === Transfer.TRANSFER_GVT_IN ||
+                    side === Transfer.TRANSFER_GVT_OUT ||
                     side === Transfer.EXTERNAL_GVT_CONTRACT_DEPOSIT ||
                     side === Transfer.EXTERNAL_GVT_CONTRACT_WITHDRAWAL
                     ? true
@@ -196,10 +196,10 @@ const parseTransferEvents = async (logs, side) => {
             const gvt_amount =
                 (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && isGVT
                     ? 1 // calculated afterwards for Transfer.DEPOSIT & Transfer.WITHDRAWAL in tx
-                    : (side === Transfer.EXTERNAL_GVT_DEPOSIT ||
+                    : (side === Transfer.TRANSFER_GVT_IN ||
                         side === Transfer.EXTERNAL_GVT_CONTRACT_DEPOSIT)
                         ? parseAmount(log.args[2], 'USD') // Transfer.value
-                        : (side === Transfer.EXTERNAL_GVT_WITHDRAWAL ||
+                        : (side === Transfer.TRANSFER_GVT_OUT ||
                             side === Transfer.EXTERNAL_GVT_CONTRACT_WITHDRAWAL)
                             ? -parseAmount(log.args[2], 'USD') // Transfer.value
                             : 0;
@@ -207,9 +207,9 @@ const parseTransferEvents = async (logs, side) => {
             const pwrd_amount =
                 (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && !isGVT
                     ? 1 // calculated afterwards for Transfer.DEPOSIT & Transfer.WITHDRAWAL in tx
-                    : side === Transfer.EXTERNAL_PWRD_DEPOSIT
+                    : side === Transfer.TRANSFER_PWRD_IN
                         ? parseAmount(log.args[2], 'USD') // Transfer.value
-                        : (side === Transfer.EXTERNAL_PWRD_WITHDRAWAL ||
+                        : (side === Transfer.TRANSFER_PWRD_OUT ||
                             side === Transfer.EXTERNAL_PWRD_CONTRACT_WITHDRAWAL)
                             ? -parseAmount(log.args[2], 'USD') // Transfer.value
                             : 0;
@@ -217,8 +217,8 @@ const parseTransferEvents = async (logs, side) => {
             const userAddress =
                 side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
                     ? log.args[0] // LogNewDeposit.user or LogNewWithdrawal.user
-                    : (side === Transfer.EXTERNAL_GVT_WITHDRAWAL ||
-                        side === Transfer.EXTERNAL_PWRD_WITHDRAWAL ||
+                    : (side === Transfer.TRANSFER_GVT_OUT ||
+                        side === Transfer.TRANSFER_PWRD_OUT ||
                         side === Transfer.EXTERNAL_GVT_CONTRACT_WITHDRAWAL ||
                         side === Transfer.EXTERNAL_PWRD_CONTRACT_WITHDRAWAL)
                         ? log.args[0] // LogTransfer.sender

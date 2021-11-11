@@ -30,10 +30,10 @@ const handleErr = async (func, err) => {
 const Transfer = Object.freeze({
     DEPOSIT: 1,
     WITHDRAWAL: 2,
-    EXTERNAL_GVT_DEPOSIT: 3,
-    EXTERNAL_PWRD_DEPOSIT: 4,
-    EXTERNAL_GVT_WITHDRAWAL: 5,
-    EXTERNAL_PWRD_WITHDRAWAL: 6,
+    TRANSFER_GVT_IN: 3,
+    TRANSFER_PWRD_IN: 4,
+    TRANSFER_GVT_OUT: 5,
+    TRANSFER_PWRD_OUT: 6,
     STABLECOIN_APPROVAL: 7,
 });
 
@@ -43,13 +43,13 @@ const transferType = (side) => {
             return 'deposit';
         case Transfer.WITHDRAWAL:
             return 'withdrawal';
-        case Transfer.EXTERNAL_GVT_DEPOSIT:
+        case Transfer.TRANSFER_GVT_IN:
             return 'transfer-gvt-in';
-        case Transfer.EXTERNAL_PWRD_DEPOSIT:
+        case Transfer.TRANSFER_PWRD_IN:
             return 'transfer-pwrd-in';
-        case Transfer.EXTERNAL_GVT_WITHDRAWAL:
+        case Transfer.TRANSFER_GVT_OUT:
             return 'transfer-gvt-out';
-        case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
+        case Transfer.TRANSFER_PWRD_OUT:
             return 'transfer-pwrd-out';
         case Transfer.STABLECOIN_APPROVAL:
             return 'coin-approve';
@@ -60,8 +60,8 @@ const transferType = (side) => {
 
 const isDeposit = (side) => {
     return side === Transfer.DEPOSIT ||
-        side === Transfer.EXTERNAL_GVT_DEPOSIT ||
-        side === Transfer.EXTERNAL_PWRD_DEPOSIT
+        side === Transfer.TRANSFER_GVT_IN ||
+        side === Transfer.TRANSFER_PWRD_IN
         ? true
         : false;
 };
@@ -256,25 +256,25 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 sender = account;
                 receiver = null;
                 break;
-            case Transfer.EXTERNAL_GVT_DEPOSIT:  // Rename TRANSFER_GVT_IN
+            case Transfer.TRANSFER_GVT_IN:
                 eventType = 'Transfer';
                 contractName = ContractNames.groVault;
                 sender = null;
                 receiver = account;
                 break;
-            case Transfer.EXTERNAL_PWRD_DEPOSIT:  // Rename TRANSFER_PWRD_IN
+            case Transfer.TRANSFER_PWRD_IN:
                 eventType = 'Transfer';
                 contractName = ContractNames.powerD;
                 sender = null;
                 receiver = account;
                 break;
-            case Transfer.EXTERNAL_GVT_WITHDRAWAL:  // Rename TRANSFER_GVT_OUT
+            case Transfer.TRANSFER_GVT_OUT:
                 eventType = 'Transfer';
                 contractName = ContractNames.groVault;
                 sender = account;
                 receiver = null;
                 break;
-            case Transfer.EXTERNAL_PWRD_WITHDRAWAL:   // Rename TRANSFER_PWRD_OUT
+            case Transfer.TRANSFER_PWRD_OUT:
                 eventType = 'Transfer';
                 contractName = ContractNames.powerD;
                 sender = account;

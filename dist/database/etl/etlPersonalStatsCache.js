@@ -84,10 +84,10 @@ const loadCache = async (account) => {
             const res = await Promise.all([
                 loadTmpUserTransfers(fromBlock, 'latest', Transfer.DEPOSIT, account),
                 loadTmpUserTransfers(fromBlock, 'latest', Transfer.WITHDRAWAL, account),
-                loadTmpUserTransfers(fromBlock, 'latest', Transfer.EXTERNAL_GVT_WITHDRAWAL, account),
-                loadTmpUserTransfers(fromBlock, 'latest', Transfer.EXTERNAL_GVT_DEPOSIT, account),
-                loadTmpUserTransfers(fromBlock, 'latest', Transfer.EXTERNAL_PWRD_WITHDRAWAL, account),
-                loadTmpUserTransfers(fromBlock, 'latest', Transfer.EXTERNAL_PWRD_DEPOSIT, account),
+                loadTmpUserTransfers(fromBlock, 'latest', Transfer.TRANSFER_GVT_OUT, account),
+                loadTmpUserTransfers(fromBlock, 'latest', Transfer.TRANSFER_GVT_IN, account),
+                loadTmpUserTransfers(fromBlock, 'latest', Transfer.TRANSFER_PWRD_OUT, account),
+                loadTmpUserTransfers(fromBlock, 'latest', Transfer.TRANSFER_PWRD_IN, account),
             ]);
             if (res.every(Boolean)) {
                 if (await loadTmpUserApprovals(fromBlock, 'latest', account))

@@ -99,8 +99,8 @@ const loadTmpUserTransfers = async (
                     // Retrieve Gtoken amounts from tx for deposits or withdrawals
                     result = await getGTokenFromTx(result, side, account);
                 } else if (
-                    side === Transfer.EXTERNAL_GVT_WITHDRAWAL ||
-                    side === Transfer.EXTERNAL_GVT_DEPOSIT) {
+                    side === Transfer.TRANSFER_GVT_OUT ||
+                    side === Transfer.TRANSFER_GVT_IN) {
                     // Calc the GVT price for contract transfers
                     const priceGVT = parseAmount(await getGroVault().getPricePerShare({ blockTag: result[0].block_number }), 'USD');
                     result[0].usd_value = result[0].gvt_amount * priceGVT;
