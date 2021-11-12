@@ -120,10 +120,10 @@ const reload = async (fromDate, toDate) => {
             const res = await Promise.all([
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GVT_OUT, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GVT_IN, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_OUT, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
             ]);
             if (res.every(Boolean)) {
                 // if (await loadTmpUserApprovals(fromBlock, toBlock, null))
@@ -165,10 +165,10 @@ const load = async (fromDate, toDate) => {
         const res = await Promise.all([
             loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null),
             loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null),
-            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_WITHDRAWAL, null),
-            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_GVT_DEPOSIT, null),
-            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_WITHDRAWAL, null),
-            loadTmpUserTransfers(fromBlock, toBlock, Transfer.EXTERNAL_PWRD_DEPOSIT, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GVT_OUT, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GVT_IN, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_OUT, null),
+            loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
         ]);
         if (res.every(Boolean)) {
             if (await loadTmpUserApprovals(fromBlock, toBlock, null))

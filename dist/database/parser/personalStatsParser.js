@@ -108,22 +108,22 @@ const parseTransferEvents = async (logs, side) => {
                 : 0;
             const usd_return = side === Transfer.WITHDRAWAL
                 ? -parseAmount(log.args[6], 'USD') // LogNewWithdrawal.returnUsd
-                : side === Transfer.EXTERNAL_GVT_WITHDRAWAL
+                : side === Transfer.TRANSFER_GVT_OUT
                     ? -(parseAmount(log.args[2], 'USD') /
                         parseAmount(log.args[3], 'USD')) // LogTransfer.amount /  LogTransfer.ratio (GVT)
-                    : side === Transfer.EXTERNAL_PWRD_WITHDRAWAL
+                    : side === Transfer.TRANSFER_PWRD_OUT
                         ? -parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
                         : 0;
             const usd_value = side === Transfer.DEPOSIT
                 ? parseAmount(log.args[3], 'USD') // LogNewDeposit.usdAmount  ** TODO: retrieve the ratio!!!! **
                 : side === Transfer.WITHDRAWAL ||
-                    side === Transfer.EXTERNAL_GVT_WITHDRAWAL ||
-                    side === Transfer.EXTERNAL_PWRD_WITHDRAWAL
+                    side === Transfer.TRANSFER_GVT_OUT ||
+                    side === Transfer.TRANSFER_PWRD_OUT
                     ? usd_return
-                    : side === Transfer.EXTERNAL_GVT_DEPOSIT
+                    : side === Transfer.TRANSFER_GVT_IN
                         ? parseAmount(log.args[2], 'USD') /
                             parseAmount(log.args[3], 'USD') // LogTransfer.amount /  LogTransfer.ratio (GVT)
-                        : side === Transfer.EXTERNAL_PWRD_DEPOSIT
+                        : side === Transfer.TRANSFER_PWRD_IN
                             ? parseAmount(log.args[2], 'USD') // // LogTransfer.amount (PWRD) ** TODO: retrieve the ratio!!!! **
                             : 0;
             const stable_amount = side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
@@ -131,30 +131,30 @@ const parseTransferEvents = async (logs, side) => {
                 : 0;
             const isGVT = ((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) &&
                 !log.args[2]) ||
-                side === Transfer.EXTERNAL_GVT_DEPOSIT ||
-                side === Transfer.EXTERNAL_GVT_WITHDRAWAL
+                side === Transfer.TRANSFER_GVT_IN ||
+                side === Transfer.TRANSFER_GVT_OUT
                 ? true
                 : false;
             const gvt_amount = (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) &&
                 isGVT
                 ? 1 // calculated afterwards for Transfer.DEPOSIT & Transfer.WITHDRAWAL
-                : side === Transfer.EXTERNAL_GVT_DEPOSIT
+                : side === Transfer.TRANSFER_GVT_IN
                     ? parseAmount(log.args[2], 'USD') // LogTransfer.amount (GVT)
-                    : side === Transfer.EXTERNAL_GVT_WITHDRAWAL
+                    : side === Transfer.TRANSFER_GVT_OUT
                         ? -parseAmount(log.args[2], 'USD') // LogTransfer.amount (GVT)
                         : 0;
             const pwrd_amount = (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) &&
                 !isGVT
                 ? 1 // calculated afterwards for Transfer.DEPOSIT & Transfer.WITHDRAWAL
-                : side === Transfer.EXTERNAL_PWRD_DEPOSIT
+                : side === Transfer.TRANSFER_PWRD_IN
                     ? parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
-                    : side === Transfer.EXTERNAL_PWRD_WITHDRAWAL
+                    : side === Transfer.TRANSFER_PWRD_OUT
                         ? -parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
                         : 0;
             const userAddress = side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
                 ? log.args[0] // LogNewDeposit.user or LogNewWithdrawal.user
-                : side === Transfer.EXTERNAL_GVT_WITHDRAWAL ||
-                    side === Transfer.EXTERNAL_PWRD_WITHDRAWAL
+                : side === Transfer.TRANSFER_GVT_OUT ||
+                    side === Transfer.TRANSFER_PWRD_OUT
                     ? log.args[0] // LogTransfer.sender
                     : log.args[1]; // LogTransfer.receiver
             const referralAddress = side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL

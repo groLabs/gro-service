@@ -16,6 +16,8 @@ const {
 const {
     parseTransferEvents,
 } = require('../parser/personalStatsParser');
+const { parseAmount } = require('../parser/personalStatsParser');
+const { getGroVault } = require('../common/contractUtil');
 const { QUERY_ERROR } = require('../constants');
 
 
@@ -86,44 +88,58 @@ const loadTmpUserTransfers = async (
 ) => {
     try {
         const logs = await getTransferEvents2(side, fromBlock, toBlock, account);
+
         if (logs && logs.length > 0) {
-            // Store data into table TMP_USER_DEPOSITS or TMP_USER_WITHDRAWALS
-            let finalResult = [];
+            let result = [];
             for (let i = 0; i < logs.length; i++) {
-                // if (logs.length > 0) {
-                const preResult = await parseTransferEvents(logs[i], side);
-                // No need to retrieve Gtoken amounts from tx for direct transfers between users
-                if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) {
-                    finalResult = await getGTokenFromTx(preResult, side, account);
-                } else {
-                    finalResult = preResult;
+
+                result = await parseTransferEvents(logs[i], side);
+
+                if (side === Transfer.DEPOSIT ||
+                    side === Transfer.WITHDRAWAL) {
+                    // Retrieve Gtoken amounts from tx for deposits or withdrawals
+                    result = await getGTokenFromTx(result, side, account);
+                } else if (
+                    side === Transfer.TRANSFER_GVT_OUT ||
+                    side === Transfer.TRANSFER_GVT_IN) {
+                    // Calc the GVT price for contract transfers
+
+                    for (const item of result) {
+                        const priceGVT = parseAmount(await getGroVault().getPricePerShare({ blockTag: item.block_number }), 'USD');
+                        item.usd_value = item.gvt_amount * priceGVT;
+                        item.gvt_value = item.usd_value;
+                    }
                 }
-                //await getPwrdValue(finalResult);
+
                 let params = [];
-                for (const item of finalResult)
+                for (const item of result)
                     params.push(Object.values(item));
-                const [res, rows] = await query(
-                    (isDeposit(side))
+
+                if (params.length > 0) {
+
+                    const [res, rows] = await query(
+                        (isDeposit(side))
+                            ? (account)
+                                ? 'insert_user_cache_tmp_deposits.sql'
+                                : 'insert_user_std_tmp_deposits.sql'
+                            : (account)
+                                ? 'insert_user_cache_tmp_withdrawals.sql'
+                                : 'insert_user_std_tmp_withdrawals.sql'
+                        , params);
+
+                    if (!res)
+                        return false;
+
+                    logger.info(`**DB${(account) ? ' CACHE' : ''}: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isDeposit(side))
                         ? (account)
-                            ? 'insert_user_cache_tmp_deposits.sql'
-                            : 'insert_user_std_tmp_deposits.sql'
+                            ? 'USER_CACHE_TMP_DEPOSITS'
+                            : 'USER_STD_TMP_DEPOSITS'
                         : (account)
-                            ? 'insert_user_cache_tmp_withdrawals.sql'
-                            : 'insert_user_std_tmp_withdrawals.sql'
-                    , params);
-                if (!res)
-                    return false;
-                logger.info(`**DB${(account) ? ' CACHE' : ''}: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isDeposit(side))
-                    ? (account)
-                        ? 'USER_CACHE_TMP_DEPOSITS'
-                        : 'USER_STD_TMP_DEPOSITS'
-                    : (account)
-                        ? 'USER_CACHE_TMP_WITHDRAWALS'
-                        : 'USER_STD_TMP_WITHDRAWALS'
-                    }`);
+                            ? 'USER_CACHE_TMP_WITHDRAWALS'
+                            : 'USER_STD_TMP_WITHDRAWALS'
+                        }`);
+                }
             }
-        } else {
-            logger.info(`**DB${(account) ? ' CACHE' : ''}: No ${transferType(side)}s found`);
         }
         return true;
     } catch (err) {

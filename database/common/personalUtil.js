@@ -7,17 +7,11 @@ const {
     getContractHistoryEventFilters,
     getCoinApprovalFilters,
 } = require('../../common/filterGenerateTool');
-const { loadContractInfoFromRegistry } = require('../../registry/registryLoader');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { getProvider } = require('./globalUtil')
 const { query } = require('../handler/queryHandler');
-const {
-    EVENT_TYPE,
-    getEvents: getTransferEV,
-    getApprovalEvents: getApprovalEV,
-} = require('../../common/logFilter');
 const {
     QUERY_ERROR,
     ERC20_TRANSFER_SIGNATURE
@@ -33,13 +27,18 @@ const handleErr = async (func, err) => {
     logger.error(`**DB: ${func} \n Message: ${err}`);
 };
 
+const Load = Object.freeze({
+    FULL: 1,
+    TRANSFERS: 2,
+});
+
 const Transfer = Object.freeze({
     DEPOSIT: 1,
     WITHDRAWAL: 2,
-    EXTERNAL_GVT_DEPOSIT: 3,
-    EXTERNAL_PWRD_DEPOSIT: 4,
-    EXTERNAL_GVT_WITHDRAWAL: 5,
-    EXTERNAL_PWRD_WITHDRAWAL: 6,
+    TRANSFER_GVT_IN: 3,
+    TRANSFER_PWRD_IN: 4,
+    TRANSFER_GVT_OUT: 5,
+    TRANSFER_PWRD_OUT: 6,
     STABLECOIN_APPROVAL: 7,
 });
 
@@ -49,13 +48,13 @@ const transferType = (side) => {
             return 'deposit';
         case Transfer.WITHDRAWAL:
             return 'withdrawal';
-        case Transfer.EXTERNAL_GVT_DEPOSIT:
+        case Transfer.TRANSFER_GVT_IN:
             return 'transfer-gvt-in';
-        case Transfer.EXTERNAL_PWRD_DEPOSIT:
+        case Transfer.TRANSFER_PWRD_IN:
             return 'transfer-pwrd-in';
-        case Transfer.EXTERNAL_GVT_WITHDRAWAL:
+        case Transfer.TRANSFER_GVT_OUT:
             return 'transfer-gvt-out';
-        case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
+        case Transfer.TRANSFER_PWRD_OUT:
             return 'transfer-pwrd-out';
         case Transfer.STABLECOIN_APPROVAL:
             return 'coin-approve';
@@ -66,14 +65,13 @@ const transferType = (side) => {
 
 const isDeposit = (side) => {
     return side === Transfer.DEPOSIT ||
-        side === Transfer.EXTERNAL_GVT_DEPOSIT ||
-        side === Transfer.EXTERNAL_PWRD_DEPOSIT
+        side === Transfer.TRANSFER_GVT_IN ||
+        side === Transfer.TRANSFER_PWRD_IN
         ? true
         : false;
 };
 
 const getBlockData = async (blockNumber) => {
-    // const block = await getDefaultProvider()
     const block = await getProvider()
         .getBlock(blockNumber)
         .catch((err) => {
@@ -263,25 +261,25 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 sender = account;
                 receiver = null;
                 break;
-            case Transfer.EXTERNAL_GVT_DEPOSIT:
-                eventType = 'LogTransfer';
+            case Transfer.TRANSFER_GVT_IN:
+                eventType = 'Transfer';
                 contractName = ContractNames.groVault;
                 sender = null;
                 receiver = account;
                 break;
-            case Transfer.EXTERNAL_PWRD_DEPOSIT:
+            case Transfer.TRANSFER_PWRD_IN:
                 eventType = 'Transfer';
                 contractName = ContractNames.powerD;
                 sender = null;
                 receiver = account;
                 break;
-            case Transfer.EXTERNAL_GVT_WITHDRAWAL:
-                eventType = 'LogTransfer';
+            case Transfer.TRANSFER_GVT_OUT:
+                eventType = 'Transfer';
                 contractName = ContractNames.groVault;
                 sender = account;
                 receiver = null;
                 break;
-            case Transfer.EXTERNAL_PWRD_WITHDRAWAL:
+            case Transfer.TRANSFER_PWRD_OUT:
                 eventType = 'Transfer';
                 contractName = ContractNames.powerD;
                 sender = account;
@@ -295,7 +293,6 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 return false;
         }
 
-        let logs;
         let events;
         if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) {
             // returns an array
@@ -321,38 +318,43 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
         }
 
         const logPromises = [];
+
         for (let i = 0; i < events.length; i += 1) {
             const transferEventFilter = events[i];
-            logPromises.push(
-                getFilterEvents(
-                    transferEventFilter.filter,
-                    transferEventFilter.interface,
-                    'default'
-                )
+            const result = await getFilterEvents(
+                transferEventFilter.filter,
+                transferEventFilter.interface,
+                'default'
             );
+            if (result.length > 0) {
+                logPromises.push(result);
+            }
         }
+
         let logResults = await Promise.all(logPromises);
 
-
         let logTrades = [];
-        if (side > 2 && side < 7) {
+
+        // Exclude mint or burn logs in transfers (sender or receiver address is 0x0)
+        if (side > 2 && side < 7 && logResults.length > 0) {
             for (let i = 0; i < logResults.length; i++) {
                 //console.log('Event type:', eventType, 'side:', side, 'logs:', logResults[i], 'args:');
                 for (let j = 0; j < logResults[i].length; j++) {
                     const elem = logResults[i][j];
-                    //console.log('transfer type: ', eventType, 'element:', elem, 'args:', elem.args);
-                    // Exclude events that are mint or burn (sender or receiver address is 0x0) only for transfers
+                    // console.log('transfer type: ', eventType, 'element:', elem, 'args:', elem.args);
                     if (elem.args[0] !== '0x0000000000000000000000000000000000000000'
                         && elem.args[1] !== '0x0000000000000000000000000000000000000000') {
                         logTrades.push(elem);
-
                     }
                 }
             }
-            logResults = [logTrades];
+            return (logTrades.length > 0) ? [logTrades] : [];
+        } else {
+            return logResults;
         }
 
-        return logResults;
+        //console.log('side', side, 'logResults', logResults[0][0]);
+
     } catch (err) {
         handleErr(`personalUtil->getTransferEvents2() [side: ${side}]`, err);
         return false;
@@ -374,21 +376,26 @@ const getGTokenFromTx = async (result, side, account) => {
 
         // For all transactions -> for all logs -> retrieve GToken
         for (const item of result) {
-            // const txReceipt = await getDefaultProvider()
             const txReceipt = await getProvider()
                 .getTransactionReceipt(item.tx_hash)
                 .catch((err) => {
                     console.log(err);
                 });
+
             for (const log of txReceipt.logs) {
                 // Only when signature is an ERC20 transfer: `Transfer(address from, address to, uint256 value)`
                 if (log.topics[0] === ERC20_TRANSFER_SIGNATURE) {
-                    const index = side === Transfer.DEPOSIT ? 1 : 2; // from is 0x0 : to is 0x0
+
+                    const index = (side === Transfer.DEPOSIT)
+                        ? 1     // from is 0x0
+                        : 2;    // to is 0x0
+
                     // Only when a token is minted (from: 0x)
                     if (log.topics[index] === ZERO_ADDRESS) {
                         const data = log.data;
                         const topics = log.topics;
                         const output = iface.parseLog({ data, topics });
+
                         // Update result array with the correct GTokens
                         if (item.gvt_amount !== 0) {
                             item.gvt_amount = parseFloat(
@@ -411,9 +418,9 @@ const getGTokenFromTx = async (result, side, account) => {
                 }
             }
         }
+        const sided = (side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'
         logger.info(
-            `**DB${account ? ' CACHE' : ''}: ${result.length
-            } transaction${isPlural(numTx)} processed`
+            `**DB${account ? ' CACHE' : ''}: ${result.length} ${sided} transaction${isPlural(numTx)} processed`
         );
         return result;
     } catch (err) {
@@ -435,5 +442,6 @@ module.exports = {
     isDeposit,
     isPlural,
     Transfer,
+    Load,
     transferType,
 };

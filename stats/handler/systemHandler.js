@@ -338,15 +338,71 @@ async function getLifeguardStats(blockTag) {
     return lifeGuardStats;
 }
 
+async function getPrepareCalculation(systemStats, blockTag) {
+    const { contract: insurance } = getLatestSystemContract(
+        ContractNames.insurance
+    );
+    const lifeguardCurrentAssetsUsd = systemStats.lifeguard.amount;
+    let totalCurrentAssetsUsd = BigNumber.from(0);
+    const curveCurrentAssetsUsd =
+        systemStats.vault[systemStats.vault.length - 1].amount;
+    totalCurrentAssetsUsd = totalCurrentAssetsUsd.add(curveCurrentAssetsUsd);
+    const vaultCurrentAssetsUsd = [];
+    const vaultCurrentAssets = [];
+    const stablePercents = [];
+    const vaults = await getLatestVaultAdapters();
+    for (let i = 0; i < systemStats.vault.length - 1; i += 1) {
+        const vault = systemStats.vault[i];
+        vaultCurrentAssets[i] = await vaults[i].totalAssets();
+        vaultCurrentAssetsUsd[i] = vault.amount;
+        totalCurrentAssetsUsd = totalCurrentAssetsUsd.add(
+            vaultCurrentAssetsUsd[i]
+        );
+        stablePercents[i] = await insurance.underlyingTokensPercents(
+            i,
+            blockTag
+        );
+    }
+    const curvePercent = await insurance.curveVaultPercent(blockTag);
+    const systemState = [
+        totalCurrentAssetsUsd,
+        curveCurrentAssetsUsd,
+        lifeguardCurrentAssetsUsd,
+        vaultCurrentAssets,
+        vaultCurrentAssetsUsd,
+        ZERO,
+        ZERO,
+        ZERO,
+        stablePercents,
+        curvePercent,
+    ];
+    return systemState;
+}
+
 async function getExposureStats(blockTag, systemStats) {
     const { contract: exposure } = getLatestSystemContract(
         ContractNames.exposure
     );
     logger.info(`getExposureStats blockTag : ${JSON.stringify(blockTag)}`);
     const stableCoins = await getLatestStableCoins(providerKey);
-    const preCal = await getLatestSystemContract(
-        ContractNames.insurance
-    ).contract.prepareCalculation(blockTag);
+    const { contract: bouy } = await getLatestSystemContract(
+        ContractNames.buoy3Pool
+    );
+    const safetyCheck = await bouy.safetyCheck();
+    let preCal;
+    if (safetyCheck) {
+        preCal = await getLatestSystemContract(
+            ContractNames.insurance
+        ).contract.prepareCalculation(blockTag);
+    } else {
+        sendAlertMessage({
+            discord: {
+                description:
+                    '[CRIT] B11 - Price safety check returned false, deposit & withdraw actions will be reverted',
+            },
+        });
+        preCal = await getPrepareCalculation(systemStats, blockTag);
+    }
     const riskResult = await exposure.getExactRiskExposure(preCal, blockTag);
     const exposureStableCoin = riskResult[0].map((concentration, i) => ({
         name: stableCoins[i],

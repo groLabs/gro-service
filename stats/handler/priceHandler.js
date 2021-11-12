@@ -160,7 +160,7 @@ function compareCurveToRef(curve, ref) {
 }
 
 function checkTolerance(diff, tolerance) {
-    const adjustedTolerance = tolerance.mul(BigNumber.from(100));
+    const adjustedTolerance = tolerance;
     const check = {};
     // dai/usdc
     check.dai_usdc = diff.dai_usdc.lte(adjustedTolerance);

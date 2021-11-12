@@ -92,7 +92,7 @@ const getTransferEvents3 = async (side, fromBlock, toBlock, account) => {
                 sender = null;
                 receiver = account;
                 break;
-            case Transfer.EXTERNAL_PWRD_DEPOSIT:
+            case Transfer.TRANSFER_PWRD_IN:
                 eventType = 'Transfer';
                 contractName = ContractNames.powerD;
                 sender = null;

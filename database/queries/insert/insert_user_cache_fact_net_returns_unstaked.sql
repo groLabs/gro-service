@@ -5,9 +5,9 @@ INSERT INTO gro."USER_CACHE_FACT_NET_RETURNS_UNSTAKED" (
         "total_value",
         "pwrd_value",
         "gvt_value",
-        "total_ratio_value",
-        "pwrd_ratio_value",
-        "gvt_ratio_value",
+        -- "total_ratio_value",
+        -- "pwrd_ratio_value",
+        -- "gvt_ratio_value",
         "creation_date"
     )
 SELECT ub.balance_date as balace_date,
@@ -25,21 +25,21 @@ SELECT ub.balance_date as balace_date,
         WHEN ut.gvt_value IS NULL THEN 0
         ELSE ub.gvt_value - ut.gvt_value
     END as gvt_value,
-    CASE
-        WHEN ut.usd_value IS NULL
-        OR ut.usd_value = 0 THEN 0
-        ELSE (ub.usd_value - ut.usd_value) / ut.usd_value
-    END as total_ratio_value,
-    CASE
-        WHEN ut.pwrd_value IS NULL
-        OR ut.pwrd_value = 0 THEN 0
-        ELSE(ub.pwrd_value - ut.pwrd_value) / ut.pwrd_value
-    END as pwrd_ratio_value,
-    CASE
-        WHEN ut.gvt_value IS NULL
-        OR ut.gvt_value = 0 THEN 0
-        ELSE (ub.gvt_value - ut.gvt_value) / ut.gvt_value
-    END as gvt_ratio_value,
+    -- CASE
+    --     WHEN ut.usd_value IS NULL
+    --     OR ut.usd_value = 0 THEN 0
+    --     ELSE (ub.usd_value - ut.usd_value) / ut.usd_value
+    -- END as total_ratio_value,
+    -- CASE
+    --     WHEN ut.pwrd_value IS NULL
+    --     OR ut.pwrd_value = 0 THEN 0
+    --     ELSE(ub.pwrd_value - ut.pwrd_value) / ut.pwrd_value
+    -- END as pwrd_ratio_value,
+    -- CASE
+    --     WHEN ut.gvt_value IS NULL
+    --     OR ut.gvt_value = 0 THEN 0
+    --     ELSE (ub.gvt_value - ut.gvt_value) / ut.gvt_value
+    -- END as gvt_ratio_value,
     now()::timestamp as creation_date
 FROM (
         SELECT b.pwrd_value + b.gvt_value as usd_value,
