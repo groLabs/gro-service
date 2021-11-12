@@ -56,7 +56,7 @@ const remove = async (fromDate, toDate) => {
         const fromDateParsed = moment(fromDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
         const toDateParsed = moment(toDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
         const params = [fromDateParsed, toDateParsed];
-        const [transfers, 
+        const [transfers,
         // balances,
         balancesStaked, balancesUnstaked, balancesPooled, netReturns, netReturnsUnstaked, approvals, loads,] = await Promise.all([
             query('delete_user_std_fact_transfers.sql', params),
@@ -69,15 +69,9 @@ const remove = async (fromDate, toDate) => {
             query('delete_user_std_fact_approvals.sql', params),
             query('delete_table_loads.sql', params),
         ]);
-        if (transfers &&
-            /*balances*/
-            balancesStaked &&
-            balancesUnstaked &&
-            balancesPooled &&
-            netReturns &&
-            netReturnsUnstaked &&
-            approvals &&
-            loads) {
+
+        //TODO: shouldn't be transfers.status === QUERY_ERROR || ... ?
+        if (transfers && balances && netReturns && approvals && loads) {
             logger.info(`**DB: ${transfers.rowCount} record${isPlural(transfers.rowCount)} deleted from USER_STD_FACT_TRANSFERS`);
             // logger.info(
             //     `**DB: ${balances.rowCount} record${isPlural(
