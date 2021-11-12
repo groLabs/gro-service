@@ -3,14 +3,14 @@ const cors = require('cors');
 const router = express.Router();
 const { query } = require('express-validator');
 // const { wrapAsync } = require('../common/wrap');
-const { ParameterError } = require('../../dist/common/error').default;
+const { ParameterError } = require('../../dist/common/error');
 const { getAllStats } = require('../handler/groStatsHandler');
 const { getPriceCheck } = require('../handler/priceCheckHandler');
 const { getHistoricalAPY } = require('../handler/historicalAPY');
 const { getPersonalStats } = require('../handler/personalStatsHandler');
 const { dumpTable } = require('../common/pgUtil');
 const { validate } = require('../../stats/common/validate');
-const { personalStatsMessage } = require('../../discordMessage/statsMessage');
+const { personalStatsMessage } = require('../../dist/discordMessage/statsMessage');
 
 const wrapAsync = function wrapAsync(fn) {
     return function wrap(req, res, next) {

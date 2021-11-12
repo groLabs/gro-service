@@ -6,14 +6,14 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
 const { SettingError, ParameterError, ContractCallError } =
-    require('../dist/common/error').default;
+    require('../dist/common/error');
 const { sendMessage, DISCORD_CHANNELS } =
-    require('../dist/common/discord/discordService').default;
+    require('../dist/common/discord/discordService');
 const customLogger = require('./databaseLogger');
 
 const statsRouter = require('./routes/database');
 const scheduler = require('./scheduler/dbStatsScheduler');
-const { initAllContracts } = require('../contract/allContracts');
+const { initAllContracts } = require('../dist/contract/allContracts');
 
 const app = express();
 

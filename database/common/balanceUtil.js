@@ -2,7 +2,7 @@ const { BigNumber } = require('ethers');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { parseAmount } = require('../parser/personalStatsParser');
-const { getConfig } = require('../../common/configUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const {
     getGroVault,
     getPowerD,

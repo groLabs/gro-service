@@ -1,6 +1,6 @@
 const { query } = require('../handler/queryHandler');
 const { apiCaller } = require('../common/apiCaller');
-const { getConfig } = require('../../common/configUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const route = getConfig('route');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
