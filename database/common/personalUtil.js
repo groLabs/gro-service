@@ -6,7 +6,7 @@ const {
     getLatestContractEventFilter,
     getContractHistoryEventFilters,
     getCoinApprovalFilters,
-} = require('../../common/filterGenerateTool');
+} = require('../../dist/common/filterGenerateTool');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);

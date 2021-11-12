@@ -1,21 +1,11 @@
-const schedule = require('node-schedule');
-const { getConfig } = require('../../common/configUtil');
-const {
-    curvePriceCheck,
-    strategyCheck,
-    buoyHealthCheckAcrossBlocks,
-} = require('../handler/criticalHandler');
-const { checkServerHealth } = require('../../common/checkBotHealth');
-const {
-    sendErrorMessageToLogChannel,
-} = require('../../dist/common/discord/discordService').default;
-const { checkAccountsBalance } = require('../../common/chainUtil');
-const {
-    checkCurveCoinRatio,
-    checkChainlinkPrice,
-} = require('../handler/priceCheck');
-
-const { sendAlertMessage } = require('../../common/alertMessageSender');
+import schedule from 'node-schedule';
+import { getConfig } from '../../common/configUtil';
+import { curvePriceCheck, strategyCheck, buoyHealthCheckAcrossBlocks } from '../handler/criticalHandler';
+import { checkServerHealth } from '../../common/checkBotHealth';
+import { sendErrorMessageToLogChannel } from '../../common/discord/discordService';
+import { checkAccountsBalance } from '../../common/chainUtil';
+import { checkCurveCoinRatio, checkChainlinkPrice } from '../handler/priceCheck';
+import { sendAlertMessage } from '../../common/alertMessageSender';
 const logger = require('../criticalLogger');
 
 const botCurveSchedulerSetting =

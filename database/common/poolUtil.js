@@ -7,7 +7,7 @@ const {
     getLatestContractEventFilter,
     getContractHistoryEventFilters,
     getCoinApprovalFilters,
-} = require('../../common/filterGenerateTool');
+} = require('../../dist/common/filterGenerateTool');
 const { loadContractInfoFromRegistry } = require('../../registry/registryLoader');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -18,7 +18,7 @@ const {
     EVENT_TYPE,
     getEvents: getTransferEV,
     getApprovalEvents: getApprovalEV,
-} = require('../../common/logFilter');
+} = require('../../dist/common/logFilter');
 const {
     QUERY_ERROR,
     ERC20_TRANSFER_SIGNATURE

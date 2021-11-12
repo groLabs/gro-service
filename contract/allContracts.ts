@@ -476,7 +476,7 @@ function getWithdrawHandler(providerKey, signerKey) {
     );
 }
 
-function getBuoy(providerKey, signerKey) {
+function getBuoy(providerKey?, signerKey?) {
     if (!providerKey) return buoy;
     return getOrCreateContract(buoy, 'buoy', providerKey, signerKey);
 }

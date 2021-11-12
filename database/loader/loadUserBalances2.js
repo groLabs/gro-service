@@ -25,7 +25,7 @@ const {
     getBalancesCrvLP,
 } = require('../common/balanceUtil');
 const { BALANCES_BATCH: BATCH } = require('../constants');
-const { getConfig } = require('../../common/configUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const GRO_ADDRESS = getConfig('staker_pools.contracts.gro_address');
 
 const GRO_GVT_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_gvt_pool_address');
@@ -58,7 +58,7 @@ let lpGroWeth = [];
 /// @param  offset The offset to track the start and end position in the users array
 ///         to be processed on each iteration
 /// @return An array with 7 fixed subarrays, each of them containing all balances per token
-///         (gvt, pwrd, gro, gro/gvt, gro/usdc, 3crv, gro/weth)  
+///         (gvt, pwrd, gro, gro/gvt, gro/usdc, 3crv, gro/weth)
 const getBalancesSC = async (users, block, offset) => {
     try {
 

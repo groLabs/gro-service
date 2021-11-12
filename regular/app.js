@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const actuator = require('express-actuator');
 
-const { initAllContracts } = require('../contract/allContracts');
+const { initAllContracts } = require('../dist/contract/allContracts');
 const scheduler = require('./scheduler/regularScheduler');
 const regularLogger = require('./regularLogger');
 
