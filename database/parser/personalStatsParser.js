@@ -136,38 +136,12 @@ const parseTransferEvents = async (logs, side) => {
                     ? -parseAmount(log.args[7], 'USD') // LogNewWithdrawal.lpAmount
                     : 0;
 
-            // const usd_return =
-            //     side === Transfer.WITHDRAWAL
-            //         ? -parseAmount(log.args[6], 'USD') // LogNewWithdrawal.returnUsd
-            //         : side === Transfer.TRANSFER_GVT_OUT
-            //             ? -(
-            //                 parseAmount(log.args[2], 'USD') /
-            //                 parseAmount(log.args[3], 'USD')
-            //             ) // LogTransfer.amount /  LogTransfer.ratio (GVT)
-            //             : side === Transfer.TRANSFER_PWRD_OUT
-            //                 ? -parseAmount(log.args[2], 'USD') // LogTransfer.amount (PWRD)
-            //                 : 0;
-
             const usd_return =
                 side === Transfer.WITHDRAWAL
                     ? -parseAmount(log.args[6], 'USD') // LogNewWithdrawal.returnUsd
                     : side === Transfer.TRANSFER_PWRD_OUT
                         ? -parseAmount(log.args[2], 'USD') // Transfer.value
                         : 0;
-
-            // const usd_value =
-            //     side === Transfer.DEPOSIT
-            //         ? parseAmount(log.args[3], 'USD') // LogNewDeposit.usdAmount  ** TODO: retrieve the ratio!!!! **
-            //         : side === Transfer.WITHDRAWAL ||
-            //             side === Transfer.TRANSFER_GVT_OUT ||
-            //             side === Transfer.TRANSFER_PWRD_OUT
-            //             ? usd_return
-            //             : side === Transfer.TRANSFER_GVT_IN
-            //                 ? parseAmount(log.args[2], 'USD') /
-            //                 parseAmount(log.args[3], 'USD') // LogTransfer.amount /  LogTransfer.ratio (GVT)
-            //                 : side === Transfer.TRANSFER_PWRD_IN
-            //                     ? parseAmount(log.args[2], 'USD') // // LogTransfer.amount (PWRD) ** TODO: retrieve the ratio!!!! **
-            //                     : 0;
 
             // gvt value is calculated afterwards
             const usd_value =

@@ -332,7 +332,7 @@ const getGTokenFromTx = async (result, side, account) => {
                 }
             }
         }
-        logger.info(`**DB${account ? ' CACHE' : ''}: ${result.length} transaction${isPlural(numTx)} processed`);
+        //logger.info(`**DB${account ? ' CACHE' : ''}: ${result.length} transaction${isPlural(numTx)} processed`);
         return result;
     }
     catch (err) {

@@ -27,6 +27,11 @@ const handleErr = async (func, err) => {
     logger.error(`**DB: ${func} \n Message: ${err}`);
 };
 
+const Load = Object.freeze({
+    FULL: 1,
+    TRANSFERS: 2,
+});
+
 const Transfer = Object.freeze({
     DEPOSIT: 1,
     WITHDRAWAL: 2,
@@ -413,9 +418,9 @@ const getGTokenFromTx = async (result, side, account) => {
                 }
             }
         }
+        const sided = (side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'
         logger.info(
-            `**DB${account ? ' CACHE' : ''}: ${result.length
-            } transaction${isPlural(numTx)} processed`
+            `**DB${account ? ' CACHE' : ''}: ${result.length} ${sided} transaction${isPlural(numTx)} processed`
         );
         return result;
     } catch (err) {
@@ -437,5 +442,6 @@ module.exports = {
     isDeposit,
     isPlural,
     Transfer,
+    Load,
     transferType,
 };

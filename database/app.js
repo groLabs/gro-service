@@ -44,13 +44,14 @@ const {
                     }
                     break;
                 case 'personalStatsETL':
-                    if (params.length === 3 && checkDateRange(params[1], params[2])) {
+                    if (params.length === 4 && checkDateRange(params[1], params[2])) {
                         await loadContractInfoFromRegistry();
                         await etlPersonalStats(
                             params[1],              // start date
-                            params[2]);             // end date
+                            params[2],              // end date
+                            parseInt(params[3]));   // load (1: full, 2: transfers)
                     } else {
-                        console.log('Wrong parameters for personal stats ETL - e.g.: personalStatsETL 28/06/2021 29/06/2021');
+                        console.log('Wrong parameters for personal stats ETL - e.g.: personalStatsETL 28/06/2021 29/06/2021 1');
                     }
                     break;
                 case 'personalStatsETLcache':

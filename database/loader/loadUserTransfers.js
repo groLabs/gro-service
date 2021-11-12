@@ -88,9 +88,11 @@ const loadTmpUserTransfers = async (
 ) => {
     try {
         const logs = await getTransferEvents2(side, fromBlock, toBlock, account);
+
         if (logs && logs.length > 0) {
             let result = [];
             for (let i = 0; i < logs.length; i++) {
+
                 result = await parseTransferEvents(logs[i], side);
 
                 if (side === Transfer.DEPOSIT ||
@@ -101,9 +103,12 @@ const loadTmpUserTransfers = async (
                     side === Transfer.TRANSFER_GVT_OUT ||
                     side === Transfer.TRANSFER_GVT_IN) {
                     // Calc the GVT price for contract transfers
-                    const priceGVT = parseAmount(await getGroVault().getPricePerShare({ blockTag: result[0].block_number }), 'USD');
-                    result[0].usd_value = result[0].gvt_amount * priceGVT;
-                    result[0].gvt_value = result[0].usd_value;
+
+                    for (const item of result) {
+                        const priceGVT = parseAmount(await getGroVault().getPricePerShare({ blockTag: item.block_number }), 'USD');
+                        item.usd_value = item.gvt_amount * priceGVT;
+                        item.gvt_value = item.usd_value;
+                    }
                 }
 
                 let params = [];
