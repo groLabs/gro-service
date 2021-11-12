@@ -67,6 +67,8 @@ const remove = async (fromDate, toDate) => {
             query('delete_user_std_fact_approvals.sql', params),
             query('delete_table_loads.sql', params),
         ]);
+
+        //TODO: shouldn't be transfers.status === QUERY_ERROR || ... ?
         if (transfers && balances && netReturns && approvals && loads) {
             logger.info(`**DB: ${transfers.rowCount} record${isPlural(transfers.rowCount)} deleted from USER_STD_FACT_TRANSFERS`);
             logger.info(`**DB: ${balances.rowCount} record${isPlural(balances.rowCount)} deleted from USER_STD_FACT_BALANCES`);

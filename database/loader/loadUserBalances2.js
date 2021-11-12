@@ -139,17 +139,22 @@ const loadStakedBalance = (account, i, day, addr) => {
     return new Promise(async (resolve) => {
 
         const isStakedBalance = (
-            gro[1].amount_staked[i]
+            (
+                gro[1].amount_staked[i]
                 + lpGroGvt[1].amount_staked_lp[i]
                 + lpGroUsdc[1].amount_staked_lp[i]
                 + gvt[1].amount_staked[i]
                 + lpCrvPwrd[1].amount_staked_lp[i]
-                + (nodeEnv === 'mainnet')
-                ? lpGroWeth[1].amount_staked_lp[i]
-                : 0
-                > 0)
+                + ((nodeEnv === 'mainnet') ? lpGroWeth[1].amount_staked_lp[i] : 0)
+            )
+            > 0)
             ? true
             : false;
+
+        const a = parseFloat(gro[1].amount_staked[i]
+            + lpGroGvt[1].amount_staked_lp[i]
+            + lpGroUsdc[1].amount_staked_lp[i]);
+        console.log('isStakedBalance', isStakedBalance, 'gro[1].amount_staked[i]', gro[1].amount_staked[i], 'a', a);
 
         const stakedParams = [
             day,
@@ -442,6 +447,14 @@ const loadUserBalances2 = async (
                 lpCrvPwrd,
                 lpGroWeth
             ] = await getBalancesSC(users, block, 0);
+
+            console.log('gvt', gvt);
+            console.log('pwrd', pwrd);
+            console.log('gro', gro);
+            console.log('lpGroGvt', lpGroGvt);
+            console.log('lpGroUsdc', lpGroUsdc);
+            console.log('lpCrvPwrd', lpCrvPwrd);
+            console.log('lpGroWeth', lpGroWeth);
 
             for (let i = 0; i < users.length; i++) {
 

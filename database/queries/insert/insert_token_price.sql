@@ -4,6 +4,9 @@ INSERT INTO gro."TOKEN_PRICE" (
         "gvt_value",
         "pwrd_value",
         "gro_value",
+        "weth_value",
+        "bal_value",
+        "avax_value",
         "creation_date"
     )
 VALUES (
@@ -12,5 +15,8 @@ VALUES (
         $3,
         $4,
         $5,
-        $6
+        $6,
+        $7,
+        $8,
+        $9
     )
