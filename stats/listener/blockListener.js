@@ -1,4 +1,4 @@
-const { getDefaultProvider } = require('../../common/chainUtil');
+const { getDefaultProvider } = require('../../dist/common/chainUtil');
 const logger = require('../statsLogger');
 const BlockWorker = require('./blockWorker');
 

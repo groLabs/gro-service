@@ -1,5 +1,5 @@
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
-const { getConfig } = require('../../common/configUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const { blockNumberTimestamp } = require('../../common/storage');
 const logger = require('../statsLogger');
 

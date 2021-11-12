@@ -8,17 +8,17 @@ const cors = require('cors');
 const actuator = require('express-actuator');
 
 const { SettingError, ParameterError, ContractCallError } =
-    require('../dist/common/error').default;
+    require('../dist/common/error');
 const { sendMessage, DISCORD_CHANNELS } =
-    require('../dist/common/discord/discordService').default;
+    require('../dist/common/discord/discordService');
 const customLogger = require('./statsLogger');
 
 const statsRouter = require('./routes/stats');
 const scheduler = require('./scheduler/statsScheduler');
 const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
-const { sendAlertMessage } = require('../common/alertMessageSender');
+const { sendAlertMessage } = require('../dist/common/alertMessageSender');
 const { contractCallFailedCount } = require('./common/contractStorage');
-const { getConfig } = require('../common/configUtil');
+const { getConfig } = require('../dist/common/configUtil');
 
 const failedAlertTimes = getConfig('call_failed_time', false) || 3;
 

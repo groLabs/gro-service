@@ -9,12 +9,12 @@ const logger = require('../statsLogger');
 const {
     getAlchemyRpcProvider,
     getTimestampByBlockNumber,
-} = require('../../common/chainUtil');
+} = require('../../dist/common/chainUtil');
 const {
     getSimpleFilterEvents,
     getFilterEvents,
-} = require('../../common/logFilter-new');
-const { getConfig } = require('../../common/configUtil');
+} = require('../../dist/common/logFilter-new');
+const { getConfig } = require('../../dist/common/configUtil');
 const {
     getContractsHistory,
     getLatestContractsAddressByAddress,

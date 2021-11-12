@@ -7,11 +7,11 @@ const { ContractNames } = require('../../registry/registry');
 const {
     getLatestSystemContract: getLatestContract,
 } = require('../common/contractStorage');
-const { getAlchemyRpcProvider } = require('../../common/chainUtil');
-const { getConfig } = require('../../common/configUtil');
+const { getAlchemyRpcProvider } = require('../../dist/common/chainUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const moment = require('moment');
 const { findBlockByDate } = require('../../database/common/globalUtil');
-const { callSubgraph } = require('../../common/subgraphCaller');
+const { callSubgraph } = require('../../dist/common/subgraphCaller');
 const { floatToBN } = require('../../common/digitalUtil');
 
 const nodeEnv = process.env.NODE_ENV.toLowerCase();

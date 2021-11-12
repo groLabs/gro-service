@@ -4,11 +4,11 @@ const {
     MESSAGE_TYPES,
     DISCORD_CHANNELS,
     sendMessageToChannel,
-} = require('../../dist/common/discord/discordService').default;
+} = require('../../dist/common/discord/discordService');
 const logger = require('../statsLogger');
 const { getCurrentApy } = require('./currentApyHandler');
 const { ContractNames } = require('../../registry/registry');
-const { sendAlertMessage } = require('../../common/alertMessageSender');
+const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
 const {
     getLatestStableCoins,
     getLatestVaultsAndStrategies,

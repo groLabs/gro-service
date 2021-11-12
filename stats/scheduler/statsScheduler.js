@@ -2,19 +2,19 @@ const fs = require('fs');
 const path = require('path');
 const schedule = require('node-schedule');
 const { generateGroStatsFile } = require('../handler/statsHandler');
-const { getConfig } = require('../../common/configUtil');
-const { checkServerHealth } = require('../../common/checkBotHealth');
+const { getConfig } = require('../../dist/common/configUtil');
+const { checkServerHealth } = require('../../dist/common/checkBotHealth');
 const {
     sendErrorMessageToLogChannel,
-} = require('../../dist/common/discord/discordService').default;
+} = require('../../dist/common/discord/discordService');
 const {
     getLastBlockNumber,
     generateDepositAndWithdrawReport,
     updateLastBlockNumber,
     generateSummaryReport,
 } = require('../handler/eventHandler');
-const { getCurrentBlockNumber } = require('../../common/chainUtil');
-const { sendAlertMessage } = require('../../common/alertMessageSender');
+const { getCurrentBlockNumber } = require('../../dist/common/chainUtil');
+const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
 const logger = require('../statsLogger.js');
 
 const statsDir = getConfig('stats_folder');

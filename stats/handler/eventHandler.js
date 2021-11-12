@@ -2,18 +2,18 @@ const fs = require('fs');
 const config = require('config');
 const dayjs = require('dayjs');
 const { BigNumber } = require('ethers');
-const { getFilterEvents } = require('../../common/logFilter-new');
-const { ContractCallError } = require('../../dist/common/error').default;
-const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
-const { getConfig } = require('../../common/configUtil');
+const { getFilterEvents } = require('../../dist/common/logFilter-new');
+const { ContractCallError } = require('../../dist/common/error');
+const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService');
+const { getConfig } = require('../../dist/common/configUtil');
 const { formatNumber } = require('../../common/digitalUtil');
-const { sendAlertMessage } = require('../../common/alertMessageSender');
+const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
 const { calculateDelta } = require('../../common/digitalUtil');
 const {
     depositEventMessage,
     withdrawEventMessage,
     summaryMessage,
-} = require('../../discordMessage/eventMessage');
+} = require('../../dist/discordMessage/eventMessage');
 const { AppendGTokenMintOrBurnAmountToLog } = require('../common/tool');
 const { getLatestSystemContract } = require('../common/contractStorage');
 const { ContractNames } = require('../../registry/registry');

@@ -3,7 +3,7 @@ const BN = require('bignumber.js');
 const fs = require('fs');
 const { ethers } = require('ethers');
 const logger = require('../statsLogger');
-const { getConfig } = require('../../common/configUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const {
     getAirdropClaimEvents,
     getAirdropClaimed,
