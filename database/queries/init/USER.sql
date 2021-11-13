@@ -312,12 +312,19 @@ CREATE TABLE gro."USER_STD_FACT_BALANCES_STAKED" (
    balance_date     TIMESTAMP (6) NOT NULL,
    network_id       SMALLINT NULL,
    user_address     CHARACTER VARYING (42) NOT NULL,
-   pool0_amount     NUMERIC (20, 8) NULL,
-   pool1_amount     NUMERIC (20, 8) NULL,
-   pool2_amount     NUMERIC (20, 8) NULL,
-   pool3_amount     NUMERIC (20, 8) NULL,
-   pool4_amount     NUMERIC (20, 8) NULL,
-   pool5_amount     NUMERIC (20, 8) NULL,
+   pool0_lp_amount NUMERIC (20, 8) NULL,   -- GRO 100%
+   pool1_lp_amount NUMERIC (20, 8) NULL,   -- LP GVT 50% / GRO 50%
+   pool1_gvt_amount NUMERIC (20, 8) NULL,  -- GVT
+   pool1_gro_amount NUMERIC (20, 8) NULL,  -- GRO
+   pool2_lp_amount NUMERIC (20, 8) NULL,   -- LP GRO 50% / USDC 50%
+   pool2_gro_amount NUMERIC (20, 8) NULL,  -- GRO
+   pool2_usdc_amount NUMERIC (20, 8) NULL, -- USDC
+   pool3_lp_amount NUMERIC (20, 8) NULL,   -- GVT 100%
+   pool4_lp_amount NUMERIC (20, 8) NULL,   -- LP PWRD 100%
+   pool4_pwrd_amount NUMERIC (20, 8) NULL, -- PWRD
+   pool5_lp_amount NUMERIC (20, 8) NULL,   -- LP GRO 80% / WETH 20%
+   pool5_gro_amount NUMERIC (20, 8) NULL,  -- GRO
+   pool5_weth_amount NUMERIC (20, 8) NULL, -- WETH
    creation_date    TIMESTAMP (6) NULL,
    CONSTRAINT "USER_STD_FACT_BALANCES_STAKED_pkey" PRIMARY KEY
       (balance_date, user_address)
@@ -411,19 +418,24 @@ CREATE TABLE gro."USER_CACHE_FACT_BALANCES_POOLED" (
 ALTER TABLE gro."USER_CACHE_FACT_BALANCES_POOLED" OWNER to postgres;
 
 CREATE TABLE gro."USER_CACHE_FACT_BALANCES_STAKED" (
-   balance_date     TIMESTAMP (6) NOT NULL,
-   network_id       SMALLINT NULL,
-   user_address     CHARACTER VARYING (42) NOT NULL,
-   pool0_amount     NUMERIC (20, 8) NULL,
-   pool1_amount     NUMERIC (20, 8) NULL,
-   pool2_amount     NUMERIC (20, 8) NULL,
-   pool3_amount     NUMERIC (20, 8) NULL,
-   pool4_amount     NUMERIC (20, 8) NULL,
-   pool5_amount     NUMERIC (20, 8) NULL,
-   creation_date    TIMESTAMP (6) NULL,
-   CONSTRAINT "USER_CACHE_FACT_BALANCES_STAKED_pkey" PRIMARY KEY
-      (balance_date, user_address)
-      NOT DEFERRABLE INITIALLY IMMEDIATE
+    balance_date TIMESTAMP (6) NOT NULL,
+    network_id SMALLINT NULL,
+    user_address CHARACTER VARYING (42) NOT NULL,
+    pool0_lp_amount NUMERIC (20, 8) NULL,   -- GRO 100%
+    pool1_lp_amount NUMERIC (20, 8) NULL,   -- LP GVT 50% / GRO 50%
+    pool1_gvt_amount NUMERIC (20, 8) NULL,  -- GVT
+    pool1_gro_amount NUMERIC (20, 8) NULL,  -- GRO
+    pool2_lp_amount NUMERIC (20, 8) NULL,   -- LP GRO 50% / USDC 50%
+    pool2_gro_amount NUMERIC (20, 8) NULL,  -- GRO
+    pool2_usdc_amount NUMERIC (20, 8) NULL, -- USDC
+    pool3_lp_amount NUMERIC (20, 8) NULL,   -- GVT 100%
+    pool4_lp_amount NUMERIC (20, 8) NULL,   -- LP PWRD 100%
+    pool4_pwrd_amount NUMERIC (20, 8) NULL, -- PWRD
+    pool5_lp_amount NUMERIC (20, 8) NULL,   -- LP GRO 80% / WETH 20%
+    pool5_gro_amount NUMERIC (20, 8) NULL,  -- GRO
+    pool5_weth_amount NUMERIC (20, 8) NULL, -- WETH
+    creation_date TIMESTAMP (6) NULL,
+    CONSTRAINT "USER_CACHE_FACT_BALANCES_STAKED_pkey" PRIMARY KEY (balance_date, user_address) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."USER_CACHE_FACT_BALANCES_STAKED" OWNER to postgres;

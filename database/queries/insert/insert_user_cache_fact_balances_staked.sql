@@ -2,12 +2,19 @@ INSERT INTO gro."USER_CACHE_FACT_BALANCES_STAKED" (
         "balance_date",
         "network_id",
         "user_address",
-        "pool0_amount",
-        "pool1_amount",
-        "pool2_amount",
-        "pool3_amount",
-        "pool4_amount",
-        "pool5_amount",
+        "pool0_lp_amount",
+        "pool1_lp_amount",
+        "pool1_gvt_amount",
+        "pool1_gro_amount",
+        "pool2_lp_amount",
+        "pool2_gro_amount",
+        "pool2_usdc_amount",
+        "pool3_lp_amount",
+        "pool4_lp_amount",
+        "pool4_pwrd_amount",
+        "pool5_lp_amount",
+        "pool5_gro_amount",
+        "pool5_weth_amount",
         "creation_date"
     )
 VALUES (
@@ -20,5 +27,12 @@ VALUES (
         $7,
         $8,
         $9,
-        $10
+        $10,
+        $11,
+        $12,
+        $13,
+        $14,
+        $15,
+        $16,
+        $17
     );

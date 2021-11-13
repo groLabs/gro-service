@@ -151,22 +151,28 @@ const loadStakedBalance = (account, i, day, addr) => {
             ? true
             : false;
 
-        const a = parseFloat(gro[1].amount_staked[i]
-            + lpGroGvt[1].amount_staked_lp[i]
-            + lpGroUsdc[1].amount_staked_lp[i]);
-        console.log('isStakedBalance', isStakedBalance, 'gro[1].amount_staked[i]', gro[1].amount_staked[i], 'a', a);
-
         const stakedParams = [
             day,
             getNetworkId(),
             addr,
-            gro[1].amount_staked[i],            // pool0_staked_amount
-            lpGroGvt[1].amount_staked_lp[i],    // pool1_staked_amount
-            lpGroUsdc[1].amount_staked_lp[i],   // pool2_staked_amount
-            gvt[1].amount_staked[i],            // pool3_staked_amount
-            lpCrvPwrd[1].amount_staked_lp[i],   // pool4_staked_amount
-            (nodeEnv === 'mainnet') ?
-                lpGroWeth[1].amount_staked_lp[i]// pool5_staked_amount
+            gro[1].amount_staked[i],            // pool0_staked_lp_amount
+            lpGroGvt[1].amount_staked_lp[i],    // pool1_staked_lp_amount
+            lpGroGvt[2].lp_position[i][0],      // pool1_staked_gvt_amount
+            lpGroGvt[2].lp_position[i][1],      // pool1_staked_gro_amount
+            lpGroUsdc[1].amount_staked_lp[i],   // pool2_staked_lp_amount
+            lpGroUsdc[2].lp_position[i][0],     // pool2_staked_gro_amount
+            lpGroUsdc[2].lp_position[i][1],     // pool2_staked_usdc_amount
+            gvt[1].amount_staked[i],            // pool3_staked_lp_amount
+            lpCrvPwrd[1].amount_staked_lp[i],   // pool4_staked_lp_amount
+            lpCrvPwrd[2].lp_position[i],        // pool4_staked_pwrd_amount
+            (nodeEnv === 'mainnet')
+                ? lpGroWeth[1].amount_staked_lp[i]  // pool5_staked_lp_amount
+                : 0,
+            (nodeEnv === 'mainnet')
+                ? lpGroWeth[2].lp_position[i][0]    // pool5_staked_gro_amount
+                : 0,
+            (nodeEnv === 'mainnet')
+                ? lpGroWeth[2].lp_position[i][1]    // pool5_staked_weth_amount
                 : 0,
             moment.utc(),
         ];
