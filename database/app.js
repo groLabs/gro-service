@@ -7,7 +7,7 @@ const { getPriceCheck } = require('./handler/priceCheckHandler');
 const { checkDateRange } = require('./common/globalUtil');
 const scheduler = require('./scheduler/dbStatsScheduler');
 const { getHistoricalAPY } = require('./handler/historicalAPY');
-const { loadUserBalances2 } = require('./loader/loadUserBalances2');
+const { loadUserBalances } = require('./loader/loadUserBalances');
 const { loadTokenPrice } = require('./loader/loadTokenPrice');
 const { dumpTable } = require('./common/pgUtil');
 const {
@@ -77,7 +77,7 @@ const {
                 case 'balances2':
                     if (params.length === 5 && checkDateRange(params[1], params[2])) {
                         await loadContractInfoFromRegistry();
-                        await loadUserBalances2(
+                        await loadUserBalances(
                             params[1],              // start date
                             params[2],              // end date
                             params[3],              // account
