@@ -93,11 +93,11 @@ const getBalancesSC = async (users, block, offset) => {
             : getBalancesSC(users, block, newOffset);
     }
     catch (err) {
-        handleErr(`loadUserBalances2->getBalancesSC()`, err);
+        handleErr(`loadUserBalances->getBalancesSC()`, err);
         // return [] ?
     }
 };
-const insertBalances = async (account, i, day, addr) => {
+const insertBalances = async (account, i, day, addr, isSnapshot) => {
     return new Promise(async (resolve) => {
         try {
             const isBalance = (gvt[0].amount_unstaked[i] // unstaked gvt
@@ -145,7 +145,9 @@ const insertBalances = async (account, i, day, addr) => {
                 ];
                 const q = (account)
                     ? 'insert_user_cache_fact_balances.sql'
-                    : 'insert_user_std_fact_balances.sql';
+                    : (isSnapshot)
+                        ? 'insert_user_std_fact_balances_snapshot.sql'
+                        : 'insert_user_std_fact_balances.sql';
                 const result = await query(q, params);
                 if (result.status === QUERY_ERROR)
                     resolve(false);
@@ -157,7 +159,7 @@ const insertBalances = async (account, i, day, addr) => {
             resolve(true);
         }
         catch (err) {
-            handleErr(`loadUserBalances2->insertBalances()`, err);
+            handleErr(`loadUserBalances->insertBalances()`, err);
             resolve(false);
         }
     });
@@ -192,7 +194,7 @@ const checkTime = (time) => {
         return [hours, minutes, seconds];
     }
     else {
-        handleErr(`loadUserBalances2->checkTime(): invalid time format`, time);
+        handleErr(`loadUserBalances->checkTime(): invalid time format`, time);
         return [-1, -1, -1];
     }
 };
@@ -230,7 +232,7 @@ const checkTokenCounterDate = (day) => {
         .add(42, 'seconds');
     if (!day.isSameOrAfter(tokenCounterStartDate)) {
         const msg = `target date [${day}] before TokenCounter date [${tokenCounterStartDate}]`;
-        logger.error(`loadUserBalances2->loadUserBalances2(): ${msg}`);
+        logger.error(`loadUserBalances->checkTokenCounterDate(): ${msg}`);
         return false;
     }
     else {
@@ -253,7 +255,7 @@ const showMsg = (account, date, table) => {
 /// @param  toDdate End date to load balances (date format: 'DD/MM/YYYY')
 /// @param  account User address for cache loading; null for daily loads
 /// @return True if no exceptions found, false otherwise
-const loadUserBalances = async (fromDate, toDate, account, time) => {
+const loadUserBalances = async (fromDate, toDate, account, time, isSnapshot) => {
     try {
         // Retrieve target time to load balances (23:59:59 by default)
         const [hours, minutes, seconds] = checkTime(time);
@@ -285,7 +287,7 @@ const loadUserBalances = async (fromDate, toDate, account, time) => {
             ] = await getBalancesSC(users, block, 0);
             for (let i = 0; i < users.length; i++) {
                 const addr = users[i];
-                const res = await insertBalances(account, i, day, addr);
+                const res = await insertBalances(account, i, day, addr, isSnapshot);
                 if (!res)
                     return false;
             }
@@ -303,7 +305,7 @@ const loadUserBalances = async (fromDate, toDate, account, time) => {
         }
     }
     catch (err) {
-        handleErr(`loadUserBalances2->loadUserBalances2() [from: ${fromDate}, to: ${toDate}]`, err);
+        handleErr(`loadUserBalances->loadUserBalances() [from: ${fromDate}, to: ${toDate}]`, err);
         return false;
     }
 };

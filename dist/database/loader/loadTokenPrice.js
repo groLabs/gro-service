@@ -68,6 +68,7 @@ const loadTokenPrice = async (fromDate, toDate) => {
             const blockTag = {
                 blockTag: (await findBlockByDate(day, false)).block
             };
+            //TODO ****** : test data reload before GRO token 
             // Retrieve token prices
             const dateString = moment(date).format('DD/MM/YYYY');
             const [priceGVT, pricePWRD, priceGRO, priceWETH, priceBAL, priceAVAX] = await Promise.all([

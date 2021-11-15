@@ -1,6 +1,6 @@
 /* eslint-disable import/no-dynamic-require */
 import { ethers } from 'ethers';
-import { getWalletNonceManager, getAlchemyRpcProvider } from '../dist/common/chainUtil';
+import { getWalletNonceManager, getAlchemyRpcProvider } from '../common/chainUtil';
 import { getLatestContractsAddress, getLatestContractsAddressByAddress } from './registryLoader';
 import { ContractNames, ContractABIMapping } from './registry';
 
