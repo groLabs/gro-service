@@ -123,7 +123,7 @@ const getBalancesSC = async (users, block, offset) => {
             : getBalancesSC(users, block, newOffset);
 
     } catch (err) {
-        handleErr(`loadUserBalances2->getBalancesSC()`, err);
+        handleErr(`loadUserBalances->getBalancesSC()`, err);
         // return [] ?
     }
 }
@@ -197,7 +197,7 @@ const insertBalances = async (account, i, day, addr, isSnapshot) => {
             resolve(true);
 
         } catch (err) {
-            handleErr(`loadUserBalances2->insertBalances()`, err);
+            handleErr(`loadUserBalances->insertBalances()`, err);
             resolve(false);
         }
     });
@@ -232,7 +232,7 @@ const checkTime = (time) => {
         const seconds = parseInt(time.substring(6, 8));
         return [hours, minutes, seconds];
     } else {
-        handleErr(`loadUserBalances2->checkTime(): invalid time format`, time);
+        handleErr(`loadUserBalances->checkTime(): invalid time format`, time);
         return [-1, -1, -1];
     }
 }
@@ -272,7 +272,7 @@ const checkTokenCounterDate = (day) => {
 
     if (!day.isSameOrAfter(tokenCounterStartDate)) {
         const msg = `target date [${day}] before TokenCounter date [${tokenCounterStartDate}]`;
-        logger.error(`loadUserBalances2->loadUserBalances2(): ${msg}`);
+        logger.error(`loadUserBalances->checkTokenCounterDate(): ${msg}`);
         return false;
     } else {
         return true;
@@ -365,7 +365,7 @@ const loadUserBalances = async (
         }
 
     } catch (err) {
-        handleErr(`loadUserBalances2->loadUserBalances2() [from: ${fromDate}, to: ${toDate}]`, err);
+        handleErr(`loadUserBalances->loadUserBalances() [from: ${fromDate}, to: ${toDate}]`, err);
         return false;
     }
 }

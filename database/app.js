@@ -81,12 +81,8 @@ const {
                             params[1],              // start date
                             params[2],              // end date
                             params[3],              // account
-<<<<<<< HEAD
                             params[4],              // time
                             params[5]);             // snapshot (true / false)
-=======
-                            params[4]);             // time
->>>>>>> 8718b241c03eaf4f2d07722ee2caad7a1681cff7
                     } else {
                         console.log(`Wrong parameters for balances2 - e.g.: balances2 28/06/2021 29/06/2021 "" 15:00:00`);
                     }
