@@ -78,6 +78,7 @@ const loadTokenPrice = async (fromDate, toDate) => {
                 blockTag: (await findBlockByDate(day, false)).block
             }
 
+            //TODO ****** : test data reload before GRO token 
             // Retrieve token prices
             const dateString = moment(date).format('DD/MM/YYYY');
             const [

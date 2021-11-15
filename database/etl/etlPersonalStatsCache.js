@@ -116,13 +116,17 @@ const loadCache = async (account) => {
                 loadTmpUserTransfers(fromBlock, 'latest', Transfer.TRANSFER_PWRD_IN, account),
             ]);
 
+            //console.log('resssss:', res);
+            //TODO: when errors retrieving deposits, withdrawals or transfers in personalUtil->getTransferEvents2()
+            // (eg: Message: TypeError: Cannot read property 'PowerDollar' of undefined), it returns true!! (should be false)
+
             if (res.every(Boolean)) {
                 //if (await loadTmpUserApprovals(fromBlock, 'latest', account))
                 if (await loadUserTransfers(null, null, account))
                     //if (await loadUserApprovals(null, null, account))
                         // TODO: time should be now(), otherwise it will take 23:59:59
-                        if (await loadUserBalances(fromDate, toDate, account, null))
-                            if (await loadUserNetReturns(fromDate, toDate, account))
+                        if (await loadUserBalances(fromDate, toDate, account, null, false))
+                            //if (await loadUserNetReturns(fromDate, toDate, account))
                                 return true;
 
 

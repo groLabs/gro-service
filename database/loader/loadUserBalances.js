@@ -128,7 +128,7 @@ const getBalancesSC = async (users, block, offset) => {
     }
 }
 
-const insertBalances = async (account, i, day, addr) => {
+const insertBalances = async (account, i, day, addr, isSnapshot) => {
     return new Promise(async (resolve) => {
         try {
 
@@ -181,7 +181,9 @@ const insertBalances = async (account, i, day, addr) => {
 
                 const q = (account)
                     ? 'insert_user_cache_fact_balances.sql'
-                    : 'insert_user_std_fact_balances.sql';
+                    : (isSnapshot)
+                        ? 'insert_user_std_fact_balances_snapshot.sql'
+                        : 'insert_user_std_fact_balances.sql';
                 const result = await query(q, params);
 
                 if (result.status === QUERY_ERROR)
@@ -299,6 +301,7 @@ const loadUserBalances = async (
     toDate,
     account,
     time,
+    isSnapshot,
 ) => {
     try {
         // Retrieve target time to load balances (23:59:59 by default)
@@ -342,7 +345,7 @@ const loadUserBalances = async (
 
                 const addr = users[i];
 
-                const res = await insertBalances(account, i, day, addr);
+                const res = await insertBalances(account, i, day, addr, isSnapshot);
                 if (!res)
                     return false;
             }

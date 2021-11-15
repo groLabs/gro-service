@@ -161,9 +161,9 @@ CREATE TABLE gro."USER_STD_FACT_BALANCES" (
    balance_date     TIMESTAMP (6) NOT NULL,
    network_id       SMALLINT NULL,
    user_address     CHARACTER VARYING (42) NOT NULL,
-    gvt_amount NUMERIC (20, 8) NULL,
-    pwrd_amount NUMERIC (20, 8) NULL,
-    gro_amount NUMERIC (20, 8) NULL,
+    gvt_amount_unstaked NUMERIC (20, 8) NULL,
+    pwrd_amount_unstaked NUMERIC (20, 8) NULL,
+    gro_amount_unstaked NUMERIC (20, 8) NULL,
     pool0_lp_amount_pooled NUMERIC (20, 8) NULL,    -- GRO 100% in pool
     pool0_lp_amount_staked NUMERIC (20, 8) NULL,    -- GRO 100% in MC
     pool1_lp_amount_pooled NUMERIC (20, 8) NULL,    -- LP GVT 50% / GRO 50% in pool
@@ -212,6 +212,9 @@ CREATE TABLE gro."TOKEN_PRICE" (
    gvt_value        NUMERIC (20, 8) NULL,
    pwrd_value       NUMERIC (20, 8) NULL,
    gro_value        NUMERIC (20, 8) NULL,
+   weth_value       NUMERIC (20, 8) NULL,
+   avax_value       NUMERIC (20, 8) NULL,
+   bal_value        NUMERIC (20, 8) NULL,
    creation_date    TIMESTAMP (6) NULL,
    CONSTRAINT "TOKEN_PRICE_pkey" PRIMARY KEY (price_date)
       NOT DEFERRABLE INITIALLY IMMEDIATE
