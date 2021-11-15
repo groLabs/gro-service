@@ -1,11 +1,11 @@
 const BN = require('bignumber.js');
 const { ethers } = require('ethers');
 const logger = require('../statsLogger');
-const { getFilterEvents } = require('../../common/logFilter-new');
-const { getAlchemyRpcProvider } = require('../../common/chainUtil');
+const { getFilterEvents } = require('../../dist/common/logFilter-new');
+const { getAlchemyRpcProvider } = require('../../dist/common/chainUtil');
 const { div } = require('../../common/digitalUtil');
 const { appendEventTimestamp } = require('./generatePersonTransaction');
-const { getConfig } = require('../../common/configUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const LPTokenStakerABI = require('../../abi/LPTokenStaker.json');
 const GROVestingABI = require('../../abi/GROVesting.json');
 const poolInfos = getConfig('staker_pools');

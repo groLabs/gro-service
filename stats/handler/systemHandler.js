@@ -7,7 +7,7 @@ const {
 } = require('../../dist/common/discord/discordService');
 const logger = require('../statsLogger');
 const { getCurrentApy } = require('./currentApyHandler');
-const { ContractNames } = require('../../registry/registry');
+const { ContractNames } = require('../../dist/registry/registry');
 const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
 const {
     getLatestStableCoins,
@@ -16,7 +16,7 @@ const {
 } = require('../common/contractStorage');
 const {
     getLatestContractsAddressByAddress,
-} = require('../../registry/registryLoader');
+} = require('../../dist/registry/registryLoader');
 
 // constant
 const SHARE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));

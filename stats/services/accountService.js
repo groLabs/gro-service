@@ -20,13 +20,13 @@ const {
     getAccountFailTransactions,
 } = require('../handler/failedTransactionHandler');
 
-const { ContractNames } = require('../../registry/registry');
-const { newContract } = require('../../registry/contracts');
+const { ContractNames } = require('../../dist/registry/registry');
+const { newContract } = require('../../dist/registry/contracts');
 
 const {
     getContractsHistory,
     getLatestContractsAddress,
-} = require('../../registry/registryLoader');
+} = require('../../dist/registry/registryLoader');
 
 const { getLatestSystemContract } = require('../common/contractStorage');
 const { getAllAirdropResults } = require('./airdropService');

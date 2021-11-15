@@ -1,4 +1,4 @@
-const { newSystemLatestContracts, newSystemLatestVaultStrategyContracts, } = require('../../registry/contracts');
+const { newSystemLatestContracts, newSystemLatestVaultStrategyContracts, } = require('../../dist/registry/contracts');
 const latestSystemContracts = {};
 const latestVaultStrategyContracts = {};
 const latestStableCoins = {};

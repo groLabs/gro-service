@@ -16,7 +16,7 @@ const {
 } = require('../../dist/discordMessage/eventMessage');
 const { AppendGTokenMintOrBurnAmountToLog } = require('../common/tool');
 const { getLatestSystemContract } = require('../common/contractStorage');
-const { ContractNames } = require('../../registry/registry');
+const { ContractNames } = require('../../dist/registry/registry');
 
 const logger = require('../statsLogger');
 

@@ -2,7 +2,7 @@ const { etlGroStats, etlGroStatsHDL } = require('./etl/etlGroStats');
 const { etlPriceCheck, etlPriceCheckHDL } = require('./etl/etlPriceCheck');
 const { etlPersonalStats } = require('./etl/etlPersonalStats');
 const { etlPersonalStatsCache } = require('./etl/etlPersonalStatsCache');
-const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
+const { loadContractInfoFromRegistry } = require('../dist/registry/registryLoader');
 const { getPriceCheck } = require('./handler/priceCheckHandler');
 const { checkDateRange } = require('./common/globalUtil');
 const scheduler = require('./scheduler/dbStatsScheduler');
@@ -68,7 +68,7 @@ const {
                         await loadContractInfoFromRegistry();
                         await loadTokenPrice(
                             params[1],          // start date
-                            params[2]);         // end date     
+                            params[2]);         // end date
                     } else {
                         console.log('Wrong parameters for token price - e.g.: loadTokenPrice 01/11/2021 04/11/2021');
                     }
@@ -81,8 +81,12 @@ const {
                             params[1],              // start date
                             params[2],              // end date
                             params[3],              // account
+<<<<<<< HEAD
                             params[4],              // time
                             params[5]);             // snapshot (true / false)
+=======
+                            params[4]);             // time
+>>>>>>> 8718b241c03eaf4f2d07722ee2caad7a1681cff7
                     } else {
                         console.log(`Wrong parameters for balances2 - e.g.: balances2 28/06/2021 29/06/2021 "" 15:00:00`);
                     }

@@ -1,8 +1,8 @@
-const fs = require('fs');
-const { ethers } = require('ethers');
-const { getConfig } = require('../dist/common/configUtil');
-const { getAlchemyRpcProvider } = require('../dist/common/chainUtil');
-const { SettingError } = require('../dist/common/error');
+import fs from 'fs';
+import { ethers } from 'ethers';
+import { getConfig } from '../common/configUtil';
+import { getAlchemyRpcProvider } from '../common/chainUtil';
+import { SettingError } from '../common/error';
 const registryABI = require('./Registry.json');
 const erc20ABI = require('../abi/ERC20.json');
 
@@ -12,7 +12,7 @@ const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 const configFileFolder = `${__dirname}/config`;
 
-const registryAddress = getConfig('registry_address', false);
+const registryAddress = getConfig('registry_address', false) as string | undefined;
 const provider = getAlchemyRpcProvider();
 
 let registry;
@@ -334,7 +334,7 @@ async function getContractsHistory() {
     return contractsHistory;
 }
 
-module.exports = {
+export {
     ContractNames,
     ContractABIMapping,
     readLocalContractConfig,

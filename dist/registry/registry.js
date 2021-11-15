@@ -1,19 +1,25 @@
-const fs = require('fs');
-const { ethers } = require('ethers');
-const { getConfig } = require('../dist/common/configUtil');
-const { getAlchemyRpcProvider } = require('../dist/common/chainUtil');
-const { SettingError } = require('../dist/common/error');
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.checkContractNameConfiguration = exports.getContractsHistory = exports.getLatestContracts = exports.readLocalContractConfig = exports.ContractABIMapping = exports.ContractNames = void 0;
+const fs_1 = __importDefault(require("fs"));
+const ethers_1 = require("ethers");
+const configUtil_1 = require("../common/configUtil");
+const chainUtil_1 = require("../common/chainUtil");
+const error_1 = require("../common/error");
 const registryABI = require('./Registry.json');
 const erc20ABI = require('../abi/ERC20.json');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 const configFileFolder = `${__dirname}/config`;
-const registryAddress = getConfig('registry_address', false);
-const provider = getAlchemyRpcProvider();
+const registryAddress = (0, configUtil_1.getConfig)('registry_address', false);
+const provider = (0, chainUtil_1.getAlchemyRpcProvider)();
 let registry;
 if (registryAddress) {
-    registry = new ethers.Contract(registryAddress, registryABI, provider);
+    registry = new ethers_1.ethers.Contract(registryAddress, registryABI, provider);
 }
 const activeContractNames = [];
 let localContractConfig;
@@ -48,7 +54,9 @@ const ContractNames = {
     BalancerWeightedPool: 'BalancerWeightedPool',
     TokenCounter: 'TokenCounter',
 };
+exports.ContractNames = ContractNames;
 const ContractABIMapping = {};
+exports.ContractABIMapping = ContractABIMapping;
 ContractABIMapping[ContractNames.groVault] = 'NonRebasingGToken';
 ContractABIMapping[ContractNames.powerD] = 'RebasingGToken';
 ContractABIMapping[ContractNames.depositHandler] = 'DepositHandler';
@@ -81,7 +89,7 @@ ContractABIMapping[ContractNames.TokenCounter] = 'TokenCounter';
 function readLocalContractConfig(isReload = false) {
     if (isReload || !localContractConfig) {
         const filePath = `${configFileFolder}/${process.env.NODE_ENV}_contractConfig.json`;
-        const data = fs.readFileSync(filePath, { flag: 'a+' });
+        const data = fs_1.default.readFileSync(filePath, { flag: 'a+' });
         let content = data.toString();
         if (content.length === 0) {
             content = '{}';
@@ -91,6 +99,7 @@ function readLocalContractConfig(isReload = false) {
     }
     return localContractConfig;
 }
+exports.readLocalContractConfig = readLocalContractConfig;
 async function getActiveContractNames() {
     if (!activeContractNames.length) {
         const localConfig = readLocalContractConfig();
@@ -117,11 +126,12 @@ async function checkContractNameConfiguration() {
     for (let i = 0; i < registryAllContractNames.length; i += 1) {
         const name = registryAllContractNames[i];
         if (!configContractNames.includes(name)) {
-            throw new SettingError(`Not fund contract key: ${name}`);
+            throw new error_1.SettingError(`Not fund contract key: ${name}`);
         }
     }
     logger.info(`contract name: ${JSON.stringify(registryAllContractNames)}`);
 }
+exports.checkContractNameConfiguration = checkContractNameConfiguration;
 async function parseProtocolExposure(protocols, metaData) {
     const protocolsDisplayName = [];
     const protocolsName = [];
@@ -155,7 +165,7 @@ async function parseTokenExposure(tokens) {
         });
         let tokenSymbol = '';
         if (tokenAddress) {
-            const token = new ethers.Contract(tokenAddress, erc20ABI, provider);
+            const token = new ethers_1.ethers.Contract(tokenAddress, erc20ABI, provider);
             // eslint-disable-next-line no-await-in-loop
             tokenSymbol = await token.symbol().catch((error) => {
                 logger.error(error);
@@ -289,6 +299,7 @@ async function getLatestContracts(isByAddress = false) {
     }
     return contracts;
 }
+exports.getLatestContracts = getLatestContracts;
 async function getContractsHistory() {
     const contractNames = await getActiveContractNames();
     logger.info(`contractNames: ${JSON.stringify(contractNames)}`);
@@ -303,11 +314,4 @@ async function getContractsHistory() {
     }
     return contractsHistory;
 }
-module.exports = {
-    ContractNames,
-    ContractABIMapping,
-    readLocalContractConfig,
-    getLatestContracts,
-    getContractsHistory,
-    checkContractNameConfiguration,
-};
+exports.getContractsHistory = getContractsHistory;

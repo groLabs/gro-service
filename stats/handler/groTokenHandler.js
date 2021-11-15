@@ -3,7 +3,7 @@ const { ethers, BigNumber } = require('ethers');
 const fetch = require('node-fetch');
 const { BigNumber: BN } = require('bignumber.js');
 const logger = require('../statsLogger');
-const { ContractNames } = require('../../registry/registry');
+const { ContractNames } = require('../../dist/registry/registry');
 const {
     getLatestSystemContract: getLatestContract,
 } = require('../common/contractStorage');
