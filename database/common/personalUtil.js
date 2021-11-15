@@ -1,6 +1,6 @@
 const ethers = require('ethers');
 const moment = require('moment');
-const { ContractNames } = require('../../registry/registry');
+const { ContractNames } = require('../../dist/registry/registry');
 const { getFilterEvents } = require('../../dist/common/logFilter-new');
 const {
     getLatestContractEventFilter,

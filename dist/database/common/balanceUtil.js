@@ -3,12 +3,9 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { parseAmount } = require('../parser/personalStatsParser');
 const { getConfig } = require('../../dist/common/configUtil');
-const { getGroVault, getPowerD, getTokenCounter, } = require('../common/contractUtil');
-const ONE = BigNumber.from('1000000000000000000');
-const GRO_ADDRESS = getConfig('staker_pools.contracts.gro_address');
+const { getTokenCounter } = require('./contractUtil');
 const UNI_POOL_GVT_GRO_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_gvt_pool_address');
 const UNI_POOL_GVT_USDC_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_usdc_pool_address');
-const CRV_POOL_PWRD_ADDRESS = getConfig('staker_pools.contracts.curve_pwrd3crv_pool_address');
 const BAL_POOL_GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address');
 const getBalances = async (tokenAddress, userAddresses, blockNumber) => {
     try {
@@ -21,9 +18,9 @@ const getBalances = async (tokenAddress, userAddresses, blockNumber) => {
     }
     catch (err) {
         logger.error(`**DB: Error in balanceUtil.js->getBalances(): ${err}`);
+        return [];
     }
 };
-//TODO: only for LP
 const getBalancesUniBalLP = async (tokenAddress, userAddresses, blockNumber) => {
     try {
         let result = [];
@@ -35,15 +32,13 @@ const getBalancesUniBalLP = async (tokenAddress, userAddresses, blockNumber) => 
                 break;
             case BAL_POOL_GRO_WETH_ADDRESS:
                 result = await getTokenCounter().getLpAmountsBalancer(tokenAddress, userAddresses, blockTag);
-                //console.log('balancer:', result);
                 break;
             default:
-                console.log('Unrecognised token address');
-                // TODO: return [] ?
-                break;
+                logger.error(`**DB: Error in balanceUtil.js->getBalancesUniBalLP(): Unrecognised token address`);
+                return [];
         }
         return [
-            { amount_unstaked_lp: result[0].map(unstaked => parseAmount(unstaked, 'USD')) },
+            { amount_pooled_lp: result[0].map(pooled => parseAmount(pooled, 'USD')) },
             { amount_staked_lp: result[1].map(staked => parseAmount(staked, 'USD')) },
             { lp_position: result[2].map(lp_positions => [
                     parseAmount(lp_positions[0], 'USD'),
@@ -54,6 +49,7 @@ const getBalancesUniBalLP = async (tokenAddress, userAddresses, blockNumber) => 
     }
     catch (err) {
         logger.error(`**DB: Error in balanceUtil.js->getBalancesUniBalLP(): ${err}`);
+        return [];
     }
 };
 const getBalancesCrvLP = async (tokenAddress, userAddresses, blockNumber) => {
@@ -61,13 +57,14 @@ const getBalancesCrvLP = async (tokenAddress, userAddresses, blockNumber) => {
         const blockTag = { blockTag: blockNumber };
         const result = await getTokenCounter().getCurvePwrd(tokenAddress, userAddresses, blockTag);
         return [
-            { amount_unstaked_lp: result[0].map(unstaked => parseAmount(unstaked, 'USD')) },
+            { amount_pooled_lp: result[0].map(pooled => parseAmount(pooled, 'USD')) },
             { amount_staked_lp: result[1].map(staked => parseAmount(staked, 'USD')) },
             { lp_position: result[2].map(lp_position => parseAmount(lp_position, 'USD')) }
         ];
     }
     catch (err) {
         logger.error(`**DB: Error in balanceUtil.js->getBalancesCrvLP(): ${err}`);
+        return [];
     }
 };
 module.exports = {

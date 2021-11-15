@@ -4,7 +4,7 @@ const { etlGroStats } = require('../etl/etlGroStats');
 const { etlPriceCheck } = require('../etl/etlPriceCheck');
 const { etlPersonalStats } = require('../etl/etlPersonalStats');
 const { calcLoadingDateRange } = require('../common/personalUtil');
-const { loadContractInfoFromRegistry } = require('../../registry/registryLoader');
+const { loadContractInfoFromRegistry } = require('../../dist/registry/registryLoader');
 const groStatsJobSetting = 
 // getConfig('trigger_scheduler.db_gro_stats', false) || '*/30 * * * * *';  // 30 seconds [TESTING]
 getConfig('trigger_scheduler.db_gro_stats', false) || '*/3 * * * *'; // 3 mins [PRODUCTION]

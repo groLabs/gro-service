@@ -2,7 +2,7 @@ const fs = require('fs');
 const config = require('config');
 const {
     loadContractInfoFromRegistry,
-} = require('../../registry/registryLoader');
+} = require('../../dist/registry/registryLoader');
 const { reloadData } = require('../common/contractStorage');
 
 const statsLatest = config.get('stats_latest');
