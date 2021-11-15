@@ -85,7 +85,8 @@ async function validateFile(filePath) {
     const data = fs.readFileSync(filePath, { flag: 'r' });
     const content = data.toString();
     const items = content.split('\n');
-    const headNames = items[0].split(',');
+    const headString = items[0].trim();
+    const headNames = headString.split(',');
     const addressIndex = headNames.indexOf('address');
     const amountIndex = headNames.indexOf('amount');
     if (addressIndex < 0 || amountIndex < 0) {
@@ -97,26 +98,31 @@ async function validateFile(filePath) {
     const totalAddresses = [];
 
     for (let i = 1; i < items.length; i += 1) {
-        const values = items[i].split(',');
-        const addressValue = values[addressIndex];
-        const amountValue = values[amountIndex];
-        if (addressValue.length !== 42) {
-            throw new Error(
-                `Line ${i + 1} : the address:${addressValue} is invalid.`
-            );
-        }
-        if (isNaN(amountValue)) {
-            throw new Error(
-                `Line ${i + 1} : the amount:${amountValue} is invalid.`
-            );
-        }
+        const content = items[i].trim();
+        if (content !== '') {
+            const values = content.split(',');
+            const addressValue = values[addressIndex];
+            const amountValue = values[amountIndex];
+            if (addressValue.length !== 42) {
+                throw new Error(
+                    `Line ${i + 1} : the address:${addressValue} is invalid.`
+                );
+            }
+            if (isNaN(amountValue)) {
+                throw new Error(
+                    `Line ${i + 1} : the amount:${amountValue} is invalid.`
+                );
+            }
 
-        if (totalAddresses.includes(addressValue.toLowerCase())) {
-            throw new Error(
-                `Line ${i + 1} : the address:${addressValue} already exists.`
-            );
+            if (totalAddresses.includes(addressValue.toLowerCase())) {
+                throw new Error(
+                    `Line ${
+                        i + 1
+                    } : the address:${addressValue} already exists.`
+                );
+            }
+            totalAddresses.push(addressValue.toLowerCase());
         }
-        totalAddresses.push(addressValue.toLowerCase());
     }
 }
 
@@ -200,7 +206,7 @@ async function generateProof(
     for (let i = 0; i < items.length; i += 1) {
         totalAmount = totalAmount.plus(new BN(items[i].amount));
         proofs[items[i].address] = {
-            amount: items[i].amount.toFixed(0),
+            amount: BN(items[i].amount).toFixed(0),
             proof: trees.getProof(items[i].node),
         };
     }

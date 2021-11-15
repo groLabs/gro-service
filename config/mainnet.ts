@@ -52,8 +52,10 @@ export const blockchain = {
     },
     infura_api_keys: {
         default: {
-            projectId: process.env[`INFURA_KEY_${process.env.BOT_ENV}_PROJECT_ID`],
-            projectSecret: process.env[`INFURA_KEY_${process.env.BOT_ENV}_PROJECT_SECRET`],
+            projectId:
+                process.env[`INFURA_KEY_${process.env.BOT_ENV}_PROJECT_ID`],
+            projectSecret:
+                process.env[`INFURA_KEY_${process.env.BOT_ENV}_PROJECT_SECRET`],
         },
         stats_personal: {
             projectId: process.env.INFURA_KEY_STATS_PERSONAL_PROJECT_ID,
@@ -76,7 +78,8 @@ export const blockchain = {
             low_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_LOW_GAS,
             standard_file_path: process.env.KEY_STORE_REGULAR_STANDARD_GAS,
             standard_password: process.env.KEY_PASSWORD_REGULAR_STANDARD_GAS,
-            standard_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_STANDARD_GAS,
+            standard_private_key:
+                process.env.BOT_PRIVATE_KEY_REGULAR_STANDARD_GAS,
             fast_file_path: process.env.KEY_STORE_REGULAR_FAST_GAS,
             fast_password: process.env.KEY_PASSWORD_REGULAR_FAST_GAS,
             fast_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_FAST_GAS,
@@ -145,7 +148,12 @@ export const log_folder = '../logs';
 export const blockNumberFile = '../stats/lastBlockNumber.json';
 export const stats_latest = '../stats/gro-latest.json';
 export const pendingTransactionFile = '../pendingTransaction.json';
-export const vault_name = ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'];
+export const vault_name = [
+    'DAI yVault',
+    'USDC yVault',
+    'USDT yVault',
+    'Curve yVault',
+];
 export const vault_display_name = ['DAI', 'USDC', 'USDT', '3CRVUSDx'];
 export const stable_coin = ['DAI', 'USDC', 'USDT'];
 export const strategy_name = [
@@ -166,7 +174,9 @@ export const strategy_display_name = [
     'CREAM - USDT',
     'Curve - XPool',
 ];
-export const strategy_default_apy = [106000, 41334, 98500, 49956, 45343, 49513, 117589];
+export const strategy_default_apy = [
+    106000, 41334, 98500, 49956, 45343, 49513, 117589,
+];
 export const harvest_strategy_dependency = [
     '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
     '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE',
@@ -201,13 +211,17 @@ export const staker_pools = {
         gro_address: '0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7',
         staker_address: '0x001C249c09090D79Dc350A286247479F08c7aaD7',
         gro_price_oracle_address: '0x7a250d5630b4cf539739df2c5dacb4c659f2488d',
-        uniswap_gro_gvt_pool_address: '0x2ac5bC9ddA37601EDb1A5E29699dEB0A5b67E9bB',
+        uniswap_gro_gvt_pool_address:
+            '0x2ac5bC9ddA37601EDb1A5E29699dEB0A5b67E9bB',
         pwrd_usdc_lp_address: '0xbcb91E689114B9Cc865AD7871845C95241Df4105',
-        uniswap_gro_usdc_pool_address: '0x21C5918CcB42d20A2368bdCA8feDA0399EbfD2f6',
-        curve_pwrd3crv_pool_address: '0xbcb91E689114B9Cc865AD7871845C95241Df4105',
+        uniswap_gro_usdc_pool_address:
+            '0x21C5918CcB42d20A2368bdCA8feDA0399EbfD2f6',
+        curve_pwrd3crv_pool_address:
+            '0xbcb91E689114B9Cc865AD7871845C95241Df4105',
         curve_3pool_address: '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
         curve_3crv_address: '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490',
-        balancer_gro_weth_pool_address: '0x702605f43471183158938c1a3e5f5a359d7b31ba',
+        balancer_gro_weth_pool_address:
+            '0x702605f43471183158938c1a3e5f5a359d7b31ba',
     },
     single_staking_100_gro_0: {
         deposit_url: 'NA',
@@ -217,16 +231,20 @@ export const staker_pools = {
         disable: 'false',
     },
     uniswap_v2_5050_gro_gvt_1: {
-        deposit_url: 'https://app.uniswap.org/#/add/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0x3ADb04E127b9C0a5D36094125669d4603AC52a0c',
-        remove_url: 'https://app.uniswap.org/#/remove/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0x3ADb04E127b9C0a5D36094125669d4603AC52a0c',
+        deposit_url:
+            'https://app.uniswap.org/#/add/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0x3ADb04E127b9C0a5D36094125669d4603AC52a0c',
+        remove_url:
+            'https://app.uniswap.org/#/remove/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0x3ADb04E127b9C0a5D36094125669d4603AC52a0c',
         display_order: '2',
         pid: '1',
         disable: 'false',
         start_block: 13318236,
     },
     uniswap_v2_5050_gro_usdc_2: {
-        deposit_url: 'https://app.uniswap.org/#/add/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-        remove_url: 'https://app.uniswap.org/#/remove/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        deposit_url:
+            'https://app.uniswap.org/#/add/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        remove_url:
+            'https://app.uniswap.org/#/remove/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
         display_order: '3',
         pid: '2',
         disable: 'false',
@@ -248,7 +266,8 @@ export const staker_pools = {
         start_block: 13314356,
     },
     balancer_v2_8020_gro_weth_5: {
-        deposit_url: 'https://app.balancer.fi/#/pool/0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
+        deposit_url:
+            'https://app.balancer.fi/#/pool/0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
         remove_url: 'NA',
         display_order: '0',
         pid: '5',
@@ -303,9 +322,11 @@ export const lbp = {
     lbp_gro_end_weight: 0.5,
     gro_amount_total: 5000000,
     usdc_amount_total: 2650000,
-    balancerV2_graph_url: 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2',
+    balancerV2_graph_url:
+        'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2',
     balancerV2_pool_address: '0x64e2c43cA952BA01E32E8cFA05c1E009Bc92E06c',
-    balancerV2_pool_id: '0x64e2c43ca952ba01e32e8cfa05c1e009bc92e06c00020000000000000000009b',
+    balancerV2_pool_id:
+        '0x64e2c43ca952ba01e32e8cfa05c1e009bc92e06c00020000000000000000009b',
     // Balancer V1 (Not used)
     gro_token: '0xD348b1F5872940901fcAF9aCD1b9785f4e12121A',
     coin_token: '0x9edF2989C22C5bF6675a4581E39D75a3C9BF8578',
@@ -313,9 +334,12 @@ export const lbp = {
     crp_pool: '0xade0c1536e2053328b53a7b41b32289bce2cf65d',
 };
 export const subgraph = {
-    uniswapV2_graph_url: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2',
+    uniswapV2_graph_url:
+        'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2',
     uniswapV2_pair_id_gro_usdc: '0x21c5918ccb42d20a2368bdca8feda0399ebfd2f6',
     uniswapV2_pair_id_gvt_gro: '0x2ac5bc9dda37601edb1a5e29699deb0a5b67e9bb',
-    balancerV2_graph_url: 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2',
-    balancerV2_pool_id_gro_weth: '0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
+    balancerV2_graph_url:
+        'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2',
+    balancerV2_pool_id_gro_weth:
+        '0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
 };
