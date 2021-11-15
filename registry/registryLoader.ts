@@ -1,7 +1,4 @@
-const {
-    getLatestContracts,
-    getContractsHistory: getHistory,
-} = require('./registry');
+import { getLatestContracts, getContractsHistory as getHistory } from './registry';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -38,7 +35,7 @@ function getContractsHistory() {
     return contractsHistory;
 }
 
-module.exports = {
+export {
     loadContractInfoFromRegistry,
     getLatestContractsAddress,
     getLatestContractsAddressByAddress,

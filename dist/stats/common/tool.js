@@ -1,4 +1,4 @@
-const { getMintOrBurnGToken } = require('../../common/actionDataFunder');
+const { getMintOrBurnGToken } = require('../../dist/common/actionDataFunder');
 async function AppendGTokenMintOrBurnAmountToLog(logs) {
     const parsePromises = [];
     logs.forEach((log) => {

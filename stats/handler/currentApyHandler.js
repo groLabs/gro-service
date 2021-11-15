@@ -18,9 +18,9 @@ const { getConfig } = require('../../dist/common/configUtil');
 const {
     getContractsHistory,
     getLatestContractsAddressByAddress,
-} = require('../../registry/registryLoader');
-const { ContractNames } = require('../../registry/registry');
-const { newContract } = require('../../registry/contracts');
+} = require('../../dist/registry/registryLoader');
+const { ContractNames } = require('../../dist/registry/registry');
+const { newContract } = require('../../dist/registry/contracts');
 const { getLatestVaultsAndStrategies } = require('../common/contractStorage');
 
 const providerKey = 'stats_gro';

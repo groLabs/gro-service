@@ -1,8 +1,8 @@
 const axios = require('axios');
 const logger = require('../statsLogger');
 const { getConfig } = require('../../dist/common/configUtil');
-const { getContractsHistory } = require('../../registry/registryLoader');
-const { ContractNames } = require('../../registry/registry');
+const { getContractsHistory } = require('../../dist/registry/registryLoader');
+const { ContractNames } = require('../../dist/registry/registry');
 
 const apiKey = getConfig('etherscan_api_key');
 const startBlock = getConfig('blockchain.start_block');

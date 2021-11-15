@@ -3,7 +3,7 @@ const cors = require('cors');
 const router = express.Router();
 const { query } = require('express-validator');
 const { wrapAsync } = require('../common/wrap');
-const { ParameterError } = require('../../dist/common/error').default;
+const { ParameterError } = require('../../dist/common/error');
 const { getGroStatsContent, getArgentStatsContent, getExternalStatsContent, reloadContractsFromRegistry, } = require('../services/statsService');
 const { generateReport } = require('../services/accountService');
 // const { getPersonalStats } = require('../../database/handler/personalHandler');
@@ -11,7 +11,7 @@ const { getGroPrice, isValidBlockNumber, getBuoyStartBlock, } = require('../hand
 const { generateHistoricalStats } = require('../handler/statsHandler');
 const { validate } = require('../common/validate');
 const { postDegenScore } = require('../services/degenscoreService');
-const { personalStatsMessage } = require('../../discordMessage/statsMessage');
+const { personalStatsMessage } = require('../../dist/discordMessage/statsMessage');
 const { contractCallFailedCount } = require('../common/contractStorage');
 const { updateOGAirdropFile } = require('../services/airdropService');
 /**

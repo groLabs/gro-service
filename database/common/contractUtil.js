@@ -3,7 +3,7 @@ const {
     getProvider,
     getProviderKey,
 } = require('./globalUtil');
-const { ContractNames } = require('../../registry/registry');
+const { ContractNames } = require('../../dist/registry/registry');
 const { getLatestSystemContract } = require('../../stats/common/contractStorage');
 const erc20ABI = require('../../abi/ERC20.json');
 

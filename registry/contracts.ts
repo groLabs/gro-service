@@ -1,14 +1,8 @@
 /* eslint-disable import/no-dynamic-require */
-const { ethers } = require('ethers');
-const {
-    getWalletNonceManager,
-    getAlchemyRpcProvider,
-} = require('../common/chainUtil');
-const {
-    getLatestContractsAddress,
-    getLatestContractsAddressByAddress,
-} = require('./registryLoader');
-const { ContractNames, ContractABIMapping } = require('./registry');
+import { ethers } from 'ethers';
+import { getWalletNonceManager, getAlchemyRpcProvider } from '../dist/common/chainUtil';
+import { getLatestContractsAddress, getLatestContractsAddressByAddress } from './registryLoader';
+import { ContractNames, ContractABIMapping } from './registry';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -161,7 +155,7 @@ async function newSystemLatestVaultStrategyContracts(signerInfo) {
     };
 }
 
-module.exports = {
+export {
     newContract,
     newLatestContract,
     newSystemLatestContracts,

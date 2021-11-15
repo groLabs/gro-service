@@ -15,7 +15,7 @@ const customLogger = require('./statsLogger');
 
 const statsRouter = require('./routes/stats');
 const scheduler = require('./scheduler/statsScheduler');
-const { loadContractInfoFromRegistry } = require('../registry/registryLoader');
+const { loadContractInfoFromRegistry } = require('../dist/registry/registryLoader');
 const { sendAlertMessage } = require('../dist/common/alertMessageSender');
 const { contractCallFailedCount } = require('./common/contractStorage');
 const { getConfig } = require('../dist/common/configUtil');

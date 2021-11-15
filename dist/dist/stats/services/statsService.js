@@ -1,6 +1,6 @@
 const fs = require('fs');
 const config = require('config');
-const { loadContractInfoFromRegistry, } = require('../../registry/registryLoader');
+const { loadContractInfoFromRegistry, } = require('../../dist/registry/registryLoader');
 const { reloadData } = require('../common/contractStorage');
 const statsLatest = config.get('stats_latest');
 async function getGroStatsContent() {

@@ -3,7 +3,7 @@ const mapObject = require('map-obj');
 const { ethers, BigNumber } = require('ethers');
 const config = require('config');
 const { getLatestSystemContract } = require('../common/contractStorage');
-const { ContractNames } = require('../../registry/registry');
+const { ContractNames } = require('../../dist/registry/registry');
 const logger = require('../statsLogger.js');
 
 const Curve3PoolABI = require('../../abi/ICurve3Pool.json');

@@ -8,7 +8,7 @@ const { findBlockByDate } = require('../common/globalUtil');
 const { handleErr, Transfer, } = require('../common/personalUtil');
 const { loadUserTransfers, loadTmpUserTransfers, } = require('../loader/loadUserTransfers');
 const { loadUserApprovals, loadTmpUserApprovals, } = require('../loader/loadUserApprovals');
-const { loadUserBalances2 } = require('../loader/loadUserBalances2');
+const { loadUserBalances } = require('../loader/loadUserBalances');
 const { loadUserNetReturns } = require('../loader/loadUserNetReturns');
 const { QUERY_ERROR } = require('../constants');
 /// @notice - Deletes all data in cache tables for a given user address
@@ -20,16 +20,14 @@ const preloadCache = async (account) => {
     try {
         const params = [account];
         // TODO: if (res.every( val => (val !== 400 ))) {
-        const [tmpApprovals, tmpDeposits, tmpWithdrawals, approvals, balancesUnstaked, balancesStaked, balancesPooled, 
+        const [tmpApprovals, tmpDeposits, tmpWithdrawals, approvals, balances, 
         // netReturns,
         netReturnsUnstaked, transfers, _fromDate,] = await Promise.all([
             query('delete_user_cache_tmp_approvals.sql', params),
             query('delete_user_cache_tmp_deposits.sql', params),
             query('delete_user_cache_tmp_withdrawals.sql', params),
             query('delete_user_cache_fact_approvals.sql', params),
-            query('delete_user_cache_fact_balances_unstaked.sql', params),
-            query('delete_user_cache_fact_balances_staked.sql', params),
-            query('delete_user_cache_fact_balances_pooled.sql', params),
+            query('delete_user_cache_fact_balances.sql', params),
             // query('delete_user_cache_fact_net_returns.sql', params),
             query('delete_user_cache_fact_net_returns_unstaked.sql', params),
             query('delete_user_cache_fact_transfers.sql', params),
@@ -39,9 +37,7 @@ const preloadCache = async (account) => {
             tmpDeposits.status === QUERY_ERROR ||
             tmpWithdrawals.status === QUERY_ERROR ||
             approvals.status === QUERY_ERROR ||
-            balancesUnstaked.status === QUERY_ERROR ||
-            balancesStaked.status === QUERY_ERROR ||
-            balancesPooled.status === QUERY_ERROR ||
+            balances.status === QUERY_ERROR ||
             // netReturns.status === QUERY_ERROR ||
             netReturnsUnstaked.status === QUERY_ERROR ||
             transfers.status === QUERY_ERROR ||
@@ -101,7 +97,7 @@ const loadCache = async (account) => {
                 if (await loadUserTransfers(null, null, account))
                     //if (await loadUserApprovals(null, null, account))
                     // TODO: time should be now(), otherwise it will take 23:59:59
-                    if (await loadUserBalances2(fromDate, toDate, account, null))
+                    if (await loadUserBalances(fromDate, toDate, account, null))
                         if (await loadUserNetReturns(fromDate, toDate, account))
                             return true;
             }

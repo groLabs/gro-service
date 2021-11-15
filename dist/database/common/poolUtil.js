@@ -1,10 +1,10 @@
 // ** CLEANSE MODULES NOT USED **
 const ethers = require('ethers');
 const moment = require('moment');
-const { ContractNames } = require('../../registry/registry');
+const { ContractNames } = require('../../dist/registry/registry');
 const { getFilterEvents } = require('../../dist/common/logFilter-new');
 const { getLatestContractEventFilter, getContractHistoryEventFilters, getCoinApprovalFilters, } = require('../../dist/common/filterGenerateTool');
-const { loadContractInfoFromRegistry } = require('../../registry/registryLoader');
+const { loadContractInfoFromRegistry } = require('../../dist/registry/registryLoader');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);

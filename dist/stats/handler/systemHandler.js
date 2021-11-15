@@ -1,12 +1,12 @@
 /* eslint-disable no-await-in-loop */
 const { BigNumber } = require('ethers');
-const { MESSAGE_TYPES, DISCORD_CHANNELS, sendMessageToChannel, } = require('../../dist/common/discord/discordService').default;
+const { MESSAGE_TYPES, DISCORD_CHANNELS, sendMessageToChannel, } = require('../../dist/common/discord/discordService');
 const logger = require('../statsLogger');
 const { getCurrentApy } = require('./currentApyHandler');
-const { ContractNames } = require('../../registry/registry');
-const { sendAlertMessage } = require('../../common/alertMessageSender');
+const { ContractNames } = require('../../dist/registry/registry');
+const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
 const { getLatestStableCoins, getLatestVaultsAndStrategies, getLatestSystemContract: getLatestContract, } = require('../common/contractStorage');
-const { getLatestContractsAddressByAddress, } = require('../../registry/registryLoader');
+const { getLatestContractsAddressByAddress, } = require('../../dist/registry/registryLoader');
 // constant
 const SHARE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
 const THRESHOLD_DECIMAL = BigNumber.from(10).pow(BigNumber.from(4));

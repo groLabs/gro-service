@@ -3,13 +3,13 @@ const { ethers, BigNumber } = require('ethers');
 const fetch = require('node-fetch');
 const { BigNumber: BN } = require('bignumber.js');
 const logger = require('../statsLogger');
-const { ContractNames } = require('../../registry/registry');
+const { ContractNames } = require('../../dist/registry/registry');
 const { getLatestSystemContract: getLatestContract, } = require('../common/contractStorage');
-const { getAlchemyRpcProvider } = require('../../common/chainUtil');
-const { getConfig } = require('../../common/configUtil');
+const { getAlchemyRpcProvider } = require('../../dist/common/chainUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const moment = require('moment');
 const { findBlockByDate } = require('../../database/common/globalUtil');
-const { callSubgraph } = require('../../common/subgraphCaller');
+const { callSubgraph } = require('../../dist/common/subgraphCaller');
 const { floatToBN } = require('../../common/digitalUtil');
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 // ABI
