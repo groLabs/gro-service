@@ -1,10 +1,10 @@
-INSERT INTO gro."USER_STD_FACT_BALANCES_UNSTAKED" (
+INSERT INTO gro."USER_STD_FACT_BALANCES" (
         "balance_date",
         "network_id",
         "user_address",
-        "gvt_amount",
-        "pwrd_amount",
-        "gro_amount",
+        "usd_value",
+        "gvt_value",
+        "pwrd_value",
         "creation_date"
     )
 VALUES (

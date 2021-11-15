@@ -18,8 +18,7 @@ const {
     loadUserApprovals,
     loadTmpUserApprovals,
 } = require('../loader/loadUserApprovals');
-// const { loadUserBalances } = require('../loader/loadUserBalances');
-const { loadUserBalances2 } = require('../loader/loadUserBalances2');
+const { loadUserBalances } = require('../loader/loadUserBalances');
 const { loadTokenPrice } = require('../loader/loadTokenPrice');
 const { loadUserNetReturns } = require('../loader/loadUserNetReturns');
 const { checkDateRange } = require('../common/globalUtil');
@@ -91,19 +90,13 @@ const remove = async (fromDate, toDate, loadType) => {
         // Remove balances, returns, approvals & sys load
         if (loadType === Load.FULL) {
             const [
-                // balances,
-                balancesStaked,
-                balancesUnstaked,
-                balancesPooled,
+                balances,
                 netReturns,
                 netReturnsUnstaked,
                 approvals,
                 loads,
             ] = await Promise.all([
-                // query('delete_user_std_fact_balances.sql', params),
-                query('delete_user_std_fact_balances_unstaked.sql', params),
-                query('delete_user_std_fact_balances_staked.sql', params),
-                query('delete_user_std_fact_balances_pooled.sql', params),
+                query('delete_user_std_fact_balances.sql', params),
                 query('delete_user_std_fact_net_returns.sql', params),
                 query('delete_user_std_fact_net_returns_unstaked.sql', params),
                 query('delete_user_std_fact_approvals.sql', params),
@@ -111,32 +104,15 @@ const remove = async (fromDate, toDate, loadType) => {
             ]);
 
             if (
-                /*balances*/
-                balancesStaked &&
-                balancesUnstaked &&
-                balancesPooled &&
+                balances &&
                 netReturns &&
                 netReturnsUnstaked &&
                 approvals &&
                 loads) {
-                // logger.info(
-                //     `**DB: ${balances.rowCount} record${isPlural(
-                //         balances.rowCount
-                //     )} deleted from USER_STD_FACT_BALANCES`
-                // );
                 logger.info(
-                    `**DB: ${balancesStaked.rowCount} record${isPlural(balancesStaked.rowCount
-                    )} deleted from USER_STD_FACT_BALANCES_STAKED`
-                );
-                logger.info(
-                    `**DB: ${balancesUnstaked.rowCount} record${isPlural(
-                        balancesUnstaked.rowCount
-                    )} deleted from USER_STD_FACT_BALANCES_UNSTAKED`
-                );
-                logger.info(
-                    `**DB: ${balancesPooled.rowCount} record${isPlural(
-                        balancesPooled.rowCount
-                    )} deleted from USER_STD_FACT_BALANCES_POOLED`
+                    `**DB: ${balances.rowCount} record${isPlural(
+                        balances.rowCount
+                    )} deleted from USER_STD_FACT_BALANCES`
                 );
                 logger.info(
                     `**DB: ${netReturns.rowCount} record${isPlural(
@@ -206,7 +182,7 @@ const load = async (fromDate, toDate, loadType) => {
                     if (await loadUserTransfers(fromDate, toDate, null))
                         // if (await loadUserApprovals(fromDate, toDate, null))
                         // if (await loadUserBalances(fromDate, toDate, null))
-                        if (await loadUserBalances2(fromDate, toDate, null, null))
+                        if (await loadUserBalances(fromDate, toDate, null, null))
                             if (await loadTokenPrice(fromDate, toDate))
                                 if (await loadUserNetReturns(fromDate, toDate, null))
                                     return true;
