@@ -6,9 +6,11 @@ const {
     getAlchemyRpcProvider,
     getTimestampByBlockNumber,
 } = require('../../common/chainUtil');
-const { ContractCallError, ParameterError } = require('../../dist/common/error').default;
+const { ContractCallError, ParameterError } =
+    require('../../dist/common/error').default;
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
-const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
+const { MESSAGE_TYPES } =
+    require('../../dist/common/discord/discordService').default;
 const { getConfig } = require('../../common/configUtil');
 const {
     getTransactions,
@@ -88,6 +90,9 @@ function getContracts(contractName) {
     return contracts;
 }
 
+async function getNetwork() {
+    return provider.getNetwork();
+}
 async function getStableCoins() {
     if (!stableCoins.length) {
         const latestController = getLatestSystemContract(
@@ -462,6 +467,9 @@ async function getGroVaultTransferHistories(account) {
 
 async function getGroVaultTransferFromHistories(account) {
     const logs = await getGTokenTransferEvents(account, false, true);
+    const { deposit, withdraw } = logs;
+    logger.info(`transfer in : ${JSON.stringify(deposit)}`);
+    logger.info(`transfer out : ${JSON.stringify(withdraw)}`);
     return logs;
 }
 
@@ -574,7 +582,29 @@ async function getApprovalEvents(account) {
 
     return resultLogs;
 }
-
+async function gvtApprovalToAccount(account, withdrawEventHashs) {
+    const groVault = getLatestGroVault();
+    const groVaultContractInfo =
+        getLatestContractsAddress()[ContractNames.groVault];
+    const groVaultApprovalFilter = groVault.filters.Approval(null, account);
+    groVaultApprovalFilter.fromBlock = groVaultContractInfo.startBlock;
+    groVaultContractInfo.toBlock = 'latest';
+    const logs = await getFilterEvents(
+        groVaultApprovalFilter,
+        groVault.interface,
+        providerKey
+    );
+    logger.info(`approval to us events: ${JSON.stringify(logs)}`);
+    const distHash = [];
+    logs.forEach((log) => {
+        if (!withdrawEventHashs.includes(log.transactionHash)) {
+            distHash.push(log.transactionHash);
+        }
+    });
+    logger.info(`withdrawEventHashs: ${JSON.stringify(withdrawEventHashs)}`);
+    logger.info(`approval to us hash: ${JSON.stringify(distHash)}`);
+    return distHash;
+}
 async function getApprovalHistoryies(account, depositEventHashs) {
     const approvalEventResult = await getApprovalEvents(account).catch(
         (error) => {
@@ -741,12 +771,25 @@ async function getTransactionHistories(account) {
         depositEventHashs.push(pwrdDepositLogs[i].transactionHash);
     }
 
-    const approval = await getApprovalHistoryies(account, depositEventHashs);
+    const { groVault: vaultWithdrawLogs, powerD: pwrdWithdrawLogs } =
+        withdrawLogs;
+    const withdrawEventHashs = [];
+    for (let i = 0; i < vaultWithdrawLogs.length; i += 1) {
+        withdrawEventHashs.push(vaultWithdrawLogs[i].transactionHash);
+    }
+    for (let i = 0; i < pwrdWithdrawLogs.length; i += 1) {
+        withdrawEventHashs.push(pwrdWithdrawLogs[i].transactionHash);
+    }
 
+    const approval = await getApprovalHistoryies(account, depositEventHashs);
+    const gvtApprovalToUs = await gvtApprovalToAccount(
+        account,
+        withdrawEventHashs
+    );
     const gtokenApprovalTxns = approval.gtokenApprovalTxn;
     const transferFromEvents = await parseVaultTransferFromLogs(
         groVaultTransferFromLogs,
-        gtokenApprovalTxns
+        [...gtokenApprovalTxns, ...gvtApprovalToUs]
     );
 
     groVault.deposit.push(...transferFromEvents.deposit);
@@ -755,7 +798,7 @@ async function getTransactionHistories(account) {
     return { groVault, powerD, approval: approval.approvalEvents };
 }
 
-async function generateReport(account) {
+async function ethereumPersonalStats(account) {
     const latestBlock = await provider.getBlock();
     const promises = [];
     account = account.toLowerCase();
@@ -926,11 +969,14 @@ async function generateReport(account) {
     result.net_returns_ratio.gvt = gvtRatio.toFixed(ratioDecimal);
     result.net_returns_ratio.total = totalRatio.toFixed(ratioDecimal);
 
-    return {
-        gro_personal_position: result,
-    };
+    return result;
+
+    // return {
+    //     gro_personal_position: result,
+    // };
 }
 
 module.exports = {
-    generateReport,
+    ethereumPersonalStats,
+    getNetwork,
 };

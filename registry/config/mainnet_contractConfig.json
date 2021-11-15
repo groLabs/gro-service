@@ -28,7 +28,8 @@
         "USDTSecondary",
         "3CrvPrimary",
         "BalancerWeightedPool",
-        "TokenCounter"
+        "TokenCounter",
+        "AVAXDAIVault"
     ],
     "latestContracts": {
         "GroVault": {
@@ -295,15 +296,9 @@
             "startBlock": 12857465,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "DAI"
-            ],
-            "protocols": [
-                "Compound"
-            ],
-            "protocolsDisplayName": [
-                "Compound"
-            ],
+            "tokens": ["DAI"],
+            "protocols": ["Compound"],
+            "protocolsDisplayName": ["Compound"],
             "metaData": {
                 "N": "Lev Comp",
                 "DN": "Lev Comp - DAI",
@@ -317,15 +312,9 @@
             "startBlock": 12836674,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "DAI"
-            ],
-            "protocols": [
-                "Aave"
-            ],
-            "protocolsDisplayName": [
-                "Aave"
-            ],
+            "tokens": ["DAI"],
+            "protocols": ["Aave"],
+            "protocolsDisplayName": ["Aave"],
             "metaData": {
                 "N": "Aave",
                 "DN": "Aave - DAI",
@@ -342,15 +331,9 @@
             "startBlock": 12857475,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "USDC"
-            ],
-            "protocols": [
-                "Compound"
-            ],
-            "protocolsDisplayName": [
-                "Compound"
-            ],
+            "tokens": ["USDC"],
+            "protocols": ["Compound"],
+            "protocolsDisplayName": ["Compound"],
             "metaData": {
                 "N": "Lev Comp",
                 "DN": "Lev Comp - USDC",
@@ -364,15 +347,9 @@
             "startBlock": 13502267,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "USDC"
-            ],
-            "protocols": [
-                "Aave"
-            ],
-            "protocolsDisplayName": [
-                "Aave"
-            ],
+            "tokens": ["USDC"],
+            "protocols": ["Aave"],
+            "protocolsDisplayName": ["Aave"],
             "metaData": {
                 "N": "Aave",
                 "DN": "Aave - USDC",
@@ -389,19 +366,9 @@
             "startBlock": 12836674,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "USDT"
-            ],
-            "protocols": [
-                "Idle",
-                "Compound",
-                "Aave"
-            ],
-            "protocolsDisplayName": [
-                "Idle",
-                "Compound",
-                "Aave"
-            ],
+            "tokens": ["USDT"],
+            "protocols": ["Idle", "Compound", "Aave"],
+            "protocolsDisplayName": ["Idle", "Compound", "Aave"],
             "metaData": {
                 "N": "Idle",
                 "DN": "Idle - USDT",
@@ -415,15 +382,9 @@
             "startBlock": 13502267,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "USDT"
-            ],
-            "protocols": [
-                "Aave"
-            ],
-            "protocolsDisplayName": [
-                "Aave"
-            ],
+            "tokens": ["USDT"],
+            "protocols": ["Aave"],
+            "protocolsDisplayName": ["Aave"],
             "metaData": {
                 "N": "Aave",
                 "DN": "Aave - USDT",
@@ -440,21 +401,9 @@
             "startBlock": 13328566,
             "abiVersion": "ce7b149",
             "tag": "Strategy",
-            "tokens": [
-                "USDP"
-            ],
-            "protocols": [
-                "Curve",
-                "Yearn",
-                "Convex",
-                "Unit"
-            ],
-            "protocolsDisplayName": [
-                "Curve",
-                "Yearn",
-                "Convex",
-                "Unit"
-            ],
+            "tokens": ["USDP"],
+            "protocols": ["Curve", "Yearn", "Convex", "Unit"],
+            "protocolsDisplayName": ["Curve", "Yearn", "Convex", "Unit"],
             "metaData": {
                 "N": "XPool",
                 "DN": "Curve - XPool",
@@ -482,6 +431,18 @@
             "abiVersion": "fa8e260",
             "tag": "Other",
             "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        },
+        "AVAXDAIVault": {
+            "address": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
+            "deployedBlock": 3492579,
+            "startBlock": 6790388,
+            "abiVersion": "fa8e260",
+            "tag": "Other",
+            "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {},
@@ -1296,15 +1257,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "DAI"
-                ],
-                "protocols": [
-                    "Compound"
-                ],
-                "protocolsDisplayName": [
-                    "Compound"
-                ],
+                "tokens": ["DAI"],
+                "protocols": ["Compound"],
+                "protocolsDisplayName": ["Compound"],
                 "metaData": {
                     "N": "Lev Comp",
                     "DN": "Lev Comp - DAI",
@@ -1334,15 +1289,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "DAI"
-                ],
-                "protocols": [
-                    "Cream"
-                ],
-                "protocolsDisplayName": [
-                    "CREAM"
-                ],
+                "tokens": ["DAI"],
+                "protocols": ["Cream"],
+                "protocolsDisplayName": ["CREAM"],
                 "metaData": {
                     "N": "Cream",
                     "DN": "CREAM - DAI",
@@ -1401,15 +1350,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDC"
-                ],
-                "protocols": [
-                    "Compound"
-                ],
-                "protocolsDisplayName": [
-                    "Compound"
-                ],
+                "tokens": ["USDC"],
+                "protocols": ["Compound"],
+                "protocolsDisplayName": ["Compound"],
                 "metaData": {
                     "N": "Lev Comp",
                     "DN": "Lev Comp - USDC",
@@ -1439,15 +1382,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDC"
-                ],
-                "protocols": [
-                    "Cream"
-                ],
-                "protocolsDisplayName": [
-                    "CREAM"
-                ],
+                "tokens": ["USDC"],
+                "protocols": ["Cream"],
+                "protocolsDisplayName": ["CREAM"],
                 "metaData": {
                     "N": "Cream",
                     "DN": "CREAM - USDC",
@@ -1464,15 +1401,9 @@
                 "startBlock": 13502267,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDC"
-                ],
-                "protocols": [
-                    "Aave"
-                ],
-                "protocolsDisplayName": [
-                    "Aave"
-                ],
+                "tokens": ["USDC"],
+                "protocols": ["Aave"],
+                "protocolsDisplayName": ["Aave"],
                 "metaData": {
                     "N": "Aave",
                     "DN": "Aave - USDC",
@@ -1518,19 +1449,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDT"
-                ],
-                "protocols": [
-                    "Idle",
-                    "Compound",
-                    "Aave"
-                ],
-                "protocolsDisplayName": [
-                    "Idle",
-                    "Compound",
-                    "Aave"
-                ],
+                "tokens": ["USDT"],
+                "protocols": ["Idle", "Compound", "Aave"],
+                "protocolsDisplayName": ["Idle", "Compound", "Aave"],
                 "metaData": {
                     "N": "Idle",
                     "DN": "Idle - USDT",
@@ -1560,15 +1481,9 @@
                 "endBlock": 13502267,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDT"
-                ],
-                "protocols": [
-                    "Cream"
-                ],
-                "protocolsDisplayName": [
-                    "CREAM"
-                ],
+                "tokens": ["USDT"],
+                "protocols": ["Cream"],
+                "protocolsDisplayName": ["CREAM"],
                 "metaData": {
                     "N": "Cream",
                     "DN": "CREAM - USDT",
@@ -1585,15 +1500,9 @@
                 "startBlock": 13502267,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDT"
-                ],
-                "protocols": [
-                    "Aave"
-                ],
-                "protocolsDisplayName": [
-                    "Aave"
-                ],
+                "tokens": ["USDT"],
+                "protocols": ["Aave"],
+                "protocolsDisplayName": ["Aave"],
                 "metaData": {
                     "N": "Aave",
                     "DN": "Aave - USDT",
@@ -1639,15 +1548,8 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDN"
-                ],
-                "protocols": [
-                    "Curve",
-                    "Yearn",
-                    "Convex",
-                    "Neutrino"
-                ],
+                "tokens": ["USDN"],
+                "protocols": ["Curve", "Yearn", "Convex", "Neutrino"],
                 "protocolsDisplayName": [
                     "Curve",
                     "Yearn",
@@ -1686,6 +1588,21 @@
                 "abiVersion": "fa8e260",
                 "tag": "Other",
                 "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "AVAXDAIVault": [
+            {
+                "address": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
+                "deployedBlock": 3492579,
+                "startBlock": 6790388,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Other",
+                "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
                 "protocols": [],
                 "protocolsDisplayName": [],
                 "metaData": {},

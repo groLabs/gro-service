@@ -29,6 +29,30 @@ async function getFilterEvents(filter, contractInterface, providerKey) {
     return logs;
 }
 
+async function getEvents(filter, contractInterface, provider) {
+    const filterLogs = await provider.getLogs(filter).catch((error) => {
+        logger.error(error);
+        return [];
+    });
+
+    const logs = [];
+    filterLogs.forEach((log) => {
+        const eventInfo = {
+            address: log.address,
+            blockNumber: log.blockNumber,
+            transactionHash: log.transactionHash,
+        };
+        const parseResult = contractInterface.parseLog(log);
+        eventInfo.name = parseResult.name;
+        eventInfo.signature = parseResult.signature;
+        eventInfo.topic = parseResult.topic;
+        eventInfo.args = parseResult.args;
+        logs.push(eventInfo);
+    });
+
+    return logs;
+}
+
 async function getSimpleFilterEvents(filter, providerKey) {
     const provider = getInfruraRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
@@ -52,4 +76,5 @@ async function getSimpleFilterEvents(filter, providerKey) {
 module.exports = {
     getFilterEvents,
     getSimpleFilterEvents,
+    getEvents,
 };

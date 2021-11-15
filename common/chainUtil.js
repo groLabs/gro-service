@@ -2,13 +2,11 @@ const { ethers } = require('ethers');
 const fs = require('fs');
 const { BigNumber } = require('ethers');
 const { NonceManager } = require('@ethersproject/experimental');
-const { SettingError, BlockChainCallError } = require('../dist/common/error').default;
+const { SettingError, BlockChainCallError } =
+    require('../dist/common/error').default;
 const { shortAccount } = require('./digitalUtil');
-const {
-    sendMessageToChannel,
-    MESSAGE_TYPES,
-    DISCORD_CHANNELS,
-} = require('../dist/common/discord/discordService').default;
+const { sendMessageToChannel, MESSAGE_TYPES, DISCORD_CHANNELS } =
+    require('../dist/common/discord/discordService').default;
 const { botBalanceMessage } = require('../discordMessage/botBalanceMessage');
 const { sendAlertMessage } = require('./alertMessageSender');
 const { getConfig } = require('./configUtil');
@@ -39,6 +37,7 @@ let rpcProvider;
 let infruraRpcProvider;
 let defaultWalletManager;
 let privateProvider;
+let avaxProvider;
 const rpcProviders = {};
 const infruraRpcProviders = {};
 const botWallets = {};
@@ -213,29 +212,12 @@ function getAlchemyRpcProvider(providerKey) {
     return result;
 }
 
-function getAvaxRpcProvider(providerKey) {
-    // only for test
-    const providerKeys = Object.keys(rpcProviders);
-    // logger.info(`providerKeys: ${JSON.stringify(providerKeys)}`);
-    // =====================
-    let result;
-    providerKey = providerKey || DEFAULT_PROVIDER_KEY;
-
-    result = rpcProviders[providerKey];
-    if (!result) {
-        const key = `blockchain.alchemy_api_keys.${providerKey}`;
-        if (process.env.NODE_ENV === 'develop') {
-            result = ethers.providers.getDefaultProvider(network);
-        } else {
-            const avaxProvider = new AvaxPrcProvider(network, key);
-            result = createProxyForProvider(avaxProvider, key);
-        }
-
-        logger.info(`Create a new ${providerKey} Rpc provider.`);
-        rpcProviders[providerKey] = result;
+function getAvaxRpcProvider() {
+    if (!avaxProvider) {
+        logger.info('Create Avax Rpc provider.');
+        avaxProvider = new AvaxPrcProvider(network);
     }
-
-    return result;
+    return avaxProvider;
 }
 
 function getInfruraRpcProvider(providerKey) {

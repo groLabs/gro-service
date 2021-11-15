@@ -78,7 +78,15 @@ function newSystemLatestContracts(signerInfo) {
     const contracts = {};
     for (let i = 0; i < contractsName.length; i += 1) {
         const contractName = ContractNames[contractsName[i]];
-        contracts[contractName] = newLatestContract(contractName, signerInfo);
+        console.log(
+            `contractName: ${contractName}: ${contractName.indexOf('AVAX')}`
+        );
+        if (contractName.indexOf('AVAX') < 0) {
+            contracts[contractName] = newLatestContract(
+                contractName,
+                signerInfo
+            );
+        }
     }
     return contracts;
 }
