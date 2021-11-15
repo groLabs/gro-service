@@ -12,7 +12,7 @@ const {
 } = require('../common/personalUtil');
 const { parseAmount } = require('../parser/personalStatsParser');
 const { QUERY_ERROR } = require('../constants');
-const { getConfig } = require('../../common/configUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const route = getConfig('route');
 const { QUERY_SUCCESS } = require('../constants');
 const {

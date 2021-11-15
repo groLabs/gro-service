@@ -1,10 +1,10 @@
 const { ethers } = require('ethers');
-const { getFilterEvents } = require('../../common/logFilter-new');
-const { getConfig } = require('../../common/configUtil');
+const { getFilterEvents } = require('../../dist/common/logFilter-new');
+const { getConfig } = require('../../dist/common/configUtil');
 const {
     appendEventTimestamp,
 } = require('../services/generatePersonTransaction');
-const { getAlchemyRpcProvider } = require('../../common/chainUtil');
+const { getAlchemyRpcProvider } = require('../../dist/common/chainUtil');
 
 const AirdropABI = require('../../abi/Airdrop.json');
 

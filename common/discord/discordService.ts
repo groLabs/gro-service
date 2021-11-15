@@ -5,8 +5,8 @@ import { getDiscordClient } from './discord';
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 /* eslint-disable import/no-dynamic-require */
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-const RETRY_TIMES = getConfig('discord.retry', false) || 2;
-const RESEND_DELAY_SETTING = getConfig('discord.resend_delay', false) || 2000;
+const RETRY_TIMES = getConfig('discord.retry', false) as number || 2;
+const RESEND_DELAY_SETTING = getConfig('discord.resend_delay', false) as number || 2000;
 
 interface DiscordChannels {
     trades: string;
@@ -18,14 +18,14 @@ interface DiscordChannels {
 }
 
 const DISCORD_CHANNELS: DiscordChannels = {} as DiscordChannels;
-DISCORD_CHANNELS.trades = getConfig('discord.channel.trades');
-DISCORD_CHANNELS.protocolAssets = getConfig('discord.channel.protocol_assets');
-DISCORD_CHANNELS.protocolEvents = getConfig('discord.channel.protocol_events');
+DISCORD_CHANNELS.trades = getConfig('discord.channel.trades') as string;
+DISCORD_CHANNELS.protocolAssets = getConfig('discord.channel.protocol_assets') as string;
+DISCORD_CHANNELS.protocolEvents = getConfig('discord.channel.protocol_events') as string;
 DISCORD_CHANNELS.critActionEvents = getConfig(
     'discord.channel.crit_action_events'
-);
-DISCORD_CHANNELS.botAlerts = getConfig('discord.channel.bot_alerts');
-DISCORD_CHANNELS.botLogs = getConfig('discord.channel.bot_logs');
+) as string;
+DISCORD_CHANNELS.botAlerts = getConfig('discord.channel.bot_alerts') as string;
+DISCORD_CHANNELS.botLogs = getConfig('discord.channel.bot_logs') as string;
 
 const MESSAGE_TYPES = {
     depositEvent: 'Deposit Event',
@@ -71,13 +71,13 @@ interface MessageEmoji extends MessageTypes {
 
 const MESSAGE_EMOJI: MessageEmoji = {} as MessageEmoji;
 MESSAGE_EMOJI.Vault =
-    getConfig('emoji.gvt', false) || '<:Vault:834796096797802507>';
+    getConfig('emoji.gvt', false) as string || '<:Vault:834796096797802507>';
 MESSAGE_EMOJI.PWRD =
-    getConfig('emoji.pwrd', false) || '<:PWRD:834796096915767306>';
-MESSAGE_EMOJI.error = getConfig('emoji.error', false) || '';
+    getConfig('emoji.pwrd', false) as string || '<:PWRD:834796096915767306>';
+MESSAGE_EMOJI.error = getConfig('emoji.error', false) as string || '';
 MESSAGE_EMOJI.company =
-    getConfig('emoji.company', false) || '<:GRO:834796096685211689>';
-MESSAGE_EMOJI.reverted = getConfig('emoji.reverted', false) || '';
+    getConfig('emoji.company', false) as string || '<:GRO:834796096685211689>';
+MESSAGE_EMOJI.reverted = getConfig('emoji.reverted', false) as string || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.miniStatsPersonal] =
     getConfig('emoji.miniStatsPersonal', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.stats] = getConfig('emoji.stats', false) || '';
@@ -262,7 +262,7 @@ function sendErrorMessageToLogChannel(error) {
     sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
 }
 
-export default {
+export {
     DISCORD_CHANNELS,
     MESSAGE_TYPES,
     MESSAGE_EMOJI,

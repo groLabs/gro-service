@@ -1,5 +1,5 @@
 const schedule = require('node-schedule');
-const { getConfig } = require('../../common/configUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const { etlGroStats } = require('../etl/etlGroStats');
 const { etlPriceCheck } = require('../etl/etlPriceCheck');
 const { etlPersonalStats } = require('../etl/etlPersonalStats');

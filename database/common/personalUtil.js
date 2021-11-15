@@ -1,12 +1,12 @@
 const ethers = require('ethers');
 const moment = require('moment');
 const { ContractNames } = require('../../registry/registry');
-const { getFilterEvents } = require('../../common/logFilter-new');
+const { getFilterEvents } = require('../../dist/common/logFilter-new');
 const {
     getLatestContractEventFilter,
     getContractHistoryEventFilters,
     getCoinApprovalFilters,
-} = require('../../common/filterGenerateTool');
+} = require('../../dist/common/filterGenerateTool');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -150,7 +150,7 @@ const generateDateRange = (_fromDate, _toDate) => {
 
 /// @notice Calculate the start and end date to load personal stats based on the last
 ///         successful load
-/// @dev    - personal stats are only loaded when a day is completed, so the latest 
+/// @dev    - personal stats are only loaded when a day is completed, so the latest
 ///         possible day to be loaded will always D-1 (yesterday), but never the current day
 ///         - Last successful load is retrieved from table SYS_USER_LOADS
 /// @return An array with the start and end date to load personal stats

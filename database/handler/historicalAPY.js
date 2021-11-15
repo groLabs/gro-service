@@ -4,7 +4,7 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { QUERY_ERROR } = require('../constants');
-const { getConfig } = require('../../common/configUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const launch_timestamp = getConfig('blockchain.start_timestamp');
 
 

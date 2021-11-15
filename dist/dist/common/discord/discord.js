@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getDiscordClient = void 0;
+// @ts-ignore
 const discord_js_1 = __importDefault(require("discord.js"));
 const discordError_1 = __importDefault(require("./discordError"));
 const configUtil_1 = require("../configUtil");

@@ -1,6 +1,6 @@
 const axios = require('axios');
 const logger = require('../statsLogger');
-const { getConfig } = require('../../common/configUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const { getContractsHistory } = require('../../registry/registryLoader');
 const { ContractNames } = require('../../registry/registry');
 

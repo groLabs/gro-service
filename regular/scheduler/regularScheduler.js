@@ -3,17 +3,17 @@ const {
     syncManagerNonce,
     checkAccountsBalance,
     getCurrentBlockNumber,
-} = require('../../common/chainUtil');
-const { checkServerHealth } = require('../../common/checkBotHealth');
+} = require('../../dist/common/chainUtil');
+const { checkServerHealth } = require('../../dist/common/checkBotHealth');
 const {
     checkPendingTransactions,
     syncPendingTransactions,
-} = require('../../common/pendingTransaction');
+} = require('../../dist/common/pendingTransaction');
 const { pendingTransactions } = require('../../common/storage');
 const {
     sendErrorMessageToLogChannel,
 } = require('../../dist/common/discord/discordService').default;
-const { pendingTransactionResend } = require('../../gasPrice/transaction');
+const { pendingTransactionResend } = require('../../dist/gasPrice/transaction');
 const {
     investTrigger,
     rebalanceTrigger,
@@ -29,25 +29,25 @@ const {
     distributeCurveVault,
 } = require('../handler/actionHandler');
 
-const { getVaults, getStrategyLength } = require('../../contract/allContracts');
-const { getConfig } = require('../../common/configUtil');
+const { getVaults, getStrategyLength } = require('../../dist/contract/allContracts');
+const { getConfig } = require('../../dist/common/configUtil');
 const {
     investTransactionMessage,
-} = require('../../discordMessage/investMessage');
-const { pnlTransactionMessage } = require('../../discordMessage/pnlMessage');
+} = require('../../dist/discordMessage/investMessage');
+const { pnlTransactionMessage } = require('../../dist/discordMessage/pnlMessage');
 const {
     rebalanceTransactionMessage,
-} = require('../../discordMessage/rebalanceMessage');
+} = require('../../dist/discordMessage/rebalanceMessage');
 const {
     harvestTransactionMessage,
-} = require('../../discordMessage/harvestMessage');
+} = require('../../dist/discordMessage/harvestMessage');
 const {
     updatePriceTransactionMessage,
-} = require('../../discordMessage/otherMessage');
+} = require('../../dist/discordMessage/otherMessage');
 const {
     distributeCurveVaultTransactionMessage,
-} = require('../../discordMessage/distributeCurveMessage');
-const { sendAlertMessage } = require('../../common/alertMessageSender');
+} = require('../../dist/discordMessage/distributeCurveMessage');
+const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
 const logger = require('../regularLogger');
 
 const pendingTransactionSchedulerSetting =

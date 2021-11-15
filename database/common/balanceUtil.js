@@ -2,8 +2,8 @@ const { BigNumber } = require('ethers');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { parseAmount } = require('../parser/personalStatsParser');
-const { getConfig } = require('../../common/configUtil');
-const { getTokenCounter } = require('../common/contractUtil');
+const { getConfig } = require('../../dist/common/configUtil');
+const {getTokenCounter} = require('./contractUtil');
 
 const UNI_POOL_GVT_GRO_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_gvt_pool_address');
 const UNI_POOL_GVT_USDC_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_usdc_pool_address');

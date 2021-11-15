@@ -1,4 +1,6 @@
+// @ts-ignore
 import Discord from 'discord.js';
+import { Logger } from 'winston';
 
 import DiscordError from './discordError';
 import { getConfig } from '../configUtil';
@@ -6,9 +8,9 @@ import { getConfig } from '../configUtil';
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 const discordClient = new Discord.Client();
 // eslint-disable-next-line import/no-dynamic-require
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+const logger: Logger = require(`../../${botEnv}/${botEnv}Logger`);
 
-const TOKEN = getConfig('discord.token');
+const TOKEN = getConfig('discord.token') as string;
 let isClientReady = false;
 
 discordClient.login(TOKEN);

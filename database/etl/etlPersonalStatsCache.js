@@ -2,8 +2,8 @@ const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-const { getConfig } = require('../../common/configUtil');
-const { getTimestampByBlockNumber } = require('../../common/chainUtil');
+const { getConfig } = require('../../dist/common/configUtil');
+const { getTimestampByBlockNumber } = require('../../dist/common/chainUtil');
 const { findBlockByDate } = require('../common/globalUtil');
 const {
     handleErr,
@@ -23,7 +23,7 @@ const { QUERY_ERROR } = require('../constants');
 
 
 /// @notice - Deletes all data in cache tables for a given user address
-///         - Determines the starting date of cache load based on max date 
+///         - Determines the starting date of cache load based on max date
 ///           in USER_BALANCES for a given user address
 /// @param account User address for whom cache load will be performed
 /// @return Array with start block and last date to be processed

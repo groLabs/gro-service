@@ -1,15 +1,15 @@
 const BN = require('bignumber.js');
 const { ethers, BigNumber } = require('ethers');
 const logger = require('../statsLogger');
-const { getFilterEvents } = require('../../common/logFilter-new');
+const { getFilterEvents } = require('../../dist/common/logFilter-new');
 const {
     getAlchemyRpcProvider,
     getTimestampByBlockNumber,
-} = require('../../common/chainUtil');
-const { ContractCallError, ParameterError } = require('../../dist/common/error').default;
+} = require('../../dist/common/chainUtil');
+const { ContractCallError, ParameterError } = require('../../dist/common/error');
 const { CONTRACT_ASSET_DECIMAL, div } = require('../../common/digitalUtil');
-const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
-const { getConfig } = require('../../common/configUtil');
+const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService');
+const { getConfig } = require('../../dist/common/configUtil');
 const {
     getTransactions,
     getTransaction,
