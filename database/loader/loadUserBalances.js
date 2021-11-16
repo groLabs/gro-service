@@ -350,14 +350,19 @@ const loadUserBalances = async (
                     return false;
             }
 
-            showMsg(account, date, 'USER_STD_FACT_BALANCES');
+            const table = (account)
+                ? 'USER_CACHE_FACT_BALANCES'
+                : (isSnapshot)
+                    ? 'USER_STD_FACT_BALANCES_SNAPSHOT'
+                    : 'USER_STD_FACT_BALANCES';
+            showMsg(account, date, table);
             cleanseVars('rows');
         }
 
         cleanseVars('all');
 
         // Update table SYS_USER_LOADS with the last loads
-        if (account) {
+        if (account || isSnapshot) {
             return true;
         } else {
             const res = await loadTableUpdates('USER_STD_FACT_BALANCES', fromDate, toDate);

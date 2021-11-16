@@ -8,17 +8,15 @@ const { loadTableUpdates } = require('./loadTableUpdates');
 const {
     getNetworkId,
     generateDateRange,
-    handleErr,
 } = require('../common/personalUtil');
 const { parseAmount } = require('../parser/personalStatsParser');
-const { QUERY_ERROR } = require('../constants');
-const { getConfig } = require('../../dist/common/configUtil');
-const route = getConfig('route');
-const { QUERY_SUCCESS } = require('../constants');
+const { 
+    QUERY_ERROR,
+    QUERY_SUCCESS
+} = require('../constants');
 const {
     getGroVault,
     getPowerD,
-    // getTokenCounter,
 } = require('../common/contractUtil');
 
 
