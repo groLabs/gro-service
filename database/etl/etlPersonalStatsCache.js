@@ -37,8 +37,7 @@ const preloadCache = async (account) => {
             tmpWithdrawals,
             approvals,
             balances,
-            // netReturns,
-            netReturnsUnstaked,
+            netReturns,
             transfers,
             _fromDate,
         ] = await Promise.all([
@@ -47,8 +46,7 @@ const preloadCache = async (account) => {
             query('delete_user_cache_tmp_withdrawals.sql', params),
             query('delete_user_cache_fact_approvals.sql', params),
             query('delete_user_cache_fact_balances.sql', params),
-            // query('delete_user_cache_fact_net_returns.sql', params),
-            query('delete_user_cache_fact_net_returns_unstaked.sql', params),
+            query('delete_user_cache_fact_net_returns.sql', params),
             query('delete_user_cache_fact_transfers.sql', params),
             query('select_max_load_dates.sql', params),
         ]);
@@ -58,8 +56,7 @@ const preloadCache = async (account) => {
             tmpWithdrawals.status === QUERY_ERROR ||
             approvals.status === QUERY_ERROR ||
             balances.status === QUERY_ERROR ||
-            // netReturns.status === QUERY_ERROR ||
-            netReturnsUnstaked.status === QUERY_ERROR ||
+            netReturns.status === QUERY_ERROR ||
             transfers.status === QUERY_ERROR ||
             _fromDate.status === QUERY_ERROR)
             return [];

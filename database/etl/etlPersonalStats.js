@@ -92,13 +92,11 @@ const remove = async (fromDate, toDate, loadType) => {
             const [
                 balances,
                 netReturns,
-                netReturnsUnstaked,
                 approvals,
                 loads,
             ] = await Promise.all([
                 query('delete_user_std_fact_balances.sql', params),
                 query('delete_user_std_fact_net_returns.sql', params),
-                query('delete_user_std_fact_net_returns_unstaked.sql', params),
                 query('delete_user_std_fact_approvals.sql', params),
                 query('delete_table_loads.sql', params),
             ]);
@@ -106,7 +104,6 @@ const remove = async (fromDate, toDate, loadType) => {
             if (
                 balances &&
                 netReturns &&
-                netReturnsUnstaked &&
                 approvals &&
                 loads) {
                 logger.info(
@@ -118,11 +115,6 @@ const remove = async (fromDate, toDate, loadType) => {
                     `**DB: ${netReturns.rowCount} record${isPlural(
                         netReturns.rowCount
                     )} deleted from USER_STD_FACT_NET_RETURNS`
-                );
-                logger.info(
-                    `**DB: ${netReturnsUnstaked.rowCount} record${isPlural(
-                        netReturnsUnstaked.rowCount
-                    )} deleted from USER_STD_FACT_NET_RETURNS_UNSTAKED`
                 );
                 logger.info(
                     `**DB: ${approvals.rowCount} record${isPlural(
@@ -184,8 +176,8 @@ const load = async (fromDate, toDate, loadType) => {
                         // if (await loadUserBalances(fromDate, toDate, null))
                         if (await loadUserBalances(fromDate, toDate, null, null, false))
                             //TODO: token price return null (eg: reload before Gro token)
-                            //if (await loadTokenPrice(fromDate, toDate))
-                                //if (await loadUserNetReturns(fromDate, toDate, null))
+                            if (await loadTokenPrice(fromDate, toDate))
+                                if (await loadUserNetReturns(fromDate, toDate, null))
                                     return true;
 
             } else {
