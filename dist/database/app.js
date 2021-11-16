@@ -67,13 +67,14 @@ const { airdrop4Handler, airdrop4HandlerV2, checkPosition, } = require('./handle
                     }
                     break;
                 // load only balances for personal stats
-                case 'balances2':
-                    if (params.length === 5 && checkDateRange(params[1], params[2])) {
+                case 'loadBalances':
+                    if (params.length === 6 && checkDateRange(params[1], params[2])) {
                         await loadContractInfoFromRegistry();
                         await loadUserBalances(params[1], // start date
                         params[2], // end date
                         params[3], // account
-                        params[4]); // time
+                        params[4], // time
+                        params[5]); // snapshot (true / false)
                     }
                     else {
                         console.log(`Wrong parameters for balances2 - e.g.: balances2 28/06/2021 29/06/2021 "" 15:00:00`);
@@ -103,7 +104,7 @@ const { airdrop4Handler, airdrop4HandlerV2, checkPosition, } = require('./handle
                 case 'dumpTable':
                     if (params.length === 3) {
                         await dumpTable(params[1], // table name
-                        params[2]); // isAdmin
+                        params[2]); // isAdmin (true / false)
                     }
                     else {
                         console.log('Wrong parameters for dumpTable - e.g.: dumpTable PROTOCOL_PRICE_CHECK_DETAIL true');

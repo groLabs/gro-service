@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.newSystemLatestVaultStrategyContracts = exports.newSystemLatestContracts = exports.newLatestContract = exports.newContract = void 0;
 /* eslint-disable import/no-dynamic-require */
 const ethers_1 = require("ethers");
-const chainUtil_1 = require("../dist/common/chainUtil");
+const chainUtil_1 = require("../common/chainUtil");
 const registryLoader_1 = require("./registryLoader");
 const registry_1 = require("./registry");
 const botEnv = process.env.BOT_ENV.toLowerCase();
