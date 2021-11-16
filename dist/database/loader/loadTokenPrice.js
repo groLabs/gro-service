@@ -11,9 +11,7 @@ const { QUERY_ERROR } = require('../constants');
 const { getConfig } = require('../../dist/common/configUtil');
 const route = getConfig('route');
 const { QUERY_SUCCESS } = require('../constants');
-const { getGroVault, getPowerD,
-// getTokenCounter,
- } = require('../common/contractUtil');
+const { getGroVault, getPowerD, } = require('../common/contractUtil');
 // Rretrieve GRO price for a given date via Coingecko API
 const getPriceFromCoingecko = async (date, coin) => {
     return new Promise(async (resolve) => {

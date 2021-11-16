@@ -13,7 +13,7 @@ const getBalances = async (tokenAddress, userAddresses, blockNumber) => {
         const result = await getTokenCounter().getTokenAmounts(tokenAddress, userAddresses, blockTag);
         return [
             { amount_unstaked: result[0].map(unstaked => parseAmount(unstaked, 'USD')) },
-            { amount_staked: result[1].map(staked => parseAmount(staked, 'USD')) }, // only for single-sided pools (gvt, gro)
+            { amount_staked: result[1].map(staked => parseAmount(staked, 'USD')) },
         ];
     }
     catch (err) {

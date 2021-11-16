@@ -266,3 +266,34 @@ CREATE TABLE gro."USER_STD_FACT_BALANCES" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."USER_STD_FACT_BALANCES" OWNER to postgres;
+
+-- Same as USER_STD_FACT_BALANCES
+CREATE TABLE gro."USER_STD_FACT_BALANCES_SNAPSHOT" (
+    balance_date TIMESTAMP (6) NOT NULL,
+    network_id SMALLINT NULL,
+    user_address CHARACTER VARYING (42) NOT NULL,
+    gvt_amount_unstaked NUMERIC (20, 8) NULL,
+    pwrd_amount_unstaked NUMERIC (20, 8) NULL,
+    gro_amount_unstaked NUMERIC (20, 8) NULL,
+    pool0_lp_amount_staked NUMERIC (20, 8) NULL,    -- GRO 100% in MC
+    pool1_lp_amount_pooled NUMERIC (20, 8) NULL,    -- LP GVT 50% / GRO 50% in pool
+    pool1_lp_amount_staked NUMERIC (20, 8) NULL,    -- LP GVT 50% / GRO 50% in MC
+    pool1_gvt_amount NUMERIC (20, 8) NULL,          -- GVT
+    pool1_gro_amount NUMERIC (20, 8) NULL,          -- GRO
+    pool2_lp_amount_pooled NUMERIC (20, 8) NULL,    -- LP GRO 50% / USDC 50% in pool
+    pool2_lp_amount_staked NUMERIC (20, 8) NULL,    -- LP GRO 50% / USDC 50% in MC
+    pool2_gro_amount NUMERIC (20, 8) NULL,          -- GRO
+    pool2_usdc_amount NUMERIC (20, 8) NULL,         -- USDC
+    pool3_lp_amount_staked NUMERIC (20, 8) NULL,    -- GVT 100%
+    pool4_lp_amount_pooled NUMERIC (20, 8) NULL,    -- LP PWRD 100% in pool
+    pool4_lp_amount_staked NUMERIC (20, 8) NULL,    -- LP PWRD 100% in MC
+    pool4_pwrd_amount NUMERIC (20, 8) NULL,         -- PWRD
+    pool5_lp_amount_pooled NUMERIC (20, 8) NULL,    -- LP GRO 80% / WETH 20% in pool
+    pool5_lp_amount_staked NUMERIC (20, 8) NULL,    -- LP GRO 80% / WETH 20% in MC
+    pool5_gro_amount NUMERIC (20, 8) NULL,          -- GRO
+    pool5_weth_amount NUMERIC (20, 8) NULL,         -- WETH
+    creation_date TIMESTAMP (6) NULL,
+    CONSTRAINT "USER_STD_FACT_BALANCES_SNAPSHOT_pkey" PRIMARY KEY (balance_date, user_address) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."USER_STD_FACT_BALANCES_SNAPSHOT" OWNER to postgres;
