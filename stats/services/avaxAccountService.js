@@ -3,7 +3,7 @@ const { ethers } = require('ethers');
 const { ContractNames } = require('../../registry/registry');
 const { getAvaxRpcProvider } = require('../../common/chainUtil');
 const { getConfig } = require('../../common/configUtil');
-const { div, formatNumber } = require('../../common/digitalUtil');
+const { formatNumber2 } = require('../../common/digitalUtil');
 const { getContractsHistory } = require('../../registry/registryLoader');
 const { getLatestSystemContractOnAVAX } = require('../common/contractStorage');
 const {
@@ -125,7 +125,7 @@ async function calcuateUsdAmountForTransferEvents(logs, decimals) {
         const usdAmount = new BN(`${perPrice}`).multipliedBy(
             new BN(coinAmount)
         );
-        log.amount = formatNumber(usdAmount, decimals, amountDecimal);
+        log.amount = formatNumber2(usdAmount, decimals, amountDecimal);
     }
 }
 
@@ -192,6 +192,7 @@ async function getDepositHistory(account, token, adpaterType, decimals) {
     let needWrited = false;
     let adapterHistories;
     // query history
+    if (!accountVaultHistories[account]) accountVaultHistories[account] = {};
     const accountAdapters = accountVaultHistories[account][adpaterType];
     if (accountAdapters) {
         adapterHistories = accountAdapters;
@@ -221,8 +222,8 @@ async function getDepositHistory(account, token, adpaterType, decimals) {
     if (!logs.length) return result;
     await appendEventTimestamp(logs);
     logs.forEach((log) => {
-        log.amount = formatNumber(log.args[1], decimals, amountDecimal);
-        log.coin_amount = formatNumber(log.args[2], decimals, amountDecimal);
+        log.amount = formatNumber2(log.args[1], decimals, amountDecimal);
+        log.coin_amount = formatNumber2(log.args[2], decimals, amountDecimal);
         log.token = `gro${token}`;
         result.push(log);
     });
@@ -232,6 +233,7 @@ async function getDepositHistory(account, token, adpaterType, decimals) {
 async function getWithdrawHistory(account, token, adpaterType, decimals) {
     // let needWrited = false;
     let adapterHistories;
+    if (!accountVaultHistories[account]) accountVaultHistories[account] = {};
     const accountAdapters = accountVaultHistories[account][adpaterType];
     if (accountAdapters) {
         adapterHistories = accountAdapters;
@@ -262,8 +264,8 @@ async function getWithdrawHistory(account, token, adpaterType, decimals) {
     if (!logs.length) return result;
     await appendEventTimestamp(logs);
     logs.forEach((log) => {
-        log.amount = formatNumber(log.args[1], decimals, amountDecimal);
-        log.coin_amount = formatNumber(log.args[2], decimals, amountDecimal);
+        log.amount = formatNumber2(log.args[1], decimals, amountDecimal);
+        log.coin_amount = formatNumber2(log.args[2], decimals, amountDecimal);
         log.token = `gro${token}`;
         result.push(log);
     });
@@ -285,13 +287,13 @@ async function getVaultTokenTransferHistory(
     await appendEventTimestamp(outLogs);
     inLogs.forEach((log) => {
         if (log.args[0] === ZERO_ADDRESS) return;
-        log.coin_amount = formatNumber(log.args[2], decimals, amountDecimal);
+        log.coin_amount = formatNumber2(log.args[2], decimals, amountDecimal);
         log.token = `gro${token}`;
         transferIn.push(log);
     });
     outLogs.forEach((log) => {
         if (log.args[1] === ZERO_ADDRESS) return;
-        log.coin_amount = formatNumber(log.args[2], decimals, amountDecimal);
+        log.coin_amount = formatNumber2(log.args[2], decimals, amountDecimal);
         log.token = `gro${token}`;
         transferOut.push(log);
     });
@@ -326,7 +328,7 @@ async function getApprovalHistory(
     logs.forEach((log) => {
         const { transactionHash, args } = log;
         if (!depositEventHashs.includes(transactionHash)) {
-            const amount = formatNumber(args[2], decimals, amountDecimal);
+            const amount = formatNumber2(args[2], decimals, amountDecimal);
             log.amount = amount;
             log.coin_amount = amount;
             log.spender = args[1].toString();
@@ -382,10 +384,10 @@ async function singleVaultEvents(account, adpaterType, token, decimals) {
     const balance = await latestVault.balanceOf(account);
     const perPrice = await latestVault.getPricePerShare();
     const amount = balance.mul(perPrice);
-    const currentBalance = formatNumber(amount, decimals * 2, amountDecimal);
+    const currentBalance = formatNumber2(amount, decimals * 2, amountDecimal);
 
     // net return
-    const netReturn = BN(currentBalance).plus(netAmountAdded);
+    const netReturn = BN(currentBalance).minus(netAmountAdded);
 
     // approval event
     const approvalEvents = await getApprovalHistory(
@@ -401,11 +403,11 @@ async function singleVaultEvents(account, adpaterType, token, decimals) {
         withdrawEvents,
         transferEvents,
         approvalEvents,
-        netAmountAdded,
         currentBalance,
-        netReturn,
-        amountAdded: depositAmount,
-        amountRemoved: withdrawAmount,
+        netAmountAdded: netAmountAdded.toFixed(amountDecimal),
+        netReturn: netReturn.toFixed(amountDecimal),
+        amountAdded: depositAmount.toFixed(amountDecimal),
+        amountRemoved: withdrawAmount.toFixed(amountDecimal),
     };
 }
 
@@ -430,6 +432,7 @@ async function avaxPersonalStats(account) {
         'DAI.e',
         18
     );
+
     fullData(result, daiVaultEvents, 'dai_vault');
 
     const usdcVaultEvents = await singleVaultEvents(

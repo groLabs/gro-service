@@ -18,7 +18,7 @@ function calculateTotal(ethereumStats, avaxStats) {
     const amountAddedTotal = BN(amountAdded[chain1Name]).plus(
         BN(amountAdded[chain2Name])
     );
-    amountAdded.total = amountAddedTotal.toFormat(amountDecimal);
+    amountAdded.total = amountAddedTotal.toFixed(amountDecimal);
 
     const amountRemoved = {};
     amountRemoved[chain1Name] = ethereumStats.amount_removed.total;
@@ -26,7 +26,7 @@ function calculateTotal(ethereumStats, avaxStats) {
     const amountRemovedTotal = BN(amountRemoved[chain1Name]).plus(
         BN(amountRemoved[chain2Name])
     );
-    amountRemoved.total = amountRemovedTotal.toFormat(amountDecimal);
+    amountRemoved.total = amountRemovedTotal.toFixed(amountDecimal);
 
     const netAmountAdded = {};
     netAmountAdded[chain1Name] = ethereumStats.net_amount_added.total;
@@ -34,7 +34,7 @@ function calculateTotal(ethereumStats, avaxStats) {
     const netAmountAddedTotal = BN(netAmountAdded[chain1Name]).plus(
         BN(netAmountAdded[chain2Name])
     );
-    netAmountAdded.total = netAmountAddedTotal.toFormat(amountDecimal);
+    netAmountAdded.total = netAmountAddedTotal.toFixed(amountDecimal);
 
     const currentBalance = {};
     currentBalance[chain1Name] = ethereumStats.current_balance.total;
@@ -42,7 +42,7 @@ function calculateTotal(ethereumStats, avaxStats) {
     const currentBalanceTotal = BN(currentBalance[chain1Name]).plus(
         BN(currentBalance[chain2Name])
     );
-    currentBalance.total = currentBalanceTotal.toFormat(amountDecimal);
+    currentBalance.total = currentBalanceTotal.toFixed(amountDecimal);
 
     const netReturns = {};
     netReturns[chain1Name] = ethereumStats.net_returns.total;
@@ -50,7 +50,7 @@ function calculateTotal(ethereumStats, avaxStats) {
     const netReturnsTotal = BN(netReturns[chain1Name]).plus(
         BN(netReturns[chain2Name])
     );
-    netReturns.total = netReturnsTotal.toFormat(amountDecimal);
+    netReturns.total = netReturnsTotal.toFixed(amountDecimal);
 
     return {
         amount_added: amountAdded,
@@ -70,7 +70,7 @@ async function generateReport(account) {
 
     const statsOnTotal = calculateTotal(statsOnEthereum, statsOnAvax);
 
-    const network = getNetwork();
+    const network = await getNetwork();
     const distStatsOnEthereum = {
         launch_timestamp: statsOnEthereum.launch_timestamp,
         network_id: `${network.chainId}`,

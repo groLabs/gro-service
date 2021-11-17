@@ -27,11 +27,16 @@ function renameDuplicatedFactorEntry(abi) {
 }
 
 function newContract(contractName, contractInfo, signerInfo) {
-    const { providerKey, accountKey } = signerInfo;
+    const { providerKey, accountKey, provider } = signerInfo;
     let managerOrProvicer;
-    if (accountKey) {
+    if (provider) {
+        logger.info(`avax provider`);
+        managerOrProvicer = provider;
+    } else if (accountKey) {
+        logger.info(`send transaction provider`);
         managerOrProvicer = getWalletNonceManager(providerKey, accountKey);
     } else {
+        logger.info(`stats provider`);
         managerOrProvicer = getAlchemyRpcProvider(providerKey);
     }
 

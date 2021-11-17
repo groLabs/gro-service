@@ -28,7 +28,10 @@
         "USDTSecondary",
         "3CrvPrimary",
         "BalancerWeightedPool",
-        "TokenCounter"
+        "TokenCounter",
+        "AVAXDAIVault",
+        "AVAXUSDCVault",
+        "AVAXUSDTVault"
     ],
     "latestContracts": {
         "3CRVVaultAdaptor": {
@@ -145,6 +148,42 @@
             "protocolsDisplayName": [],
             "metaData": {},
             "active": true
+        },
+        "AVAXDAIVault": {
+            "address": "0x4A679253410272dd5232B3Ff7cF5dbB88f295319",
+            "deployedBlock": 7004428,
+            "startBlock": 7004428,
+            "abiVersion": "fa8e260",
+            "tag": "Other",
+            "tokens": ["0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        },
+        "AVAXUSDCVault": {
+            "address": "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",
+            "deployedBlock": 7004429,
+            "startBlock": 7004429,
+            "abiVersion": "fa8e260",
+            "tag": "Other",
+            "tokens": ["0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        },
+        "AVAXUSDTVault": {
+            "address": "0x09635F643e140090A9A8Dcd712eD6285858ceBef",
+            "deployedBlock": 7004430,
+            "startBlock": 7004430,
+            "abiVersion": "fa8e260",
+            "tag": "Other",
+            "tokens": ["0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
         }
     },
     "contractHistories": {
@@ -172,6 +211,51 @@
                 "abiVersion": "fa8e260",
                 "tag": "Other",
                 "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "AVAXDAIVault": [
+            {
+                "address": "0x4A679253410272dd5232B3Ff7cF5dbB88f295319",
+                "deployedBlock": 7004428,
+                "startBlock": 7004428,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Other",
+                "tokens": ["0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "AVAXUSDCVault": [
+            {
+                "address": "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",
+                "deployedBlock": 7004429,
+                "startBlock": 7004429,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Other",
+                "tokens": ["0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "AVAXUSDTVault": [
+            {
+                "address": "0x09635F643e140090A9A8Dcd712eD6285858ceBef",
+                "deployedBlock": 7004430,
+                "startBlock": 7004430,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Other",
+                "tokens": ["0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"],
                 "protocols": [],
                 "protocolsDisplayName": [],
                 "metaData": {},

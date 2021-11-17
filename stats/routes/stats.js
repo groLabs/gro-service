@@ -11,7 +11,7 @@ const {
     getExternalStatsContent,
     reloadContractsFromRegistry,
 } = require('../services/statsService');
-const { generateReport } = require('../services/accountService');
+const { generateReport } = require('../services/newAccountService');
 // const { getPersonalStats } = require('../../database/handler/personalHandler');
 const {
     getGroPrice,

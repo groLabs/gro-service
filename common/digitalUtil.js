@@ -41,6 +41,11 @@ function formatNumber(originalNumber, decimal, fixed) {
     return tempNum.toFormat(fixed);
 }
 
+function formatNumber2(originalNumber, decimal, fixed) {
+    const tempNum = BN(originalNumber.toString()).div(BN(10).pow(decimal));
+    return tempNum.toFixed(fixed);
+}
+
 function shortAccount(accountAddress, fixed = 6) {
     return accountAddress.substring(0, fixed);
 }
@@ -58,16 +63,14 @@ const floatToBN = (_value) => {
             const value = parseFloat(_value);
             if (Math.trunc(value) !== value) {
                 const integer = Math.trunc(value);
-                const decimals = value.toFixed(10).split(".")[1];
+                const decimals = value.toFixed(10).split('.')[1];
                 const countDecimals = decimals.length || 0;
-                const result =
-                    BigNumber.from(integer.toString() + decimals)
-                        .mul(ONE)
-                        .div(BigNumber.from('10').pow(countDecimals.toString()));
+                const result = BigNumber.from(integer.toString() + decimals)
+                    .mul(ONE)
+                    .div(BigNumber.from('10').pow(countDecimals.toString()));
                 return result;
             } else {
-                const result = BigNumber.from(value.toString())
-                    .mul(ONE);
+                const result = BigNumber.from(value.toString()).mul(ONE);
                 return result;
             }
         }
@@ -75,7 +78,7 @@ const floatToBN = (_value) => {
         logger.error(`Error at digitalUtil->floatToBN(): ${err}`);
         return ZERO;
     }
-}
+};
 
 module.exports = {
     ETH_DECIMAL,
@@ -84,6 +87,7 @@ module.exports = {
     adjustDecimal,
     toSum,
     formatNumber,
+    formatNumber2,
     shortAccount,
     calculateDelta,
     floatToBN,
