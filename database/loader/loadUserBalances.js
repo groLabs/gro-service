@@ -31,7 +31,6 @@ const CRV_PWRD_ADDRESS = getConfig('staker_pools.contracts.curve_pwrd3crv_pool_a
 const GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address');
 
 let rowCount = 0;
-let rowExcluded = 0;
 
 let gvt = [];
 let pwrd = [];
@@ -132,67 +131,44 @@ const insertBalances = async (account, i, day, addr, isSnapshot) => {
     return new Promise(async (resolve) => {
         try {
 
-            const isBalance = (
-                gvt[0].amount_unstaked[i]               // unstaked gvt
-                + pwrd[0].amount_unstaked[i]            // unstaked pwrd
-                + gro[0].amount_unstaked[i]             // unstaked gro
-                + lpGroGvt[0].amount_pooled_lp[i]       // poll1 - pooled lp gro/gvt
-                + lpGroUsdc[0].amount_pooled_lp[i]      // pool2 - pooled lp gro/usdc
-                + lpCrvPwrd[0].amount_pooled_lp[i]      // pool4 - pooled lp pwrd
-                + lpGroWeth[0].amount_pooled_lp[i]      // pool5 - pooled lp gro/weth
-                + gro[1].amount_staked[i]               // pool0 - staked gro
-                + lpGroGvt[1].amount_staked_lp[i]       // pool1 - staked lp gro/gvt
-                + lpGroUsdc[1].amount_staked_lp[i]      // pool2 - staked lp gro/usdc
-                + gvt[1].amount_staked[i]               // pool3 - staked gvt
-                + lpCrvPwrd[1].amount_staked_lp[i]      // pool4 - staked lp pwrd
-                + lpGroWeth[1].amount_staked_lp[i]      // pool5 - staked lp gro/weth
-                > 0)
-                ? true
-                : false;
+            const params = [
+                day,
+                getNetworkId(),
+                addr,
+                gvt[0].amount_unstaked[i],          // unstaked gvt
+                pwrd[0].amount_unstaked[i],         // unstaked pwrd
+                gro[0].amount_unstaked[i],          // unstaked gro
+                gro[1].amount_staked[i],            // pool0 - staked lp
+                lpGroGvt[0].amount_pooled_lp[i],    // pool1 - pooled lp
+                lpGroGvt[1].amount_staked_lp[i],    // pool1 - staked lp
+                lpGroGvt[2].lp_position[i][0],      // pool1 - staked gvt
+                lpGroGvt[2].lp_position[i][1],      // pool1 - staked gro
+                lpGroUsdc[0].amount_pooled_lp[i],   // pool2 - pooled lp
+                lpGroUsdc[1].amount_staked_lp[i],   // pool2 - staked lp
+                lpGroUsdc[2].lp_position[i][0],     // pool2 - staked gro
+                lpGroUsdc[2].lp_position[i][1],     // pool2 - staked usdc
+                gvt[1].amount_staked[i],            // pool3 - staked lp
+                lpCrvPwrd[0].amount_pooled_lp[i],   // pool4 - pooled lp
+                lpCrvPwrd[1].amount_staked_lp[i],   // pool4 - staked lp
+                lpCrvPwrd[2].lp_position[i],        // pool4 - staked pwrd
+                lpGroWeth[0].amount_pooled_lp[i],   // pool5 - pooled lp
+                lpGroWeth[1].amount_staked_lp[i],   // pool5 - staked lp
+                lpGroWeth[2].lp_position[i][0],     // pool5 - staked gro
+                lpGroWeth[2].lp_position[i][1],     // pool5 - staked weth
+                moment.utc(),
+            ];
 
-            if (isBalance) {
+            const q = (account)
+                ? 'insert_user_cache_fact_balances.sql'
+                : (isSnapshot)
+                    ? 'insert_user_std_fact_balances_snapshot.sql'
+                    : 'insert_user_std_fact_balances.sql';
+            const result = await query(q, params);
 
-                const params = [
-                    day,
-                    getNetworkId(),
-                    addr,
-                    gvt[0].amount_unstaked[i],          // unstaked gvt
-                    pwrd[0].amount_unstaked[i],         // unstaked pwrd
-                    gro[0].amount_unstaked[i],          // unstaked gro
-                    gro[1].amount_staked[i],            // pool0 - staked lp
-                    lpGroGvt[0].amount_pooled_lp[i],    // pool1 - pooled lp
-                    lpGroGvt[1].amount_staked_lp[i],    // pool1 - staked lp
-                    lpGroGvt[2].lp_position[i][0],      // pool1 - staked gvt
-                    lpGroGvt[2].lp_position[i][1],      // pool1 - staked gro
-                    lpGroUsdc[0].amount_pooled_lp[i],   // pool2 - pooled lp
-                    lpGroUsdc[1].amount_staked_lp[i],   // pool2 - staked lp
-                    lpGroUsdc[2].lp_position[i][0],     // pool2 - staked gro
-                    lpGroUsdc[2].lp_position[i][1],     // pool2 - staked usdc
-                    gvt[1].amount_staked[i],            // pool3 - staked lp
-                    lpCrvPwrd[0].amount_pooled_lp[i],   // pool4 - pooled lp
-                    lpCrvPwrd[1].amount_staked_lp[i],   // pool4 - staked lp
-                    lpCrvPwrd[2].lp_position[i],        // pool4 - staked pwrd
-                    lpGroWeth[0].amount_pooled_lp[i],   // pool5 - pooled lp
-                    lpGroWeth[1].amount_staked_lp[i],   // pool5 - staked lp
-                    lpGroWeth[2].lp_position[i][0],     // pool5 - staked gro
-                    lpGroWeth[2].lp_position[i][1],     // pool5 - staked weth
-                    moment.utc(),
-                ];
+            if (result.status === QUERY_ERROR)
+                resolve(false);
 
-                const q = (account)
-                    ? 'insert_user_cache_fact_balances.sql'
-                    : (isSnapshot)
-                        ? 'insert_user_std_fact_balances_snapshot.sql'
-                        : 'insert_user_std_fact_balances.sql';
-                const result = await query(q, params);
-
-                if (result.status === QUERY_ERROR)
-                    resolve(false);
-
-                rowCount += result.rowCount;
-            } else {
-                rowExcluded++;
-            }
+            rowCount += result.rowCount;
 
             resolve(true);
 
@@ -215,7 +191,6 @@ const cleanseVars = (scope) => {
         lpGroWeth = [];
     }
     rowCount = 0;
-    rowExcluded = 0;
 }
 
 /// @notice Check time format (if defined) and return hours, minutes & seconds
@@ -283,7 +258,6 @@ const checkTokenCounterDate = (day) => {
 const showMsg = (account, date, table) => {
     let msg3 = `**DB${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} `;
     msg3 += `added into ${table} `;
-    msg3 += (rowExcluded !== 0) ? `(excluded ${rowExcluded} with 0-balance) ` : '';
     msg3 += `for date ${moment(date).format('DD/MM/YYYY')}`;
     logger.info(msg3);
 }

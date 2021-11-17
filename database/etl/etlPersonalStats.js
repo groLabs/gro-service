@@ -173,7 +173,6 @@ const load = async (fromDate, toDate, loadType) => {
                 if (await remove(fromDate, toDate, loadType))
                     if (await loadUserTransfers(fromDate, toDate, null))
                         // if (await loadUserApprovals(fromDate, toDate, null))
-                        // if (await loadUserBalances(fromDate, toDate, null))
                         if (await loadUserBalances(fromDate, toDate, null, null, false))
                             //TODO: token price return null (eg: reload before Gro token)
                             if (await loadTokenPrice(fromDate, toDate))

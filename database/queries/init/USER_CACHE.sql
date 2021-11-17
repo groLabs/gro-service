@@ -170,22 +170,27 @@ CREATE TABLE gro."USER_CACHE_FACT_NET_RETURNS" (
 ALTER TABLE gro."USER_CACHE_FACT_NET_RETURNS" OWNER to postgres;
 
 CREATE OR REPLACE VIEW gro."USER_CACHE_FACT_V_BALANCES" AS
-SELECT bal.balance_date,
-    bal.user_address,
-    bal.network_id,
-    bal.gvt_unstaked_amount,
-    bal.pwrd_unstaked_amount,
-    bal.gro_unstaked_amount,
-    (bal.gvt_unstaked_amount * pri.gvt_value) AS gvt_unstaked_value,
-    (bal.pwrd_unstaked_amount * pri.pwrd_value) AS pwrd_unstaked_value,
-    (bal.gro_unstaked_amount * pri.gro_value) AS gro_unstaked_value
-FROM (
-        gro."USER_CACHE_FACT_BALANCES" bal
-        LEFT JOIN gro."TOKEN_PRICE" pri ON (
+SELECT bal."balance_date",
+    bal."user_address",
+    bal."network_id",
+    bal."gvt_unstaked_amount",
+    bal."pwrd_unstaked_amount",
+    bal."gro_unstaked_amount",
+    (bal."gvt_unstaked_amount" * pri."gvt_value") AS "gvt_unstaked_value",
+    (bal."pwrd_unstaked_amount" * pri."pwrd_value") AS "pwrd_unstaked_value",
+    (bal."gro_unstaked_amount" * pri."gro_value") AS "gro_unstaked_value"
+FROM gro."USER_CACHE_FACT_BALANCES" bal,
+    (
+        SELECT bal."price_date" as "price_date",
+            bal."gvt_value" as "gvt_value",
+            bal."pwrd_value" as "pwrd_value",
+            bal."gro_value" as "gro_value"
+        FROM gro."TOKEN_PRICE" bal,
             (
-                to_char(bal.balance_date, 'DD/MM/YYYY') = to_char(pri.price_date, 'DD/MM/YYYY')
-            )
-        )
-    );
+                SELECT max("price_date") as "max_price_date"
+                FROM gro."TOKEN_PRICE"
+            ) max_price
+        WHERE bal."price_date" = max_price."max_price_date"
+    ) pri;
 
 ALTER TABLE gro."USER_CACHE_FACT_V_BALANCES" OWNER to postgres;

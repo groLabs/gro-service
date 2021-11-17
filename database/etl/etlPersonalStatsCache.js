@@ -123,7 +123,7 @@ const loadCache = async (account) => {
                     //if (await loadUserApprovals(null, null, account))
                         // TODO: time should be now(), otherwise it will take 23:59:59
                         if (await loadUserBalances(fromDate, toDate, account, null, false))
-                            //if (await loadUserNetReturns(fromDate, toDate, account))
+                            if (await loadUserNetReturns(fromDate, toDate, account))
                                 return true;
 
 
