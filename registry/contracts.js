@@ -30,13 +30,10 @@ function newContract(contractName, contractInfo, signerInfo) {
     const { providerKey, accountKey, provider } = signerInfo;
     let managerOrProvicer;
     if (provider) {
-        logger.info(`avax provider`);
         managerOrProvicer = provider;
     } else if (accountKey) {
-        logger.info(`send transaction provider`);
         managerOrProvicer = getWalletNonceManager(providerKey, accountKey);
     } else {
-        logger.info(`stats provider`);
         managerOrProvicer = getAlchemyRpcProvider(providerKey);
     }
 
@@ -83,9 +80,6 @@ function newSystemLatestContracts(signerInfo) {
     const contracts = {};
     for (let i = 0; i < contractsName.length; i += 1) {
         const contractName = ContractNames[contractsName[i]];
-        console.log(
-            `contractName: ${contractName}: ${contractName.indexOf('AVAX')}`
-        );
         if (contractName.indexOf('AVAX') < 0) {
             contracts[contractName] = newLatestContract(
                 contractName,

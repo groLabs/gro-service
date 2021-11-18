@@ -1,9 +1,12 @@
-"use strict";
-const { newSystemLatestContracts, newSystemLatestVaultStrategyContracts, } = require('../../registry/contracts');
+'use strict';
+const {
+    newSystemLatestContracts,
+    newSystemLatestVaultStrategyContracts,
+} = require('../../registry/contracts');
 const latestSystemContracts = {};
 const latestVaultStrategyContracts = {};
 const latestStableCoins = {};
-const contractCallFailedCount = { personalStas: 0 };
+const contractCallFailedCount = { personalStats: 0, personalMCStats: 0 };
 function getLatestSystemContract(contractName, providerKey) {
     providerKey = providerKey || 'stats_gro';
     if (!latestSystemContracts[providerKey]) {
@@ -26,7 +29,8 @@ async function getLatestStableCoins(providerKey) {
     providerKey = providerKey || 'stats_gro';
     if (!latestStableCoins[providerKey]) {
         latestStableCoins[providerKey] = [];
-        const { vaultsAddress, contracts: vaultAndStrategies } = await getLatestVaultsAndStrategies(providerKey);
+        const { vaultsAddress, contracts: vaultAndStrategies } =
+            await getLatestVaultsAndStrategies(providerKey);
         for (let i = 0; i < vaultsAddress.length; i += 1) {
             const { strategies } = vaultAndStrategies[vaultsAddress[i]].vault;
             const { contractInfo } = strategies[0];

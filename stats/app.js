@@ -69,8 +69,18 @@ app.use((error, req, res, next) => {
         // sendMessage(DISCORD_CHANNELS.botLogs, {
         //     message: `${error}, Url ${req.originalUrl}`,
         // });
-        contractCallFailedCount.personalStas += 1;
-        if (contractCallFailedCount.personalStas >= failedAlertTimes) {
+        const { originalUrl } = req;
+        const pathStr = originalUrl.split('?')[0];
+        if (pathStr === '/stats/gro_personal_position') {
+            contractCallFailedCount.personalStats += 1;
+        } else if (pathStr === '/stats/gro_personal_position_mc') {
+            contractCallFailedCount.personalMCStats += 1;
+        }
+
+        if (
+            contractCallFailedCount.personalStats >= failedAlertTimes ||
+            contractCallFailedCount.personalMCStats >= failedAlertTimes
+        ) {
             sendAlertMessage({
                 discord: {
                     description: `[WARN] B4 - Get personal stats failed for ${error.message} at ${req.originalUrl}`,

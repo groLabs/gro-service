@@ -92,7 +92,6 @@ async function generateReport(account) {
             ethereum: distStatsOnEthereum,
             avalanche: statsOnAvax,
         },
-        gro_personal_position: statsOnEthereum,
     };
 }
 

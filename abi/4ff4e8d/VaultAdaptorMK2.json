@@ -191,6 +191,19 @@
         "inputs": [
             {
                 "indexed": false,
+                "internalType": "address",
+                "name": "rewards",
+                "type": "address"
+            }
+        ],
+        "name": "LogNewRewards",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
                 "internalType": "bool",
                 "name": "loss",
                 "type": "bool"
@@ -203,6 +216,19 @@
             }
         ],
         "name": "LogNewStrategyHarvest",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "vaultFee",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogNewVaultFee",
         "type": "event"
     },
     {
@@ -1021,6 +1047,32 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "rewards",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_bouncer",
+                "type": "address"
+            }
+        ],
+        "name": "setBouncer",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "address",
@@ -1068,6 +1120,19 @@
         "inputs": [
             {
                 "internalType": "address",
+                "name": "_rewards",
+                "type": "address"
+            }
+        ],
+        "name": "setRewards",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
                 "name": "_user",
                 "type": "address"
             },
@@ -1078,6 +1143,19 @@
             }
         ],
         "name": "setUserAllowance",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_fee",
+                "type": "uint256"
+            }
+        ],
+        "name": "setVaultFee",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -1421,6 +1499,19 @@
             }
         ],
         "name": "userAllowance",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "vaultFee",
         "outputs": [
             {
                 "internalType": "uint256",

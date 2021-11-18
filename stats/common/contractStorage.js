@@ -12,7 +12,7 @@ const latestSystemContracts = {};
 const latestContractsOnAVAX = {};
 const latestVaultStrategyContracts = {};
 const latestStableCoins = {};
-const contractCallFailedCount = { personalStas: 0 };
+const contractCallFailedCount = { personalStats: 0, personalMCStats: 0 };
 
 function newContract(contractName, contractInfo, providerOrWallet) {
     const contractAddress = contractInfo.address;
