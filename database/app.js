@@ -125,7 +125,7 @@ const {
         }
 
         // Testing groStats
-        // await etlGroStats();
+        await etlGroStats();
         // await etlGroStatsHDL(1623844800,1623844800,'apy',1800);
 
         // Testing priceCheck

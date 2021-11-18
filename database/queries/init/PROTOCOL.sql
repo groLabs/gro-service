@@ -145,6 +145,19 @@ CREATE TABLE IF NOT EXISTS gro."PROTOCOL_VAULTS" (
 
 ALTER TABLE gro."PROTOCOL_VAULTS" OWNER to postgres;
 
+CREATE TABLE IF NOT EXISTS gro."PROTOCOL_SYSTEM_LIFEGUARD_STABLES" (
+    "current_timestamp" integer NOT NULL,
+    "current_date" timestamp(6) without time zone,
+    network_id smallint NOT NULL,
+    name character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    display_name character varying(100) COLLATE pg_catalog."default",
+    amount numeric(20, 8),
+    creation_date timestamp(6) without time zone,
+    CONSTRAINT "PROTOCOL_SYSTEM_LIFEGUARD_STABLES_pkey" PRIMARY KEY ("current_timestamp", network_id, name)
+) TABLESPACE pg_default;
+
+ALTER TABLE gro."PROTOCOL_SYSTEM_LIFEGUARD_STABLES" OWNER to postgres;
+
 -- TODO: PKs
 CREATE TABLE IF NOT EXISTS gro."SYS_PROTOCOL_LOADS" (
     table_name character varying(256) NULL,

@@ -1,7 +1,5 @@
 const moment = require('moment');
-const {
-    getNetworkId
-} = require('../common/personalUtil');
+const { getNetworkId } = require('../common/personalUtil');
 
 // TODO: from DB?
 const getProductId = (product) => {
@@ -84,6 +82,20 @@ const getLifeguard = (stats) => {
         stats.system.lifeguard.last3d_apy,
         moment().utc(),
     ];
+    return result;
+}
+
+const getLifeguardStables = (stats) => {
+    let result = [];
+    for (const protocol of stats.system.lifeguard.stablecoins) {
+        result.push([
+            ...defaultData(stats),
+            protocol.name,
+            protocol.display_name,
+            protocol.amount,
+            moment().utc(),
+        ]);
+    }
     return result;
 }
 
@@ -173,6 +185,7 @@ module.exports = {
     getTVL,
     getSystem,
     getLifeguard,
+    getLifeguardStables,
     getVaults,
     getReserves,
     getStrategies,
