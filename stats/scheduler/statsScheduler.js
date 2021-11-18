@@ -15,7 +15,7 @@ const {
 } = require('../handler/eventHandler');
 const { getCurrentBlockNumber } = require('../../dist/common/chainUtil');
 const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
-const logger = require('../statsLogger.js');
+const logger = require('../statsLogger');
 
 const statsDir = getConfig('stats_folder');
 const generateStatsSchedulerSetting =
@@ -31,6 +31,8 @@ const eventSummarySchedulerSetting =
 
 const failedAlertTimes = getConfig('call_failed_time', false) || 2;
 const failedTimes = { apyGenerator: 0, eventTrade: 0, eventSumary: 0 };
+
+const eventDiscordMessageSending = getConfig('stats_bot_event_sending', false);
 
 async function generateStatsFile() {
     schedule.scheduleJob(generateStatsSchedulerSetting, async () => {
@@ -114,6 +116,7 @@ async function removeStatsFile() {
 }
 
 function depositWithdrawEventScheduler() {
+    if (!eventDiscordMessageSending) return;
     schedule.scheduleJob(depositWithdrawEventSchedulerSetting, async () => {
         try {
             const lastBlockNumber = getLastBlockNumber(
@@ -148,6 +151,7 @@ function depositWithdrawEventScheduler() {
 }
 
 function EventSummaryScheduler() {
+    if (!eventDiscordMessageSending) return;
     schedule.scheduleJob(eventSummarySchedulerSetting, async () => {
         try {
             const lastBlockNumber = getLastBlockNumber(
