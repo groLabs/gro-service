@@ -1,4 +1,5 @@
 export const private_transaction = false;
+export const stats_bot_event_sending = true;
 export const bot_balance = {
     warn: '1000000000000000000',
     critial: '200000000000000000',
