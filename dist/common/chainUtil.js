@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTimestampByBlockNumber = exports.getCurrentBlockNumber = exports.checkAccountsBalance = exports.syncManagerNonce = exports.getWalletNonceManager = exports.getTransactionProvider = exports.getAlchemyRpcProvider = exports.getInfruraRpcProvider = exports.getSocketProvider = exports.getDefaultProvider = void 0;
+exports.getAvaxRpcProvider = exports.getTimestampByBlockNumber = exports.getCurrentBlockNumber = exports.checkAccountsBalance = exports.syncManagerNonce = exports.getWalletNonceManager = exports.getTransactionProvider = exports.getAlchemyRpcProvider = exports.getInfruraRpcProvider = exports.getSocketProvider = exports.getDefaultProvider = void 0;
 const ethers_1 = require("ethers");
 const fs_1 = __importDefault(require("fs"));
 const ethers_2 = require("ethers");
@@ -16,6 +16,7 @@ const botBalanceMessage_1 = require("../discordMessage/botBalanceMessage");
 const alertMessageSender_1 = require("./alertMessageSender");
 const configUtil_1 = require("./configUtil");
 const privateProvider_1 = require("./privateProvider");
+const { AvaxPrcProvider } = require('./avaxRpcProvider');
 const botEnv = (_a = process.env.BOT_ENV) === null || _a === void 0 ? void 0 : _a.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
@@ -33,22 +34,23 @@ let rpcProvider;
 let infruraRpcProvider;
 let defaultWalletManager;
 let privateProvider;
+let avaxProvider;
 const rpcProviders = {};
 const infruraRpcProviders = {};
 const botWallets = {};
 const failedTimes = { accountBalance: 0 };
-const failedAlertTimes = (0, configUtil_1.getConfig)('call_failed_time', false) || 2;
-const retryTimes = (0, configUtil_1.getConfig)('timeout_retry', false) || 1;
-const stallerTime = (0, configUtil_1.getConfig)('timeout_retry_staller', false) || 1000;
-const needPrivateTransaction = (0, configUtil_1.getConfig)('private_transaction', false) || false;
-const network = (0, configUtil_1.getConfig)('blockchain.network');
+const failedAlertTimes = configUtil_1.getConfig('call_failed_time', false) || 2;
+const retryTimes = configUtil_1.getConfig('timeout_retry', false) || 1;
+const stallerTime = configUtil_1.getConfig('timeout_retry_staller', false) || 1000;
+const needPrivateTransaction = configUtil_1.getConfig('private_transaction', false) || false;
+const network = configUtil_1.getConfig('blockchain.network');
 logger.info(`network: ${network}`);
 function getSocketProvider() {
     if (socketProvider) {
         return socketProvider;
     }
     logger.info('Create new socket provider.');
-    const apiKey = (0, configUtil_1.getConfig)('blockchain.alchemy_api_keys.default');
+    const apiKey = configUtil_1.getConfig('blockchain.alchemy_api_keys.default');
     socketProvider = new ethers_1.ethers.providers.AlchemyWebSocketProvider(network, apiKey);
     return socketProvider;
 }
@@ -87,8 +89,8 @@ function createProxyForProvider(provider, providerKeyConfig) {
                             if (
                             //@ts-ignore
                             error.message.match(/429 Too Many Requests/gi)) {
-                                const providerKey = (0, configUtil_1.getConfig)(providerKeyConfig);
-                                (0, alertMessageSender_1.sendAlertMessage)({
+                                const providerKey = configUtil_1.getConfig(providerKeyConfig);
+                                alertMessageSender_1.sendAlertMessage({
                                     discord: `Provider : ${providerKey} trigger rate limit.`,
                                 });
                                 throw error;
@@ -119,7 +121,7 @@ function createAlchemyRpcProvider() {
     }
     logger.info('Create default Alchemy Rpc provider.');
     const defaultApiKey = 'blockchain.alchemy_api_keys.default';
-    const apiKey = (0, configUtil_1.getConfig)(defaultApiKey);
+    const apiKey = configUtil_1.getConfig(defaultApiKey);
     const alchemyProvider = new ethers_1.ethers.providers.AlchemyProvider(network, apiKey);
     rpcProvider = createProxyForProvider(alchemyProvider, defaultApiKey);
     return rpcProvider;
@@ -130,7 +132,7 @@ function createInfruraRpcProvider() {
     }
     logger.info('Create default Infrura Rpc provider.');
     const defaultApiKey = 'blockchain.infura_api_keys.default';
-    const apiKey = (0, configUtil_1.getConfig)(defaultApiKey);
+    const apiKey = configUtil_1.getConfig(defaultApiKey);
     const provider = new ethers_1.ethers.providers.InfuraProvider(network, apiKey);
     infruraRpcProvider = createProxyForProvider(provider, defaultApiKey);
     return infruraRpcProvider;
@@ -142,11 +144,19 @@ function createPrivateProvider() {
     }
     return privateProvider;
 }
+function getAvaxRpcProvider() {
+    if (!avaxProvider) {
+        logger.info('Create Avax Rpc provider.');
+        avaxProvider = new AvaxPrcProvider(network);
+    }
+    return avaxProvider;
+}
+exports.getAvaxRpcProvider = getAvaxRpcProvider;
 function getDefaultProvider() {
     if (defaultProvider) {
         return defaultProvider;
     }
-    const options = (0, configUtil_1.getConfig)('blockchain.default_api_keys', false) || {};
+    const options = configUtil_1.getConfig('blockchain.default_api_keys', false) || {};
     logger.info('Create a new default provider.');
     if (process.env.NODE_ENV === 'develop') {
         defaultProvider = ethers_1.ethers.providers.getDefaultProvider(network);
@@ -177,7 +187,7 @@ function getAlchemyRpcProvider(providerKey) {
         result = rpcProviders[providerKey];
         if (!result) {
             const key = `blockchain.alchemy_api_keys.${providerKey}`;
-            const apiKeyValue = (0, configUtil_1.getConfig)(key);
+            const apiKeyValue = configUtil_1.getConfig(key);
             if (process.env.NODE_ENV === 'develop') {
                 result = ethers_1.ethers.providers.getDefaultProvider(network);
             }
@@ -211,7 +221,7 @@ function getInfruraRpcProvider(providerKey) {
         result = infruraRpcProviders[providerKey];
         if (!result) {
             const key = `blockchain.infura_api_keys.${providerKey}`;
-            const apiKeyValue = (0, configUtil_1.getConfig)(key);
+            const apiKeyValue = configUtil_1.getConfig(key);
             if (process.env.NODE_ENV === 'develop') {
                 result = ethers_1.ethers.providers.getDefaultProvider(network);
             }
@@ -242,13 +252,13 @@ function getNonceManager() {
         return defaultWalletManager;
     }
     const provider = getTransactionProvider(DEFAULT_PROVIDER_KEY);
-    const keystorePassword = (0, configUtil_1.getConfig)('blockchain.keystores.default.password');
+    const keystorePassword = configUtil_1.getConfig('blockchain.keystores.default.password');
     let botWallet;
     if (keystorePassword === 'NO_PASSWORD') {
-        botWallet = new ethers_1.ethers.Wallet((0, configUtil_1.getConfig)('blockchain.keystores.default.private_key'), provider);
+        botWallet = new ethers_1.ethers.Wallet(configUtil_1.getConfig('blockchain.keystores.default.private_key'), provider);
     }
     else {
-        const data = fs_1.default.readFileSync((0, configUtil_1.getConfig)('blockchain.keystores.default.file_path'), {
+        const data = fs_1.default.readFileSync(configUtil_1.getConfig('blockchain.keystores.default.file_path'), {
             flag: 'r',
         });
         botWallet = ethers_1.ethers.Wallet.fromEncryptedJsonSync(data, keystorePassword);
@@ -267,13 +277,13 @@ function createWallet(providerKey, walletKey) {
     let wallet;
     const provider = getTransactionProvider(providerKey);
     const botType = (_a = process.env.BOT_ENV) === null || _a === void 0 ? void 0 : _a.toLowerCase();
-    const keystorePassword = (0, configUtil_1.getConfig)(`blockchain.keystores.${botType}.${walletKey}_password`);
+    const keystorePassword = configUtil_1.getConfig(`blockchain.keystores.${botType}.${walletKey}_password`);
     if (keystorePassword === 'NO_PASSWORD') {
-        const privateKey = (0, configUtil_1.getConfig)(`blockchain.keystores.${botType}.${walletKey}_private_key`);
+        const privateKey = configUtil_1.getConfig(`blockchain.keystores.${botType}.${walletKey}_private_key`);
         wallet = new ethers_1.ethers.Wallet(privateKey, provider);
     }
     else {
-        const keystore = (0, configUtil_1.getConfig)(`blockchain.keystores.${botType}.${walletKey}_file_path`);
+        const keystore = configUtil_1.getConfig(`blockchain.keystores.${botType}.${walletKey}_file_path`);
         const data = fs_1.default.readFileSync(keystore, {
             flag: 'r',
         });
@@ -331,7 +341,7 @@ async function syncManagerNonce(providerkey, walletKey) {
     // Adjust local nonce
     if (transactionCountInChain > transactionCountInLocal) {
         walletManager.setTransactionCount(transactionCountInChain);
-        (0, discordService_1.sendMessageToChannel)(discordService_1.DISCORD_CHANNELS.botLogs, {
+        discordService_1.sendMessageToChannel(discordService_1.DISCORD_CHANNELS.botLogs, {
             message: `Set bot[${providerkey} : ${walletKey}] Nonce to ${transactionCountInChain}`,
             type: discordService_1.MESSAGE_TYPES.adjustNonce,
         });
@@ -342,7 +352,7 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
     var _a;
     const botAccount = walletManager.signer.address;
     const botType = `${(_a = process.env.BOT_ENV) === null || _a === void 0 ? void 0 : _a.toLowerCase()}Bot`;
-    const accountLabel = (0, digitalUtil_1.shortAccount)(botAccount);
+    const accountLabel = digitalUtil_1.shortAccount(botAccount);
     const balance = await walletManager.getBalance().catch((error) => {
         logger.error(error);
         failedTimes.accountBalance += 1;
@@ -358,7 +368,7 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
             ],
         };
         if (failedTimes.accountBalance > failedAlertTimes) {
-            (0, alertMessageSender_1.sendAlertMessage)({
+            alertMessageSender_1.sendAlertMessage({
                 discord: embedMessage,
             });
         }
@@ -369,7 +379,7 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
         const level = balance.lte(ethers_2.BigNumber.from(botBalanceWarnVault.critial))
             ? '[CRIT]'
             : '[WARN]';
-        (0, botBalanceMessage_1.botBalanceMessage)({
+        botBalanceMessage_1.botBalanceMessage({
             botAccount,
             botType,
             balance,

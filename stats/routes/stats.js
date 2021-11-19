@@ -11,7 +11,8 @@ const {
     getExternalStatsContent,
     reloadContractsFromRegistry,
 } = require('../services/statsService');
-const { generateReport } = require('../services/accountService');
+const { generateReport } = require('../services/newAccountService');
+const { ethereumPersonalStats } = require('../services/ethereumAccountService');
 // const { getPersonalStats } = require('../../database/handler/personalHandler');
 const {
     getGroPrice,
@@ -21,7 +22,9 @@ const {
 const { generateHistoricalStats } = require('../handler/statsHandler');
 const { validate } = require('../common/validate');
 const { postDegenScore } = require('../services/degenscoreService');
-const { personalStatsMessage } = require('../../dist/discordMessage/statsMessage');
+const {
+    personalStatsMessage,
+} = require('../../dist/discordMessage/statsMessage');
 const { contractCallFailedCount } = require('../common/contractStorage');
 const { updateOGAirdropFile } = require('../services/airdropService');
 
@@ -89,9 +92,34 @@ router.get(
         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
             throw new ParameterError('Parameter network failed.');
         }
-        const result = await generateReport(req.query.address);
+        const result = await ethereumPersonalStats(req.query.address);
         personalStatsMessage({ address: req.query.address });
         contractCallFailedCount.personalStas = 0;
+        res.json({ gro_personal_position: result });
+    })
+);
+
+router.get(
+    '/gro_personal_position_mc/',
+    validate([
+        query('address')
+            .isString()
+            .withMessage('address must be string.')
+            .trim()
+            .notEmpty()
+            .withMessage('address cannot be empty.')
+            .matches(/^0x[A-Za-z0-9]{40}/)
+            .withMessage('address should be a valid address start with "0x".'),
+        query('network').trim().notEmpty().withMessage('network can be empty.'),
+    ]),
+    wrapAsync(async (req, res) => {
+        const { network } = req.query;
+        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+            throw new ParameterError('Parameter network failed.');
+        }
+        const result = await generateReport(req.query.address);
+        personalStatsMessage({ address: req.query.address });
+        contractCallFailedCount.personalMCStats = 0;
         res.json(result);
     })
 );

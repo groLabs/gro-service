@@ -1,10 +1,9 @@
 const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const moment = require('moment');
 const { query } = require('../handler/queryHandler');
 const { handleErr } = require('../common/personalUtil');
 const { QUERY_ERROR } = require('../constants');
-/// @notice Stores the last load time and amount of records loaded into SYS_USER_LOADS
+/// @notice Store the last load time and amount of records loaded into SYS_USER_LOADS
 ///         for each day of a given time range
 /// @param tableName Name of the table that has been loaded
 /// @param _fromDate Start date of loading process
@@ -22,26 +21,17 @@ const loadTableUpdates = async (tableName, _fromDate, _toDate) => {
         ];
         let q;
         switch (tableName) {
-            case 'USER_STD_FACT_BALANCES':
-                q = 'insert_sys_load_user_balances.sql';
-                break;
-            case 'USER_STD_FACT_BALANCES_STAKED':
-                q = 'insert_sys_load_user_balances_staked.sql';
-                break;
-            case 'USER_STD_FACT_BALANCES_UNSTAKED':
-                q = 'insert_sys_load_user_balances_unstaked.sql';
-                break;
-            case 'USER_STD_FACT_BALANCES_POOLED':
-                q = 'insert_sys_load_user_balances_pooled.sql';
-                break;
-            case 'USER_STD_FACT_NET_RETURNS_UNSTAKED':
-                q = 'insert_sys_load_user_net_returns_unstaked.sql';
-                break;
             case 'USER_STD_FACT_TRANSFERS':
                 q = 'insert_sys_load_user_transfers.sql';
                 break;
             case 'USER_STD_FACT_APPROVALS':
                 q = 'insert_sys_load_user_approvals.sql';
+                break;
+            case 'USER_STD_FACT_BALANCES':
+                q = 'insert_sys_load_user_balances.sql';
+                break;
+            case 'USER_STD_FACT_NET_RETURNS':
+                q = 'insert_sys_load_user_net_returns.sql';
                 break;
             case 'TOKEN_PRICE':
                 q = 'insert_sys_load_token_price.sql';
@@ -54,7 +44,7 @@ const loadTableUpdates = async (tableName, _fromDate, _toDate) => {
         return (result.status !== QUERY_ERROR) ? true : false;
     }
     catch (err) {
-        const params = `table: ${tableName}, fromDate: ${_fromDate}, toDate: ${_toDate}`;
+        const params = `table: ${tableName}, fromDate: ${_fromDate}, toDate: ${_toDate}`;
         handleErr(`loadTableUpdates->loadTableUpdates() ${params}`, err);
         return false;
     }

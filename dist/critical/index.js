@@ -6,6 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
 const criticalScheduler_1 = __importDefault(require("./scheduler/criticalScheduler"));
 const allContracts_1 = require("../contract/allContracts");
-(0, allContracts_1.initAllContracts)().then(() => {
-    (0, criticalScheduler_1.default)();
+allContracts_1.initAllContracts().then(() => {
+    criticalScheduler_1.default();
 });

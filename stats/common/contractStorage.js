@@ -1,12 +1,36 @@
+const { ethers } = require('ethers');
 const {
     newSystemLatestContracts,
     newSystemLatestVaultStrategyContracts,
 } = require('../../dist/registry/contracts');
+const { ContractABIMapping } = require('../../dist/registry/registry');
+const {
+    getLatestContractsAddress,
+} = require('../../dist/registry/registryLoader');
+
+const logger = require('../statsLogger');
 
 const latestSystemContracts = {};
+const latestContractsOnAVAX = {};
 const latestVaultStrategyContracts = {};
 const latestStableCoins = {};
-const contractCallFailedCount = { personalStas: 0 };
+const contractCallFailedCount = { personalStats: 0, personalMCStats: 0 };
+
+function newContract(contractName, contractInfo, providerOrWallet) {
+    const contractAddress = contractInfo.address;
+    let contract;
+    if (contractAddress === '0x0000000000000000000000000000000000000000') {
+        logger.error(`Not find address for contract: ${contractName}`);
+        return contract;
+    }
+    const abiVersion = contractInfo.abiVersion.replace(/\./g, '-');
+    const contractABIFileName = ContractABIMapping[contractName];
+    // eslint-disable-next-line global-require
+    const abi = require(`../../abi/${abiVersion}/${contractABIFileName}.json`);
+    contract = new ethers.Contract(contractAddress, abi, providerOrWallet);
+    logger.info(`Created new ${contractName} contract.`);
+    return { contract, contractInfo };
+}
 
 function getLatestSystemContract(contractName, providerKey) {
     providerKey = providerKey || 'stats_gro';
@@ -15,6 +39,18 @@ function getLatestSystemContract(contractName, providerKey) {
             newSystemLatestContracts(providerKey);
     }
     return latestSystemContracts[providerKey][contractName];
+}
+
+function getLatestSystemContractOnAVAX(contractName, providerOrWallet) {
+    if (!latestContractsOnAVAX[contractName]) {
+        const contractInfo = getLatestContractsAddress()[contractName];
+        latestContractsOnAVAX[contractName] = newContract(
+            contractName,
+            contractInfo,
+            providerOrWallet
+        );
+    }
+    return latestContractsOnAVAX[contractName];
 }
 
 async function getLatestVaultsAndStrategies(providerKey) {
@@ -62,6 +98,7 @@ async function reloadData(providerKey) {
 module.exports = {
     contractCallFailedCount,
     getLatestSystemContract,
+    getLatestSystemContractOnAVAX,
     getLatestVaultsAndStrategies,
     getLatestStableCoins,
     reloadData,

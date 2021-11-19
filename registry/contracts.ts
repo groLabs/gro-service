@@ -1,7 +1,13 @@
 /* eslint-disable import/no-dynamic-require */
 import { ethers } from 'ethers';
-import { getWalletNonceManager, getAlchemyRpcProvider } from '../common/chainUtil';
-import { getLatestContractsAddress, getLatestContractsAddressByAddress } from './registryLoader';
+import {
+    getWalletNonceManager,
+    getAlchemyRpcProvider,
+} from '../common/chainUtil';
+import {
+    getLatestContractsAddress,
+    getLatestContractsAddressByAddress,
+} from './registryLoader';
 import { ContractNames, ContractABIMapping } from './registry';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -21,9 +27,11 @@ function renameDuplicatedFactorEntry(abi) {
 }
 
 function newContract(contractName, contractInfo, signerInfo) {
-    const { providerKey, accountKey } = signerInfo;
+    const { providerKey, accountKey, provider } = signerInfo;
     let managerOrProvicer;
-    if (accountKey) {
+    if (provider) {
+        managerOrProvicer = provider;
+    } else if (accountKey) {
         managerOrProvicer = getWalletNonceManager(providerKey, accountKey);
     } else {
         managerOrProvicer = getAlchemyRpcProvider(providerKey);
@@ -72,7 +80,12 @@ function newSystemLatestContracts(signerInfo) {
     const contracts = {};
     for (let i = 0; i < contractsName.length; i += 1) {
         const contractName = ContractNames[contractsName[i]];
-        contracts[contractName] = newLatestContract(contractName, signerInfo);
+        if (contractName.indexOf('AVAX') < 0) {
+            contracts[contractName] = newLatestContract(
+                contractName,
+                signerInfo
+            );
+        }
     }
     return contracts;
 }

@@ -21,13 +21,16 @@ function renameDuplicatedFactorEntry(abi) {
     return abi;
 }
 function newContract(contractName, contractInfo, signerInfo) {
-    const { providerKey, accountKey } = signerInfo;
+    const { providerKey, accountKey, provider } = signerInfo;
     let managerOrProvicer;
-    if (accountKey) {
-        managerOrProvicer = (0, chainUtil_1.getWalletNonceManager)(providerKey, accountKey);
+    if (provider) {
+        managerOrProvicer = provider;
+    }
+    else if (accountKey) {
+        managerOrProvicer = chainUtil_1.getWalletNonceManager(providerKey, accountKey);
     }
     else {
-        managerOrProvicer = (0, chainUtil_1.getAlchemyRpcProvider)(providerKey);
+        managerOrProvicer = chainUtil_1.getAlchemyRpcProvider(providerKey);
     }
     const contractAddress = contractInfo.address;
     let contract;
@@ -49,12 +52,12 @@ function newContract(contractName, contractInfo, signerInfo) {
 }
 exports.newContract = newContract;
 function newLatestContract(contractName, signerInfo) {
-    const contractInfo = (0, registryLoader_1.getLatestContractsAddress)()[contractName];
+    const contractInfo = registryLoader_1.getLatestContractsAddress()[contractName];
     return newContract(contractName, contractInfo, signerInfo);
 }
 exports.newLatestContract = newLatestContract;
 function newLatestContractByAddress(address, signerInfo) {
-    const contractInfo = (0, registryLoader_1.getLatestContractsAddressByAddress)()[address];
+    const contractInfo = registryLoader_1.getLatestContractsAddressByAddress()[address];
     let contract;
     if (!contractInfo) {
         logger.error(`Can't find contract information for address: ${address}`);
@@ -69,7 +72,9 @@ function newSystemLatestContracts(signerInfo) {
     const contracts = {};
     for (let i = 0; i < contractsName.length; i += 1) {
         const contractName = registry_1.ContractNames[contractsName[i]];
-        contracts[contractName] = newLatestContract(contractName, signerInfo);
+        if (contractName.indexOf('AVAX') < 0) {
+            contracts[contractName] = newLatestContract(contractName, signerInfo);
+        }
     }
     return contracts;
 }

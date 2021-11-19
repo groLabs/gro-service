@@ -16,14 +16,14 @@ function curvePriceMessage(content) {
         description: msg,
     };
     if (!needStop) {
-        (0, discordService_1.sendMessage)(discordService_1.DISCORD_CHANNELS.botLogs, discordMessage);
+        discordService_1.sendMessage(discordService_1.DISCORD_CHANNELS.botLogs, discordMessage);
     }
     else {
         const pagerdutyBody = {
             title: '[EMERG] B10 - Curve price check returned false',
             description: msg,
         };
-        (0, alertMessageSender_1.sendAlertMessage)({ discord: discordMessage, pagerduty: pagerdutyBody });
+        alertMessageSender_1.sendAlertMessage({ discord: discordMessage, pagerduty: pagerdutyBody });
     }
 }
 exports.curvePriceMessage = curvePriceMessage;
@@ -39,14 +39,14 @@ function chainlinkPriceMessage(content) {
         description: msg,
     };
     if (!needStop) {
-        (0, discordService_1.sendMessage)(discordService_1.DISCORD_CHANNELS.botLogs, discordMessage);
+        discordService_1.sendMessage(discordService_1.DISCORD_CHANNELS.botLogs, discordMessage);
     }
     else {
         const pagerdutyBody = {
             title: '[EMERG] B9 - Chainlink price check returned false',
             description: msg,
         };
-        (0, alertMessageSender_1.sendAlertMessage)({ discord: discordMessage, pagerduty: pagerdutyBody });
+        alertMessageSender_1.sendAlertMessage({ discord: discordMessage, pagerduty: pagerdutyBody });
     }
 }
 exports.chainlinkPriceMessage = chainlinkPriceMessage;
@@ -67,10 +67,10 @@ function strategyCheckMessage(content) {
         description: msg,
     };
     if (strategyFailedTotal > 0) {
-        (0, discordService_1.sendMessageToChannel)(discordService_1.DISCORD_CHANNELS.critActionEvents, discordMessage);
+        discordService_1.sendMessageToChannel(discordService_1.DISCORD_CHANNELS.critActionEvents, discordMessage);
     }
     else {
-        (0, discordService_1.sendMessage)(discordService_1.DISCORD_CHANNELS.botLogs, discordMessage);
+        discordService_1.sendMessage(discordService_1.DISCORD_CHANNELS.botLogs, discordMessage);
     }
 }
 exports.strategyCheckMessage = strategyCheckMessage;

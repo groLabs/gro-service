@@ -1,18 +1,6 @@
-'use strict';
-Object.defineProperty(exports, '__esModule', { value: true });
-exports.stats =
-    exports.harvest_strategies =
-    exports.harvest_callcost =
-    exports.pagerduty =
-    exports.timeout_retry_staller =
-    exports.timeout_retry =
-    exports.base_gas =
-    exports.etherscan_api_key =
-    exports.chainlink_price_pair =
-    exports.curve_balance =
-    exports.bot_balance =
-    exports.private_transaction =
-        void 0;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.stats = exports.harvest_strategies = exports.harvest_callcost = exports.pagerduty = exports.timeout_retry_staller = exports.timeout_retry = exports.base_gas = exports.etherscan_api_key = exports.chainlink_price_pair = exports.curve_balance = exports.bot_balance = exports.stats_bot_event_sending = exports.private_transaction = void 0;
 exports.private_transaction = false;
 exports.stats_bot_event_sending = true;
 exports.bot_balance = {

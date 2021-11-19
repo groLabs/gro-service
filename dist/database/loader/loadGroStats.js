@@ -1,12 +1,15 @@
-// TODO: error handler
-const moment = require('moment');
+/// @notice GroStats loader
+///     - Receives gro stats (JSON stucture) as parameter and loads all data into tables
+///     - Loads are triggered every 5' by a cron
+///     - Two public functions:
+///         loadAllTables(): loads all groStats-related tables
+///         loadAOY():  called on-demand and loads only APY data into tables (eg: if there 
+///                     is missing data and there's a need of backfilling it)
 const { query } = require('../handler/queryHandler');
-const { getNetworkId } = require('../common/personalUtil');
-const { getAPY, getHodlBonus, getTVL, getSystem, getVaults, getReserves, getLifeguard, getStrategies, getExposureStables, getExposureProtocols, } = require('../parser/groStatsParser');
+const { getAPY, getTVL, getSystem, getVaults, getReserves, getLifeguard, getLifeguardStables, getStrategies, getExposureStables, getExposureProtocols, } = require('../parser/groStatsParser');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { checkQueryResult, updateTimeStamp, } = require('../common/protocolUtil');
-const { QUERY_ERROR } = require('../constants');
 const checkLastTimestamp = async () => {
     return await query('select_last_protocol_load.sql', ['GRO_STATS']);
 };
@@ -42,6 +45,26 @@ const loadLifeguard = async (stats) => {
     }
     catch (err) {
         logger.error(`**DB: Error in loadGroStats.js->loadLifeguard(): ${err}`);
+        return false;
+    }
+};
+const loadLifeguardStables = async (stats) => {
+    try {
+        let rows = 0;
+        for (const stable of getLifeguardStables(stats)) {
+            const stables = await query('insert_protocol_system_lifeguard_stables.sql', stable);
+            if (checkQueryResult(stables, 'PROTOCOL_SYSTEM_LIFEGUARD_STABLES')) {
+                rows += stables.rowCount;
+            }
+            else {
+                return false;
+            }
+        }
+        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_SYSTEM_LIFEGUARD_STABLES'}`);
+        return true;
+    }
+    catch (err) {
+        logger.error(`**DB: Error in loadGroStats.js->loadLifeguardStables(): ${err}`);
         return false;
     }
 };
@@ -162,6 +185,7 @@ const loadAllTables = async (stats) => {
                 loadAPY(stats),
                 loadTVL(stats),
                 loadSystem(stats),
+                loadLifeguardStables(stats),
                 loadVaults(stats),
                 loadReserves(stats),
                 loadLifeguard(stats),

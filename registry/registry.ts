@@ -12,7 +12,9 @@ const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 const configFileFolder = `${__dirname}/config`;
 
-const registryAddress = getConfig('registry_address', false) as string | undefined;
+const registryAddress = getConfig('registry_address', false) as
+    | string
+    | undefined;
 const provider = getAlchemyRpcProvider();
 
 let registry;
@@ -52,6 +54,9 @@ const ContractNames = {
     CRVPrimary: '3CrvPrimary',
     BalancerWeightedPool: 'BalancerWeightedPool',
     TokenCounter: 'TokenCounter',
+    AVAXDAIVault: 'AVAXDAIVault',
+    AVAXUSDCVault: 'AVAXUSDCVault',
+    AVAXUSDTVault: 'AVAXUSDTVault',
 };
 
 const ContractABIMapping = {};
@@ -84,6 +89,9 @@ ContractABIMapping[ContractNames.CRVVaultAdaptor] = 'VaultAdaptorYearnV2_032';
 ContractABIMapping[ContractNames.CRVPrimary] = 'BaseStrategy';
 ContractABIMapping[ContractNames.BalancerWeightedPool] = 'BalancerWeightedPool';
 ContractABIMapping[ContractNames.TokenCounter] = 'TokenCounter';
+ContractABIMapping[ContractNames.AVAXDAIVault] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXUSDCVault] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXUSDTVault] = 'VaultAdaptorMK2';
 
 function readLocalContractConfig(isReload = false) {
     if (isReload || !localContractConfig) {

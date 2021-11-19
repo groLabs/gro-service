@@ -77,6 +77,19 @@ const getLifeguard = (stats) => {
     ];
     return result;
 };
+const getLifeguardStables = (stats) => {
+    let result = [];
+    for (const protocol of stats.system.lifeguard.stablecoins) {
+        result.push([
+            ...defaultData(stats),
+            protocol.name,
+            protocol.display_name,
+            protocol.amount,
+            moment().utc(),
+        ]);
+    }
+    return result;
+};
 const getVaults = (stats) => {
     let result = [];
     for (const vault of stats.system.vault) {
@@ -158,6 +171,7 @@ module.exports = {
     getTVL,
     getSystem,
     getLifeguard,
+    getLifeguardStables,
     getVaults,
     getReserves,
     getStrategies,
