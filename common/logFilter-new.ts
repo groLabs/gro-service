@@ -1,5 +1,5 @@
 import { getInfruraRpcProvider } from './chainUtil';
-import { EventInfo } from './commonTypes'
+import { EventInfo } from './commonTypes';
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -13,6 +13,30 @@ async function getFilterEvents(filter, contractInterface, providerKey) {
     });
 
     const logs: any = [];
+    filterLogs.forEach((log) => {
+        const eventInfo: EventInfo = {
+            address: log.address,
+            blockNumber: log.blockNumber,
+            transactionHash: log.transactionHash,
+        };
+        const parseResult = contractInterface.parseLog(log);
+        eventInfo.name = parseResult.name;
+        eventInfo.signature = parseResult.signature;
+        eventInfo.topic = parseResult.topic;
+        eventInfo.args = parseResult.args;
+        logs.push(eventInfo);
+    });
+
+    return logs;
+}
+
+async function getEvents(filter, contractInterface, provider) {
+    const filterLogs = await provider.getLogs(filter).catch((error) => {
+        logger.error(error);
+        return [];
+    });
+
+    const logs = [];
     filterLogs.forEach((log) => {
         const eventInfo: EventInfo = {
             address: log.address,
@@ -52,5 +76,6 @@ async function getSimpleFilterEvents(filter, providerKey) {
 
 module.exports = {
     getFilterEvents,
+    getEvents,
     getSimpleFilterEvents,
 };

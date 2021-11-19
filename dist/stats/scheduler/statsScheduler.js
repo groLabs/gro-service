@@ -8,7 +8,7 @@ const { sendErrorMessageToLogChannel, } = require('../../dist/common/discord/dis
 const { getLastBlockNumber, generateDepositAndWithdrawReport, updateLastBlockNumber, generateSummaryReport, } = require('../handler/eventHandler');
 const { getCurrentBlockNumber } = require('../../dist/common/chainUtil');
 const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
-const logger = require('../statsLogger.js');
+const logger = require('../statsLogger');
 const statsDir = getConfig('stats_folder');
 const generateStatsSchedulerSetting = getConfig('trigger_scheduler.generate_stats', false) || '00 10 * * * *';
 const removeStatsFileSchedulerSetting = getConfig('trigger_scheduler.remove_stats_file', false) || '00 * * * * *';
@@ -18,6 +18,7 @@ const depositWithdrawEventSchedulerSetting = getConfig('trigger_scheduler.deposi
 const eventSummarySchedulerSetting = getConfig('trigger_scheduler.event_summary', false) || '00 * * * *';
 const failedAlertTimes = getConfig('call_failed_time', false) || 2;
 const failedTimes = { apyGenerator: 0, eventTrade: 0, eventSumary: 0 };
+const eventDiscordMessageSending = getConfig('stats_bot_event_sending', false);
 async function generateStatsFile() {
     schedule.scheduleJob(generateStatsSchedulerSetting, async () => {
         try {
@@ -95,6 +96,8 @@ async function removeStatsFile() {
     });
 }
 function depositWithdrawEventScheduler() {
+    if (!eventDiscordMessageSending)
+        return;
     schedule.scheduleJob(depositWithdrawEventSchedulerSetting, async () => {
         try {
             const lastBlockNumber = getLastBlockNumber('lastDepositAndWithdrawBlockNumber');
@@ -121,6 +124,8 @@ function depositWithdrawEventScheduler() {
     });
 }
 function EventSummaryScheduler() {
+    if (!eventDiscordMessageSending)
+        return;
     schedule.scheduleJob(eventSummarySchedulerSetting, async () => {
         try {
             const lastBlockNumber = getLastBlockNumber('lastSummaryBlockNumber');
@@ -165,11 +170,11 @@ function botLiveCheckScheduler() {
     });
 }
 function starStatsJobs() {
-    generateStatsFile();
-    removeStatsFile();
-    depositWithdrawEventScheduler();
-    EventSummaryScheduler();
-    botLiveCheckScheduler();
+    // generateStatsFile();
+    // removeStatsFile();
+    // depositWithdrawEventScheduler();
+    // EventSummaryScheduler();
+    // botLiveCheckScheduler();
 }
 module.exports = {
     starStatsJobs,

@@ -17,7 +17,6 @@ const GRO_USDC_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_usdc_pool
 const CRV_PWRD_ADDRESS = getConfig('staker_pools.contracts.curve_pwrd3crv_pool_address');
 const GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address');
 let rowCount = 0;
-let rowExcluded = 0;
 let gvt = [];
 let pwrd = [];
 let gro = [];
@@ -100,62 +99,41 @@ const getBalancesSC = async (users, block, offset) => {
 const insertBalances = async (account, i, day, addr, isSnapshot) => {
     return new Promise(async (resolve) => {
         try {
-            const isBalance = (gvt[0].amount_unstaked[i] // unstaked gvt
-                + pwrd[0].amount_unstaked[i] // unstaked pwrd
-                + gro[0].amount_unstaked[i] // unstaked gro
-                + lpGroGvt[0].amount_pooled_lp[i] // poll1 - pooled lp gro/gvt
-                + lpGroUsdc[0].amount_pooled_lp[i] // pool2 - pooled lp gro/usdc
-                + lpCrvPwrd[0].amount_pooled_lp[i] // pool4 - pooled lp pwrd
-                + lpGroWeth[0].amount_pooled_lp[i] // pool5 - pooled lp gro/weth
-                + gro[1].amount_staked[i] // pool0 - staked gro
-                + lpGroGvt[1].amount_staked_lp[i] // pool1 - staked lp gro/gvt
-                + lpGroUsdc[1].amount_staked_lp[i] // pool2 - staked lp gro/usdc
-                + gvt[1].amount_staked[i] // pool3 - staked gvt
-                + lpCrvPwrd[1].amount_staked_lp[i] // pool4 - staked lp pwrd
-                + lpGroWeth[1].amount_staked_lp[i] // pool5 - staked lp gro/weth
-                > 0)
-                ? true
-                : false;
-            if (isBalance) {
-                const params = [
-                    day,
-                    getNetworkId(),
-                    addr,
-                    gvt[0].amount_unstaked[i],
-                    pwrd[0].amount_unstaked[i],
-                    gro[0].amount_unstaked[i],
-                    gro[1].amount_staked[i],
-                    lpGroGvt[0].amount_pooled_lp[i],
-                    lpGroGvt[1].amount_staked_lp[i],
-                    lpGroGvt[2].lp_position[i][0],
-                    lpGroGvt[2].lp_position[i][1],
-                    lpGroUsdc[0].amount_pooled_lp[i],
-                    lpGroUsdc[1].amount_staked_lp[i],
-                    lpGroUsdc[2].lp_position[i][0],
-                    lpGroUsdc[2].lp_position[i][1],
-                    gvt[1].amount_staked[i],
-                    lpCrvPwrd[0].amount_pooled_lp[i],
-                    lpCrvPwrd[1].amount_staked_lp[i],
-                    lpCrvPwrd[2].lp_position[i],
-                    lpGroWeth[0].amount_pooled_lp[i],
-                    lpGroWeth[1].amount_staked_lp[i],
-                    lpGroWeth[2].lp_position[i][0],
-                    lpGroWeth[2].lp_position[i][1],
-                    moment.utc(),
-                ];
-                const q = (account)
-                    ? 'insert_user_cache_fact_balances.sql'
-                    : (isSnapshot)
-                        ? 'insert_user_std_fact_balances_snapshot.sql'
-                        : 'insert_user_std_fact_balances.sql';
-                const result = await query(q, params);
-                if (result.status === QUERY_ERROR)
-                    resolve(false);
-                rowCount += result.rowCount;
-            }
-            else {
-                rowExcluded++;
-            }
+            const params = [
+                day,
+                getNetworkId(),
+                addr,
+                gvt[0].amount_unstaked[i],
+                pwrd[0].amount_unstaked[i],
+                gro[0].amount_unstaked[i],
+                gro[1].amount_staked[i],
+                lpGroGvt[0].amount_pooled_lp[i],
+                lpGroGvt[1].amount_staked_lp[i],
+                lpGroGvt[2].lp_position[i][0],
+                lpGroGvt[2].lp_position[i][1],
+                lpGroUsdc[0].amount_pooled_lp[i],
+                lpGroUsdc[1].amount_staked_lp[i],
+                lpGroUsdc[2].lp_position[i][0],
+                lpGroUsdc[2].lp_position[i][1],
+                gvt[1].amount_staked[i],
+                lpCrvPwrd[0].amount_pooled_lp[i],
+                lpCrvPwrd[1].amount_staked_lp[i],
+                lpCrvPwrd[2].lp_position[i],
+                lpGroWeth[0].amount_pooled_lp[i],
+                lpGroWeth[1].amount_staked_lp[i],
+                lpGroWeth[2].lp_position[i][0],
+                lpGroWeth[2].lp_position[i][1],
+                moment.utc(),
+            ];
+            const q = (account)
+                ? 'insert_user_cache_fact_balances.sql'
+                : (isSnapshot)
+                    ? 'insert_user_std_fact_balances_snapshot.sql'
+                    : 'insert_user_std_fact_balances.sql';
+            const result = await query(q, params);
+            if (result.status === QUERY_ERROR)
+                resolve(false);
+            rowCount += result.rowCount;
             resolve(true);
         }
         catch (err) {
@@ -176,7 +154,6 @@ const cleanseVars = (scope) => {
         lpGroWeth = [];
     }
     rowCount = 0;
-    rowExcluded = 0;
 };
 /// @notice Check time format (if defined) and return hours, minutes & seconds
 /// @dev    If time is not defined, return 23:59:59 by default
@@ -243,7 +220,6 @@ const checkTokenCounterDate = (day) => {
 const showMsg = (account, date, table) => {
     let msg3 = `**DB${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} `;
     msg3 += `added into ${table} `;
-    msg3 += (rowExcluded !== 0) ? `(excluded ${rowExcluded} with 0-balance) ` : '';
     msg3 += `for date ${moment(date).format('DD/MM/YYYY')}`;
     logger.info(msg3);
 };
@@ -291,12 +267,17 @@ const loadUserBalances = async (fromDate, toDate, account, time, isSnapshot) => 
                 if (!res)
                     return false;
             }
-            showMsg(account, date, 'USER_STD_FACT_BALANCES');
+            const table = (account)
+                ? 'USER_CACHE_FACT_BALANCES'
+                : (isSnapshot)
+                    ? 'USER_STD_FACT_BALANCES_SNAPSHOT'
+                    : 'USER_STD_FACT_BALANCES';
+            showMsg(account, date, table);
             cleanseVars('rows');
         }
         cleanseVars('all');
         // Update table SYS_USER_LOADS with the last loads
-        if (account) {
+        if (account || isSnapshot) {
             return true;
         }
         else {

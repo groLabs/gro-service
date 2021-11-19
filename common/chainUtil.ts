@@ -4,11 +4,16 @@ import { BigNumber } from 'ethers';
 import { NonceManager } from '@ethersproject/experimental';
 import { SettingError, BlockChainCallError } from './error';
 import { shortAccount } from './digitalUtil';
-import { sendMessageToChannel, MESSAGE_TYPES, DISCORD_CHANNELS } from './discord/discordService';
+import {
+    sendMessageToChannel,
+    MESSAGE_TYPES,
+    DISCORD_CHANNELS,
+} from './discord/discordService';
 import { botBalanceMessage } from '../discordMessage/botBalanceMessage';
 import { sendAlertMessage } from './alertMessageSender';
 import { getConfig } from './configUtil';
 import { PrivateProvider } from './privateProvider';
+const { AvaxPrcProvider } = require('./avaxRpcProvider');
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -34,14 +39,17 @@ let rpcProvider;
 let infruraRpcProvider;
 let defaultWalletManager;
 let privateProvider;
+let avaxProvider;
 const rpcProviders = {};
 const infruraRpcProviders = {};
 const botWallets = {};
 const failedTimes = { accountBalance: 0 };
-const failedAlertTimes = getConfig('call_failed_time', false) as number || 2;
-const retryTimes = getConfig('timeout_retry', false) as number || 1;
-const stallerTime = getConfig('timeout_retry_staller', false) as number || 1000;
-const needPrivateTransaction = getConfig('private_transaction', false) as boolean || false;
+const failedAlertTimes = (getConfig('call_failed_time', false) as number) || 2;
+const retryTimes = (getConfig('timeout_retry', false) as number) || 1;
+const stallerTime =
+    (getConfig('timeout_retry_staller', false) as number) || 1000;
+const needPrivateTransaction =
+    (getConfig('private_transaction', false) as boolean) || false;
 
 const network = getConfig('blockchain.network') as string;
 logger.info(`network: ${network}`);
@@ -160,6 +168,14 @@ function createPrivateProvider() {
     return privateProvider;
 }
 
+function getAvaxRpcProvider() {
+    if (!avaxProvider) {
+        logger.info('Create Avax Rpc provider.');
+        avaxProvider = new AvaxPrcProvider(network);
+    }
+    return avaxProvider;
+}
+
 function getDefaultProvider() {
     if (defaultProvider) {
         return defaultProvider;
@@ -261,7 +277,9 @@ function getNonceManager() {
     }
 
     const provider = getTransactionProvider(DEFAULT_PROVIDER_KEY);
-    const keystorePassword = getConfig('blockchain.keystores.default.password') as string;
+    const keystorePassword = getConfig(
+        'blockchain.keystores.default.password'
+    ) as string;
     let botWallet;
     if (keystorePassword === 'NO_PASSWORD') {
         botWallet = new ethers.Wallet(
@@ -275,7 +293,10 @@ function getNonceManager() {
                 flag: 'r',
             }
         );
-        botWallet = ethers.Wallet.fromEncryptedJsonSync((data as unknown as string), keystorePassword);
+        botWallet = ethers.Wallet.fromEncryptedJsonSync(
+            data as unknown as string,
+            keystorePassword
+        );
         botWallet = botWallet.connect(provider);
     }
 
@@ -308,7 +329,10 @@ function createWallet(providerKey, walletKey) {
         const data = fs.readFileSync(keystore, {
             flag: 'r',
         });
-        wallet = ethers.Wallet.fromEncryptedJsonSync((data as unknown as string), keystorePassword);
+        wallet = ethers.Wallet.fromEncryptedJsonSync(
+            data as unknown as string,
+            keystorePassword
+        );
         wallet = wallet.connect(provider);
     }
     logger.info(
@@ -478,4 +502,5 @@ export {
     checkAccountsBalance,
     getCurrentBlockNumber,
     getTimestampByBlockNumber,
+    getAvaxRpcProvider,
 };

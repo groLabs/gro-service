@@ -77,7 +77,7 @@ const { airdrop4Handler, airdrop4HandlerV2, checkPosition, } = require('./handle
                         params[5]); // snapshot (true / false)
                     }
                     else {
-                        console.log(`Wrong parameters for balances2 - e.g.: balances2 28/06/2021 29/06/2021 "" 15:00:00`);
+                        console.log(`Wrong parameters for loadBalances - e.g.: loadBalances 16/11/2021 16/11/2021 "" 15:00:00 true`);
                     }
                     break;
                 case 'airdrop4':
@@ -117,7 +117,7 @@ const { airdrop4Handler, airdrop4HandlerV2, checkPosition, } = require('./handle
             process.exit(0);
         }
         // Testing groStats
-        // await etlGroStats();
+        await etlGroStats();
         // await etlGroStatsHDL(1623844800,1623844800,'apy',1800);
         // Testing priceCheck
         // await etlPriceCheck();

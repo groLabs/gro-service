@@ -235,7 +235,7 @@ async function getLifeguardStats(blockTag) {
         {
             name: 'USDC',
             display_name: 'USDC',
-            amount: stableCoinAssets[1].mul(BigNumber.from('1000000000000')), // multiple by is for mapper handler for the later, because usdc's decimal is 6 not 18
+            amount: stableCoinAssets[1].mul(BigNumber.from('1000000000000')),
         },
         {
             name: 'USDT',

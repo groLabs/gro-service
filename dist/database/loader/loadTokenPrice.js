@@ -5,12 +5,9 @@ const { findBlockByDate } = require('../common/globalUtil');
 const { apiCaller } = require('../common/apiCaller');
 const { query } = require('../handler/queryHandler');
 const { loadTableUpdates } = require('./loadTableUpdates');
-const { getNetworkId, generateDateRange, handleErr, } = require('../common/personalUtil');
+const { getNetworkId, generateDateRange, } = require('../common/personalUtil');
 const { parseAmount } = require('../parser/personalStatsParser');
-const { QUERY_ERROR } = require('../constants');
-const { getConfig } = require('../../dist/common/configUtil');
-const route = getConfig('route');
-const { QUERY_SUCCESS } = require('../constants');
+const { QUERY_ERROR, QUERY_SUCCESS } = require('../constants');
 const { getGroVault, getPowerD, } = require('../common/contractUtil');
 // Rretrieve GRO price for a given date via Coingecko API
 const getPriceFromCoingecko = async (date, coin) => {

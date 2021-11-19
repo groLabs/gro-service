@@ -17,7 +17,8 @@ const checkQueryResult = (result, table) => {
             && table !== 'PROTOCOL_STRATEGIES'
             && table !== 'PROTOCOL_EXPOSURE_STABLES'
             && table !== 'PROTOCOL_EXPOSURE_PROTOCOLS'
-            && table !== 'PROTOCOL_PRICE_CHECK_DETAILED') {
+            && table !== 'PROTOCOL_PRICE_CHECK_DETAILED'
+            && table !== 'PROTOCOL_SYSTEM_LIFEGUARD_STABLES') {
             logger.info(`**DB: ${result.rowCount} records added into ${table}`);
         }
         return true;
@@ -37,7 +38,7 @@ const updateTimeStamp = async (block_timestamp, source) => {
         ];
         const res = await query('update_last_protocol_load.sql', params);
         if (res.status === QUERY_ERROR)
-            logger.warn(`**DB: Error in protocolUtil.js->updateTimeStamp(): Table SYS_PROTOCOL_LOADS not updated.`);
+            logger.error(`**DB: Error in protocolUtil.js->updateTimeStamp(): Table SYS_PROTOCOL_LOADS not updated.`);
     }
     catch (err) {
         logger.error(`**DB: Error in protocolUtil.js->updateTimeStamp(): ${err}`);

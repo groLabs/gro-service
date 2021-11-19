@@ -41,7 +41,9 @@ exports.buoy_start_block = 13304056;
 exports.blockchain = {
     network: 'mainnet',
     start_block: 12522788,
+    avax_start_block: 7075659,
     start_timestamp: 1622204347,
+    avax_launch_timestamp: 1637173912,
     default_api_keys: {
         alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
         infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
@@ -148,7 +150,12 @@ exports.log_folder = '../logs';
 exports.blockNumberFile = '../stats/lastBlockNumber.json';
 exports.stats_latest = '../stats/gro-latest.json';
 exports.pendingTransactionFile = '../pendingTransaction.json';
-exports.vault_name = ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'];
+exports.vault_name = [
+    'DAI yVault',
+    'USDC yVault',
+    'USDT yVault',
+    'Curve yVault',
+];
 exports.vault_display_name = ['DAI', 'USDC', 'USDT', '3CRVUSDx'];
 exports.stable_coin = ['DAI', 'USDC', 'USDT'];
 exports.strategy_name = [
@@ -169,7 +176,9 @@ exports.strategy_display_name = [
     'CREAM - USDT',
     'Curve - XPool',
 ];
-exports.strategy_default_apy = [106000, 41334, 98500, 49956, 45343, 49513, 117589];
+exports.strategy_default_apy = [
+    106000, 41334, 98500, 49956, 45343, 49513, 117589,
+];
 exports.harvest_strategy_dependency = [
     '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
     '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE',

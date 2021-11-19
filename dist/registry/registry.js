@@ -15,8 +15,8 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 const configFileFolder = `${__dirname}/config`;
-const registryAddress = (0, configUtil_1.getConfig)('registry_address', false);
-const provider = (0, chainUtil_1.getAlchemyRpcProvider)();
+const registryAddress = configUtil_1.getConfig('registry_address', false);
+const provider = chainUtil_1.getAlchemyRpcProvider();
 let registry;
 if (registryAddress) {
     registry = new ethers_1.ethers.Contract(registryAddress, registryABI, provider);
@@ -53,6 +53,9 @@ const ContractNames = {
     CRVPrimary: '3CrvPrimary',
     BalancerWeightedPool: 'BalancerWeightedPool',
     TokenCounter: 'TokenCounter',
+    AVAXDAIVault: 'AVAXDAIVault',
+    AVAXUSDCVault: 'AVAXUSDCVault',
+    AVAXUSDTVault: 'AVAXUSDTVault',
 };
 exports.ContractNames = ContractNames;
 const ContractABIMapping = {};
@@ -86,6 +89,9 @@ ContractABIMapping[ContractNames.CRVVaultAdaptor] = 'VaultAdaptorYearnV2_032';
 ContractABIMapping[ContractNames.CRVPrimary] = 'BaseStrategy';
 ContractABIMapping[ContractNames.BalancerWeightedPool] = 'BalancerWeightedPool';
 ContractABIMapping[ContractNames.TokenCounter] = 'TokenCounter';
+ContractABIMapping[ContractNames.AVAXDAIVault] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXUSDCVault] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXUSDTVault] = 'VaultAdaptorMK2';
 function readLocalContractConfig(isReload = false) {
     if (isReload || !localContractConfig) {
         const filePath = `${configFileFolder}/${process.env.NODE_ENV}_contractConfig.json`;

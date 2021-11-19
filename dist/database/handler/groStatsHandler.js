@@ -1,10 +1,6 @@
-const moment = require('moment');
 const { query } = require('./queryHandler');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-// const {
-//     QUERY_ERROR,
-// } = require('../common/personalUtil');
 const { QUERY_ERROR } = require('../constants');
 const DIFF_5m = 300;
 const DIFF_1h = 3600;
@@ -150,6 +146,30 @@ const getSystem = async (targetTimestamp) => {
         logger.error(`**DB: Error in groStatsHandler.js->getSystem(): ${err}`);
     }
 };
+const getSystemLifeguardStables = async (targetTimestamp) => {
+    try {
+        let result = [];
+        const stables = await getDistincts(targetTimestamp, 'protocol_system_lifeguard_stables');
+        if (stables.length > 0) {
+            for (const item of stables) {
+                const stable = await getTimestamps(targetTimestamp, 'protocol_system_lifeguard_stables', [item.name]);
+                if (stable.current) {
+                    result.push(Object.assign({ "current_timestamp": stable.current.current_timestamp, "current_date": stable.current.current_date, "name": stable.current.name }, calcKPI(stable, 'amount')));
+                }
+                else {
+                    return {};
+                }
+            }
+        }
+        else {
+            return {};
+        }
+        return result;
+    }
+    catch (err) {
+        logger.error(`**DB: Error in groStatsHandler.js->getSystemLifeguardStables(): ${err}`);
+    }
+};
 const getVaults = async (targetTimestamp) => {
     try {
         let result = [];
@@ -280,6 +300,7 @@ const getAllStats = async () => {
                 apy1: await getAPY(targetTimestamp, 1),
                 apy2: await getAPY(targetTimestamp, 2),
                 lifeguard: await getLifeguard(targetTimestamp),
+                lifeguardStables: await getSystemLifeguardStables(targetTimestamp),
                 system: await getSystem(targetTimestamp),
                 vaults: await getVaults(targetTimestamp),
                 reserves: await getReserves(targetTimestamp),

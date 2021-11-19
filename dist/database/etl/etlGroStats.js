@@ -1,4 +1,4 @@
-const { query } = require('../handler/queryHandler');
+const { query } = require('../handler/queryHandler'); // if removed, discord error event it's not used
 const { apiCaller } = require('../common/apiCaller');
 const { getConfig } = require('../../dist/common/configUtil');
 const route = getConfig('route');

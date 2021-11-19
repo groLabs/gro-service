@@ -67,21 +67,18 @@ const remove = async (fromDate, toDate, loadType) => {
         }
         // Remove balances, returns, approvals & sys load
         if (loadType === Load.FULL) {
-            const [balances, netReturns, netReturnsUnstaked, approvals, loads,] = await Promise.all([
+            const [balances, netReturns, approvals, loads,] = await Promise.all([
                 query('delete_user_std_fact_balances.sql', params),
                 query('delete_user_std_fact_net_returns.sql', params),
-                query('delete_user_std_fact_net_returns_unstaked.sql', params),
                 query('delete_user_std_fact_approvals.sql', params),
                 query('delete_table_loads.sql', params),
             ]);
             if (balances &&
                 netReturns &&
-                netReturnsUnstaked &&
                 approvals &&
                 loads) {
                 logger.info(`**DB: ${balances.rowCount} record${isPlural(balances.rowCount)} deleted from USER_STD_FACT_BALANCES`);
                 logger.info(`**DB: ${netReturns.rowCount} record${isPlural(netReturns.rowCount)} deleted from USER_STD_FACT_NET_RETURNS`);
-                logger.info(`**DB: ${netReturnsUnstaked.rowCount} record${isPlural(netReturnsUnstaked.rowCount)} deleted from USER_STD_FACT_NET_RETURNS_UNSTAKED`);
                 logger.info(`**DB: ${approvals.rowCount} record${isPlural(approvals.rowCount)} deleted from USER_APPROVALS`);
                 logger.info(`**DB: ${loads.rowCount} record${isPlural(loads.rowCount)} deleted from SYS_USER_LOADS`);
             }
@@ -122,12 +119,11 @@ const load = async (fromDate, toDate, loadType) => {
                 if (await remove(fromDate, toDate, loadType))
                     if (await loadUserTransfers(fromDate, toDate, null))
                         // if (await loadUserApprovals(fromDate, toDate, null))
-                        // if (await loadUserBalances(fromDate, toDate, null))
                         if (await loadUserBalances(fromDate, toDate, null, null, false))
                             //TODO: token price return null (eg: reload before Gro token)
-                            //if (await loadTokenPrice(fromDate, toDate))
-                            //if (await loadUserNetReturns(fromDate, toDate, null))
-                            return true;
+                            if (await loadTokenPrice(fromDate, toDate))
+                                if (await loadUserNetReturns(fromDate, toDate, null))
+                                    return true;
             }
             else {
                 logger.warn(`**DB: Error/s found in etlPersonalStats.js->load()`);

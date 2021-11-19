@@ -12,12 +12,12 @@ const chainUtil_1 = require("../../common/chainUtil");
 const priceCheck_1 = require("../handler/priceCheck");
 const alertMessageSender_1 = require("../../common/alertMessageSender");
 const logger = require('../criticalLogger');
-const botCurveSchedulerSetting = (0, configUtil_1.getConfig)('trigger_scheduler.bot_curve_check', false) || '00 30 * * * *';
-const botBalanceSchedulerSetting = (0, configUtil_1.getConfig)('trigger_scheduler.bot_balance_check', false) || '20 * * * *';
-const curveBalanceConfig = (0, configUtil_1.getConfig)('curve_balance');
-const chainlinkPricePairConfig = (0, configUtil_1.getConfig)('chainlink_price_pair');
-const botBalanceWarnVault = (0, configUtil_1.getConfig)('bot_balance', false) || {};
-const failedAlertTimes = (0, configUtil_1.getConfig)('call_failed_time', false) || 2;
+const botCurveSchedulerSetting = configUtil_1.getConfig('trigger_scheduler.bot_curve_check', false) || '00 30 * * * *';
+const botBalanceSchedulerSetting = configUtil_1.getConfig('trigger_scheduler.bot_balance_check', false) || '20 * * * *';
+const curveBalanceConfig = configUtil_1.getConfig('curve_balance');
+const chainlinkPricePairConfig = configUtil_1.getConfig('chainlink_price_pair');
+const botBalanceWarnVault = configUtil_1.getConfig('bot_balance', false) || {};
+const failedAlertTimes = configUtil_1.getConfig('call_failed_time', false) || 2;
 const failedTimes = { priceCheck: 0, accountBalance: 0, priceMonitor: 0 };
 function checkCurveHealth() {
     const providerKey = 'default';
@@ -25,19 +25,19 @@ function checkCurveHealth() {
     node_schedule_1.default.scheduleJob(botCurveSchedulerSetting, async () => {
         logger.info(`Run critical check on : ${new Date()}`);
         try {
-            const { chainlinkPricePair } = await (0, criticalHandler_1.curvePriceCheck)(providerKey, walletKey);
-            await (0, criticalHandler_1.buoyHealthCheckAcrossBlocks)(providerKey, walletKey);
+            const { chainlinkPricePair } = await criticalHandler_1.curvePriceCheck(providerKey, walletKey);
+            await criticalHandler_1.buoyHealthCheckAcrossBlocks(providerKey, walletKey);
             // if (process.env.NODE_ENV === 'mainnet') {
             //     await strategyCheck(providerKey, walletKey);
             // }
-            await (0, priceCheck_1.checkChainlinkPrice)(chainlinkPricePair, chainlinkPricePairConfig);
+            await priceCheck_1.checkChainlinkPrice(chainlinkPricePair, chainlinkPricePairConfig);
             failedTimes.priceCheck = 0;
         }
         catch (error) {
-            (0, discordService_1.sendErrorMessageToLogChannel)(error);
+            discordService_1.sendErrorMessageToLogChannel(error);
             failedTimes.priceCheck += 1;
             if (failedTimes.priceCheck >= failedAlertTimes) {
-                (0, alertMessageSender_1.sendAlertMessage)({
+                alertMessageSender_1.sendAlertMessage({
                     discord: {
                         description: "[WARN] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
                     },
@@ -51,14 +51,14 @@ function priceMonitor() {
     node_schedule_1.default.scheduleJob(botCurveSchedulerSetting, async () => {
         logger.info(`price monitor on : ${new Date()}`);
         try {
-            await (0, priceCheck_1.checkCurveCoinRatio)(providerKey, curveBalanceConfig);
+            await priceCheck_1.checkCurveCoinRatio(providerKey, curveBalanceConfig);
             failedTimes.priceMonitor = 0;
         }
         catch (error) {
-            (0, discordService_1.sendErrorMessageToLogChannel)(error);
+            discordService_1.sendErrorMessageToLogChannel(error);
             failedTimes.priceMonitor += 1;
             if (failedTimes.priceMonitor >= failedAlertTimes) {
-                (0, alertMessageSender_1.sendAlertMessage)({
+                alertMessageSender_1.sendAlertMessage({
                     discord: {
                         description: "[WARN] B15 - Chainlink | Curve price check txn failed, price check action didn't complate",
                     },
@@ -71,10 +71,10 @@ function checkBotAccountBalance() {
     node_schedule_1.default.scheduleJob(botBalanceSchedulerSetting, async () => {
         logger.info(`checkBotAccountBalance running at ${Date.now()}`);
         try {
-            await (0, chainUtil_1.checkAccountsBalance)(botBalanceWarnVault);
+            await chainUtil_1.checkAccountsBalance(botBalanceWarnVault);
         }
         catch (error) {
-            (0, discordService_1.sendErrorMessageToLogChannel)(error);
+            discordService_1.sendErrorMessageToLogChannel(error);
         }
     });
 }
@@ -82,12 +82,12 @@ function botLiveCheckScheduler() {
     node_schedule_1.default.scheduleJob(botCurveSchedulerSetting, async () => {
         logger.info(`bot live check running at ${Date.now()}`);
         try {
-            const statsUrl = (0, configUtil_1.getConfig)('health_endpoint.stats', false);
-            (0, checkBotHealth_1.checkServerHealth)('stats', [statsUrl], logger).catch((e) => {
+            const statsUrl = configUtil_1.getConfig('health_endpoint.stats', false);
+            checkBotHealth_1.checkServerHealth('stats', [statsUrl], logger).catch((e) => {
                 logger.error(e);
             });
-            const harvestUrl = (0, configUtil_1.getConfig)('health_endpoint.harvest', false);
-            (0, checkBotHealth_1.checkServerHealth)('harvest', [harvestUrl], logger).catch((e) => {
+            const harvestUrl = configUtil_1.getConfig('health_endpoint.harvest', false);
+            checkBotHealth_1.checkServerHealth('harvest', [harvestUrl], logger).catch((e) => {
                 logger.error(e);
             });
         }

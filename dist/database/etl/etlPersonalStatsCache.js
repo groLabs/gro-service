@@ -20,16 +20,13 @@ const preloadCache = async (account) => {
     try {
         const params = [account];
         // TODO: if (res.every( val => (val !== 400 ))) {
-        const [tmpApprovals, tmpDeposits, tmpWithdrawals, approvals, balances, 
-        // netReturns,
-        netReturnsUnstaked, transfers, _fromDate,] = await Promise.all([
+        const [tmpApprovals, tmpDeposits, tmpWithdrawals, approvals, balances, netReturns, transfers, _fromDate,] = await Promise.all([
             query('delete_user_cache_tmp_approvals.sql', params),
             query('delete_user_cache_tmp_deposits.sql', params),
             query('delete_user_cache_tmp_withdrawals.sql', params),
             query('delete_user_cache_fact_approvals.sql', params),
             query('delete_user_cache_fact_balances.sql', params),
-            // query('delete_user_cache_fact_net_returns.sql', params),
-            query('delete_user_cache_fact_net_returns_unstaked.sql', params),
+            query('delete_user_cache_fact_net_returns.sql', params),
             query('delete_user_cache_fact_transfers.sql', params),
             query('select_max_load_dates.sql', params),
         ]);
@@ -38,8 +35,7 @@ const preloadCache = async (account) => {
             tmpWithdrawals.status === QUERY_ERROR ||
             approvals.status === QUERY_ERROR ||
             balances.status === QUERY_ERROR ||
-            // netReturns.status === QUERY_ERROR ||
-            netReturnsUnstaked.status === QUERY_ERROR ||
+            netReturns.status === QUERY_ERROR ||
             transfers.status === QUERY_ERROR ||
             _fromDate.status === QUERY_ERROR)
             return [];
@@ -101,8 +97,8 @@ const loadCache = async (account) => {
                     //if (await loadUserApprovals(null, null, account))
                     // TODO: time should be now(), otherwise it will take 23:59:59
                     if (await loadUserBalances(fromDate, toDate, account, null, false))
-                        //if (await loadUserNetReturns(fromDate, toDate, account))
-                        return true;
+                        if (await loadUserNetReturns(fromDate, toDate, account))
+                            return true;
             }
             else {
                 logger.warn(`**DB: Error/s found in etlPersonalStatsCache.js->loadCache()`);
