@@ -1,4 +1,5 @@
 const { BigNumber } = require('ethers');
+const moment = require('moment');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 const { parseAmount } = require('../parser/personalStatsParser');
@@ -9,6 +10,25 @@ const UNI_POOL_GVT_GRO_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_g
 const UNI_POOL_GVT_USDC_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_usdc_pool_address');
 const BAL_POOL_GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address');
 
+
+/// @notice Check time format (if defined) and return hours, minutes & seconds
+/// @dev    If time is not defined, return 23:59:59 by default
+/// @param  time The target time to load balances [format: HH:mm:ss]
+/// @return An array with 7 fixed positions: hours, minuts & seconds
+const checkTime = (time) => {
+    const isTimeOK = moment(time, 'HH:mm:ss', true).isValid();
+    if (!time) {
+        return [23, 59, 59];
+    } else if (isTimeOK) {
+        const hours = parseInt(time.substring(0, 2));
+        const minutes = parseInt(time.substring(3, 5));
+        const seconds = parseInt(time.substring(6, 8));
+        return [hours, minutes, seconds];
+    } else {
+        logger.error(`**DB: Error in balanceUtil.js->checkTime(): invalid time format ${time}`);
+        return [-1, -1, -1];
+    }
+}
 
 const getBalances = async (tokenAddress, userAddresses, blockNumber) => {
     try {
@@ -90,6 +110,7 @@ const getBalancesCrvLP = async (tokenAddress, userAddresses, blockNumber) => {
 }
 
 module.exports = {
+    checkTime,
     getBalances,
     getBalancesUniBalLP,
     getBalancesCrvLP,
