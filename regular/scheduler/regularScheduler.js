@@ -12,7 +12,7 @@ const {
 const { pendingTransactions } = require('../../common/storage');
 const {
     sendErrorMessageToLogChannel,
-} = require('../../dist/common/discord/discordService').default;
+} = require('../../dist/common/discord/discordService');
 const { pendingTransactionResend } = require('../../dist/gasPrice/transaction');
 const {
     investTrigger,
@@ -29,12 +29,17 @@ const {
     distributeCurveVault,
 } = require('../handler/actionHandler');
 
-const { getVaults, getStrategyLength } = require('../../dist/contract/allContracts');
+const {
+    getVaults,
+    getStrategyLength,
+} = require('../../dist/contract/allContracts');
 const { getConfig } = require('../../dist/common/configUtil');
 const {
     investTransactionMessage,
 } = require('../../dist/discordMessage/investMessage');
-const { pnlTransactionMessage } = require('../../dist/discordMessage/pnlMessage');
+const {
+    pnlTransactionMessage,
+} = require('../../dist/discordMessage/pnlMessage');
 const {
     rebalanceTransactionMessage,
 } = require('../../dist/discordMessage/rebalanceMessage');
