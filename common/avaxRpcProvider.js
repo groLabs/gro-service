@@ -16,18 +16,18 @@ class AvaxPrcProvider extends UrlJsonRpcProvider {
     }
 
     static getUrl(network, apiKey) {
-        let host = null;
-        switch (network.name) {
-            case 'homestead':
-                host = 'api.avax.network/ext/bc/C/rpc';
-                break;
-            default:
-                logger.throwArgumentError(
-                    'unsupported network',
-                    'network',
-                    network
-                );
-        }
+        const host = 'api.avax.network/ext/bc/C/rpc';
+        // switch (network.name) {
+        //     case 'homestead':
+        //         host = 'api.avax.network/ext/bc/C/rpc';
+        //         break;
+        //     default:
+        //         logger.throwArgumentError(
+        //             'unsupported network',
+        //             'network',
+        //             network
+        //         );
+        // }
 
         return {
             allowGzip: true,
