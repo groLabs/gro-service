@@ -6,6 +6,7 @@
         "build:types": "typechain --target ethers-v5 '**/abi/*.json'",
         "generate:keystore": "node ./scripts/generateKeystore.js",
         "generate:proofs": "node ./scripts/merkleTree.js",
+        "generate:bouncer:proofs": "node ./scripts/merkleTreeForBouncer.js",
         "start:develop:stats": "cross-env NODE_ENV=develop BOT_ENV=STATS node ./stats/bin/www",
         "start:develop:regular": "cross-env NODE_ENV=develop BOT_ENV=REGULAR node ./regular/bin/www",
         "start:develop:critic": "cross-env NODE_ENV=develop BOT_ENV=CRITICAL node ./dist/critical/bin/www",
