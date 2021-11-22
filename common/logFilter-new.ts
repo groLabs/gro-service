@@ -74,7 +74,7 @@ async function getSimpleFilterEvents(filter, providerKey) {
     return logs;
 }
 
-module.exports = {
+export {
     getFilterEvents,
     getEvents,
     getSimpleFilterEvents,

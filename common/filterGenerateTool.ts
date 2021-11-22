@@ -118,7 +118,7 @@ async function getCoinApprovalFilters(
     return filters;
 }
 
-module.exports = {
+export {
     getLatestContractEventFilter,
     getContractHistoryEventFilters,
     getCoinApprovalFilters,
