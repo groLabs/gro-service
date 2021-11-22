@@ -4,7 +4,7 @@ const {
     ethereumPersonalStats,
     getNetwork,
 } = require('./ethereumAccountService');
-const { getConfig } = require('../../common/configUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 

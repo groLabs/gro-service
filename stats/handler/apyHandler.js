@@ -9,7 +9,7 @@ const { getTimestampByBlockNumber } = require('../../dist/common/chainUtil');
 const { BlockChainCallError } = require('../../dist/common/error');
 const { getConfig } = require('../../dist/common/configUtil');
 const { getLatestSystemContract } = require('../common/contractStorage');
-const { ContractNames } = require('../../registry/registry');
+const { ContractNames } = require('../../dist/registry/registry');
 
 const FACTOR_DECIMAL = BigNumber.from(10).pow(BigNumber.from(18));
 const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));

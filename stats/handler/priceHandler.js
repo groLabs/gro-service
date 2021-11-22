@@ -4,7 +4,7 @@ const { ethers, BigNumber } = require('ethers');
 const config = require('config');
 const { getLatestSystemContract } = require('../common/contractStorage');
 const { ContractNames } = require('../../dist/registry/registry');
-const logger = require('../statsLogger.js');
+const logger = require('../statsLogger');
 
 const Curve3PoolABI = require('../../abi/ICurve3Pool.json');
 
