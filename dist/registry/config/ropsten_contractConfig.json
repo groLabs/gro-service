@@ -29,6 +29,7 @@
         "3CrvPrimary",
         "BalancerWeightedPool",
         "TokenCounter",
+        "GroDAO",
         "AVAXDAIVault",
         "AVAXUSDCVault",
         "AVAXUSDTVault"
@@ -149,6 +150,18 @@
             "metaData": {},
             "active": true
         },
+        "GroDAO": {
+            "address": "0xA123740cddf7A7a82967C6E799358331cD95c716",
+            "deployedBlock": 11220036,
+            "startBlock": 11220036,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        },
         "AVAXDAIVault": {
             "address": "0x0B2E717e1f11c8294A655D6A235F8D1AD7ef395a",
             "deployedBlock": 7075621,
@@ -210,6 +223,21 @@
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Other",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "GroDAO": [
+            {
+                "address": "0xA123740cddf7A7a82967C6E799358331cD95c716",
+                "deployedBlock": 11220036,
+                "startBlock": 11220036,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
                 "tokens": [],
                 "protocols": [],
                 "protocolsDisplayName": [],
