@@ -1,6 +1,7 @@
 const csvtojson = require('csvtojson');
 const BN = require('bignumber.js');
 const fs = require('fs');
+const path = require('path');
 const { ethers } = require('ethers');
 const logger = require('../statsLogger');
 const { getConfig } = require('../../dist/common/configUtil');
@@ -11,7 +12,8 @@ const {
 
 const airdropConfig = getConfig('airdrop');
 
-const gasRefundFilePath = `${airdropConfig.folder}/${airdropConfig.gas_pwrd}`;
+const gasFundAirdropFile = airdropConfig.gas_pwrd;
+const gasRefundFilePath = `${airdropConfig.folder}/${gasFundAirdropFile}`;
 
 const DECIMAL = new BN('1000000000000000000');
 const airdropCache = new Map();
@@ -26,9 +28,10 @@ const airdropFirstDefaultValue = {
     amount: '0.00',
     amount_to_claim: '0',
     merkle_root_index: 'N/A',
-    timestamp: '1629383452',
+    launch_ts: '1629383452',
     claimed: 'false',
     claimable: 'false',
+    expiry_ts: undefined,
     expired: 'false',
     proofs: [],
     hash: [],
@@ -42,13 +45,22 @@ const airdropDefaultValue = {
     amount: '0.00',
     amount_to_claim: '0',
     merkle_root_index: 'N/A',
-    timestamp: 'N/A',
+    launch_ts: 'N/A',
     claimed: 'false',
     claimable: 'false',
+    expiry_ts: undefined,
     expired: 'false',
     proofs: [],
     hash: [],
 };
+
+function expired(currentTimestamp, airdropExpiryTS) {
+    if (!airdropExpiryTS) return false;
+    if (parseInt(airdropExpiryTS, 10) > currentTimestamp) {
+        return false;
+    }
+    return true;
+}
 
 async function readAirdropFile(fileName) {
     const rawdata = fs.readFileSync(fileName);
@@ -66,7 +78,7 @@ async function convertCSVtoJson(filePath) {
     return result;
 }
 
-async function getGasRefundResult(account) {
+async function getGasRefundResult(account, currentTimestamp) {
     if (!firstAirdropJson) {
         firstAirdropJson = await convertCSVtoJson(gasRefundFilePath);
     }
@@ -82,31 +94,42 @@ async function getGasRefundResult(account) {
         result.participated = 'true';
         result.claimed = 'true';
     }
+
+    result.expired = expired(currentTimestamp, result.expiry_ts);
     return result;
 }
 
-async function getAirdropResultWithProof(account, endBlock, airdropFilePath) {
+async function getAirdropResultWithProof(
+    account,
+    endBlock,
+    currentTimestamp,
+    airdropFilePath
+) {
     if (!airdropCache[airdropFilePath]) {
         airdropCache[airdropFilePath] = await readAirdropFile(airdropFilePath);
     }
+
     account = ethers.utils.getAddress(account);
     const {
         merkleIndex,
         name,
-        display_name,
+        display_name: displayName,
         token,
         timestamp,
         claimable,
         proofs,
+        expiry_ts: expiryTimestamp,
     } = airdropCache[airdropFilePath];
     const accountAirdrop = proofs[account];
     const result = { ...airdropDefaultValue };
     result.name = name;
-    result.display_name = display_name;
+    result.display_name = displayName;
     result.token = token;
-    result.timestamp = timestamp;
+    result.launch_ts = timestamp;
     result.merkle_root_index = merkleIndex.toString();
     result.claimable = claimable;
+    result.expiry_ts = expiryTimestamp;
+    result.expired = expired(currentTimestamp, result.expiry_ts);
     if (accountAirdrop) {
         // result = { ...airdropDefaultValue };
         const { amount, proof } = accountAirdrop;
@@ -138,7 +161,8 @@ async function updateOGAirdropFile() {
 }
 
 async function getAllAirdropResults(address, endBlock) {
-    const airdropGasPwrd = await getGasRefundResult(address);
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    const airdropGasPwrd = await getGasRefundResult(address, currentTimestamp);
     const airdrops = [airdropGasPwrd];
     for (let i = 0; i < airdropConfig.files.length; i += 1) {
         const filePath = `${airdropConfig.folder}/${airdropConfig.files[i]}`;
@@ -147,6 +171,7 @@ async function getAllAirdropResults(address, endBlock) {
             const airdropWithProof = await getAirdropResultWithProof(
                 address,
                 endBlock,
+                currentTimestamp,
                 filePath
             );
             airdrops.push(airdropWithProof);
