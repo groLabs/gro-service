@@ -54,6 +54,9 @@ const MESSAGE_TYPES = {
     totalAssetsChange: 'Total Assets Change',
     strategyAssets: 'Strategy Assets',
     distributeCurveVault: 'Distribute Curve Vault',
+    tend: 'tend',
+    forceClose: 'Force Close',
+    updateLimit: 'Update Limit',
     other: 'Others',
 };
 
@@ -120,6 +123,9 @@ function generateLink(urlDetail) {
     let host = `https://${nodeEnv}.etherscan.io`;
     if (nodeEnv === 'mainnet') {
         host = 'https://etherscan.io';
+    }
+    if (nodeEnv === 'avax') {
+        host = 'https://snowtrace.io';
     }
 
     let url = '';

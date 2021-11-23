@@ -22,7 +22,9 @@
         "start:mainnet:lbp1": "cross-env NODE_ENV=mainnet BOT_ENV=LBP HOST_ENV=host1 node ./lbp/bin/www",
         "start:mainnet:lbp2": "cross-env NODE_ENV=mainnet BOT_ENV=LBP HOST_ENV=host2 node ./lbp/bin/www",
         "start:rinkeby:lbp1": "cross-env NODE_ENV=rinkeby BOT_ENV=LBP HOST_ENV=host1 node ./lbp/bin/www",
-        "start:rinkeby:lbp2": "cross-env NODE_ENV=rinkeby BOT_ENV=LBP HOST_ENV=host2 node ./lbp/bin/www"
+        "start:rinkeby:lbp2": "cross-env NODE_ENV=rinkeby BOT_ENV=LBP HOST_ENV=host2 node ./lbp/bin/www",
+        "start:avax:avaxharvest": "cross-env NODE_ENV=avax BOT_ENV=AVAXHARVEST node ./avaxharvest/bin/www",
+        "start:develop:avaxharvest": "cross-env NODE_ENV=develop BOT_ENV=AVAXHARVEST node ./avaxharvest/bin/www"
     },
     "dependencies": {
         "@ethersproject/experimental": "^5.0.10",
