@@ -1,5 +1,5 @@
 import schedule from 'node-schedule';
-import { getConfig } from '../../dist/common/configUtil';
+import { getConfig } from '../../common/configUtil';
 import { etlGroStats } from '../etl/etlGroStats';
 import { etlPriceCheck } from '../etl/etlPriceCheck';
 import { etlPersonalStats } from '../etl/etlPersonalStats';

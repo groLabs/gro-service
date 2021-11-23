@@ -72,4 +72,4 @@ if (process.env.NODE_ENV !== 'production') {
     );
 }
 
-export default databaseLogger;
+module.exports = databaseLogger;

@@ -2,14 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import { query } from 'express-validator';
 // const { wrapAsync } = require('../common/wrap');
-import { ParameterError } from '../../dist/common/error';
+import { ParameterError } from '../../common/error';
 import { getAllStats } from '../handler/groStatsHandler';
 import { getPriceCheck } from '../handler/priceCheckHandler';
 import { getHistoricalAPY } from '../handler/historicalAPY';
 import { getPersonalStats } from '../handler/personalStatsHandler';
 import { dumpTable } from '../common/pgUtil';
 import { validate } from '../../stats/common/validate';
-import { personalStatsMessage } from '../../dist/discordMessage/statsMessage';
+import { personalStatsMessage } from '../../discordMessage/statsMessage';
 
 const router = express.Router();
 

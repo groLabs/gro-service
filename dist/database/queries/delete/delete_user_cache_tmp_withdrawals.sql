@@ -1,0 +1,2 @@
+DELETE FROM gro."USER_CACHE_TMP_WITHDRAWALS"
+WHERE user_address = $1;

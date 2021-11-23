@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { query } from './queryHandler';
 import { QUERY_ERROR } from '../constants';
-import { getConfig } from '../../dist/common/configUtil';
+import { getConfig } from '../../common/configUtil';
 
 const launch_timestamp = getConfig('blockchain.start_timestamp');
 const botEnv = process.env.BOT_ENV.toLowerCase();

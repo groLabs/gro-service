@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ethers } from 'ethers';
 import { getDepositHandler, getWithdrawHandler, getGvt as getGroVault, getPwrd as getPowerD, getUnderlyTokens } from '../contract/allContracts';
 import { ContractCallError } from './error';

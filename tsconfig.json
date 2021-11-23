@@ -97,6 +97,6 @@
         // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
         "skipLibCheck": true /* Skip type checking all .d.ts files. */
     },
-    "include": ["./**/*.json", "./**/*"],
-    "exclude": ["node_modules", "tsconfig.json", "package.json", "package-lock.json", "yarn.lock", "types", "dist"],
+    "include": ["./**/*.json", "./**/*", "./database/queries/**/*.sql"],
+    "exclude": ["node_modules", "tsconfig.json", "package.json", "package-lock.json", "yarn.lock", "types"],
 }
