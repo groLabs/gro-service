@@ -1,7 +1,7 @@
 const BN = require('bignumber.js');
 const { avaxPersonalStats } = require('./avaxAccountService');
 const { ethereumPersonalStats, getNetwork, } = require('./ethereumAccountService');
-const { getConfig } = require('../../common/configUtil');
+const { getConfig } = require('../../dist/common/configUtil');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 function calculateTotal(ethereumStats, avaxStats) {
     const chain1Name = 'ethereum';
@@ -42,8 +42,12 @@ function calculateTotal(ethereumStats, avaxStats) {
 async function generateReport(account) {
     account = account.toLowerCase();
     const currentTimestamp = Math.floor(Date.now() / 1000);
-    const statsOnEthereum = await ethereumPersonalStats(account);
-    const statsOnAvax = await avaxPersonalStats(account);
+    // const statsOnEthereum = await ethereumPersonalStats(account);
+    // const statsOnAvax = await avaxPersonalStats(account);
+    const [statsOnEthereum, statsOnAvax] = await Promise.all([
+        ethereumPersonalStats(account),
+        avaxPersonalStats(account),
+    ]);
     const statsOnTotal = calculateTotal(statsOnEthereum, statsOnAvax);
     const network = await getNetwork();
     const distStatsOnEthereum = {
