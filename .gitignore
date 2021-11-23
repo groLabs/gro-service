@@ -13,3 +13,5 @@ public/
 *.log
 *-audit.json
 types
+dist
+
