@@ -1,3 +1,4 @@
+require('dotenv').config();
 export const private_transaction = false;
 export const stats_bot_event_sending = true;
 export const bot_balance = {
