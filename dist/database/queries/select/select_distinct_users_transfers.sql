@@ -1,2 +1,0 @@
-SELECT DISTINCT t.user_address
-FROM gro."USER_STD_FACT_TRANSFERS" t;

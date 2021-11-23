@@ -1,2 +1,0 @@
-DELETE FROM gro."USER_CACHE_TMP_DEPOSITS"
-WHERE user_address = $1;
