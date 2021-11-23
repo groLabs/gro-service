@@ -54,7 +54,7 @@ const ContractNames = {
     CRVPrimary: '3CrvPrimary',
     BalancerWeightedPool: 'BalancerWeightedPool',
     TokenCounter: 'TokenCounter',
-    GroDAO: 'GroDAOVesting',
+    GroDAO: 'GroDAO',
     AVAXDAIVault: 'AVAXDAIVault',
     AVAXUSDCVault: 'AVAXUSDCVault',
     AVAXUSDTVault: 'AVAXUSDTVault',
