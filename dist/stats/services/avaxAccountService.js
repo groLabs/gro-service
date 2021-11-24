@@ -1,7 +1,6 @@
 const BN = require('bignumber.js');
 const { ethers } = require('ethers');
 const { ContractNames } = require('../../dist/registry/registry');
-const { getAvaxRpcProvider } = require('../../dist/common/chainUtil');
 const { getConfig } = require('../../dist/common/configUtil');
 const { formatNumber2 } = require('../../common/digitalUtil');
 const { getContractsHistory } = require('../../dist/registry/registryLoader');
@@ -9,7 +8,9 @@ const { getLatestSystemContractOnAVAX } = require('../common/contractStorage');
 const { getAccountFailTransactionsOnAVAX, } = require('../handler/failedTransactionHandler');
 const { ZERO_ADDRESS, handleError, getHandlerEvents, getContracts, getTransferHistories, getAvaxApprovalEvents, } = require('./common');
 const logger = require('../statsLogger');
-const provider = getAvaxRpcProvider();
+const rpccURL = getConfig('avalanche.rpc_url', false) ||
+    'https://api.avax.network/ext/bc/C/rpc';
+const provider = new ethers.providers.JsonRpcProvider(rpccURL);
 const blockNumberTimestamp = {};
 const accountVaultHistories = {};
 const systemAvaxVaults = {};
