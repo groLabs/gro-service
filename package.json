@@ -23,7 +23,7 @@
         "start:mainnet:lbp2": "cross-env NODE_ENV=mainnet BOT_ENV=LBP HOST_ENV=host2 node ./lbp/bin/www",
         "start:rinkeby:lbp1": "cross-env NODE_ENV=rinkeby BOT_ENV=LBP HOST_ENV=host1 node ./lbp/bin/www",
         "start:rinkeby:lbp2": "cross-env NODE_ENV=rinkeby BOT_ENV=LBP HOST_ENV=host2 node ./lbp/bin/www",
-        "build": "yarn clean && tsc && yarn copy-files && tsc",
+        "build": "yarn clean && tsc && yarn copy-files",
         "clean": "rm -rf ./dist",
         "copy-files": "cp -R ./database/queries/ ./dist/database/queries"
     },
