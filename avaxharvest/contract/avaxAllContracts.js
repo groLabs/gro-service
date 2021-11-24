@@ -32,6 +32,7 @@ function initVaults() {
             wallet_key: walletKey,
             vault_name: vaultName,
             strategy_name: strategyName,
+            decimals,
         } = vaultsConfig[i];
         console.log(
             `${vaultAdaptorAddress}, ${strategy}, ${gasCost}, ${stableCoinAddress} ${walletKey} ${vaultName} ${strategyName}`
@@ -67,6 +68,7 @@ function initVaults() {
             vaultName,
             walletKey,
             strategyName,
+            decimals: BigNumber.from(10).pow(decimals),
         };
 
         vaults.push(vault);

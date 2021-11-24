@@ -4,6 +4,10 @@ const {
     getWavax,
     getAvaxAggregator,
 } = require('../contract/avaxAllContracts');
+const {
+    syncManagerNonce,
+    sendTransaction,
+} = require('../common/avaxChainUtil');
 const { borrowLimit } = require('./borrowLimitHandler');
 
 const { getConfig } = require('../../dist/common/configUtil');
@@ -18,21 +22,37 @@ const LOWER = BigNumber.from(980000);
 
 async function tend(vault) {
     try {
+        await syncManagerNonce();
         await borrowLimit(vault);
         const { stableCoin, ahStrategy, gasCost, vaultName } = vault;
         const router = getRouter();
         const wavax = getWavax();
         const avaxAggregator = getAvaxAggregator();
+
+        const activePosition = await ahStrategy.activePosition();
+
+        if (activePosition.isZero()) {
+            logger.info(
+                `Vault name: ${vaultName}, activePosition: ${activePosition}, directly return.`
+            );
+            return;
+        }
+
         const gasPrice = await ahStrategy.signer.getGasPrice();
-        logger.info(`gasPrice ${gasPrice}`);
         const callCostWithPrice = gasCost.mul(gasPrice);
+        logger.info(
+            `gasPrice ${gasPrice}, callCostWithPrice: ${callCostWithPrice}`
+        );
         const tendTrigger = await ahStrategy.tendTrigger(callCostWithPrice);
-        logger.info(`tendTrigger ${tendTrigger}`);
+
+        logger.info(
+            `Vault name: ${vaultName}, tendTrigger: ${tendTrigger}, activePosition: ${activePosition}`
+        );
         if (tendTrigger) {
             // 1. get balance of want in vaultAdaptor and startegy
-            // const volatilityCheck = await ahStrategy.volatilityCheck();
-            // logger.info(`volatilityCheck ${volatilityCheck}`);
-            const volatilityCheck = true;
+            const volatilityCheck = await ahStrategy.volatilityCheck();
+            logger.info(`volatilityCheck ${volatilityCheck}`);
+            // const volatilityCheck = true;
 
             // 2. sanity check of chainlink and uni
             if (volatilityCheck) {
@@ -70,14 +90,16 @@ async function tend(vault) {
 
                 if (diff.gt(UPPER) && diff.lt(LOWER)) {
                     logger.info('out of range, will not run tend');
+                    return;
                 }
-                const tx = await ahStrategy.tend();
-                await tx.wait();
-                tendMessage({ transactionHash: tx.hash });
             }
+            await syncManagerNonce();
+            const tx = await sendTransaction(ahStrategy, 'tend', []);
+            await tx.wait();
+            tendMessage({ transactionHash: tx.hash });
         }
     } catch (e) {
-        logger.info(e);
+        logger.error(e);
     }
 }
 

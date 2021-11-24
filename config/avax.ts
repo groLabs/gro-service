@@ -114,6 +114,7 @@ export const contracts = {
             wallet_key: 'dai',
             vault_name: 'DAI yVault',
             strategy_name: 'AH',
+            decimals: 18,
         },
         {
             stable_coin: '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
@@ -123,6 +124,7 @@ export const contracts = {
             wallet_key: 'usdc',
             vault_name: 'USDC yVault',
             strategy_name: 'AH',
+            decimals: 6,
         },
         {
             stable_coin: '0xc7198437980c041c805A1EDcbA50c1Ce5db95118',
@@ -132,6 +134,7 @@ export const contracts = {
             wallet_key: 'usdt',
             vault_name: 'USDT yVault',
             strategy_name: 'AH',
+            decimals: 6,
         },
     ],
     crtoken: '0xb3c68d69E95B095ab4b33B4cB67dBc0fbF3Edf56',

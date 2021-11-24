@@ -2,6 +2,10 @@ const { BigNumber } = require('ethers');
 const { getRouter, getWavax } = require('../contract/avaxAllContracts');
 const { harvestMessage } = require('../../dist/discordMessage/harvestMessage');
 const { borrowLimit } = require('./borrowLimitHandler');
+const {
+    syncManagerNonce,
+    sendTransaction,
+} = require('../common/avaxChainUtil');
 const logger = require('../avaxharvestLogger');
 const E18 = BigNumber.from('1000000000000000000');
 
@@ -15,6 +19,7 @@ async function harvest(vault) {
             gasCost,
             vaultName,
             strategyName,
+            decimals,
         } = vault;
         const router = getRouter();
         const wavax = getWavax();
@@ -50,17 +55,18 @@ async function harvest(vault) {
             // logger.info(`check ${check}`);
 
             // 4. get minAmount - 0.5 %
-            const checkResult = await router.getAmountsOut(E18, [
+            const checkResult = await router.getAmountsOut(decimals, [
                 stableCoin.address,
                 wavax.address,
             ]);
             logger.info(
                 `amm check ${vaultName} ${checkResult[0]} ${checkResult[1]}`
             );
-            const tx = await vaultAdaptorMK2.strategyHarvest(
-                0,
-                E18,
-                checkResult[0]
+            await syncManagerNonce();
+            const tx = await sendTransaction(
+                vaultAdaptorMK2,
+                'strategyHarvest',
+                [0, checkResult[0], checkResult[1]]
             );
             await tx.wait();
             harvestMessage({

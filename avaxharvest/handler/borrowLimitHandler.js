@@ -6,6 +6,10 @@ const {
 } = require('../contract/avaxAllContracts');
 const { getConfig } = require('../../dist/common/configUtil');
 const {
+    syncManagerNonce,
+    sendTransaction,
+} = require('../common/avaxChainUtil');
+const {
     forceCloseMessage,
     updateLimitMessage,
 } = require('../../discordMessage/avaxMessage');
@@ -65,45 +69,53 @@ async function borrowLimit(vault) {
     const newBorrowLimitWant = newBorrowLimit.mul(checkResult[1]).div(E18);
     logger.info(`newBorrowLimitWant ${newBorrowLimitWant}`);
 
-    // const tx = await ahStrategy.setBorrowLimit(newBorrowLimitWant);
-    // await tx.wait();
-    // updateLimitMessage({ transactionHash: tx.hash });
+    await syncManagerNonce();
+    const tx = await sendTransaction(ahStrategy, 'setBorrowLimit', [
+        newBorrowLimitWant,
+    ]);
+    await tx.wait();
+    updateLimitMessage({ transactionHash: tx.hash });
 }
 
 async function forceClose(vault) {
-    const { ahStrategy, stableCoin, vaultName } = vault;
-    const wavax = getWavax();
-    const router = getRouter();
-    const borrowInfo = await getBorrowInfo();
-    // const openPositionId = await ahStrategy.activePosition();
-    const openPositionId = 1;
-    logger.info(`openPositionId ${vaultName} ${openPositionId}`);
-    if (openPositionId > 0) {
-        logger.info(
-            `borrowInfo.totalBorrows ${vaultName} ${borrowInfo.totalBorrows}`
-        );
-
-        const utilizationRatio = borrowInfo.totalBorrows
-            .mul(PERCENT_DECIMAL)
-            .div(borrowInfo.totalAvailable);
-        logger.info(`utilizationRatio ${vaultName} ${utilizationRatio}`);
-
-        if (utilizationRatio.gt(CLOSE_THRESHOLD)) {
+    try {
+        const { ahStrategy, stableCoin, vaultName } = vault;
+        const wavax = getWavax();
+        const router = getRouter();
+        const borrowInfo = await getBorrowInfo();
+        const openPositionId = await ahStrategy.activePosition();
+        logger.info(`openPositionId ${vaultName} ${openPositionId}`);
+        if (openPositionId > 0) {
             logger.info(
-                `need call ${vaultName} force close ${utilizationRatio} > ${CLOSE_THRESHOLD}`
+                `borrowInfo.totalBorrows ${vaultName} ${borrowInfo.totalBorrows}`
             );
-            const checkResult = router.getAmountsOut(E18, [
-                wavax.address,
-                stableCoin.address,
-            ]);
-            const tx = await ahStrategy.forceClose(
-                openPositionId,
-                checkResult[0],
-                checkResult[1]
-            );
-            await tx.wait();
-            forceCloseMessage({ transactionHash: tx.hash });
+
+            const utilizationRatio = borrowInfo.totalBorrows
+                .mul(PERCENT_DECIMAL)
+                .div(borrowInfo.totalAvailable);
+            logger.info(`utilizationRatio ${vaultName} ${utilizationRatio}`);
+
+            if (utilizationRatio.gt(CLOSE_THRESHOLD)) {
+                logger.info(
+                    `need call ${vaultName} force close ${utilizationRatio} > ${CLOSE_THRESHOLD}`
+                );
+                const checkResult = router.getAmountsOut(E18, [
+                    wavax.address,
+                    stableCoin.address,
+                ]);
+                await syncManagerNonce();
+                const tx = await sendTransaction(ahStrategy, 'forceClose', [
+                    openPositionId,
+                    checkResult[0],
+                    checkResult[1],
+                ]);
+
+                await tx.wait();
+                forceCloseMessage({ transactionHash: tx.hash });
+            }
         }
+    } catch (e) {
+        logger.error(e);
     }
 }
 

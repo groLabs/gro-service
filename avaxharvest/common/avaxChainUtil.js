@@ -1,4 +1,5 @@
 const { ethers } = require('ethers');
+const axios = require('axios');
 const fs = require('fs');
 const { BigNumber } = require('ethers');
 const { NonceManager } = require('@ethersproject/experimental');
@@ -18,8 +19,6 @@ const {
 const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
 const { getConfig } = require('../../dist/common/configUtil');
 
-const botEnv = process.env.BOT_ENV.toLowerCase();
-// eslint-disable-next-line import/no-dynamic-require
 const logger = require('../avaxharvestLogger');
 
 const DEFAULT_PROVIDER_KEY = 'default';
@@ -42,6 +41,9 @@ const rpcProviders = {};
 const botWallets = {};
 const failedTimes = { accountBalance: 0 };
 const failedAlertTimes = getConfig('call_failed_time', false) || 2;
+const AVAXRPCURL =
+    getConfig('avalanche.rpc_url', false) ||
+    'https://api.avax.network/ext/bc/C/rpc';
 
 const network = getConfig('blockchain.network');
 logger.info(`network: ${network}`);
@@ -295,6 +297,63 @@ async function getTimestampByBlockNumber(blockNumber, provider) {
     return block.timestamp.toString();
 }
 
+async function getPriorityPrice() {
+    const body = {
+        jsonrpc: '2.0',
+        method: 'eth_maxPriorityFeePerGas',
+        params: [],
+        id: 1,
+    };
+
+    const result = { status: 0 };
+    const response = await axios({
+        method: 'post',
+        url: AVAXRPCURL,
+        data: body,
+    }).catch((error) => {
+        logger.error(error);
+        result.errorMsg = error.message;
+    });
+    if (response.data.error) {
+        result.errorMsg = response.data.error;
+    } else {
+        result.data = response.data.result;
+        result.status = 1;
+    }
+
+    return result;
+}
+
+async function sendTransaction(contract, methodName, params = []) {
+    const method = contract[methodName];
+    const priorityPriceObject = await getPriorityPrice();
+    let maxPriorityFeePerGas = BigNumber.from('250000000');
+    if (priorityPriceObject.status && priorityPriceObject.data !== '0x0') {
+        maxPriorityFeePerGas = BigNumber.from(priorityPriceObject.data);
+    } else {
+        logger.warn(
+            `Get maxPriorityFeePerGas failed for ${
+                priorityPriceObject.errorMsg || priorityPriceObject.data
+            }, uses the default maxPriorityFeePerGas: ${maxPriorityFeePerGas}`
+        );
+    }
+
+    const block = await contract.provider.getBlock('latest');
+    const { baseFeePerGas } = block;
+    const distBaseFeePerGas = baseFeePerGas
+        .mul(BigNumber.from(110))
+        .div(BigNumber.from(100));
+
+    const maxFeePerGas = distBaseFeePerGas.add(maxPriorityFeePerGas);
+    logger.info(
+        `send ${methodName} with maxPriorityFeePerGas:${maxPriorityFeePerGas} baseFeePerGas:${baseFeePerGas} distBaseFeePerGas:${distBaseFeePerGas} maxFeePerGas:${maxFeePerGas}`
+    );
+    return method(...params, {
+        maxPriorityFeePerGas,
+        maxFeePerGas,
+    });
+}
+
 module.exports = {
     getDefaultProvider,
     getWalletNonceManager,
@@ -303,4 +362,5 @@ module.exports = {
     getCurrentBlockNumber,
     getTimestampByBlockNumber,
     getAvaxRpcProvider,
+    sendTransaction,
 };
