@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ethers } from 'ethers';
 import { getAlchemyRpcProvider, getWalletNonceManager } from '../common/chainUtil';
 import { ContractCallError } from '../common/error';
@@ -58,7 +57,7 @@ const providerConnectedContracts = {};
 const managerConnectedContracts = {};
 
 function initController() {
-    const controllerAddress = getConfig('contracts.controller');
+    const controllerAddress = getConfig('contracts.controller') as string;
     controller = new ethers.Contract(
         controllerAddress,
         controllerABI,
@@ -323,7 +322,7 @@ function getOrCreateContract(
     contractInsurance,
     contractKey,
     providerKey,
-    signerKey
+    signerKey?
 ) {
     let contract;
     if (signerKey) {
@@ -359,7 +358,7 @@ function getOrCreateContracts(
     contractsInstance,
     contractKey,
     providerKey,
-    signerKey
+    signerKey?
 ) {
     let distContracts;
     if (signerKey) {
@@ -407,22 +406,22 @@ function getController(providerKey, signerKey) {
     );
 }
 
-function getInsurance(providerKey, signerKey) {
+function getInsurance(providerKey, signerKey?) {
     if (!providerKey) return insurance;
     return getOrCreateContract(insurance, 'insurance', providerKey, signerKey);
 }
 
-function getExposure(providerKey, signerKey) {
+function getExposure(providerKey, signerKey?) {
     if (!providerKey) return exposure;
     return getOrCreateContract(exposure, 'exposure', providerKey, signerKey);
 }
 
-function getVaults(providerKey, signerKey) {
+function getVaults(providerKey, signerKey?) {
     if (!providerKey) return vaults;
     return getOrCreateContracts(vaults, 'vaults', providerKey, signerKey);
 }
 
-function getCurveVault(providerKey, signerKey) {
+function getCurveVault(providerKey, signerKey?) {
     if (!providerKey) return curveVault;
     return getOrCreateContract(
         curveVault,
@@ -432,22 +431,22 @@ function getCurveVault(providerKey, signerKey) {
     );
 }
 
-function getPnl(providerKey, signerKey) {
+function getPnl(providerKey, signerKey?) {
     if (!providerKey) return pnl;
     return getOrCreateContract(pnl, 'pnl', providerKey, signerKey);
 }
 
-function getGvt(providerKey, signerKey) {
+function getGvt(providerKey, signerKey?) {
     if (!providerKey) return gvt;
     return getOrCreateContract(gvt, 'gvt', providerKey, signerKey);
 }
 
-function getPwrd(providerKey, signerKey) {
+function getPwrd(providerKey, signerKey?) {
     if (!providerKey) return pwrd;
     return getOrCreateContract(pwrd, 'pwrd', providerKey, signerKey);
 }
 
-function getLifeguard(providerKey, signerKey) {
+function getLifeguard(providerKey, signerKey?) {
     if (!providerKey) return lifeguard;
     return getOrCreateContract(lifeguard, 'lifeguard', providerKey, signerKey);
 }
@@ -456,7 +455,7 @@ function getStrategyLength() {
     return strategyLength;
 }
 
-function getDepositHandler(providerKey, signerKey) {
+function getDepositHandler(providerKey, signerKey?) {
     if (!providerKey) return depositHandler;
     return getOrCreateContract(
         depositHandler,
@@ -466,7 +465,7 @@ function getDepositHandler(providerKey, signerKey) {
     );
 }
 
-function getWithdrawHandler(providerKey, signerKey) {
+function getWithdrawHandler(providerKey, signerKey?) {
     if (!providerKey) return withdrawHandler;
     return getOrCreateContract(
         withdrawHandler,
@@ -489,7 +488,7 @@ function getVaultStableCoins() {
     return vaultStableCoins;
 }
 
-function getUnderlyTokens(providerKey, signerKey) {
+function getUnderlyTokens(providerKey, signerKey?) {
     if (!providerKey) return underlyTokens;
     return getOrCreateContracts(
         underlyTokens,
@@ -499,7 +498,7 @@ function getUnderlyTokens(providerKey, signerKey) {
     );
 }
 
-function getYearnVaults(providerKey, signerKey) {
+function getYearnVaults(providerKey, signerKey?) {
     if (!providerKey) return yearnVaults;
     return getOrCreateContracts(
         yearnVaults,

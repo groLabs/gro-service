@@ -1,3 +1,4 @@
+require('dotenv').config();
 export const registry_address = '0x5dF979799065F9c10860Ce3E2ac3e62627c6A3A5';
 export const deposit_handler_history = {
     '0x4246529D7168FE98F0530d99d93d346092bf50F1': {},

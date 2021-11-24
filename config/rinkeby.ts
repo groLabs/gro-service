@@ -1,3 +1,4 @@
+require('dotenv').config();
 export const blockchain = {
     network: 'rinkeby',
     default_api_keys: {

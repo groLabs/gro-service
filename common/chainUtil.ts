@@ -341,7 +341,7 @@ function createWallet(providerKey, walletKey) {
     return wallet;
 }
 
-function getWalletNonceManager(providerKey, accountKey) {
+function getWalletNonceManager(providerKey?, accountKey?) {
     // only for test
     const providerKeys = Object.keys(botWallets);
     for (let i = 0; i < providerKeys.length; i += 1) {

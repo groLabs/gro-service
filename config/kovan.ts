@@ -1,3 +1,4 @@
+require('dotenv').config();
 export const deposit_handler_history = {
     '0xa8eB347f14C9230637c608D6Fe64428CB15dc564': {
         abi: 'old',

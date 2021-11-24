@@ -1,3 +1,4 @@
+require('dotenv').config();
 export const blockchain = {
     alchemy: {
         api_key: 'eZY-IyppaOBeY66-RAEN2bl5Ja6I9fqF',
