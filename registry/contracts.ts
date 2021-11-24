@@ -87,6 +87,7 @@ function newSystemLatestContracts(signerInfo) {
             );
         }
     }
+    logger.info('new system latest contracts working');
     return contracts;
 }
 

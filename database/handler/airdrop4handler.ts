@@ -1,7 +1,7 @@
 import { ethers, BigNumber } from 'ethers';
 import { BigNumber as BN } from 'bignumber.js';
 import { ContractNames } from '../../registry/registry';
-import { getLatestSystemContract as getLatestContract } from '../../stats/common/contractStorage';
+import  { newSystemLatestContracts } from '../../registry/contracts'
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import { getConfig } from '../../common/configUtil';
 import { findBlockByDate } from '../common/globalUtil';
@@ -45,7 +45,16 @@ const END_SNAPSHOT_TIMESTAMP = 1633651191; // Oct-07-2021 11:59:51 PM +UTC
 const END_SNAPSHOT_DATE = moment.unix(END_SNAPSHOT_TIMESTAMP).utc();
 const END_SNAPSHOT_BLOCK = 13374853;
 
-const getLatestSystemContract = (contractName) => getLatestContract(contractName, providerKey);
+const latestSystemContracts = {};
+
+function getLatestSystemContract(contractName, providerKey) {
+    providerKey = providerKey || 'stats_gro';
+    if (!latestSystemContracts[providerKey]) {
+        latestSystemContracts[providerKey] =
+            newSystemLatestContracts(providerKey);
+    }
+    return latestSystemContracts[providerKey][contractName];
+}
 
 function printUsd(value) {
     return new BN(value.toString())
@@ -70,8 +79,8 @@ const initContracts = async () => {
     const groWethAddress = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address') as string;
 
     lpTokenStaker = new ethers.Contract(stakerAddress, LpTokenStakerABI, provider);
-    groVault = await getLatestSystemContract(ContractNames.groVault).contract;
-    groPwrd = await getLatestSystemContract(ContractNames.powerD).contract;
+    groVault = await getLatestSystemContract(ContractNames.groVault, providerKey).contract;
+    groPwrd = await getLatestSystemContract(ContractNames.powerD, providerKey).contract;
     groToken = new ethers.Contract(groAddress, GroABI, provider);
     uniswapRoute = new ethers.Contract(oracleAddress, UniswapRouteABI, provider);
     uniswapGroGvtPool = new ethers.Contract(uniPoolGroGvtAddress, UniswapABI, provider);

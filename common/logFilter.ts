@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { ethers } from 'ethers';
 import { getDepositHandler, getWithdrawHandler, getGvt as getGroVault, getPwrd as getPowerD, getUnderlyTokens } from '../contract/allContracts';
 import { ContractCallError } from './error';
@@ -113,7 +111,7 @@ async function getGTokenApprovalFilters(account, providerKey) {
     return approvalFilters;
 }
 
-function getDepositWithdrawFilter(account, type, handlerAddresses) {
+function getDepositWithdrawFilter(account, type, handlerAddresses, providerKey) {
     logger.info(
         `type: ${type}, handlerAddresses: ${JSON.stringify(handlerAddresses)}`
     );
@@ -152,12 +150,12 @@ function getDepositWithdrawFilter(account, type, handlerAddresses) {
 
     switch (type) {
         case EVENT_TYPE.deposit:
-            handlerAddress = getDepositHandler().address;
+            handlerAddress = getDepositHandler(providerKey).address;
             handler = new ethers.Contract(handlerAddress, depositHandlerABI);
             filters.push(handler.filters.LogNewDeposit(account));
             break;
         case EVENT_TYPE.withdraw:
-            handlerAddress = getWithdrawHandler().address;
+            handlerAddress = getWithdrawHandler(providerKey).address;
             handler = new ethers.Contract(handlerAddress, withdrawHandlerABI);
             filters.push(handler.filters.LogNewWithdrawal(account));
             break;
@@ -281,7 +279,8 @@ async function getDepositWithdrawEvents(
     const filters = getDepositWithdrawFilter(
         account,
         eventType,
-        handlerAddresses
+        handlerAddresses,
+        providerKey
     );
     const logs: any = [];
     const eventsPromise: any = [];
