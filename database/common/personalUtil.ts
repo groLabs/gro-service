@@ -1,4 +1,4 @@
-import ethers from 'ethers';
+import {ethers} from 'ethers';
 import moment from 'moment';
 import { ContractNames } from '../../registry/registry';
 import { getFilterEvents } from '../../common/logFilter-new';
