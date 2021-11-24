@@ -8,7 +8,7 @@ import { getPriceCheck } from '../handler/priceCheckHandler';
 import { getHistoricalAPY } from '../handler/historicalAPY';
 import { getPersonalStats } from '../handler/personalStatsHandler';
 import { dumpTable } from '../common/pgUtil';
-import { validate } from '../../stats/common/validate';
+import { validate } from '../../common/validate';
 import { personalStatsMessage } from '../../discordMessage/statsMessage';
 
 const router = express.Router();

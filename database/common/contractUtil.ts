@@ -1,11 +1,21 @@
 import { ethers } from 'ethers';
 import { getProvider, getProviderKey } from './globalUtil';
 import { ContractNames } from '../../registry/registry';
-import { getLatestSystemContract } from '../../stats/common/contractStorage';
+import  { newSystemLatestContracts } from '../../registry/contracts'
 import erc20ABI from '../../abi/ERC20.json';
 
 const stableCoins = [];
 const stableCoinsInfo: any = {};
+const latestSystemContracts = {};
+
+function getLatestSystemContract(contractName, providerKey) {
+    providerKey = providerKey || 'stats_gro';
+    if (!latestSystemContracts[providerKey]) {
+        latestSystemContracts[providerKey] =
+            newSystemLatestContracts(providerKey);
+    }
+    return latestSystemContracts[providerKey][contractName];
+}
 
 const getGroVault = () => {
     return getLatestSystemContract(ContractNames.groVault, getProviderKey())

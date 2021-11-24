@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
-import BlocksScanner from '../../stats/common/blockscanner';
+import BlocksScanner from './blockscanner';
 // default key from BOT_ENV in config file => blockchain.alchemy_api_keys.default
 const providerKey = 'default';
 const provider = getAlchemyRpcProvider(providerKey);
