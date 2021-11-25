@@ -1,37 +1,22 @@
-const { BigNumber } = require('ethers');
-const {
-    getInsurance,
-    getExposure,
-    getLifeguard,
-    getVaults,
-    getStrategyLength,
-    getVaultAndStrategyLabels,
-    getYearnVaults,
-    getController,
-    getBuoy,
-} = require('../../dist/contract/allContracts');
-const { pendingTransactions } = require('../../common/storage');
-const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService');
-const { getConfig } = require('../../dist/common/configUtil');
-const {
-    PendingTransactionError,
-    ContractCallError,
-} = require('../../dist/common/error');
-const {
-    investTriggerMessage,
-} = require('../../dist/discordMessage/investMessage');
-const {
-    rebalanceTriggerMessage,
-} = require('../../dist/discordMessage/rebalanceMessage');
-const {
-    harvestTriggerMessage,
-} = require('../../dist/discordMessage/harvestMessage');
-const {
-    distributeCurveVaultTriggerMessage,
-} = require('../../dist/discordMessage/distributeCurveMessage');
+import { BigNumber } from 'ethers';
+import { getInsurance, getExposure, getLifeguard, getVaults, getStrategyLength, getVaultAndStrategyLabels, getYearnVaults, getController, getBuoy } from '../../contract/allContracts';
+import { pendingTransactions } from '../../common/storage';
+import { MESSAGE_TYPES } from '../../common/discord/discordService';
+import { getConfig } from '../../common/configUtil';
+import { PendingTransactionError, ContractCallError } from '../../common/error';
+import { investTriggerMessage } from '../../discordMessage/investMessage';
+import { rebalanceTriggerMessage } from '../../discordMessage/rebalanceMessage';
+import { harvestTriggerMessage } from '../../discordMessage/harvestMessage';
+import { distributeCurveVaultTriggerMessage } from '../../discordMessage/distributeCurveMessage';
+
 const logger = require('../regularLogger');
 
-const NONEED_TRIGGER = { needCall: false };
+interface IInvestTrigger {
+    needCall: Boolean;
+    params?: any;
+}
+
+const NONEED_TRIGGER: IInvestTrigger = { needCall: false };
 const GAS_PRICE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(9));
 const CURVE_DISTRIBUTE_BUFFER = BigNumber.from(1);
 
@@ -103,7 +88,7 @@ async function curveInvestTrigger(vault, lifeguard) {
     );
 }
 
-async function sortStrategyByLastHarvested(vaults) {
+async function sortStrategyByLastHarvested(vaults, providerKey) {
     if (vaults.length === 0) {
         logger.info('Not fund any vault.');
         throw new ContractCallError(
@@ -123,7 +108,7 @@ async function sortStrategyByLastHarvested(vaults) {
             getVaultAndStrategyLabels()[adapterAddress].strategies;
         logger.info(`${vaultName}: ${adapterAddress}`);
         const vault = vaults[i];
-        const yearnVault = getYearnVaults()[i];
+        const yearnVault = getYearnVaults(providerKey)[i];
         const strategyLength = vaultsStrategyLength[i];
         logger.info(`strategyLength: ${strategyLength}`);
         for (let j = 0; j < strategyLength; j += 1) {
@@ -201,7 +186,7 @@ async function investTrigger(providerKey, walletKey) {
         )
     );
     const result = await Promise.all(triggerPromises);
-    const strategies = await sortStrategyByLastHarvested(vaults);
+    const strategies = await sortStrategyByLastHarvested(vaults, providerKey);
     let needInvestIndex = -1;
     const orderedVaults = [];
     for (let i = 0; i < strategies.length; i += 1) {
@@ -287,7 +272,7 @@ async function harvestOneTrigger(providerKey, walletKey) {
     }
 
     const vaults = getVaults(providerKey, walletKey);
-    const strategies = await sortStrategyByLastHarvested(vaults);
+    const strategies = await sortStrategyByLastHarvested(vaults, providerKey);
     const gasPrice = await vaults[0].signer.getGasPrice();
     logger.info(`gasPrice ${gasPrice}`);
     for (let i = 0; i < strategies.length; i += 1) {
@@ -464,7 +449,7 @@ async function distributeCurveVaultTrigger(providerKey, walletKey) {
     return distributeCurveVaultTriggerResult;
 }
 
-module.exports = {
+export {
     investTrigger,
     harvestOneTrigger,
     rebalanceTrigger,

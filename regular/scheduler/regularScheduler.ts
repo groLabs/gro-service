@@ -1,58 +1,22 @@
-const schedule = require('node-schedule');
-const {
-    syncManagerNonce,
-    checkAccountsBalance,
-    getCurrentBlockNumber,
-} = require('../../dist/common/chainUtil');
-const { checkServerHealth } = require('../../dist/common/checkBotHealth');
-const {
-    checkPendingTransactions,
-    syncPendingTransactions,
-} = require('../../dist/common/pendingTransaction');
-const { pendingTransactions } = require('../../common/storage');
-const {
-    sendErrorMessageToLogChannel,
-} = require('../../dist/common/discord/discordService');
-const { pendingTransactionResend } = require('../../dist/gasPrice/transaction');
-const {
-    investTrigger,
-    rebalanceTrigger,
-    harvestOneTrigger,
-    distributeCurveVaultTrigger,
-} = require('../handler/triggerHandler');
-const {
-    invest,
-    rebalance,
-    harvest,
-    curveInvest,
-    priceSafetyCheck,
-    distributeCurveVault,
-} = require('../handler/actionHandler');
+import schedule from 'node-schedule';
+import { syncManagerNonce, checkAccountsBalance, getCurrentBlockNumber } from '../../common/chainUtil';
+import { checkServerHealth } from '../../common/checkBotHealth';
+import { checkPendingTransactions, syncPendingTransactions } from '../../common/pendingTransaction';
+import { pendingTransactions } from '../../common/storage';
+import { sendErrorMessageToLogChannel } from '../../common/discord/discordService';
+import { pendingTransactionResend } from '../../gasPrice/transaction';
+import { investTrigger, rebalanceTrigger, harvestOneTrigger, distributeCurveVaultTrigger } from '../handler/triggerHandler';
+import { invest, rebalance, harvest, curveInvest, priceSafetyCheck, distributeCurveVault } from '../handler/actionHandler';
+import { getVaults, getStrategyLength } from '../../contract/allContracts';
+import { getConfig } from '../../common/configUtil';
+import { investTransactionMessage } from '../../discordMessage/investMessage';
+import { pnlTransactionMessage } from '../../discordMessage/pnlMessage';
+import { rebalanceTransactionMessage } from '../../discordMessage/rebalanceMessage';
+import { harvestTransactionMessage } from '../../discordMessage/harvestMessage';
+import { updatePriceTransactionMessage } from '../../discordMessage/otherMessage';
+import { distributeCurveVaultTransactionMessage } from '../../discordMessage/distributeCurveMessage';
+import { sendAlertMessage } from '../../common/alertMessageSender';
 
-const {
-    getVaults,
-    getStrategyLength,
-} = require('../../dist/contract/allContracts');
-const { getConfig } = require('../../dist/common/configUtil');
-const {
-    investTransactionMessage,
-} = require('../../dist/discordMessage/investMessage');
-const {
-    pnlTransactionMessage,
-} = require('../../dist/discordMessage/pnlMessage');
-const {
-    rebalanceTransactionMessage,
-} = require('../../dist/discordMessage/rebalanceMessage');
-const {
-    harvestTransactionMessage,
-} = require('../../dist/discordMessage/harvestMessage');
-const {
-    updatePriceTransactionMessage,
-} = require('../../dist/discordMessage/otherMessage');
-const {
-    distributeCurveVaultTransactionMessage,
-} = require('../../dist/discordMessage/distributeCurveMessage');
-const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
 const logger = require('../regularLogger');
 
 const pendingTransactionSchedulerSetting =
@@ -412,6 +376,6 @@ function startRegularJobs() {
     curveExposureMaintenanceScheduler();
 }
 
-module.exports = {
+export default {
     startRegularJobs,
 };

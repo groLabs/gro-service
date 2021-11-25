@@ -1,13 +1,14 @@
 require('dotenv').config();
-const createError = require('http-errors');
-const express = require('express');
-const path = require('path');
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
-const actuator = require('express-actuator');
+import createError from 'http-errors';
+import express from 'express';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
+import actuator from 'express-actuator';
 
-const { initAllContracts } = require('../dist/contract/allContracts');
-const scheduler = require('./scheduler/regularScheduler');
+import { initAllContracts } from '../contract/allContracts';
+import scheduler from './scheduler/regularScheduler';
+
 const regularLogger = require('./regularLogger');
 
 const app = express();

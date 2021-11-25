@@ -88,7 +88,7 @@ async function pendingTransactionResend(type, oldTransaction) {
     );
 }
 
-module.exports = {
+export {
     wrapSendTransaction,
     pendingTransactionResend,
 };
