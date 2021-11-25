@@ -99,7 +99,7 @@ async function getReceipt(type) {
     return { type, msgLabel, hash, transactionReceipt, additionalData: result };
 }
 
-async function checkPendingTransactions(types) {
+async function checkPendingTransactions(types?) {
     logger.info(`pendingTransactions.size: ${pendingTransactions.size}`);
     let result: any = [];
     if (!pendingTransactions.size) return result;

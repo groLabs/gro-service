@@ -1,5 +1,6 @@
-const config = require('config');
-const { createLogger, format, transports } = require('winston');
+import config from 'config';
+import { createLogger, format, transports, LoggerOptions } from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
 const { combine, timestamp, printf, errors } = format;
 require('winston-daily-rotate-file');
@@ -16,6 +17,10 @@ const logMsgFormat = printf(({ level, message, timestamp, stack }) => {
     }
     return `${timestamp} ${level}: ${message}`;
 });
+
+interface IRegularLoggerOptions extends LoggerOptions {
+    rejectionHandlers: DailyRotateFile[];
+}
 
 const regularLogger = createLogger({
     format: combine(errors({ stack: true }), timestamp(), logMsgFormat),
@@ -63,7 +68,7 @@ const regularLogger = createLogger({
         }),
     ],
     exitOnError: false,
-});
+} as IRegularLoggerOptions);
 
 if (process.env.NODE_ENV !== 'production') {
     regularLogger.add(

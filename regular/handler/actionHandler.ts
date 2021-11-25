@@ -1,35 +1,16 @@
-const {
-    getController,
-    getInsurance,
-    getLifeguard,
-    getVaults,
-    getVaultAndStrategyLabels,
-    getCurveVault,
-    getBuoy,
-} = require('../../dist/contract/allContracts');
-const { pendingTransactions } = require('../../common/storage');
-const {
-    addPendingTransaction,
-} = require('../../dist/common/pendingTransaction');
-const {
-    ContractSendError,
-    ContractCallError,
-} = require('../../dist/common/error');
-const { getWalletNonceManager } = require('../../dist/common/chainUtil');
-const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService');
-const { investMessage } = require('../../dist/discordMessage/investMessage');
-const {
-    rebalanceMessage,
-} = require('../../dist/discordMessage/rebalanceMessage');
-const { harvestMessage } = require('../../dist/discordMessage/harvestMessage');
-const {
-    withdrawMessage,
-    distributeMessage,
-} = require('../../dist/discordMessage/distributeCurveMessage');
-const {
-    safetyCheckMessage,
-} = require('../../dist/discordMessage/otherMessage');
-const { wrapSendTransaction } = require('../../dist/gasPrice/transaction');
+import { getController, getInsurance, getLifeguard, getVaults, getVaultAndStrategyLabels, getCurveVault, getBuoy } from '../../contract/allContracts';
+import { pendingTransactions } from '../../common/storage';
+import { addPendingTransaction } from '../../common/pendingTransaction';
+import { ContractSendError, ContractCallError } from '../../common/error';
+import { getWalletNonceManager } from '../../common/chainUtil';
+import { MESSAGE_TYPES } from '../../common/discord/discordService';
+import { investMessage } from '../../discordMessage/investMessage';
+import { rebalanceMessage } from '../../discordMessage/rebalanceMessage';
+import { harvestMessage } from '../../discordMessage/harvestMessage';
+import { withdrawMessage, distributeMessage } from '../../discordMessage/distributeCurveMessage';
+import { safetyCheckMessage } from '../../discordMessage/otherMessage';
+import { wrapSendTransaction } from '../../gasPrice/transaction';
+
 const logger = require('../regularLogger');
 
 async function adapterInvest(
@@ -46,7 +27,7 @@ async function adapterInvest(
     console.log(`pendingTransactions: ${JSON.stringify(pendingTransactions)}`);
     const pendingKeys = Object.keys(pendingTransactions);
     for (let i = 0; i < pendingKeys.length; i += 1) {
-        if (pendingKeys[i].startWith(`harvest-${vault.address}`)) {
+        if (pendingKeys[i].startsWith(`harvest-${vault.address}`)) {
             const pendingHarvest = pendingTransactions.get(pendingKeys[i]);
             const currentNonce = pendingHarvest.transactionRequest.nonce;
             const result = `Already has pending harvest for ${vaultName}:${
@@ -295,7 +276,7 @@ async function distributeCurveVault(
     distributeMessage({ transactionHash: distributeCurveVaultResponse.hash });
 }
 
-module.exports = {
+export {
     invest,
     curveInvest,
     harvest,
