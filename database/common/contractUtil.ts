@@ -4,6 +4,9 @@ import { ContractNames } from '../../registry/registry';
 import  { newSystemLatestContracts } from '../../registry/contracts'
 import erc20ABI from '../../abi/ERC20.json';
 
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const logger = require(`../../${botEnv}/${botEnv}Logger`);
+
 const stableCoins = [];
 const stableCoinsInfo: any = {};
 const latestSystemContracts = {};
