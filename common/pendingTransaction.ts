@@ -1,5 +1,5 @@
 import { pendingTransactions } from './storage';
-import { readPendingTransaction, updatePendingTransaction } from './fileUtils.js';
+import { readPendingTransaction, updatePendingTransaction } from './fileUtils';
 import { getVaultStableCoins } from '../contract/allContracts';
 import { getAlchemyRpcProvider } from './chainUtil';
 import { BlockChainCallError } from './error';
