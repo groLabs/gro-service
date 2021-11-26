@@ -20,7 +20,6 @@ function harvestScheduler() {
     schedule.scheduleJob(harvestSchedulerSetting, async () => {
         try {
             const vaults = getVaults();
-            console.log(`length ${vaults.length}`);
             const txs = [];
             for (let i = 0; i < vaults.length; i += 1) {
                 console.log(
@@ -28,7 +27,7 @@ function harvestScheduler() {
                 );
                 txs.push(harvest(vaults[i]));
             }
-            await txs;
+            await Promise.all(txs);
         } catch (error) {
             sendErrorMessageToLogChannel(error);
             const discordMessage = {
@@ -51,7 +50,7 @@ function tendScheduler() {
             for (let i = 0; i < vaults.length; i += 1) {
                 txs.push(tend(vaults[i]));
             }
-            await txs;
+            await Promise.all(txs);
         } catch (error) {
             sendErrorMessageToLogChannel(error);
             const discordMessage = {
@@ -74,7 +73,7 @@ function forceCloseScheduler() {
             for (let i = 0; i < vaults.length; i += 1) {
                 txs.push(forceClose(vaults[i]));
             }
-            await txs;
+            await Promise.all(txs);
         } catch (error) {
             sendErrorMessageToLogChannel(error);
             const discordMessage = {

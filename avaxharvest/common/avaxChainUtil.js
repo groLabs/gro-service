@@ -110,7 +110,7 @@ function getNonceManager() {
         botWallet = botWallet.connect(provider);
     }
 
-    defaultWalletManager = new NonceManager(botWallet);
+    defaultWalletManager = botWallet; //new NonceManager(botWallet);
     botWallets.default = { default: defaultWalletManager };
 
     logger.info(`Created default wallet manager : ${botWallet.address}`);
@@ -177,7 +177,7 @@ function getWalletNonceManager(providerKey, accountKey) {
     walletNonceManager = providerAccounts[accountKey];
     if (!walletNonceManager) {
         const wallet = createWallet(providerKey, accountKey);
-        walletNonceManager = new NonceManager(wallet);
+        walletNonceManager = wallet; //new NonceManager(wallet);
         providerAccounts[accountKey] = walletNonceManager;
     }
     return walletNonceManager;
@@ -348,10 +348,48 @@ async function sendTransaction(contract, methodName, params = []) {
     logger.info(
         `send ${methodName} with maxPriorityFeePerGas:${maxPriorityFeePerGas} baseFeePerGas:${baseFeePerGas} distBaseFeePerGas:${distBaseFeePerGas} maxFeePerGas:${maxFeePerGas}`
     );
-    return method(...params, {
+    const promise = await method(...params, {
         maxPriorityFeePerGas,
         maxFeePerGas,
     });
+    return promise.wait();
+}
+
+function sleep(ms) {
+    // add ms millisecond timeout before promise resolution
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function sendTransactionWithRetry(contract, methodName, params = []) {
+    logger.info(`${methodName}: params: ${JSON.stringify(params)}`);
+    let retryTimes = 0;
+    while (true) {
+        if (retryTimes > 2) {
+            throw new Error(
+                `${methodName} resend: ${retryTimes}. doesn't send again`
+            );
+        }
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            const transactionResult = await sendTransaction(
+                contract,
+                methodName,
+                params
+            );
+            if (transactionResult.status) {
+                return transactionResult;
+            }
+            logger.info(`${methodName} reverted, resend: ${retryTimes}`);
+        } catch (error) {
+            logger.info(
+                `Send ${methodName} error: ${error.message},resend: ${retryTimes} `
+            );
+        }
+
+        retryTimes += 1;
+        // eslint-disable-next-line no-await-in-loop
+        await sleep(1000);
+    }
 }
 
 module.exports = {
@@ -363,4 +401,5 @@ module.exports = {
     getTimestampByBlockNumber,
     getAvaxRpcProvider,
     sendTransaction,
+    sendTransactionWithRetry,
 };

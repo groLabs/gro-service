@@ -2,10 +2,7 @@ const { BigNumber } = require('ethers');
 const { getRouter, getWavax } = require('../contract/avaxAllContracts');
 const { harvestMessage } = require('../../dist/discordMessage/harvestMessage');
 const { borrowLimit } = require('./borrowLimitHandler');
-const {
-    syncManagerNonce,
-    sendTransaction,
-} = require('../common/avaxChainUtil');
+const { sendTransaction } = require('../common/avaxChainUtil');
 const logger = require('../avaxharvestLogger');
 const E18 = BigNumber.from('1000000000000000000');
 
@@ -29,7 +26,7 @@ async function harvest(vault) {
         const harvestTrigger = await ahStrategy.harvestTrigger(
             callCostWithPrice
         );
-        logger.info(`harvestTrigger ${harvestTrigger}`);
+        logger.info(`${vaultName} harvestTrigger ${harvestTrigger}`);
         if (harvestTrigger) {
             // 1. get balance of want in vaultAdaptor and startegy
             // const balanceOfWantInVaultAdaptor = await stableCoin.balanceOf(
@@ -62,18 +59,17 @@ async function harvest(vault) {
             logger.info(
                 `amm check ${vaultName} ${checkResult[0]} ${checkResult[1]}`
             );
-            await syncManagerNonce();
+
             const tx = await sendTransaction(
                 vaultAdaptorMK2,
                 'strategyHarvest',
                 [0, checkResult[0], checkResult[1]]
             );
-            await tx.wait();
             harvestMessage({
                 vaultName,
                 strategyName,
                 vaultAddress: vaultAdaptorMK2.address,
-                transactionHash: tx.hash,
+                transactionHash: tx.transactionHash,
                 strategyAddress: ahStrategy.address,
             });
         }

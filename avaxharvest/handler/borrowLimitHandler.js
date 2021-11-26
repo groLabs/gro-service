@@ -5,10 +5,7 @@ const {
     getCrToken,
 } = require('../contract/avaxAllContracts');
 const { getConfig } = require('../../dist/common/configUtil');
-const {
-    syncManagerNonce,
-    sendTransaction,
-} = require('../common/avaxChainUtil');
+const { sendTransaction } = require('../common/avaxChainUtil');
 const {
     forceCloseMessage,
     updateLimitMessage,
@@ -69,12 +66,10 @@ async function borrowLimit(vault) {
     const newBorrowLimitWant = newBorrowLimit.mul(checkResult[1]).div(E18);
     logger.info(`newBorrowLimitWant ${newBorrowLimitWant}`);
 
-    await syncManagerNonce();
     const tx = await sendTransaction(ahStrategy, 'setBorrowLimit', [
         newBorrowLimitWant,
     ]);
-    await tx.wait();
-    updateLimitMessage({ transactionHash: tx.hash });
+    updateLimitMessage({ transactionHash: tx.transactionHash });
 }
 
 async function forceClose(vault) {
@@ -99,19 +94,18 @@ async function forceClose(vault) {
                 logger.info(
                     `need call ${vaultName} force close ${utilizationRatio} > ${CLOSE_THRESHOLD}`
                 );
-                const checkResult = router.getAmountsOut(E18, [
+                const checkResult = await router.getAmountsOut(E18, [
                     wavax.address,
                     stableCoin.address,
                 ]);
-                await syncManagerNonce();
+
                 const tx = await sendTransaction(ahStrategy, 'forceClose', [
                     openPositionId,
                     checkResult[0],
                     checkResult[1],
                 ]);
 
-                await tx.wait();
-                forceCloseMessage({ transactionHash: tx.hash });
+                forceCloseMessage({ transactionHash: tx.transactionHash });
             }
         }
     } catch (e) {
