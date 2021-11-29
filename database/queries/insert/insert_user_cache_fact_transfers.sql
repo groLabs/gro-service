@@ -20,6 +20,7 @@ INSERT INTO gro."USER_CACHE_FACT_TRANSFERS" (
         "dai_amount",
         "usdc_amount",
         "usdt_amount",
+        "gro_amount",
         "creation_date"
     )
 SELECT d."block_number",
@@ -42,6 +43,7 @@ SELECT d."block_number",
     d."dai_amount",
     d."usdc_amount",
     d."usdt_amount",
+    d."gro_amount",
     d."creation_date"
 FROM gro."USER_CACHE_TMP_DEPOSITS" d
     LEFT JOIN gro."ETH_BLOCKS" b ON d.block_number = b.block_number
@@ -67,6 +69,7 @@ SELECT w."block_number",
     w."dai_amount",
     w."usdc_amount",
     w."usdt_amount",
+    w."gro_amount",
     w."creation_date"
 FROM gro."USER_CACHE_TMP_WITHDRAWALS" w
     LEFT JOIN gro."ETH_BLOCKS" b ON w.block_number = b.block_number
