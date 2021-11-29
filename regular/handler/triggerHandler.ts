@@ -1,5 +1,15 @@
 import { BigNumber } from 'ethers';
-import { getInsurance, getExposure, getLifeguard, getVaults, getStrategyLength, getVaultAndStrategyLabels, getYearnVaults, getController, getBuoy } from '../../contract/allContracts';
+import {
+    getInsurance,
+    getExposure,
+    getLifeguard,
+    getVaults,
+    getStrategyLength,
+    getVaultAndStrategyLabels,
+    getYearnVaults,
+    getController,
+    getBuoy,
+} from '../../contract/allContracts';
 import { pendingTransactions } from '../../common/storage';
 import { MESSAGE_TYPES } from '../../common/discord/discordService';
 import { getConfig } from '../../common/configUtil';
@@ -86,6 +96,7 @@ async function curveInvestTrigger(vault, lifeguard) {
     logger.info(
         `${vaultName} : ${vault.address} invest trigger: ${investTriggerResult}`
     );
+    return investTriggerResult;
 }
 
 async function sortStrategyByLastHarvested(vaults, providerKey) {
@@ -116,14 +127,14 @@ async function sortStrategyByLastHarvested(vaults, providerKey) {
             const callCostKey = `harvest_callcost.vault_${i}.strategy_${j}`;
             const baseCallCost = BigNumber.from(getConfig(callCostKey, false));
             const callCost = baseCallCost.mul(gasPrice);
-            logger.info(`callCost ${j} ${callCost}`);
-
             // eslint-disable-next-line no-await-in-loop
             const triggerResult = await vault.strategyHarvestTrigger(
                 j,
                 callCost
             );
-            logger.info(`triggerResult ${triggerResult}`);
+            logger.info(
+                `vault: ${i}, strategy: ${j}, callcost: ${callCost}, triggerResult ${triggerResult}`
+            );
             // eslint-disable-next-line no-await-in-loop
             const strategyParam = await yearnVault.strategies(
                 strategyArray[j].address
@@ -292,7 +303,6 @@ async function harvestOneTrigger(providerKey, walletKey) {
             const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${strategyIndex}`;
             const baseCallCost = BigNumber.from(getConfig(callCostKey, false));
             const callCost = baseCallCost.mul(gasPrice);
-            logger.info(`callCost ${callCost}`);
             return {
                 needCall: true,
                 params: {

@@ -163,7 +163,8 @@ function createInfruraRpcProvider() {
 function createPrivateProvider() {
     if (!privateProvider) {
         logger.info('Create private provider.');
-        privateProvider = new PrivateProvider(network);
+        const rpcURL = 'https://rpc.ethermine.org';
+        privateProvider = new ethers.providers.JsonRpcProvider(rpcURL);
     }
     return privateProvider;
 }
