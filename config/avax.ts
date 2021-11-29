@@ -69,8 +69,8 @@ export const blockchain = {
     },
 };
 export const trigger_scheduler = {
-    tend: '*/10 * * * * *',
-    harvest: '*/10 * * * * *',
+    tend: '10 * * * * *',
+    harvest: '20 30 * * * *',
     force_close: '*/10 * * * * *',
 };
 
@@ -103,39 +103,39 @@ export const emoji = {
 
 export const log_folder = '../logs';
 export const limit_factor = 900000;
-export const force_close_threshold = 950000;
+export const force_close_threshold = 990000;
 export const contracts = {
     vaults: [
-        {
-            stable_coin: '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
-            vault_adaptor: '0x0B2E717e1f11c8294A655D6A235F8D1AD7ef395a',
-            strategy: '0x5D1294Eba42438C2742697f9Fc6aa455622C5292',
-            gas_cost: '1000000',
-            wallet_key: 'dai',
-            vault_name: 'DAI yVault',
-            strategy_name: 'AH',
-            decimals: 18,
-        },
+        // {
+        //     stable_coin: '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
+        //     vault_adaptor: '0x0B2E717e1f11c8294A655D6A235F8D1AD7ef395a',
+        //     strategy: '0x2818E1C8E658245417cE563C143aEE849e702CA6',
+        //     gas_cost: '1000000',
+        //     wallet_key: 'dai',
+        //     vault_name: 'DAI yVault',
+        //     strategy_name: 'AH',
+        //     decimals: 18,
+        // },
         {
             stable_coin: '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
             vault_adaptor: '0x48cB6fD436D34A909523A74de8f82d6bF59E6A3C',
-            strategy: '0xF446480a77A837353873078D209e571eF2293B31',
+            strategy: '0x855b33E57d0CdF28F089FC6d9d38A4B45Ef6C2DC',
             gas_cost: '1000000',
             wallet_key: 'usdc',
             vault_name: 'USDC yVault',
             strategy_name: 'AH',
             decimals: 6,
         },
-        {
-            stable_coin: '0xc7198437980c041c805A1EDcbA50c1Ce5db95118',
-            vault_adaptor: '0x720e5ecfe240a65ca236e5Ec626f91036Ecc260d',
-            strategy: '0x5ee227C35ec7f70a2406e4b9D623a709277ee9aD',
-            gas_cost: '1000000',
-            wallet_key: 'usdt',
-            vault_name: 'USDT yVault',
-            strategy_name: 'AH',
-            decimals: 6,
-        },
+        // {
+        //     stable_coin: '0xc7198437980c041c805A1EDcbA50c1Ce5db95118',
+        //     vault_adaptor: '0x720e5ecfe240a65ca236e5Ec626f91036Ecc260d',
+        //     strategy: '0xb34752775B24e016d00FF646a9e9Ab7329C0e22F',
+        //     gas_cost: '1000000',
+        //     wallet_key: 'usdt',
+        //     vault_name: 'USDT yVault',
+        //     strategy_name: 'AH',
+        //     decimals: 6,
+        // },
     ],
     crtoken: '0xb3c68d69E95B095ab4b33B4cB67dBc0fbF3Edf56',
     avax_aggregator: '0x0A77230d17318075983913bC2145DB16C7366156',

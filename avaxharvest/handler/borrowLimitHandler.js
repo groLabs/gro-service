@@ -39,15 +39,19 @@ async function getBorrowInfo() {
 }
 
 async function borrowLimit(vault) {
-    const { stableCoin, ahStrategy } = vault;
+    const { stableCoin, ahStrategy, vaultName } = vault;
     const wavax = getWavax();
     const router = getRouter();
     const borrowInfo = await getBorrowInfo();
-    const openPositionId = ahStrategy.activePosition();
+    const openPositionId = await ahStrategy.activePosition();
+    logger.info(`openPositionId ${vaultName} ${openPositionId}`);
     let wantOpen = BigNumber.from(0);
     if (openPositionId > 0) {
-        const positionData = await ahStrategy.positions(openPositionId);
-        wantOpen = positionData.wantOpen[0];
+        const positionData = await ahStrategy.getPosition(openPositionId);
+        logger.info(
+            `openPositionId ${vaultName} ${openPositionId} ${positionData[0]} ${positionData[1]} ${positionData[2]}`
+        );
+        wantOpen = positionData[2][1];
     }
     const availableAmount = borrowInfo.totalAvailable.sub(
         borrowInfo.totalBorrows.sub(wantOpen)

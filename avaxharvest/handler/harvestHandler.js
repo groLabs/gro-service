@@ -22,36 +22,32 @@ async function harvest(vault) {
         const wavax = getWavax();
         const gasPrice = await vaultAdaptorMK2.signer.getGasPrice();
         logger.info(`gasPrice ${gasCost} ${gasPrice}`);
-        const callCostWithPrice = gasCost.mul(gasPrice);
+        // const callCostWithPrice = gasCost.mul(gasPrice);
+        const callCostWithPrice = BigNumber.from(5000);
         const harvestTrigger = await ahStrategy.harvestTrigger(
             callCostWithPrice
         );
-        logger.info(`${vaultName} harvestTrigger ${harvestTrigger}`);
+        logger.info(`harvestTrigger ${vaultName} ${harvestTrigger}`);
+        const balVault = await stableCoin.balanceOf(vaultAdaptorMK2.address);
+        const balStrategy = await stableCoin.balanceOf(ahStrategy.address);
+        logger.info(`assets in ${vaultName} ${balVault} ${balStrategy}`);
+
+        const openPositionId = await ahStrategy.activePosition();
+        if (openPositionId > 0) {
+            const positionData = await ahStrategy.getPosition(openPositionId);
+            logger.info(
+                `wantOpen ${vaultName} ${positionData.wantOpen[0]} ${positionData.wantOpen[1]}`
+            );
+            logger.info(`totalClose ${vaultName} ${positionData.totalClose}`);
+            logger.info(`collId ${vaultName} ${positionData.collId}`);
+            logger.info(`collateral ${vaultName} ${positionData.collateral}`);
+
+            const pendingYield = await ahStrategy.pendingYieldToken(
+                openPositionId
+            );
+            logger.info(`pendingYield ${vaultName} ${pendingYield}`);
+        }
         if (harvestTrigger) {
-            // 1. get balance of want in vaultAdaptor and startegy
-            // const balanceOfWantInVaultAdaptor = await stableCoin.balanceOf(
-            //     vaultAdaptorMK2.address
-            // );
-            // logger.info(
-            //     `balanceOfWantInVaultAdaptor ${balanceOfWantInVaultAdaptor}`
-            // );
-
-            // // 2. get wantOpen in strategy
-            // const openPositionId = await ahStrategy.activePosition();
-            // let wantOpen = BigNumber.from(0);
-            // if (openPositionId > 0) {
-            //     const positionData = await ahStrategy.positions(openPositionId);
-            //     wantOpen = positionData.wantOpen[0];
-            // }
-            // logger.info(`wantOpen ${wantOpen}`);
-
-            // // 3. calculate max of above
-            // const check = balanceOfWantInVaultAdaptor.gt(wantOpen)
-            //     ? balanceOfWantInVaultAdaptor
-            //     : wantOpen;
-            // logger.info(`check ${check}`);
-
-            // 4. get minAmount - 0.5 %
             const checkResult = await router.getAmountsOut(decimals, [
                 stableCoin.address,
                 wavax.address,

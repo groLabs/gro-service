@@ -8,7 +8,7 @@ const { sendTransaction } = require('../common/avaxChainUtil');
 const { borrowLimit } = require('./borrowLimitHandler');
 
 const { getConfig } = require('../../dist/common/configUtil');
-const { tendMessage } = require('../../discordMessage/avaxMessage');
+const { tendMessage } = require('../../dist/discordMessage/avaxMessage');
 const logger = require('../avaxharvestLogger');
 
 const CHAINLINK_DECIMAL = BigNumber.from('100000000');
@@ -19,7 +19,7 @@ const LOWER = BigNumber.from(980000);
 
 async function tend(vault) {
     try {
-        await borrowLimit(vault);
+        // await borrowLimit(vault);
         const { stableCoin, ahStrategy, gasCost, vaultName } = vault;
         const router = getRouter();
         const wavax = getWavax();
