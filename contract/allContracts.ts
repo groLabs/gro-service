@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 import { getAlchemyRpcProvider, getWalletNonceManager } from '../common/chainUtil';
 import { ContractCallError } from '../common/error';
 import { getConfig } from '../common/configUtil';
+import { Controller, Insurance, PnL, Vault, Exposure, Strategy, VaultAdaptorYearnV2032 as VaultAdaptor, DepositHandler, WithdrawHandler, LifeGuard3Pool, Buoy3Pool as Buoy , ERC20, RebasingGToken, NonRebasingGToken} from './types'
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 const nodeEnv = process.env.NODE_ENV?.toLowerCase();
@@ -36,23 +37,23 @@ const strategyABI = require('./abis/Strategy.json');
 
 const nonceManager = getWalletNonceManager();
 
-let controller;
-let insurance;
-let exposure;
-let pnl;
-let gvt;
-let pwrd;
-let depositHandler;
-let withdrawHandler;
-let lifeguard;
-let buoy;
-let curveVault;
+let controller: Controller;
+let insurance: Insurance;
+let exposure: Exposure;
+let pnl: PnL;
+let gvt: NonRebasingGToken;
+let pwrd: RebasingGToken;
+let depositHandler: DepositHandler;
+let withdrawHandler: WithdrawHandler;
+let lifeguard: LifeGuard3Pool;
+let buoy: Buoy;
+let curveVault: VaultAdaptor;
 const vaults = [];
-const underlyTokens = [];
+const underlyTokens : ERC20[] = [];
 const strategyLength = [];
 const vaultAndStrategyLabels = {};
 const vaultStableCoins = { tokens: {}, decimals: {}, symbols: {} };
-const yearnVaults = [];
+const yearnVaults: Vault[] = [];
 const providerConnectedContracts = {};
 const managerConnectedContracts = {};
 
@@ -62,7 +63,7 @@ function initController() {
         controllerAddress,
         controllerABI,
         nonceManager
-    );
+    ) as Controller;
     logger.info('controller done!');
 }
 
@@ -73,17 +74,17 @@ async function initInsurance() {
         insuranceAddress,
         insuranceABI,
         nonceManager
-    );
+    ) as Insurance;
 
     const exposureAddress = await insurance.exposure();
     logger.info(`exposure address: ${exposureAddress}`);
-    exposure = new ethers.Contract(exposureAddress, exposureABI, nonceManager);
+    exposure = new ethers.Contract(exposureAddress, exposureABI, nonceManager) as Exposure;
 }
 
 async function initPnl() {
     const pnlAddress = await controller.pnl();
     logger.info(`pnl address: ${pnlAddress}`);
-    pnl = new ethers.Contract(pnlAddress, pnlABI, nonceManager);
+    pnl = new ethers.Contract(pnlAddress, pnlABI, nonceManager) as PnL;
 }
 
 async function initVaultStrategyLabel(
@@ -110,7 +111,7 @@ async function initVaultStrategyLabel(
         yearnVaultAddress,
         VaultABI,
         nonceManager
-    );
+    ) as Vault;
     yearnVaults.push(yearnVault);
     const strategiesAddressesPromise = [];
     for (let i = 0; i < strategyLength; i += 1) {
@@ -127,7 +128,7 @@ async function initVaultStrategyLabel(
                 strategyAddresses[j],
                 strategyABI,
                 nonceManager
-            ),
+            ) as Strategy,
         });
     }
 }
@@ -146,7 +147,7 @@ async function initVaults() {
             address,
             vaultAdapterABI,
             nonceManager
-        );
+        ) as VaultAdaptor;
         vaults.push(vault);
         // eslint-disable-next-line no-await-in-loop
         const strategiesLength = await vault.getStrategiesLength();
@@ -162,7 +163,7 @@ async function initVaults() {
         curveVaultAddress,
         vaultAdapterABI,
         nonceManager
-    );
+    ) as VaultAdaptor;
     vaults.push(tcurveVault);
     const curveVaultStrategyLength = await tcurveVault.getStrategiesLength();
     logger.info(
@@ -179,7 +180,7 @@ async function initCurveVault() {
         curveVaultAddress,
         vaultAdapterABI,
         nonceManager
-    );
+    ) as VaultAdaptor;
 }
 
 function renameDuplicatedFactorEntry(abi) {
@@ -201,7 +202,7 @@ async function initGvt() {
         gvtAddresses,
         renameDuplicatedFactorEntry(gvtABI),
         nonceManager
-    );
+    ) as NonRebasingGToken;
     const symbio = await gvt.symbol();
     const decimals = await gvt.decimals();
     vaultStableCoins.decimals[gvtAddresses] = decimals.toString();
@@ -215,7 +216,7 @@ async function initPwrd() {
         pwrdAddresses,
         renameDuplicatedFactorEntry(pwrdABI),
         nonceManager
-    );
+    ) as RebasingGToken;
     const symbio = await pwrd.symbol();
     const decimals = await pwrd.decimals();
     vaultStableCoins.decimals[pwrdAddresses] = decimals.toString();
@@ -229,7 +230,7 @@ async function initDepositHandler() {
         depositHandlerAddress,
         depositHandlerABI,
         nonceManager
-    );
+    ) as DepositHandler;
 }
 
 async function initWithdrawHandler() {
@@ -239,7 +240,7 @@ async function initWithdrawHandler() {
         withdrawHandlerAddress,
         withdrawHandlerABI,
         nonceManager
-    );
+    ) as WithdrawHandler;
 }
 
 async function initLifeguard() {
@@ -249,11 +250,11 @@ async function initLifeguard() {
         lifeguardAddresses,
         lifeguardABI,
         nonceManager
-    );
+    ) as LifeGuard3Pool;
 
     const buoyAddresses = await lifeguard.buoy();
     logger.info(`bouy address: ${buoyAddresses}`);
-    buoy = new ethers.Contract(buoyAddresses, buoyABI, nonceManager);
+    buoy = new ethers.Contract(buoyAddresses, buoyABI, nonceManager) as Buoy;
 }
 
 async function initVaultStableCoins() {
@@ -265,7 +266,7 @@ async function initVaultStableCoins() {
         const token = await vaults[i].token();
         vaultStableCoins.tokens[vaults[i].address] = [token];
         vaultStableCoins.tokens[vaults[lastIndex].address].push(token);
-        const stableCoin = new ethers.Contract(token, erc20ABI, nonceManager);
+        const stableCoin = new ethers.Contract(token, erc20ABI, nonceManager) as ERC20;
         underlyTokens.push(stableCoin);
         // eslint-disable-next-line no-await-in-loop
         const decimals = await stableCoin.decimals();
