@@ -1,4 +1,5 @@
 import { etlGroStats, etlGroStatsHDL } from './etl/etlGroStats';
+import { etlGroStatsMC } from './etl/etlGroStatsMC';
 import { etlPriceCheck, etlPriceCheckHDL } from './etl/etlPriceCheck';
 import { etlPersonalStats } from './etl/etlPersonalStats';
 import { etlPersonalStatsCache } from './etl/etlPersonalStatsCache';
@@ -135,6 +136,9 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
         // Testing groStats
         // await etlGroStats();
         // await etlGroStatsHDL(1623844800,1623844800,'apy',1800);
+
+        // Testing groStatsMC
+        await etlGroStatsMC();
 
         // Testing priceCheck
         // await etlPriceCheck();

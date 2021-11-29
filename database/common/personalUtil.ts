@@ -83,8 +83,6 @@ const getNetworkId = () => {
                 return 3;
             case 'kovan':
                 return 42;
-            //case 'develop': return TBC;
-            //otherwise, raise exception
         }
         return -1;
     } catch (err) {

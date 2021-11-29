@@ -304,6 +304,9 @@ export const route = {
         path: '/stats/gro_stats?network=mainnet',
         port: 443,
     },
+    gro_stats_mc: {
+        path: '/stats/gro_stats_mc?network=mainnet',
+    },
     historical_gro_stats: {
         hostname: 'h4sk4iwj75.execute-api.eu-west-2.amazonaws.com',
         path: '/stats/historical_gro_stats',

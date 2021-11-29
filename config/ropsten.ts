@@ -298,6 +298,9 @@ export const route = {
         path: '/stats/gro_stats?network=ropsten',
         port: process.env.BOT_DEV_PORT,
     },
+    gro_stats_mc: {
+        path: '/stats/gro_stats_mc?network=ropsten',
+    },
     historical_gro_stats: {
         hostname: process.env.BOT_DEV_HOST,
         path: '/stats/historical_gro_stats',

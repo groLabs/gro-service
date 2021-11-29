@@ -16,8 +16,11 @@ const checkQueryResult = (result, table) => {
             return false;
         } else if (
             table !== 'PROTOCOL_VAULTS'
+            && table !== 'PROTOCOL_AVAX_VAULTS'
             && table !== 'PROTOCOL_RESERVES'
+            && table !== 'PROTOCOL_AVAX_RESERVES'
             && table !== 'PROTOCOL_STRATEGIES'
+            && table !== 'PROTOCOL_AVAX_STRATEGIES'
             && table !== 'PROTOCOL_EXPOSURE_STABLES'
             && table !== 'PROTOCOL_EXPOSURE_PROTOCOLS'
             && table !== 'PROTOCOL_PRICE_CHECK_DETAILED'
