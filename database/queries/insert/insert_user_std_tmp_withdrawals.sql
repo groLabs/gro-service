@@ -14,6 +14,7 @@ INSERT INTO gro."USER_STD_TMP_WITHDRAWALS" (
         "dai_amount",
         "usdc_amount",
         "usdt_amount",
+        "gro_amount",
         "creation_date",
         "usd_deduct",
         "usd_return",
@@ -38,5 +39,6 @@ VALUES (
         $16,
         $17,
         $18,
-        $19
+        $19,
+        $20
     );

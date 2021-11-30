@@ -1,4 +1,4 @@
-import {ethers} from 'ethers';
+import { ethers } from 'ethers';
 import moment from 'moment';
 import { ContractNames } from '../../registry/registry';
 import { getFilterEvents } from '../../common/logFilter-new';
@@ -33,7 +33,9 @@ const Transfer = Object.freeze({
     TRANSFER_PWRD_IN: 4,
     TRANSFER_GVT_OUT: 5,
     TRANSFER_PWRD_OUT: 6,
-    STABLECOIN_APPROVAL: 7,
+    TRANSFER_GRO_IN: 7,
+    TRANSFER_GRO_OUT: 8,
+    STABLECOIN_APPROVAL: 20,
 });
 
 const transferType = (side) => {
@@ -50,6 +52,10 @@ const transferType = (side) => {
             return 'transfer-gvt-out';
         case Transfer.TRANSFER_PWRD_OUT:
             return 'transfer-pwrd-out';
+        case Transfer.TRANSFER_GRO_IN:
+            return 'transfer-gro-in';
+        case Transfer.TRANSFER_GRO_OUT:
+            return 'transfer-gro-out';
         case Transfer.STABLECOIN_APPROVAL:
             return 'coin-approve';
         default:
@@ -60,7 +66,8 @@ const transferType = (side) => {
 const isDeposit = (side) => {
     return side === Transfer.DEPOSIT ||
         side === Transfer.TRANSFER_GVT_IN ||
-        side === Transfer.TRANSFER_PWRD_IN
+        side === Transfer.TRANSFER_PWRD_IN ||
+        side === Transfer.TRANSFER_GRO_IN
         ? true
         : false;
 };
@@ -277,11 +284,20 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 sender = account;
                 receiver = null;
                 break;
+            case Transfer.TRANSFER_GRO_IN:
+                eventType = 'Transfer';
+                contractName = ContractNames.GroDAOToken;
+                sender = account;
+                receiver = null;
+                break;
+            case Transfer.TRANSFER_GRO_OUT:
+                eventType = 'Transfer';
+                contractName = ContractNames.GroDAOToken;
+                sender = account;
+                receiver = null;
+                break;
             default:
-                handleErr(
-                    `personalUtil->getTransferEvents2()->switch: Invalid event`,
-                    null
-                );
+                handleErr(`personalUtil->getTransferEvents2()->switch: Invalid event`, null);
                 return false;
         }
 
@@ -328,7 +344,7 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
         let logTrades = [];
 
         // Exclude mint or burn logs in transfers (sender or receiver address is 0x0)
-        if (side > 2 && side < 7 && logResults.length > 0) {
+        if (side > 2 && side < 20 && logResults.length > 0) {
             for (let i = 0; i < logResults.length; i++) {
                 //console.log('Event type:', eventType, 'side:', side, 'logs:', logResults[i], 'args:');
                 for (let j = 0; j < logResults[i].length; j++) {

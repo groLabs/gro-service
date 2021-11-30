@@ -3,7 +3,7 @@ import moment from 'moment';
 import { findBlockByDate } from '../common/globalUtil';
 import { generateDateRange, handleErr, isPlural, Load, Transfer } from '../common/personalUtil';
 import { loadUserTransfers, loadTmpUserTransfers } from '../loader/loadUserTransfers';
-import { loadUserApprovals, loadTmpUserApprovals } from '../loader/loadUserApprovals';
+//import { loadUserApprovals, loadTmpUserApprovals } from '../loader/loadUserApprovals';
 import { loadUserBalances } from '../loader/loadUserBalances';
 import { loadTokenPrice } from '../loader/loadTokenPrice';
 import { loadUserNetReturns } from '../loader/loadUserNetReturns';
@@ -157,6 +157,8 @@ const load = async (fromDate, toDate, loadType) => {
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GVT_IN, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_OUT, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
             ]);
 
             if (res.every(Boolean)) {
@@ -202,6 +204,8 @@ const loadTransfers = async (fromDate, toDate, loadType) => {
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GVT_IN, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_OUT, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
             ]);
 
             if (res.every(Boolean)) {

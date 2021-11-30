@@ -19,6 +19,7 @@ INSERT INTO gro."USER_STD_FACT_TRANSFERS" (
         "dai_amount",
         "usdc_amount",
         "usdt_amount",
+        "gro_amount",
         "creation_date"
     )
 SELECT d."block_number",
@@ -41,6 +42,7 @@ SELECT d."block_number",
     sum(d."dai_amount"),
     sum(d."usdc_amount"),
     sum(d."usdt_amount"),
+    sum(d."gro_amount"),
     now()
 FROM gro."USER_STD_TMP_DEPOSITS" d
     LEFT JOIN gro."ETH_BLOCKS" b ON d.block_number = b.block_number
@@ -75,6 +77,7 @@ SELECT w."block_number",
     sum(w."dai_amount"),
     sum(w."usdc_amount"),
     sum(w."usdt_amount"),
+    sum(w."gro_amount"),
     now()
 FROM gro."USER_STD_TMP_WITHDRAWALS" w
     LEFT JOIN gro."ETH_BLOCKS" b ON w.block_number = b.block_number

@@ -93,6 +93,7 @@ CREATE TABLE gro."USER_STD_FACT_TRANSFERS" (
     dai_amount NUMERIC (20, 8) NULL,
     usdc_amount NUMERIC (20, 8) NULL,
     usdt_amount NUMERIC (20, 8) NULL,
+    gro_amount NUMERIC (20, 8) NULL,
     creation_date TIMESTAMP (6) NULL,
     CONSTRAINT "USER_STD_FACT_TRANSFERS_pkey" PRIMARY KEY (
         block_number,
@@ -120,6 +121,7 @@ CREATE TABLE gro."USER_STD_TMP_DEPOSITS" (
     dai_amount NUMERIC (20, 8) NULL,
     usdc_amount NUMERIC (20, 8) NULL,
     usdt_amount NUMERIC (20, 8) NULL,
+    gro_amount NUMERIC (20, 8) NULL,
     creation_date TIMESTAMP (6) NULL
 ) WITH (OIDS = FALSE);
 
@@ -144,6 +146,7 @@ CREATE TABLE gro."USER_STD_TMP_WITHDRAWALS" (
     dai_amount NUMERIC (20, 8) NULL,
     usdc_amount NUMERIC (20, 8) NULL,
     usdt_amount NUMERIC (20, 8) NULL,
+    gro_amount NUMERIC (20, 8) NULL,
     creation_date TIMESTAMP (6) NULL
 ) WITH (OIDS = FALSE);
 

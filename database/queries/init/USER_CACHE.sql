@@ -49,6 +49,7 @@ CREATE TABLE gro."USER_CACHE_FACT_TRANSFERS" (
     dai_amount NUMERIC (20, 8) NULL,
     usdc_amount NUMERIC (20, 8) NULL,
     usdt_amount NUMERIC (20, 8) NULL,
+    gro_amount NUMERIC (20, 8) NULL,
     creation_date TIMESTAMP (6) NULL
 ) WITH (OIDS = FALSE);
 
@@ -70,6 +71,7 @@ CREATE TABLE gro."USER_CACHE_TMP_DEPOSITS" (
     dai_amount NUMERIC (20, 8) NULL,
     usdc_amount NUMERIC (20, 8) NULL,
     usdt_amount NUMERIC (20, 8) NULL,
+    gro_amount NUMERIC (20, 8) NULL,
     creation_date TIMESTAMP (6) NULL
 ) WITH (OIDS = FALSE);
 
@@ -94,6 +96,7 @@ CREATE TABLE gro."USER_CACHE_TMP_WITHDRAWALS" (
     dai_amount NUMERIC (20, 8) NULL,
     usdc_amount NUMERIC (20, 8) NULL,
     usdt_amount NUMERIC (20, 8) NULL,
+    gro_amount NUMERIC (20, 8) NULL,
     creation_date TIMESTAMP (6) NULL
 ) WITH (OIDS = FALSE);
 

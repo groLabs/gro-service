@@ -195,6 +195,13 @@ const parseTransferEvents = async (logs, side) => {
                     ? log.args[1]
                     : '0x0000000000000000000000000000000000000000';
 
+            const gro_amount =
+                        side === Transfer.TRANSFER_GRO_IN
+                        ? parseAmount(log.args[2], 'USD') // Transfer.value
+                        : (side === Transfer.TRANSFER_GRO_OUT)
+                            ? -parseAmount(log.args[2], 'USD') // Transfer.value
+                            : 0;
+
             result.push({
                 block_number: log.blockNumber,
                 tx_hash: log.transactionHash,
@@ -211,6 +218,7 @@ const parseTransferEvents = async (logs, side) => {
                 dai_amount: dai_amount,
                 usdc_amount: usdc_amount,
                 usdt_amount: usdt_amount,
+                gro_amount: gro_amount,
                 creation_date: moment.utc(),
                 ...(!isDeposit(side) && { usd_deduct: usd_deduct }),
                 ...(!isDeposit(side) && { usd_return: usd_return }),
