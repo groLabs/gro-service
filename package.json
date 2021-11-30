@@ -3,7 +3,7 @@
     "version": "0.0.0",
     "private": true,
     "scripts": {
-        "build:types": "typechain --target ethers-v5 '**/abi/*.json'",
+        "build:types": "typechain --target ethers-v5 --out-dir ./contract/types './contract/abis/*.json'",
         "generate:keystore": "node ./scripts/generateKeystore.js",
         "generate:proofs": "node ./scripts/merkleTree.js",
         "generate:bouncer:proofs": "node ./scripts/merkleTreeForBouncer.js",
