@@ -1,3 +1,4 @@
+import fs from 'fs';
 import moment from 'moment';
 const {
     getGroVault: getGVT,
@@ -10,6 +11,9 @@ import { parseAmount } from '../parser/personalStatsParser';
 import { getProvider, findBlockByDate } from './globalUtil';
 // const { balances } = require('../files/balances_cream');
 import { getConfig } from '../../common/configUtil';
+const statsDir = getConfig('stats_folder');
+
+const {groHolders : balances} = require('../files/groHolders');
 
 
 const status = async (targetDate, targetTime, targetBlock) => {
@@ -70,13 +74,23 @@ const status = async (targetDate, targetTime, targetBlock) => {
     // console.log(`total shares: ${totalSupplyGROparsed.toLocaleString()} [ ${totalSupplyGROparsed} ${totalSupplyGRO.toString()} ]`);
 
 
-    // for (let i=0; i < balances.length; i++) {
-    //     const value = await getProvider().getCode(balances[i]);
-    //     console.log(`${balances[i]}|${(value  !== '0x') ? 'Y' : 'N'}`);
-    // }
+
 
 }
 
+const isContract = async () => {
+    console.log('balances', balances);
+    const currentFile = `${statsDir}/gro_balances.txt`;
+    for (let i = 0; i < balances.length; i++) {
+        const value = await getProvider().getCode(balances[i]);
+        const result = `${balances[i]}|${(value !== '0x') ? 'Y' : 'N'}\r\n`;
+        console.log(result);
+        // fs.appendFileSync(currentFile, JSON.stringify(result));
+        fs.appendFileSync(currentFile, result);
+    }
+}
+
 export {
-    status
+    status,
+    isContract,
 }

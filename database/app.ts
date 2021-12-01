@@ -11,7 +11,7 @@ import { getHistoricalAPY } from './handler/historicalAPY';
 import { loadUserBalances } from './loader/loadUserBalances';
 import { loadTokenPrice } from './loader/loadTokenPrice';
 import { dumpTable } from './common/pgUtil';
-import { status } from './common/statusUtil';
+import { status, isContract } from './common/statusUtil';
 import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/airdrop4handler';
 
 
@@ -133,12 +133,14 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
             process.exit(0);
         }
 
+        await isContract();
+
         // Testing groStats
         // await etlGroStats();
         // await etlGroStatsHDL(1623844800,1623844800,'apy',1800);
 
         // Testing groStatsMC
-        await etlGroStatsMC();
+        // await etlGroStatsMC();
 
         // Testing priceCheck
         // await etlPriceCheck();
