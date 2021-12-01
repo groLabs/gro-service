@@ -1,12 +1,18 @@
 export interface IDiscordUrl {
-    label?: any;
     type?: string;
-    value?: any;
+    value?: string;
+    label?: string;
 }
 
 export interface IDiscordMessage {
-    type?: string;
     message?: string;
+    type?: string;
     description?: string;
-    urls?: IDiscordUrl[]
+    urls?: IDiscordUrl[];
+    timestamp?: Date;
+    result?: string;
+    params?: string;
+    transactionHash?: string;
+    emojis?: string[]
+    icon?: string;
 }

@@ -1,6 +1,8 @@
 import { TextChannel } from 'discord.js';
 import { getConfig } from '../configUtil';
 import { getDiscordClient } from './discord';
+import { IError } from '../commonTypes'
+import { IDiscordMessage, IDiscordUrl } from '../../discordMessage/discordMessageTypes'
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 /* eslint-disable import/no-dynamic-require */
@@ -115,7 +117,8 @@ MESSAGE_EMOJI[MESSAGE_TYPES.criticalBot] =
 MESSAGE_EMOJI[MESSAGE_TYPES.chainPrice] =
     getConfig('emoji.curveCheck', false) || '';
 
-function generateLink(urlDetail) {
+
+function generateLink(urlDetail: IDiscordUrl): string {
     const nodeEnv = process.env.NODE_ENV?.toLowerCase();
     let host = `https://${nodeEnv}.etherscan.io`;
     if (nodeEnv === 'mainnet') {
@@ -136,13 +139,14 @@ function generateLink(urlDetail) {
     return url;
 }
 
-function generateEmbedMessage(obj) {
+
+function generateEmbedMessage(obj: IDiscordMessage): { description: string } {
     logger.info(`embed msg: ${JSON.stringify(obj)}`);
     const prefixEmojis = obj.emojis.join(' ');
 
     if (obj.urls) {
         for (let i = 0; i < obj.urls.length; i += 1) {
-            const urlInfo = obj.urls[i];
+            const urlInfo: IDiscordUrl = obj.urls[i];
             const { label } = urlInfo;
             const link = `[${label}](${generateLink(urlInfo)})`;
             obj.description = obj.description.replace(label, link);
@@ -151,7 +155,7 @@ function generateEmbedMessage(obj) {
     return { description: `${prefixEmojis} ${obj.description}` };
 }
 
-function formatMessage(obj) {
+function formatMessage(obj: IDiscordMessage): string {
     let msg = '';
     msg += `Message: ${obj.message}\n`;
     msg += `Date: ${obj.timestamp}\n`;
@@ -171,7 +175,7 @@ function formatMessage(obj) {
     return `${icon}**${obj.type || 'Others'}**\n${'```'}${msg}${'```'}`;
 }
 
-async function sendEmbedMessage(channelId, msgObj, retry = 0) {
+async function sendEmbedMessage(channelId: string, msgObj: IDiscordMessage, retry = 0): Promise<void> {
     if (!msgObj.description) return;
     if (retry > RETRY_TIMES) {
         logger.info(
@@ -197,7 +201,8 @@ async function sendEmbedMessage(channelId, msgObj, retry = 0) {
     }
 }
 
-async function sendMessage(channelId, msgObj, retry = 0) {
+
+async function sendMessage(channelId: string, msgObj: IDiscordMessage, retry = 0): Promise<void> {
     if (!msgObj.message) return;
     if (retry > RETRY_TIMES) {
         logger.info(
@@ -224,7 +229,7 @@ async function sendMessage(channelId, msgObj, retry = 0) {
     }
 }
 
-function sendMessageToChannel(channel, msgObj) {
+function sendMessageToChannel(channel: string, msgObj: IDiscordMessage): void {
     if (!msgObj.emojis) {
         msgObj.emojis = [];
     }
@@ -235,7 +240,7 @@ function sendMessageToChannel(channel, msgObj) {
     sendMessage(DISCORD_CHANNELS.botLogs, msgObj);
 }
 
-function sendMessageToAlertChannel(error) {
+function sendMessageToAlertChannel(error: IError): void {
     logger.error(error);
     const msgObj = {
         icon: ':warning:',
@@ -249,7 +254,7 @@ function sendMessageToAlertChannel(error) {
     sendMessage(DISCORD_CHANNELS.botAlerts, msgObj);
 }
 
-function sendErrorMessageToLogChannel(error) {
+function sendErrorMessageToLogChannel(error: IError): void {
     logger.error(error);
     const msgObj = {
         icon: ':warning:',

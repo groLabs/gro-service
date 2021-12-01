@@ -25,7 +25,7 @@ discordClient.on('error', (err) => {
     logger.error(err);
 });
 
-export function getDiscordClient() {
+export function getDiscordClient(): Discord.Client {
     if (isClientReady) return discordClient;
     const err = new DiscordError('Discord Service is not readly.');
     logger.error(err);
