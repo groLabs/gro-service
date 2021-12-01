@@ -7,34 +7,42 @@ const { BigNumber: BN } = require('bignumber.js');
 const fakeAirdropItems = [
     {
         address: '0x6D1e68d2cc52696241fA17Ae198f41Ce84078328',
+        gro: 0,
         amount: 0,
     },
     {
         address: '0x085873B5fb1BC6833CE995a4Cd856D0Cc6C95748',
+        gro: 0,
         amount: 0,
     },
     {
         address: '0x4C4A81298CC85c5BBF8092bd241fCc5dD6Ec3f74',
+        groBalance: 0,
         amount: 0,
     },
     {
         address: '0xc94dDeACff69bd206CEDdFe2b601a277225D23D6',
+        groBalance: 0,
         amount: 0,
     },
     {
         address: '0xdBCf4f419B0364c81f337EEceb47bA76E1404aF9',
+        groBalance: 0,
         amount: 0,
     },
     {
         address: '0x7B4B446f42016c12b47899cEC35F417cB290524f',
+        groBalance: 0,
         amount: 0,
     },
     {
         address: '0x48cB6fD436D34A909523A74de8f82d6bF59E6A3C',
+        groBalance: 0,
         amount: 0,
     },
     {
         address: '0x732A3A2E00362802c422cdad0343eFB2E1A37A8A',
+        groBalance: 0,
         amount: 0,
     },
 ];
@@ -112,6 +120,7 @@ async function validateFile(filePath) {
     const headNames = headString.split(',');
     const addressIndex = headNames.indexOf('address');
     const amountIndex = headNames.indexOf('amount');
+    const groIndex = headNames.indexOf('gro');
     if (addressIndex < 0 || amountIndex < 0) {
         throw new Error(
             'The passed file must include address and amount titles.'
@@ -127,6 +136,10 @@ async function validateFile(filePath) {
             const values = content.split(',');
             const addressValue = values[addressIndex];
             const amountValue = values[amountIndex];
+            let groBalance = 0;
+            if (groIndex > -1) {
+                groBalance = values[groIndex];
+            }
             if (addressValue.length !== 42) {
                 throw new Error(
                     `Line ${i + 1} : the address:${addressValue} is invalid.`
@@ -145,7 +158,11 @@ async function validateFile(filePath) {
                 );
             }
             totalAddresses.push(addressValue.toLowerCase());
-            contents.push({ address: addressValue, amount: amountValue });
+            contents.push({
+                address: addressValue,
+                amount: amountValue,
+                groBalance,
+            });
         }
     }
 
@@ -196,7 +213,7 @@ async function generateProof(
     const items = [];
     for (let i = 0; i < contents.length; i += 1) {
         const item = contents[i];
-        const { address, amount } = item;
+        const { address, amount, groBalance } = item;
         const node = soliditySha3(
             { t: 'address', v: toChecksumAddress(address) },
             { t: 'uint128', v: toHex(amount) }
@@ -206,6 +223,7 @@ async function generateProof(
         items.push({
             node,
             amount,
+            groBalance,
             index: i,
             address: toChecksumAddress(address),
         });
@@ -218,8 +236,9 @@ async function generateProof(
     const root = trees.root()[0];
     const proofs = {};
     for (let i = 0; i < items.length; i += 1) {
-        const { node, address, amount } = items[i];
+        const { node, address, amount, groBalance } = items[i];
         proofs[address] = {
+            groBalance: BN(groBalance).toFixed(0),
             amount: BN(amount).toFixed(0),
             proof: trees.getProof(node),
         };
@@ -234,4 +253,4 @@ async function generateProof(
 }
 
 const args = process.argv.slice(2);
-generateProof(args[0], args[1]);
+generateProof(args[0], args[1], args[2]);
