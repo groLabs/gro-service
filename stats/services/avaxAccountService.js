@@ -1,5 +1,5 @@
 const BN = require('bignumber.js');
-const { ethers } = require('ethers');
+const { ethers, BigNumber } = require('ethers');
 const { ContractNames } = require('../../dist/registry/registry');
 const { getConfig } = require('../../dist/common/configUtil');
 const { formatNumber2 } = require('../../common/digitalUtil');
@@ -110,22 +110,64 @@ async function calcuateUsdAmountForTransferEvents(logs, decimals) {
             stateMutability: 'view',
             type: 'function',
         },
+        {
+            inputs: [],
+            name: 'totalSupply',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+        {
+            inputs: [],
+            name: 'totalEstimatedAssets',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
     ];
 
-    const callPromise = [];
+    const pricePerSharePromise = [];
+    const totalEstimatedAssetsPromise = [];
+    const totalSupplyPromise = [];
     logs.forEach((log) => {
         const { address, blockNumber } = log;
         const vault = new ethers.Contract(address, abi, provider);
-        callPromise.push(
-            vault.getPricePerShare({ blockTag: parseInt(blockNumber, 10) })
+        const blockTag = parseInt(blockNumber, 10);
+        pricePerSharePromise.push(vault.getPricePerShare({ blockTag }));
+        totalEstimatedAssetsPromise.push(
+            vault.totalEstimatedAssets({ blockTag })
         );
+        totalSupplyPromise.push(vault.totalSupply({ blockTag }));
     });
-    const result = await Promise.all(callPromise);
-    for (let i = 0; i < result.length; i += 1) {
+    const pricePerShareResult = await Promise.all(pricePerSharePromise);
+    const totalEstimatedAssetsResult = await Promise.all(
+        totalEstimatedAssetsPromise
+    );
+    const totalSupplyResult = await Promise.all(totalSupplyPromise);
+
+    for (let i = 0; i < pricePerShareResult.length; i += 1) {
+        const estimatedPricePerShare = totalEstimatedAssetsResult[i]
+            .mul(BigNumber.from(10).pow(decimals))
+            .div(totalSupplyResult[i]);
         const log = logs[i];
         const { coin_amount: coinAmount } = log;
-        const perPrice = result[i];
-        const usdAmount = new BN(`${perPrice}`).multipliedBy(
+        let distPerPrice = pricePerShareResult[i];
+        if (distPerPrice.gt(estimatedPricePerShare)) {
+            distPerPrice = estimatedPricePerShare;
+        }
+        const usdAmount = new BN(`${distPerPrice}`).multipliedBy(
             new BN(coinAmount)
         );
         log.amount = formatNumber2(usdAmount, decimals, amountDecimal);
@@ -386,7 +428,19 @@ async function singleVaultEvents(account, adpaterType, token, decimals) {
     const latestVault = getLatestAVAXVault(adpaterType);
     const balance = await latestVault.balanceOf(account);
     const perPrice = await latestVault.getPricePerShare();
-    const amount = balance.mul(perPrice);
+    const totalSupply = await latestVault.totalSupply();
+    let distPerPrice = perPrice;
+    if (!totalSupply.isZero()) {
+        const totalEstimatedAssets = await latestVault.totalEstimatedAssets();
+        const estimatedPerPrice = totalEstimatedAssets
+            .mul(BigNumber.from(10).pow(decimals))
+            .div(totalSupply);
+        if (perPrice.gt(estimatedPerPrice)) {
+            distPerPrice = estimatedPerPrice;
+        }
+    }
+
+    const amount = balance.mul(distPerPrice);
     const currentBalance = formatNumber2(amount, decimals * 2, amountDecimal);
 
     // net return
