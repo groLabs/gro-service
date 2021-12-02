@@ -35,6 +35,10 @@ export const airdrop = {
         'airdrop-3-proofs.json',
     ],
 };
+export const gro_gate = {
+    folder: '../grogate',
+    files: [],
+};
 export const buoy_start_block = 13304056;
 export const blockchain = {
     network: 'mainnet',

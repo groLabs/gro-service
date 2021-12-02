@@ -59,6 +59,7 @@ const ContractNames = {
     AVAXDAIVault: 'AVAXDAIVault',
     AVAXUSDCVault: 'AVAXUSDCVault',
     AVAXUSDTVault: 'AVAXUSDTVault',
+    AVAXBouncer: 'AVAXBouncer',
 };
 
 const ContractABIMapping = {};
@@ -96,6 +97,7 @@ ContractABIMapping[ContractNames.GroDAOToken] = 'GroDAOToken';
 ContractABIMapping[ContractNames.AVAXDAIVault] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXUSDCVault] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXUSDTVault] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXBouncer] = 'Bouncer';
 
 function readLocalContractConfig(isReload = false) {
     if (isReload || !localContractConfig) {
