@@ -5,6 +5,7 @@ const { getConfig } = require('../../dist/common/configUtil');
 const { formatNumber2 } = require('../../common/digitalUtil');
 const { getContractsHistory } = require('../../dist/registry/registryLoader');
 const { getLatestSystemContractOnAVAX } = require('../common/contractStorage');
+const { getAccountAllowance } = require('./avaxBouncerClaim');
 const {
     getAccountFailTransactionsOnAVAX,
 } = require('../handler/failedTransactionHandler');
@@ -19,11 +20,11 @@ const {
 
 const logger = require('../statsLogger');
 
-const rpccURL =
-    getConfig('avalanche.rpc_url', false) ||
+const rpcURL =
+    getConfig('blockchain.avalanche_rpc_url', false) ||
     'https://api.avax.network/ext/bc/C/rpc';
 
-const provider = new ethers.providers.JsonRpcProvider(rpccURL);
+const provider = new ethers.providers.JsonRpcProvider(rpcURL);
 
 const blockNumberTimestamp = {};
 const accountVaultHistories = {};
@@ -477,6 +478,7 @@ async function avaxPersonalStats(account) {
         current_balance: {},
         net_returns: {},
         transaction: {},
+        gro_gate: {},
     };
     // network id
     // const network = await provider.getNetwork();
@@ -484,29 +486,18 @@ async function avaxPersonalStats(account) {
     result.network_id = '43114'; // getNetwork not work for avax
 
     // deposit & withdraw & transfer & approval events
-    const daiVaultEvents = await singleVaultEvents(
-        account,
-        ContractNames.AVAXDAIVault,
-        'DAI.e',
-        18
-    );
+    const vaultEventsPromise = [
+        singleVaultEvents(account, ContractNames.AVAXDAIVault, 'DAI.e', 18),
+        singleVaultEvents(account, ContractNames.AVAXUSDCVault, 'USDC.e', 6),
+        singleVaultEvents(account, ContractNames.AVAXUSDTVault, 'USDT.e', 6),
+    ];
+    const [daiVaultEvents, usdcVaultEvents, usdtVaultEvents] =
+        await Promise.all(vaultEventsPromise);
 
     fullData(result, daiVaultEvents, 'dai_vault');
 
-    const usdcVaultEvents = await singleVaultEvents(
-        account,
-        ContractNames.AVAXUSDCVault,
-        'USDC.e',
-        6
-    );
     fullData(result, usdcVaultEvents, 'usdc_vault');
 
-    const usdtVaultEvents = await singleVaultEvents(
-        account,
-        ContractNames.AVAXUSDTVault,
-        'USDT.e',
-        6
-    );
     fullData(result, usdtVaultEvents, 'usdt_vault');
 
     calculateTotal(result, [
@@ -592,6 +583,10 @@ async function avaxPersonalStats(account) {
         });
     }
     result.transaction.failures = failedItems;
+
+    // gro gate
+    const allowance = await getAccountAllowance(account, provider);
+    result.gro_gate = allowance;
     return result;
 }
 
