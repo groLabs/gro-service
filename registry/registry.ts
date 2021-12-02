@@ -6,7 +6,7 @@ import { SettingError } from '../common/error';
 const registryABI = require('./Registry.json');
 const erc20ABI = require('../abi/ERC20.json');
 
-const botEnv = process.env.BOT_ENV.toLowerCase();
+const botEnv = process.env.BOT_ENV?.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
@@ -59,6 +59,9 @@ const ContractNames = {
     AVAXDAIVault: 'AVAXDAIVault',
     AVAXUSDCVault: 'AVAXUSDCVault',
     AVAXUSDTVault: 'AVAXUSDTVault',
+    AVAXDAIStrategy: 'AVAXDAIStrategy',
+    AVAXUSDCStrategy: 'AVAXUSDCStrategy',
+    AVAXUSDTStrategy: 'AVAXUSDTStrategy',
     AVAXBouncer: 'AVAXBouncer',
 };
 
@@ -97,6 +100,9 @@ ContractABIMapping[ContractNames.GroDAOToken] = 'GroDAOToken';
 ContractABIMapping[ContractNames.AVAXDAIVault] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXUSDCVault] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXUSDTVault] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXDAIStrategy] = 'AHv2Farmer';
+ContractABIMapping[ContractNames.AVAXUSDCStrategy] = 'AHv2Farmer';
+ContractABIMapping[ContractNames.AVAXUSDTStrategy] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXBouncer] = 'Bouncer';
 
 function readLocalContractConfig(isReload = false) {

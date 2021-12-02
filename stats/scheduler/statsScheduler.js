@@ -14,6 +14,9 @@ const {
     generateSummaryReport,
 } = require('../handler/eventHandler');
 const { getCurrentBlockNumber } = require('../../dist/common/chainUtil');
+const { getAvaxSystemStats } = require('../handler/avaxSystemHandler');
+const { generateGroStatsMcFile } = require('../handler/mcStatsHandler');
+
 const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
 const logger = require('../statsLogger');
 
@@ -38,7 +41,7 @@ async function generateStatsFile() {
     schedule.scheduleJob(generateStatsSchedulerSetting, async () => {
         try {
             logger.info('start generate stats');
-            const statsFilename = await generateGroStatsFile();
+            const statsFilename = await generateGroStatsMcFile();
             logger.info(`generate stats file: ${statsFilename}`);
             failedTimes.apyGenerator = 0;
         } catch (error) {

@@ -231,6 +231,12 @@ async function calcStrategyAPY(
             sortedBlocks[0].totalGain
         }  end ${sortedBlocks[sortedBlocks.length - 1].totalGain}`
     );
+    if (timeWeightedTotalAssets.isZero()) {
+        const apy = BigNumber.from(0);
+
+        logger.info(`apy ${apy}`);
+        return apy;
+    }
     const apy = totalGain
         .mul(PERCENT_DECIMAL)
         .div(timeWeightedTotalAssets)

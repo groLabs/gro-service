@@ -16,6 +16,15 @@ async function getGroStatsContent() {
     return JSON.parse(stats.toString());
 }
 
+async function getGroStatsMcContent() {
+    const data = fs.readFileSync(statsLatest, { flag: 'a+' });
+    const filenameContent = data.toString();
+    const content = JSON.parse(filenameContent);
+    const { mcFilename } = content;
+    const stats = fs.readFileSync(mcFilename, { flag: 'a+' });
+    return JSON.parse(stats.toString());
+}
+
 async function getArgentStatsContent() {
     const data = fs.readFileSync(statsLatest, { flag: 'a+' });
     const filenameContent = data.toString();
@@ -42,6 +51,7 @@ async function reloadContractsFromRegistry(providerKey) {
 
 module.exports = {
     getGroStatsContent,
+    getGroStatsMcContent,
     getArgentStatsContent,
     getExternalStatsContent,
     reloadContractsFromRegistry,
