@@ -4,6 +4,7 @@ import { query } from 'express-validator';
 // const { wrapAsync } = require('../common/wrap');
 import { ParameterError } from '../../common/error';
 import { getAllStats } from '../handler/groStatsHandler';
+import { getAllStatsMC } from '../handler/groStatsHandlerMC';
 import { getPriceCheck } from '../handler/priceCheckHandler';
 import { getHistoricalAPY } from '../handler/historicalAPY';
 import { getPersonalStats } from '../handler/personalStatsHandler';
@@ -34,6 +35,25 @@ router.get(
             throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats');
         }
         const groStats = await getAllStats();
+        res.json(groStats);
+    })
+);
+
+router.get(
+    '/gro_stats_mc',
+    validate([
+        query('network')
+            .trim()
+            .notEmpty()
+            .withMessage(`network can't be empty.`),
+    ]),
+    wrapAsync(async (req, res) => {
+        let { network } = req.query;
+        network = network || '';
+        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+            throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats_mc');
+        }
+        const groStats = await getAllStatsMC();
         res.json(groStats);
     })
 );

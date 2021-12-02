@@ -81,36 +81,7 @@ const etlGroStatsMC = async () => {
     }
 }
 
-// const etlGroStats = async () => {
-//     try {
-//         let lastTimestamp;
-//         options.path = route.gro_stats.path;
-//         const res = await checkLastTimestamp('GRO_STATS');
-//         if (res.status === QUERY_SUCCESS) {
-//             lastTimestamp = res.rows[0].last_timestamp;
-//             if (lastTimestamp) {
-//                 const call: ICall = await apiCaller(options);
-//                 if (call.status === QUERY_SUCCESS) {
-//                     const stats = JSON.parse(call.data);
-//                     if (stats.gro_stats && 'current_timestamp' in stats.gro_stats) {
-//                         const currentTimestamp = parseInt(stats.gro_stats.current_timestamp);
-//                         if (currentTimestamp > lastTimestamp)
-//                             await loadAllTables(stats.gro_stats);
-//                     } else {
-//                         logger.error('**DB: No timestamp found in JSON API call');
-//                     }
-//                 } else {
-//                     logger.error(`**DB: Error with API call: \n Error code ${call.status} \n Error description: ${call.data}`);
-//                 }
-//             } else {
-//                 logger.error('**DB: No timestamp found in table SYS_PROTOCOL_LOADS');
-//             }
-//         }
-//     } catch (err) {
-//         logger.error(`**DB: Error in etlGroStats.js->etlGroStats(): ${err}`);
-//     }
-// }
-
+// TODO: CHANGE TO MULTI-CHAIN
 // This will be called on-demand, not by a cron
 const etlGroStatsHDL = async (start, end, kpi, interval) => {
     try {

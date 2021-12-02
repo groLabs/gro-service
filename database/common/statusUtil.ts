@@ -9,11 +9,13 @@ import { checkTime } from './balanceUtil';
 import { checkDateRange } from './globalUtil';
 import { parseAmount } from '../parser/personalStatsParser';
 import { getProvider, findBlockByDate } from './globalUtil';
-// const { balances } = require('../files/balances_cream');
 import { getConfig } from '../../common/configUtil';
 const statsDir = getConfig('stats_folder');
 
-const {groHolders : balances} = require('../files/groHolders');
+// DUMPS:
+// const { balances } = require('../files/balances_cream');
+// const {groHolders : balances} = require('../files/groHolders');
+const {argentHolders : balances} = require('../files/argentHolders');
 
 
 const status = async (targetDate, targetTime, targetBlock) => {
@@ -80,11 +82,12 @@ const status = async (targetDate, targetTime, targetBlock) => {
 
 const isContract = async () => {
     console.log('balances', balances);
-    const currentFile = `${statsDir}/gro_balances.txt`;
-    for (let i = 0; i < balances.length; i++) {
+    const currentFile = `${statsDir}/gro_argent.txt`;
+    const maxLength = balances.length;
+    for (let i = 0; i < maxLength; i++) {
         const value = await getProvider().getCode(balances[i]);
         const result = `${balances[i]}|${(value !== '0x') ? 'Y' : 'N'}\r\n`;
-        console.log(result);
+        console.log(`${i} of ${maxLength} -> ${result}`);
         // fs.appendFileSync(currentFile, JSON.stringify(result));
         fs.appendFileSync(currentFile, result);
     }
