@@ -5,6 +5,7 @@ INSERT INTO gro."USER_STD_FACT_BALANCES_SNAPSHOT" (
         "gvt_unstaked_amount",
         "pwrd_unstaked_amount",
         "gro_unstaked_amount",
+        "gro_total_amount",
         "pool0_lp_staked_amount",
         "pool1_lp_pooled_amount",
         "pool1_lp_staked_amount",
@@ -48,5 +49,6 @@ VALUES (
         $21,
         $22,
         $23,
-        $24
+        $24,
+        $25
     );
