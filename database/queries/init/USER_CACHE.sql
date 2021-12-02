@@ -121,6 +121,7 @@ CREATE TABLE gro."USER_CACHE_FACT_BALANCES" (
     gvt_unstaked_amount NUMERIC (20, 8) NULL,
     pwrd_unstaked_amount NUMERIC (20, 8) NULL,
     gro_unstaked_amount NUMERIC (20, 8) NULL,
+    gro_total_amount NUMERIC (20, 8) NULL,          -- GRO unstaked, staked, vesting, vested, in pools
     pool0_lp_staked_amount NUMERIC (20, 8) NULL,    -- GRO 100% in MC
     pool1_lp_pooled_amount NUMERIC (20, 8) NULL,    -- LP GVT 50% / GRO 50% in pool
     pool1_lp_staked_amount NUMERIC (20, 8) NULL,    -- LP GVT 50% / GRO 50% in MC
