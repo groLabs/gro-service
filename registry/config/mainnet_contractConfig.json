@@ -33,7 +33,8 @@
         "GroDAOToken",
         "AVAXDAIVault",
         "AVAXUSDCVault",
-        "AVAXUSDTVault"
+        "AVAXUSDTVault",
+        "AVAXBouncer"
     ],
     "latestContracts": {
         "GroVault": {
@@ -406,8 +407,8 @@
             "abiVersion": "ce7b149",
             "tag": "Strategy",
             "tokens": ["FRAX"],
-            "protocols": ["Curve", "Yearn", "Convex", "FRAX"],
-            "protocolsDisplayName": ["Curve", "Yearn", "Convex", "FRAX"],
+            "protocols": ["Curve", "Yearn", "Convex"],
+            "protocolsDisplayName": ["Curve", "Yearn", "Convex"],
             "metaData": {
                 "N": "XPool",
                 "DN": "Curve - XPool",
@@ -492,6 +493,18 @@
             "address": "0x720e5ecfe240a65ca236e5Ec626f91036Ecc260d",
             "deployedBlock": 7075500,
             "startBlock": 7075549,
+            "abiVersion": "4ff4e8d",
+            "tag": "Other",
+            "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        },
+        "AVAXBouncer": {
+            "address": "0x60861b5AFdf4B6e449dd194a6b54d6A64DFE2d81",
+            "deployedBlock": 7667754,
+            "startBlock": 7667754,
             "abiVersion": "4ff4e8d",
             "tag": "Other",
             "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
@@ -1709,6 +1722,21 @@
                 "abiVersion": "4ff4e8d",
                 "tag": "Other",
                 "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "AVAXBouncer": [
+            {
+                "address": "0x60861b5AFdf4B6e449dd194a6b54d6A64DFE2d81",
+                "deployedBlock": 7667754,
+                "startBlock": 7667754,
+                "endBlock": null,
+                "abiVersion": "4ff4e8d",
+                "tag": "Other",
+                "tokens": [],
                 "protocols": [],
                 "protocolsDisplayName": [],
                 "metaData": {},

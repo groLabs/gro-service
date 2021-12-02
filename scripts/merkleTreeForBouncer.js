@@ -140,6 +140,7 @@ async function validateFile(filePath) {
             if (groIndex > -1) {
                 groBalance = values[groIndex];
             }
+
             if (addressValue.length !== 42) {
                 throw new Error(
                     `Line ${i + 1} : the address:${addressValue} is invalid.`
@@ -238,8 +239,8 @@ async function generateProof(
     for (let i = 0; i < items.length; i += 1) {
         const { node, address, amount, groBalance } = items[i];
         proofs[address] = {
-            groBalance: BN(groBalance).toFixed(0),
-            amount: BN(amount).toFixed(0),
+            groBalance,
+            amount,
             proof: trees.getProof(node),
         };
     }
