@@ -1,11 +1,10 @@
-//@ts-nocheck
-const fetch = require('node-fetch');
-const { sendAlertMessage } = require('./alertMessageSender');
+import fetch from 'node-fetch';
+import { sendAlertMessage } from './alertMessageSender';
 
-async function sendHealthCheckFailedAlert(type, url) {
-    let discordDescription;
-    let pagerdutyDescription;
-    let pagerdutyTitle;
+async function sendHealthCheckFailedAlert(type: string, url: string): Promise<void> {
+    let discordDescription: string;
+    let pagerdutyDescription: string;
+    let pagerdutyTitle: string;
     if (type === 'stats') {
         discordDescription = `[CRIT] B14 - BotLiveCheck | stats bot ${url} is not running`;
         pagerdutyDescription = `[CRIT] B14 - BotLiveCheck | stats bot ${url} is not running`;
@@ -32,7 +31,7 @@ async function sendHealthCheckFailedAlert(type, url) {
     });
 }
 
-async function checkServerHealth(type, urls, logger) {
+async function checkServerHealth(type: string, urls: string[], logger: { info: (arg0: string) => void; }): Promise<void> {
     for (let i = 0; i < urls.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         if (urls[i] !== undefined && urls[i] !== '') {

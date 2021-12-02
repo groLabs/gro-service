@@ -1,6 +1,6 @@
-import { validationResult } from 'express-validator';
+import { ValidationChain, validationResult } from 'express-validator';
 
-const validate = function validate(validations) {
+const validate = function validate(validations: ValidationChain[]) {
     return async (req, res, next) => {
         await Promise.all(validations.map((validation) => validation.run(req)));
         const errors = validationResult(req);
@@ -12,7 +12,7 @@ const validate = function validate(validations) {
     };
 };
 
-const handle = (promise) => {
+const handle = (promise: Promise<any>) => {
     promise
         .then((data) => [data, undefined])
         .catch((error) => Promise.resolve([undefined, error]));

@@ -5,7 +5,7 @@ const botEnv = process.env.BOT_ENV?.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
-export function getConfig(key, existCheck = true) {
+export function getConfig(key: string, existCheck = true): any {
     if (config.has(key)) return config.get(key);
 
     if (existCheck) {

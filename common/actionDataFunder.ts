@@ -1,17 +1,13 @@
 import { ethers } from 'ethers';
+import { BigNumber } from 'bignumber.js'
 import { getAlchemyRpcProvider } from './chainUtil';
 import { getLatestContractsAddress } from '../registry/registryLoader';
 import { ContractNames } from '../registry/registry';
 import BlockChainCallError from './error/BlockChainCallError';
 import { MESSAGE_TYPES } from './discord/discordService';
 import { adjustDecimal, toSum } from './digitalUtil';
-const {
-    getVaultStableCoins,
-    getInsurance,
-    getExposure,
-    getPwrd,
-    getGvt,
-} = require('../contract/allContracts');
+import { getVaultStableCoins, getInsurance, getExposure } from '../contract/allContracts';
+import { JsonFragment } from '@ethersproject/abi';
 const pnlABI = require('../contract/abis/PnL.json');
 const vaultABI = require('../contract/abis/Vault.json');
 const erc20ABI = require('../contract/abis/ERC20.json');
@@ -20,14 +16,14 @@ const botEnv = process.env.BOT_ENV?.toLowerCase();
 /* eslint-disable import/no-dynamic-require */
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
-function parseData(abi, fragment, dataContent) {
+function parseData(abi: string | readonly (string | ethers.utils.Fragment | JsonFragment)[], fragment: string | ethers.utils.EventFragment, dataContent: ethers.utils.BytesLike): ethers.utils.Result {
     const iface = new ethers.utils.Interface(abi);
     const result = iface.decodeEventLog(fragment, dataContent);
     return result;
 }
 
-function getEventFragment(abi, eventName) {
-    let result;
+function getEventFragment(abi: string | readonly (string | ethers.utils.Fragment | JsonFragment)[], eventName: string): { eventFragment: ethers.utils.EventFragment; topic: string; } | undefined {
+    let result: { eventFragment: ethers.utils.EventFragment; topic: string; };
     const iface = new ethers.utils.Interface(abi);
     const eventFragments = Object.values(iface.events);
     for (let i = 0; i < eventFragments.length; i += 1) {
@@ -42,17 +38,18 @@ function getEventFragment(abi, eventName) {
     }
     return result;
 }
+
 async function pretreatReceipt(
-    messageType,
-    transactionHash,
-    transactionReceipt,
-    providerKey
-) {
+    messageType: string,
+    transactionHash: string,
+    transactionReceipt: any,
+    providerKey: string
+): Promise<any> {
     if (!transactionReceipt) {
         const provider = getAlchemyRpcProvider(providerKey);
         transactionReceipt = await provider
             .getTransactionReceipt(transactionHash)
-            .catch((error) => {
+            .catch((error: any) => {
                 logger.error(error);
                 throw new BlockChainCallError(
                     `Get transaction receipt by hash: ${transactionHash}`,
@@ -63,14 +60,14 @@ async function pretreatReceipt(
     return transactionReceipt;
 }
 
-async function getPnlKeyData(transactionHash, transactionReceipt, providerKey) {
+async function getPnlKeyData(transactionHash: string, transactionReceipt: any, providerKey: string): Promise<ethers.utils.Result> {
     transactionReceipt = await pretreatReceipt(
         MESSAGE_TYPES.pnl,
         transactionHash,
         transactionReceipt,
         providerKey
     );
-    let result: any = [];
+    let result: ethers.utils.Result = [];
     if (transactionReceipt) {
         const { logs } = transactionReceipt;
         const eventFragment = getEventFragment(pnlABI, 'LogPnLExecution');
@@ -92,16 +89,16 @@ async function getPnlKeyData(transactionHash, transactionReceipt, providerKey) {
     return result;
 }
 
-function handleCoinAmount(address, value) {
+function handleCoinAmount(address: string, value: any): BigNumber {
     const decimals = getVaultStableCoins().decimals[address];
     return adjustDecimal(value, decimals);
 }
 async function getInvestKeyData(
-    transactionHash,
-    stableCoins,
-    transactionReceipt,
-    providerKey
-) {
+    transactionHash: string,
+    stableCoins: string | any[],
+    transactionReceipt: any,
+    providerKey: string
+): Promise<BigNumber> {
     logger.info(`stable coins: ${JSON.stringify(stableCoins)}`);
     const tempResult = {};
     transactionReceipt = await pretreatReceipt(
@@ -143,17 +140,17 @@ async function getInvestKeyData(
 }
 
 async function getHarvestKeyData(
-    transactionHash,
-    transactionReceipt,
-    providerKey
-) {
+    transactionHash: string,
+    transactionReceipt: any,
+    providerKey: string
+): Promise<ethers.utils.Result> {
     transactionReceipt = await pretreatReceipt(
         MESSAGE_TYPES.harvest,
         transactionHash,
         transactionReceipt,
         providerKey
     );
-    let result: any = [];
+    let result: ethers.utils.Result = [];
     if (transactionReceipt) {
         const { logs } = transactionReceipt;
         const eventFragment = getEventFragment(vaultABI, 'StrategyReported');
@@ -176,10 +173,10 @@ async function getHarvestKeyData(
 }
 
 async function getRebalanceKeyData(
-    transactionHash,
-    transactionReceipt,
-    providerKey
-) {
+    transactionHash: string,
+    transactionReceipt: any,
+    providerKey: string
+): Promise<{stablecoinExposure: any[]}> {
     transactionReceipt = await pretreatReceipt(
         MESSAGE_TYPES.harvest,
         transactionHash,
@@ -213,11 +210,11 @@ async function getRebalanceKeyData(
 }
 
 async function getMintOrBurnGToken(
-    isPWRD,
-    transactionHash,
-    transactionReceipt,
-    providerKey
-) {
+    isPWRD: any,
+    transactionHash: string,
+    transactionReceipt: any,
+    providerKey: string
+): Promise<number | string> {
     transactionReceipt = await pretreatReceipt(
         MESSAGE_TYPES.miniStatsPersonal,
         transactionHash,

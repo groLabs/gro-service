@@ -1,14 +1,14 @@
-const axios = require('axios');
-const { getConfig } = require('./configUtil');
-const { uniswapVolume } = require('../stats/subgraph/uniswapVolume');
-const { balancerVolume } = require('../stats/subgraph/balancerVolume');
-const botEnv = process.env.BOT_ENV.toLowerCase();
+import axios from 'axios';
+import { getConfig } from './configUtil';
+import { uniswapVolume } from '../stats/subgraph/uniswapVolume';
+import { balancerVolume } from '../stats/subgraph/balancerVolume';
 
+const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 
-const callSubgraph = async (payload) => {
-    let q;
+const callSubgraph = async (payload: { query: any; id: any; block: any; addr: any; url: string; }): Promise<null | any> => {
+    let q: string;
 
     switch (payload.query) {
         case 'uniswapVolume':
@@ -48,6 +48,6 @@ const callSubgraph = async (payload) => {
     return (!result || result.data.errors) ? null : result.data.data;
 }
 
-module.exports = {
+export {
     callSubgraph,
 }
