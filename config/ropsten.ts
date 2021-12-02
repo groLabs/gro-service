@@ -36,9 +36,8 @@ export const gro_gate = {
 export const buoy_start_block = 10633347;
 export const blockchain = {
     network: 'ropsten',
-    avalanche_rpc_url: 'https://api.avax-test.network/ext/bc/C/rpc',
     start_block: 10525267,
-    avax_start_block: 3017368,
+    avax_start_block: 7075659,
     start_timestamp: 1624827717,
     avax_launch_timestamp: 1637173912,
     default_api_keys: {
