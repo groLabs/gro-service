@@ -232,9 +232,9 @@ function getTvlStats(assets) {
     logger.info('getTvlStats');
 
     const tvl = {
-        labs_dai_vault: assets[0],
-        labs_usdc_vault: assets[1],
-        labs_usdt_vault: assets[2],
+        'groDAI.e_vault': assets[0],
+        'groUSDC.e_vault': assets[1],
+        'groUSDT.e_vault': assets[2],
         total: assets[0].add(assets[1]).add(assets[2]),
     };
     return tvl;
