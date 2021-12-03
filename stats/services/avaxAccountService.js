@@ -494,11 +494,11 @@ async function avaxPersonalStats(account) {
     const [daiVaultEvents, usdcVaultEvents, usdtVaultEvents] =
         await Promise.all(vaultEventsPromise);
 
-    fullData(result, daiVaultEvents, 'dai_vault');
+    fullData(result, daiVaultEvents, 'groDAI.e_vault');
 
-    fullData(result, usdcVaultEvents, 'usdc_vault');
+    fullData(result, usdcVaultEvents, 'groUSDC.e_vault');
 
-    fullData(result, usdtVaultEvents, 'usdt_vault');
+    fullData(result, usdtVaultEvents, 'groUSDT.e_vault');
 
     calculateTotal(result, [
         'amount_added',

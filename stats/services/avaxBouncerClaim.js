@@ -122,9 +122,9 @@ async function getAccountAllowance(account, provider) {
 
         const accountProofInfo = proofs[account];
         if (accountProofInfo) {
-            const { amount, proof, gro_balance: gBalance } = accountProofInfo;
-            if (gBalance) {
-                result.gro_balance_at_snapshot = gBalance;
+            const { amount, proof, groBalance } = accountProofInfo;
+            if (groBalance) {
+                result.gro_balance_at_snapshot = groBalance;
             }
             if (proof) {
                 result.proofs = proof;
