@@ -14,8 +14,8 @@ const statsDir = getConfig('stats_folder');
 
 // DUMPS:
 // const { balances } = require('../files/balances_cream');
-// const {groHolders : balances} = require('../files/groHolders');
-const {argentHolders : balances} = require('../files/argentHolders');
+const {groHolders : balances} = require('../files/groHolders');
+// const {argentHolders : balances} = require('../files/argentHolders');
 
 
 const status = async (targetDate, targetTime, targetBlock) => {
@@ -82,7 +82,7 @@ const status = async (targetDate, targetTime, targetBlock) => {
 
 const isContract = async () => {
     console.log('balances', balances);
-    const currentFile = `${statsDir}/gro_argent.txt`;
+    const currentFile = `${statsDir}/gro_balances.txt`;
     const maxLength = balances.length;
     for (let i = 0; i < maxLength; i++) {
         const value = await getProvider().getCode(balances[i]);

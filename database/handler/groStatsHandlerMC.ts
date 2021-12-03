@@ -53,7 +53,7 @@ const getTimestamps = async (targetTimestamp, table, filter) => {
             "diff_1w": diff_1w.rows[0],
         }
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getTimestamps(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getTimestamps(): ${err}`);
     }
 }
 
@@ -64,7 +64,7 @@ const getMaxTimestamp = async () => {
             throw `Query error in getMaxTimestamp`;
         return res.rows[0];
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getTimestamps(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getTimestamps(): ${err}`);
     }
 }
 
@@ -75,7 +75,7 @@ const getDistincts = async (targetTimestamp, table) => {
             throw `Query error in getTimestamps [targetTimestamp: ${targetTimestamp}]`;
         return res.rows;
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getDistincts(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getDistincts(): ${err}`);
     }
 }
 
@@ -98,7 +98,7 @@ const calcKPI = (root, kpi) => {
             [kpi + '_1w_dif']: (root.diff_1w) ? current - dif1w : NA,
         }
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->calcKPI(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->calcKPI(): ${err}`);
     }
 }
 
@@ -121,7 +121,7 @@ const getTVL = async (targetTimestamp) => {
             return {};
         }
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getTVL(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getTVL(): ${err}`);
     }
 }
 
@@ -141,7 +141,7 @@ const getAvaxTVL = async (targetTimestamp) => {
             return {};
         }
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getTVL(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getTVL(): ${err}`);
     }
 }
 
@@ -164,7 +164,7 @@ const getAPY = async (targetTimestamp, productId) => {
             return {};
         }
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getAPY(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getAPY(): ${err}`);
     }
 }
 
@@ -185,7 +185,7 @@ const getLifeguard = async (targetTimestamp) => {
             return {};
         }
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getLifeguard(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getLifeguard(): ${err}`);
     }
 }
 
@@ -205,7 +205,7 @@ const getSystem = async (targetTimestamp) => {
             return {};
         }
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getSystem(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getSystem(): ${err}`);
     }
 }
 
@@ -232,7 +232,7 @@ const getSystemLifeguardStables = async (targetTimestamp) => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getSystemLifeguardStables(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getSystemLifeguardStables(): ${err}`);
     }
 }
 
@@ -262,7 +262,7 @@ const getVaults = async (targetTimestamp) => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getVaults(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getVaults(): ${err}`);
     }
 }
 
@@ -293,7 +293,7 @@ const getAvaxVaults = async (targetTimestamp) => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getAvaxVaults(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getAvaxVaults(): ${err}`);
     }
 }
 
@@ -328,7 +328,7 @@ const getReserves = async (targetTimestamp) => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getReserves(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getReserves(): ${err}`);
     }
 }
 
@@ -363,7 +363,7 @@ const getAvaxReserves = async (targetTimestamp) => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getAvaxReserves(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getAvaxReserves(): ${err}`);
     }
 }
 
@@ -398,7 +398,7 @@ const getStrategies = async (targetTimestamp) => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getStrategies(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getStrategies(): ${err}`);
     }
 }
 
@@ -438,7 +438,7 @@ const getAvaxStrategies = async (targetTimestamp) => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getAvaxStrategies(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getAvaxStrategies(): ${err}`);
     }
 }
 
@@ -470,7 +470,7 @@ const getExposureStables = async (targetTimestamp) => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getExposureStables(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getExposureStables(): ${err}`);
     }
 }
 
@@ -502,7 +502,7 @@ const getExposureProtocols = async (targetTimestamp) => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getExposureProtocols(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getExposureProtocols(): ${err}`);
     }
 }
 
@@ -532,7 +532,7 @@ const getAllStatsMC = async () => {
             };
         return [];
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getAllStats(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getAllStatsMC(): ${err}`);
     }
 }
 

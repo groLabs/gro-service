@@ -24,8 +24,8 @@ const groStatsJob = async () => {
     schedule.scheduleJob(groStatsJobSetting, async () => {
         try {
             logger.info('**DB: groStatsJob started');
-            await etlGroStats();
-            // await etlGroStatsMC();
+            // await etlGroStats();
+            await etlGroStatsMC();
             logger.info('**DB: groStatsJob finished');
         } catch (err) {
             logger.error(`**DB: Error in dbStatsScheduler.js->groStatsJob(): ${err}`);
