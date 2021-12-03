@@ -1,30 +1,33 @@
-export const deposit_handler_history = {
-    '0x79b14d909381D79B655C0700d0fdc2C7054635b9': {
-        abi: 'old',
-        event_fragment: [
-            'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)',
-        ],
-    },
-    '0x9da6ad743F4F2A247A56350703A4B501c7f2C224': {},
-};
-export const withdraw_handler_history = {
-    '0xd89512Bdf570476310DE854Ef69D715E0e85B09F': {
-        abi: 'old',
-        event_fragment: [
-            'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
-        ],
-    },
-    '0x59B6b763509198d07cF8F13a2dc6F2df98CB0a1d': {},
-};
-export const old_pnl = ['0x4C4A81298CC85c5BBF8092bd241fCc5dD6Ec3f74'];
-export const buoy_start_block = 12837080;
 export const blockchain = {
     network: 'http://localhost:8545',
     start_block: 12522788,
+    start_timestamp: 1622204347,
+    default_api_keys: {
+        alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
+        infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
+        etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
+        pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
+    },
     alchemy_api_keys: {
         default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
         stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
         stats_gro: process.env.ALCHEMY_KEY_STATS_GRO,
+    },
+    infura_api_keys: {
+        default: {
+            projectId:
+                process.env[`INFURA_KEY_${process.env.BOT_ENV}_PROJECT_ID`],
+            projectSecret:
+                process.env[`INFURA_KEY_${process.env.BOT_ENV}_PROJECT_SECRET`],
+        },
+        stats_personal: {
+            projectId: process.env.INFURA_KEY_STATS_PERSONAL_PROJECT_ID,
+            projectSecret: process.env.INFURA_KEY_STATS_PERSONAL_PROJECT_SECRET,
+        },
+        stats_gro: {
+            projectId: process.env.INFURA_KEY_STATS_GRO_PROJECT_ID,
+            projectSecret: process.env.INFURA_KEY_STATS_GRO_PROJECT_SECRET,
+        },
     },
     keystores: {
         default: {
@@ -38,7 +41,8 @@ export const blockchain = {
             low_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_LOW_GAS,
             standard_file_path: process.env.KEY_STORE_REGULAR_STANDARD_GAS,
             standard_password: process.env.KEY_PASSWORD_REGULAR_STANDARD_GAS,
-            standard_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_STANDARD_GAS,
+            standard_private_key:
+                process.env.BOT_PRIVATE_KEY_REGULAR_STANDARD_GAS,
             fast_file_path: process.env.KEY_STORE_REGULAR_FAST_GAS,
             fast_password: process.env.KEY_PASSWORD_REGULAR_FAST_GAS,
             fast_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_FAST_GAS,
@@ -46,40 +50,42 @@ export const blockchain = {
             rapid_password: process.env.KEY_PASSWORD_REGULAR_RAPID_GAS,
             rapid_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_RAPID_GAS,
         },
-    },
-    default_api_keys: {
-        alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
-        infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
-        etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
-        pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
+        critical: {
+            rapid_file_path: process.env.KEY_STORE_CRITICAL_RAPID_GAS,
+            rapid_password: process.env.KEY_PASSWORD_CRITICAL_RAPID_GAS,
+            rapid_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_CRITICAL_GAS,
+        },
+        avaxharvest: {
+            dai_file_path: process.env.KEY_STORE_AVAX_DAI,
+            dai_password: process.env.KEY_PASSWORD_AVAX_DAI,
+            dai_private_key: process.env.BOT_PRIVATE_KEY_AVAX_DAI,
+            usdc_file_path: process.env.KEY_STORE_AVAX_USDC,
+            usdc_password: process.env.KEY_PASSWORD_AVAX_USDC,
+            usdc_private_key: process.env.BOT_PRIVATE_KEY_AVAX_USDC,
+            usdt_file_path: process.env.KEY_STORE_AVAX_USDT,
+            usdt_password: process.env.KEY_PASSWORD_AVAX_USDT,
+            usdt_private_key: process.env.BOT_PRIVATE_KEY_AVAX_USDT,
+        },
     },
 };
 export const trigger_scheduler = {
-    pending_transaction_check: '10 * * * * *',
-    bot_balance_check: '10 * * * * *',
-    invest: '*/1 * * * *',
-    harvest: '*/2 * * * *',
-    pnl: '*/3 * * * *',
-    rebalance: '33 * * * * *',
-    generate_stats: '10 * * *',
-    remove_stats_file: '*/2 * * * *',
-    bot_curve_check: '*/1 * * * *',
-    deposit_withdraw_event: '*/2 * * * *',
-    event_summary: '*/3 * * * *',
-    bot_chainlink_check: '25,55 * * * * *',
+    tend: '10 * * * * *',
+    harvest: '20 * * * * *',
+    force_close: '*/10 * * * * *',
 };
+
 export const emoji = {
+    company: '<:GRO:834796096685211689>',
     regularBot: ':control_knobs:',
     criticalBot: ':ambulance:',
     statsBot: ':control_knobs:',
     error: ':x:',
-    gvt: ':high_brightness:',
-    pwrd: ':low_brightness:',
-    company: ':jigsaw:',
-    miniStatsPersonal: ':bar_chart:',
-    stats: ':bar_chart:',
-    depositEvent: ':chart_with_upwards_trend:',
-    withdrawEvent: ':chart_with_downwards_trend:',
+    gvt: '<:Vault:834796096797802507>',
+    pwrd: '<:PWRD:834796096915767306>',
+    miniStatsPersonal: '<:graph:842393056321077299>',
+    stats: '<:graph:842393056321077299>',
+    depositEvent: '<:deposit:842398612846936074>',
+    withdrawEvent: '<:withdraw:842398612873019402>',
     transferEvent: ':arrow_right:',
     reverted: ':warning:',
     investTrigger: ':inbox_tray:',
@@ -94,75 +100,59 @@ export const emoji = {
     rebalance: ':scales:',
     curveCheck: ':loudspeaker:',
 };
-export const transaction_long_pending = {
-    invest: 1800000,
-    investToCurveVault: 1800000,
-    strategyHarvest: 900000,
-    execPnL: 300000,
-    rebalance: 120000,
-};
-export const keep_stats_file_number = 80;
-export const stats_folder = '../stats';
-export const log_folder = './logs';
-export const blockNumberFile = './lastBlockNumber.json';
-export const stats_latest = '../stats/gro-latest.json';
-export const vault_name = ['DAI yVault', 'USDC yVault', 'USDT yVault', 'Curve yVault'];
-export const stable_coin = ['DAI', 'USDC', 'USDT'];
-export const strategy_exposure = [
-    ['Idle', 'Compound'],
-    ['Cream'],
-    ['Idle', 'Compound'],
-    ['Cream'],
-    ['Idle', 'Compound'],
-    ['Cream'],
-    ['Curve'],
-];
-export const strategy_name = ['Idle', 'Cream', 'Idle', 'Cream', 'Idle', 'Cream', 'XPool'];
-export const strategy_default_apy = [58500, 99000, 30700, 65000, 83000, 90278, 200000];
-export const harvest_strategy_dependency = [
-    '0xab7FA2B2985BCcfC13c6D86b1D5A17486ab1e04C',
-    '0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE',
-    '0x053c80eA73Dc6941F518a68E2FC52Ac45BDE7c9C',
-];
-export const cream_strategy_dependency = [
-    '0x92B767185fB3B04F881e3aC8e5B0662a027A1D9f',
-    '0x44fbebd2f576670a6c33f6fc0b00aa8c5753b322',
-    '0x797AAB1ce7c01eB727ab980762bA88e7133d2157',
-];
-export const curve_strategy_dependency = {
-    yearn: '0x1B5eb1173D2Bf770e50F10410C9a96F7a8eB6e75',
-    curve: '0x7Eb40E450b9655f4B3cC4259BCC731c63ff55ae6',
-};
-export const health_endpoint = {
-    stats: process.env.STATS_BOT_HEALTH,
-    critic: process.env.CRITICAL_BOT_HEALTH,
-    harvest: process.env.REGULAR_BOT_HEALTH,
-};
-export const ratioUpperBond = 14000;
-export const ratioLowerBond = 7000;
-export const lifeguard_name = '3CRV';
-export const before_block = 30;
-export const fail_percentage_total = 1000;
-export const fail_percentage_pre_price = 500;
+
+export const log_folder = '../logs';
+export const limit_factor = 900000;
+export const force_close_threshold = 990000;
 export const contracts = {
-    controller: '0x514c3230F0b1C93e29Ea59fe8da3cEf0d4f1e0b7',
+    vaults: [
+        {
+            stable_coin: '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
+            vault_adaptor: '0x5E57E11483A3F60A76af3045303604522059dA2a',
+            strategy: '0x4c7EA5b8032C5Ea82DdF617DAc7972c70E0c0478',
+            gas_cost: '1000000',
+            wallet_key: 'dai',
+            vault_name: 'DAI yVault',
+            strategy_name: 'AH',
+            decimals: 18,
+        },
+        // {
+        //     stable_coin: '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
+        //     vault_adaptor: '0x57DaED1ee021BE9991F5d30CF494b6B09B5B449E',
+        //     strategy: '0x247AF6E106549033d3a65354fC3A72FF3794FA99',
+        //     gas_cost: '1000000',
+        //     wallet_key: 'usdc',
+        //     vault_name: 'USDC yVault',
+        //     strategy_name: 'AH',
+        //     decimals: 6,
+        // },
+        // {
+        //     stable_coin: '0xc7198437980c041c805A1EDcbA50c1Ce5db95118',
+        //     vault_adaptor: '0x471F4B4b9A97F82C3a25b034B33A8E306eE9Beb5',
+        //     strategy: '0x94a7c3419504ceA9FbA06eE739717B236Ada0638',
+        //     gas_cost: '1000000',
+        //     wallet_key: 'usdt',
+        //     vault_name: 'USDT yVault',
+        //     strategy_name: 'AH',
+        //     decimals: 6,
+        // },
+    ],
+    crtoken: '0xb3c68d69E95B095ab4b33B4cB67dBc0fbF3Edf56',
+    avax_aggregator: '0x0A77230d17318075983913bC2145DB16C7366156',
+    wavax: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7',
+    router: '0x60aE616a2155Ee3d9A68541Ba4544862310933d4',
+    joe: '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd',
 };
+
 export const discord = {
     token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
     retry: 3,
     channel: {
-        trades: '825998630828638239',
-        protocol_assets: '825998746696810536',
-        protocol_events: '825998886249168896',
-        crit_action_events: '825998966691987456',
-        bot_alerts: '825999025487609927',
-        bot_logs: '825999075971039283',
+        trades: '840219146277093456',
+        protocol_assets: '840219248915120148',
+        protocol_events: '840219356860514405',
+        crit_action_events: '840219422509760522',
+        bot_alerts: '840219078185713705',
+        bot_logs: '840219541488402473',
     },
-};
-export const database = {
-    host: process.env.DB_DEV_HOST,
-    port: process.env.DB_DEV_PORT,
-    user: process.env.DB_DEV_USER,
-    password: process.env.DB_DEV_PASSWORD,
-    database: process.env.DB_DEV_INSTANCE,
 };

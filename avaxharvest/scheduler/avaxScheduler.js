@@ -41,53 +41,10 @@ function harvestScheduler() {
     });
 }
 
-function tendScheduler() {
-    console.log('start tend');
-    schedule.scheduleJob(tendSchedulerSetting, async () => {
-        try {
-            const vaults = getVaults();
-            const txs = [];
-            for (let i = 0; i < vaults.length; i += 1) {
-                txs.push(tend(vaults[i]));
-            }
-            await Promise.all(txs);
-        } catch (error) {
-            sendErrorMessageToLogChannel(error);
-            const discordMessage = {
-                description:
-                    "[WARN] B2 -  HarvestTrigger | Harvest txn failed, HarvestTrigger action didn't complate",
-            };
-            // sendAlertMessage({
-            //     discord: discordMessage,
-            // });
-        }
-    });
-}
-
-function forceCloseScheduler() {
-    console.log('start forceclose');
-    schedule.scheduleJob(forceCloseSchedulerSetting, async () => {
-        try {
-            const vaults = getVaults();
-            const txs = [];
-            for (let i = 0; i < vaults.length; i += 1) {
-                txs.push(forceClose(vaults[i]));
-            }
-            await Promise.all(txs);
-        } catch (error) {
-            sendErrorMessageToLogChannel(error);
-            const discordMessage = {
-                description:
-                    "[WARN] B2 -  HarvestTrigger | Harvest txn failed, HarvestTrigger action didn't complate",
-            };
-        }
-    });
-}
-
 function startHarvestJobs() {
     harvestScheduler();
-    tendScheduler();
-    forceCloseScheduler();
+    // const vaults = getVaults();
+    // harvest(vaults[0]).catch((e) => console.log(e));
 }
 
 module.exports = {

@@ -19,22 +19,28 @@ const LOWER = BigNumber.from(980000);
 
 async function tend(vault) {
     try {
-        // await borrowLimit(vault);
         const { stableCoin, ahStrategy, gasCost, vaultName } = vault;
         const router = getRouter();
         const wavax = getWavax();
         const avaxAggregator = getAvaxAggregator();
         const gasPrice = await ahStrategy.signer.getGasPrice();
+        const latestBlock = await ahStrategy.signer.provider.getBlock('latest');
+        console.log(`latestBlock ${latestBlock.number}`);
+        const blockTag = {
+            blockTag: latestBlock.number,
+        };
         const callCostWithPrice = gasCost.mul(gasPrice);
         logger.info(
             `gasPrice ${gasPrice}, callCostWithPrice: ${callCostWithPrice}`
         );
-        const tendTrigger = await ahStrategy.tendTrigger(callCostWithPrice);
-
+        const tendTrigger = await ahStrategy.tendTrigger(
+            callCostWithPrice,
+            blockTag
+        );
         logger.info(`Vault name: ${vaultName}, tendTrigger: ${tendTrigger}`);
         if (tendTrigger) {
             // 1. get balance of want in vaultAdaptor and startegy
-            const volatilityCheck = await ahStrategy.volatilityCheck();
+            const volatilityCheck = await ahStrategy.volatilityCheck(blockTag);
             logger.info(`volatilityCheck ${volatilityCheck}`);
             // const volatilityCheck = true;
 
@@ -48,8 +54,9 @@ async function tend(vault) {
                     `stableCoinDecimal ${vaultName} ${stableCoinDecimal}`
                 );
 
-                const avaxPriceInChainlink =
-                    await avaxAggregator.latestAnswer();
+                const avaxPriceInChainlink = await avaxAggregator.latestAnswer(
+                    blockTag
+                );
                 logger.info(
                     `avaxPriceInChainlink  ${vaultName} ${avaxPriceInChainlink}`
                 );
@@ -57,6 +64,7 @@ async function tend(vault) {
                 const uniRatio = await router.getAmountsOut(E18, [
                     wavax.address,
                     stableCoin.address,
+                    blockTag,
                 ]);
                 logger.info(`uniRatio ${uniRatio[0]} ${uniRatio[1]}`);
                 const avaxPriceInUni = uniRatio[1]

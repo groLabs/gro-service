@@ -17,6 +17,9 @@ const E18 = BigNumber.from('1000000000000000000');
 const PERCENT_DECIMAL = BigNumber.from('1000000');
 const LIMIT_FACTOR = BigNumber.from(getConfig('limit_factor'));
 const CLOSE_THRESHOLD = BigNumber.from(getConfig('force_close_threshold'));
+const CHAINLINK_DECIMAL = BigNumber.from('100000000');
+const UPPER = BigNumber.from(1020000);
+const LOWER = BigNumber.from(980000);
 
 async function getBorrowInfo() {
     const crToken = getCrToken();
@@ -69,6 +72,17 @@ async function borrowLimit(vault) {
 
     const newBorrowLimitWant = newBorrowLimit.mul(checkResult[1]).div(E18);
     logger.info(`newBorrowLimitWant ${newBorrowLimitWant}`);
+
+    const currentLimit = await ahStrategy.borrowLimit();
+
+    const diff = currentLimit.mul(PERCENT_DECIMAL).div(newBorrowLimitWant);
+
+    logger.info(`diff ${diff}`);
+
+    if (diff.gt(UPPER) || diff.lt(LOWER)) {
+        logger.info('out of range, will not run setLimit');
+        return;
+    }
 
     const tx = await sendTransaction(ahStrategy, 'setBorrowLimit', [
         newBorrowLimitWant,

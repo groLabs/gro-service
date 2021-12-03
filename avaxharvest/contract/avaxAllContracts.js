@@ -9,6 +9,7 @@ const strategyABI = require('./abi/AHv2Farmer.json').abi;
 const routerABI = require('./abi/JoeRouter02.json').abi;
 const wavaxABI = require('./abi/Wavax.json').abi;
 const chainlinkABI = require('./abi/Chainlink.json').abi;
+const joeABI = require('./abi/IJoe.json');
 const crTokenABI = require('./abi/CrToken.json').abi;
 
 const erc20ABI = require('../../contract/abis/ERC20.json');
@@ -19,7 +20,9 @@ const vaults = [];
 let router;
 let wavax;
 let avaxAggregator;
+let joeAggregator;
 let crToken;
+let joeToken;
 
 function initVaults() {
     const vaultsConfig = getConfig('contracts.vaults');
@@ -99,6 +102,18 @@ function initAvaxAggregator() {
     logger.info('avaxAggregator done!');
 }
 
+function initJoeToken() {
+    const joeConfig = getConfig('contracts.joe');
+    joeToken = new ethers.Contract(joeConfig, joeABI, nonceManager);
+    logger.info('joeToken done!');
+}
+
+// function initJoeAggregator() {
+//     const joeConfig = getConfig('contracts.joe_aggregator');
+//     joeAggregator = new ethers.Contract(joeConfig, chainlinkABI, nonceManager);
+//     logger.info('joeAggregator done!');
+// }
+
 function initCrToken() {
     const crConfig = getConfig('contracts.crtoken');
     crToken = new ethers.Contract(crConfig, crTokenABI, nonceManager);
@@ -111,6 +126,7 @@ function initAllAvaxContracts() {
     initWavax();
     initAvaxAggregator();
     initCrToken();
+    // initJoeToken();
     logger.info('Init contracts done!.');
 }
 
@@ -130,6 +146,14 @@ function getAvaxAggregator() {
     return avaxAggregator;
 }
 
+function getJoeAggregator() {
+    return joeAggregator;
+}
+
+function getJoeToken() {
+    return joeToken;
+}
+
 function getCrToken() {
     return crToken;
 }
@@ -140,5 +164,6 @@ module.exports = {
     getRouter,
     getWavax,
     getAvaxAggregator,
+    getJoeToken,
     getCrToken,
 };
