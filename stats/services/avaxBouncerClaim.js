@@ -88,6 +88,16 @@ async function getClaimedAmount(account, provider) {
     return claimedAmounts;
 }
 
+async function getCurrentRoot(provider) {
+    const latestBouncer = getLatestSystemContractOnAVAX(
+        ContractNames.AVAXBouncer,
+        provider
+    ).contract;
+
+    const root = await latestBouncer.root();
+    return root;
+}
+
 async function getAccountAllowance(account, provider) {
     account = toChecksumAddress(account);
     const result = {
@@ -100,6 +110,8 @@ async function getAccountAllowance(account, provider) {
         gro_balance_at_snapshot: '0',
         gro_gate_at_snapshot: '0',
         proofs: [],
+        root: '',
+        root_matched: false,
     };
     try {
         const latestAllowanceFileIndex = groGateFiles.length;
@@ -190,6 +202,10 @@ async function getAccountAllowance(account, provider) {
                 .add(remainingAmounts[2].div(BigNumber.from(10).pow(6)));
             result.total_claimable_allowance = claimableTotal.toString();
             result.total_remaining_allowance = remainTotal.toString();
+        }
+        const bouncerRoot = await getCurrentRoot(provider);
+        if (root === bouncerRoot) {
+            result.root_matched = true;
         }
     } catch (error) {
         logger.error(`Get gro gate for ${account} failed.`);
