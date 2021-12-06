@@ -115,8 +115,10 @@ async function getAccountAllowance(account, provider) {
         const {
             snapshot_ts: snapshotTS,
             gro_gate_at_snapshot: groGateBalance,
+            root,
             proofs,
         } = groGateContent;
+        result.root = root;
         result.snapshot_ts = snapshotTS;
         result.gro_gate_at_snapshot = groGateBalance;
 
