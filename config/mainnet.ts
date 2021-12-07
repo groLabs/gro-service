@@ -212,6 +212,7 @@ export const fail_percentage_total = 1000;
 export const fail_percentage_pre_price = 500;
 export const contracts = {
     controller: '0xCC5c60A319D33810b9EaB9764717EeF84deFB8F4',
+    votingAggregator: '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D',
 };
 export const staker_pools = {
     contracts: {
@@ -353,3 +354,5 @@ export const subgraph = {
     balancerV2_pool_id_gro_weth:
         '0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
 };
+
+

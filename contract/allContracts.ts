@@ -2,7 +2,8 @@ import { ethers } from 'ethers';
 import { getAlchemyRpcProvider, getWalletNonceManager } from '../common/chainUtil';
 import { ContractCallError } from '../common/error';
 import { getConfig } from '../common/configUtil';
-import { Controller, Insurance, PnL, Vault, Exposure, Strategy, VaultAdaptorYearnV2032 as VaultAdaptor, DepositHandler, WithdrawHandler, LifeGuard3Pool, Buoy3Pool as Buoy , ERC20, RebasingGToken, NonRebasingGToken} from './types'
+import { Controller, Insurance, PnL, Vault, Exposure, Strategy, VaultAdaptorYearnV2032 as VaultAdaptor, DepositHandler, WithdrawHandler, LifeGuard3Pool, Buoy3Pool as Buoy, ERC20, RebasingGToken, NonRebasingGToken } from './types'
+import { VotingAggregator } from './types/VotingAggregator';
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 const nodeEnv = process.env.NODE_ENV?.toLowerCase();
@@ -34,6 +35,7 @@ const buoyABI = require('./abis/Buoy3Pool.json');
 const VaultABI = require('./abis/Vault.json');
 const erc20ABI = require('./abis/ERC20.json');
 const strategyABI = require('./abis/Strategy.json');
+const votingAggregatorABI = require('./abis/VotingAggregator.json')
 
 const nonceManager = getWalletNonceManager();
 
@@ -48,8 +50,9 @@ let withdrawHandler: WithdrawHandler;
 let lifeguard: LifeGuard3Pool;
 let buoy: Buoy;
 let curveVault: VaultAdaptor;
+let votingAggregator: VotingAggregator
 const vaults = [];
-const underlyTokens : ERC20[] = [];
+const underlyTokens: ERC20[] = [];
 const strategyLength = [];
 const vaultAndStrategyLabels = {};
 const vaultStableCoins = { tokens: {}, decimals: {}, symbols: {} };
@@ -65,6 +68,11 @@ function initController() {
         nonceManager
     ) as Controller;
     logger.info('controller done!');
+}
+
+async function initVotingAggregator() {
+    const votingAggregatorAddress = getConfig('contracts.votingAggregator') as string;
+    votingAggregator = new ethers.Contract(votingAggregatorAddress, votingAggregatorABI, nonceManager) as VotingAggregator
 }
 
 async function initInsurance() {
@@ -290,6 +298,7 @@ async function initAllContracts() {
     promises.push(initLifeguard());
     promises.push(initDepositHandler());
     promises.push(initWithdrawHandler());
+    promises.push(initVotingAggregator())
     await Promise.all(promises).catch((error) => {
         logger.error(error);
         throw new ContractCallError('Initilize all used contracts failed');
@@ -402,6 +411,16 @@ function getController(providerKey, signerKey) {
     return getOrCreateContract(
         controller,
         'controller',
+        providerKey,
+        signerKey
+    );
+}
+
+function getVotingAggregator(providerKey, signerKey?) {
+    if (!providerKey) return votingAggregator;
+    return getOrCreateContract(
+        votingAggregator,
+        'votingAggregator',
         providerKey,
         signerKey
     );
@@ -528,5 +547,6 @@ export {
     getVaultAndStrategyLabels,
     getVaultStableCoins,
     getUnderlyTokens,
+    getVotingAggregator,
     getYearnVaults,
 };
