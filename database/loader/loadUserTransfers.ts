@@ -85,6 +85,7 @@ const loadTmpUserTransfers = async (
             for (let i = 0; i < logs.length; i++) {
 
                 result = await parseTransferEvents(logs[i], side);
+                console.log('side', side, 'result.length:', result.length);
 
                 if (side === Transfer.DEPOSIT ||
                     side === Transfer.WITHDRAWAL) {
@@ -94,7 +95,6 @@ const loadTmpUserTransfers = async (
                     side === Transfer.TRANSFER_GVT_OUT ||
                     side === Transfer.TRANSFER_GVT_IN) {
                     // Calc the GVT price for contract transfers
-
                     for (const item of result) {
                         const priceGVT = parseAmount(await getGroVault().getPricePerShare({ blockTag: item.block_number }), 'USD');
                         item.usd_value = item.gvt_amount * priceGVT;

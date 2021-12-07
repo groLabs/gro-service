@@ -159,6 +159,8 @@ const load = async (fromDate, toDate, loadType) => {
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_IN, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_OUT, null),
             ]);
 
             if (res.every(Boolean)) {
@@ -206,6 +208,8 @@ const loadTransfers = async (fromDate, toDate, loadType) => {
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_IN, null),
+                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_OUT, null),
             ]);
 
             if (res.every(Boolean)) {
