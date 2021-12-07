@@ -847,7 +847,7 @@ async function ethereumPersonalStats(account) {
         net_returns: {},
         net_returns_ratio: {},
         address: account,
-        gro_balance_combined_current: combinedGROBalance,
+        gro_balance_combined: combinedGROBalance,
     };
 
     // calculate groVault deposit & withdraw
