@@ -12,6 +12,7 @@ const { ContractNames } = require('../../dist/registry/registry');
 const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
 const aggregatorABI = require('../abi/aggregator.json');
 const poolABI = require('../abi/Pool.json');
+const erc20ABI = require('../../contract/abis/ERC20.json');
 const { getConfig } = require('../../dist/common/configUtil');
 const { getLatestSystemContractOnAVAX } = require('../common/contractStorage');
 const { getEvents } = require('../../dist/common/logFilter-new');
@@ -46,9 +47,9 @@ const USDT_POOL = new ethers.Contract(
     poolABI,
     provider
 );
+
 // constant
 const SHARE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
-const THRESHOLD_DECIMAL = BigNumber.from(10).pow(BigNumber.from(4));
 const ZERO = BigNumber.from(0);
 const TWO = BigNumber.from(2);
 const DECIMALS = [
@@ -60,10 +61,11 @@ const POOLS = [DAI_POOL, USDC_POOL, USDT_POOL];
 const MS_PER_YEAR = BigNumber.from('31536000');
 const STABLECOINS = ['DAI.e', 'USDC.e', 'USDT.e'];
 const RISK_FREE_RATE = BigNumber.from(2400);
-const AGGREGATOR_DECIMAL = BigNumber.from(100000000);
 
 const E18 = BigNumber.from(10).pow(BigNumber.from(18));
-
+const BLOCKS_OF_3DAYS = 120000;
+const START_TIME_STAMP = [1638707119, 1638549778, 1638549778];
+const START_BLOCK = [7838860, 7759709, 7759709];
 const providerKey = 'stats_gro';
 
 function getLatestAVAXContract(adapaterType) {
@@ -195,7 +197,8 @@ async function calculatePositionReturn(
     strategyContract,
     openBlock,
     endBlock,
-    duration
+    duration,
+    positionId
 ) {
     const openTotalSupply = await vaultAdapter.totalSupply({
         blockTag: openBlock,
@@ -218,6 +221,7 @@ async function calculatePositionReturn(
     const closePricePerShare = closeEstimated
         .mul(DECIMALS[vaultIndex])
         .div(closeTotalSupply);
+
     console.log(
         `closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated}`
     );
@@ -227,7 +231,41 @@ async function calculatePositionReturn(
         .mul(MS_PER_YEAR)
         .div(openPricePerShare)
         .div(duration);
-    return { openEstimated, closeEstimated, positionReturn };
+
+    const positionInfo = await strategyContract.getPosition(positionId, {
+        blockTag: openBlock,
+    });
+    let wantOpen = positionInfo[2][0];
+    const strategyInfoBefore = await vaultAdapter.strategies(
+        strategyContract.address,
+        {
+            blockTag: endBlock - 1,
+        }
+    );
+    // console.log(`strategyInfoBefore ${JSON.stringify(strategyInfoBefore)}`);
+    const strategyInfoAfter = await vaultAdapter.strategies(
+        strategyContract.address,
+        {
+            blockTag: endBlock,
+        }
+    );
+    // console.log(`strategyInfoAfter ${JSON.stringify(strategyInfoAfter)}`);
+    const profit = strategyInfoAfter.totalGain.sub(
+        strategyInfoBefore.totalGain
+    );
+    const loss = strategyInfoAfter.totalLoss.sub(strategyInfoBefore.totalLoss);
+    let wantClose = wantOpen.add(profit).sub(loss);
+    if (profit.eq(ZERO) && loss.eq(ZERO)) {
+        wantOpen = strategyInfoAfter.totalDebt;
+        wantClose = await strategyContract.estimatedTotalAssets({
+            blockTag: endBlock,
+        });
+        logger.info(`withdraw ${wantOpen} ${wantClose}`);
+    }
+    logger.info(
+        `gain/loss ${strategyInfoAfter.totalDebt} + ${strategyInfoAfter.totalGain} ${strategyInfoBefore.totalGain} - ${strategyInfoAfter.totalLoss} ${strategyInfoBefore.totalLoss}`
+    );
+    return { wantOpen, wantClose, positionReturn };
 }
 
 function getTvlStats(assets) {
@@ -277,6 +315,7 @@ function calculateMatrix(
     );
     const returnsExcludeRiskFree =
         timeWeightedAverageReturn.sub(RISK_FREE_RATE);
+
     let sharpeRatio = ZERO;
     if (stdDivReturn.gt(ZERO)) {
         sharpeRatio = returnsExcludeRiskFree
@@ -290,13 +329,6 @@ function calculateMatrix(
             .mul(SHARE_DECIMAL)
             .div(stdDivNegativeReturn);
     }
-    //const sharpeRatio = returnsExcludeRiskFree
-    //    .mul(SHARE_DECIMAL)
-    //    .div(stdDivReturn);
-
-    //const sortinoRatio = returnsExcludeRiskFree
-    //    .mul(SHARE_DECIMAL)
-    //    .div(stdDivNegativeReturn);
 
     return {
         sharpeRatio,
@@ -354,6 +386,95 @@ async function getAvaxExposure(
         logger.info(`less avaxBalance ${avaxExposure}`);
     }
     return avaxExposure;
+}
+
+async function calculateVaultReturn(
+    vaultAdapter,
+    vaultIndex,
+    endBlock,
+    endTimestamp
+) {
+    const startBlock = START_BLOCK[vaultIndex];
+    const startTimestamp = START_TIME_STAMP[vaultIndex];
+    const startTotalSupply = await vaultAdapter.totalSupply({
+        blockTag: startBlock,
+    });
+    const startEstimated = await vaultAdapter.totalEstimatedAssets({
+        blockTag: startBlock,
+    });
+    let openPricePerShare = DECIMALS[vaultIndex];
+    if (!startTotalSupply.isZero()) {
+        openPricePerShare = startEstimated
+            .mul(DECIMALS[vaultIndex])
+            .div(startTotalSupply);
+    }
+    // console.log(
+    //     `${startBlock} openTotalSupply ${startTotalSupply} openEstimated ${startEstimated}`
+    // );
+    const closeTotalSupply = await vaultAdapter.totalSupply({
+        blockTag: endBlock,
+    });
+    const closeEstimated = await vaultAdapter.totalEstimatedAssets({
+        blockTag: endBlock,
+    });
+    console.log(
+        `apy === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} endBlock ${endBlock}`
+    );
+    const closePricePerShare = closeEstimated
+        .mul(DECIMALS[vaultIndex])
+        .div(closeTotalSupply);
+    console.log(
+        `apy duration endTimestamp ${endTimestamp} startTimestamp ${startTimestamp} duration ${
+            endTimestamp - startTimestamp
+        } === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} openPricePerShare ${openPricePerShare} closePricePerShare ${closePricePerShare}`
+    );
+    const diff = endTimestamp - startTimestamp;
+    const duration = BigNumber.from(diff);
+    const vaultReturn = closePricePerShare
+        .sub(openPricePerShare)
+        .mul(SHARE_DECIMAL)
+        .mul(MS_PER_YEAR)
+        .div(openPricePerShare)
+        .div(duration);
+
+    let vaultReturn3Days = vaultReturn;
+    console.log(
+        `endBlock - BLOCKS_OF_3DAYS ${
+            endBlock - BLOCKS_OF_3DAYS
+        } startBlock ${startBlock}`
+    );
+    if (endBlock - BLOCKS_OF_3DAYS > startBlock) {
+        const blockNumber3DaysAgo = endBlock - BLOCKS_OF_3DAYS;
+        const block3DaysAgo = await provider.getBlock(blockNumber3DaysAgo);
+        logger.info(`block.timestamp 3days ago ${block3DaysAgo.timestamp}`);
+        const startTotalSupply = await vaultAdapter.totalSupply({
+            blockTag: blockNumber3DaysAgo,
+        });
+        const startEstimated = await vaultAdapter.totalEstimatedAssets({
+            blockTag: blockNumber3DaysAgo,
+        });
+        let open3DaysAgoPricePerShare = DECIMALS[vaultIndex];
+        if (!startEstimated.isZero()) {
+            open3DaysAgoPricePerShare = startTotalSupply
+                .mul(DECIMALS[vaultIndex])
+                .div(startEstimated);
+        }
+        const duration = BigNumber.from(endTimestamp - block3DaysAgo.timestamp);
+        vaultReturn3Days = closePricePerShare
+            .sub(open3DaysAgoPricePerShare)
+            .mul(SHARE_DECIMAL)
+            .mul(MS_PER_YEAR)
+            .div(openPricePerShare)
+            .div(duration);
+        console.log(
+            `${blockNumber3DaysAgo} open3DaysAgoTotalSupply ${startTotalSupply} open3DaysAgoEstimated ${startEstimated}`
+        );
+    }
+
+    console.log(
+        `vaultReturn ${vaultReturn} vaultReturn3Days ${vaultReturn3Days}`
+    );
+    return { vaultReturn, vaultReturn3Days };
 }
 
 async function getAvaxSystemStats() {
@@ -443,14 +564,20 @@ async function getAvaxSystemStats() {
         const share = tvl.total.isZero()
             ? ZERO
             : calculateSharePercent(vaultsTvl[vaultIndex], tvl.total);
-
+        const { vaultReturn, vaultReturn3Days } = await calculateVaultReturn(
+            vaultAdapter,
+            vaultIndex,
+            block.number,
+            block.timestamp
+        );
         const labsVaultData = {
             name: vaultContractInfo.metaData.N,
             display_name: vaultContractInfo.metaData.DN,
             stablecoin: STABLECOINS[vaultIndex],
             amount: vaultsTvl[vaultIndex],
             share,
-            last3d_apy: BigNumber.from(0),
+            all_time_apy: vaultReturn,
+            last3d_apy: vaultReturn3Days,
             reserves,
             strategies: [strategyInfo],
         };
@@ -502,14 +629,15 @@ async function getAvaxSystemStats() {
                 );
                 totalDuration = totalDuration.add(duration);
                 durations[i] = duration;
-                const { openEstimated, closeEstimated, positionReturn } =
+                const { wantOpen, wantClose, positionReturn } =
                     await calculatePositionReturn(
                         vaultAdapter,
                         vaultIndex,
                         strategyContract,
                         open.block,
                         close.block,
-                        duration
+                        duration,
+                        key
                     );
                 returns[i] = positionReturn;
 
@@ -518,42 +646,45 @@ async function getAvaxSystemStats() {
                 );
                 const positionInfo = {
                     open_ts: open.timestamp,
-                    open_amount: openEstimated
-                        .mul(E18)
-                        .div(DECIMALS[vaultIndex]),
+                    open_amount: wantOpen.mul(E18).div(DECIMALS[vaultIndex]),
                     close_ts: close.timestamp,
-                    close_amount: closeEstimated
-                        .mul(E18)
-                        .div(DECIMALS[vaultIndex]),
+                    close_amount: wantClose.mul(E18).div(DECIMALS[vaultIndex]),
                     apy: positionReturn,
                 };
                 positions.push(positionInfo);
                 console.log(
-                    `--- positionInfo ${key} ${positionInfo.open_ts} ${positionInfo.open_amount} ${positionInfo.close_ts} ${positionInfo.close_amount} ${positionInfo.apy}`
+                    `--- positionInfo ${key}\n open ${
+                        positionInfo.open_amount
+                    } ${positionInfo.open_ts} ${new Date(
+                        positionInfo.open_ts * 1000
+                    )}\n close ${positionInfo.close_amount} ${
+                        positionInfo.close_ts
+                    }  ${new Date(positionInfo.close_ts * 1000)} \n apy ${
+                        positionInfo.apy
+                    }\n`
                 );
             } else {
                 const duration = BigNumber.from(
                     block.timestamp - open.timestamp
                 );
-                const { openEstimated, closeEstimated, positionReturn } =
+                const { wantOpen, wantClose, positionReturn } =
                     await calculatePositionReturn(
                         vaultAdapter,
                         vaultIndex,
                         strategyContract,
                         open.block,
                         block.number,
-                        duration
+                        duration,
+                        key
                     );
                 console.log(
-                    `activePosition ${openEstimated} ${closeEstimated} ${positionReturn}`
+                    `activePosition ${wantOpen} ${wantClose} ${positionReturn}`
                 );
                 openPosition = {
                     active_position: 'true',
                     open_ts: open.timestamp,
-                    open_amount: openEstimated
-                        .mul(E18)
-                        .div(DECIMALS[vaultIndex]),
-                    current_amount: closeEstimated
+                    open_amount: wantOpen.mul(E18).div(DECIMALS[vaultIndex]),
+                    current_amount: wantClose
                         .mul(E18)
                         .div(DECIMALS[vaultIndex]),
                     apy: positionReturn,
