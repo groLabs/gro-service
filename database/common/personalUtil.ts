@@ -9,7 +9,11 @@ import {
 } from '../../common/filterGenerateTool';
 import { getProvider } from './globalUtil';
 import { query } from '../handler/queryHandler';
-import { QUERY_ERROR, ERC20_TRANSFER_SIGNATURE } from '../constants';
+import { 
+    QUERY_ERROR, 
+    ERC20_TRANSFER_SIGNATURE
+} from '../constants';
+import { Transfer } from '../types';
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -23,31 +27,6 @@ const isPlural = (count) => (count > 1 ? 's' : '');
 const handleErr = async (func, err) => {
     logger.error(`**DB: ${func} \n Message: ${err}`);
 };
-
-//TODO: replace by TS' enum
-const Load = Object.freeze({
-    FULL: 1,
-    TRANSFERS: 2,
-});
-
-//TODO: replace by TS' enum
-const Transfer = Object.freeze({
-    DEPOSIT: 1,
-    WITHDRAWAL: 2,
-    TRANSFER_GVT_IN: 3,
-    TRANSFER_PWRD_IN: 4,  // TODO: PWRD_OUT
-    TRANSFER_GVT_OUT: 5,
-    TRANSFER_PWRD_OUT: 6,
-    TRANSFER_GRO_IN: 7,
-    TRANSFER_GRO_OUT: 8,
-    TRANSFER_groUSDCe_IN: 9,
-    TRANSFER_groUSDCe_OUT: 10,
-    TRANSFER_groUSDTe_IN: 11,
-    TRANSFER_groUSDTe_OUT: 12,
-    TRANSFER_groDAIe_IN: 13,
-    TRANSFER_groDAIe_OUT: 14,
-    STABLECOIN_APPROVAL: 20,
-});
 
 const transferType = (side) => {
     switch (side) {
@@ -280,10 +259,11 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 return false;
         }
 
-        let events;
-        if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) {
+        let filters;
+        if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
+            || side === Transfer.TRANSFER_groUSDCe_IN || side === Transfer.TRANSFER_groUSDCe_OUT) {
             // returns an array
-            events = getContractHistoryEventFilters(
+            filters = getContractHistoryEventFilters(
                 'default',
                 contractName,
                 eventType,
@@ -293,7 +273,7 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
             );
         } else {
             // returns an object
-            events = getLatestContractEventFilter(
+            filters = getLatestContractEventFilter(
                 'default',
                 contractName,
                 eventType,
@@ -301,13 +281,13 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 toBlock,
                 [sender, receiver]
             );
-            events = [events];
+            filters = [filters];
         }
 
         const logPromises = [];
 
-        for (let i = 0; i < events.length; i += 1) {
-            const transferEventFilter = events[i];
+        for (let i = 0; i < filters.length; i += 1) {
+            const transferEventFilter = filters[i];
             const result = await getFilterEvents(
                 transferEventFilter.filter,
                 transferEventFilter.interface,
@@ -485,7 +465,5 @@ export {
     handleErr,
     isDeposit,
     isPlural,
-    Transfer,
-    Load,
     transferType,
 };

@@ -5,7 +5,12 @@ import { loadAllTables, loadAPY } from '../loader/loadGroStatsMC';
 import { checkLastTimestamp } from '../common/protocolUtil';
 import { calcRangeTimestamps } from '../common/globalUtil';
 import { findBlockByDate } from '../common/globalUtil';
-import { QUERY_SUCCESS, NETWORK, PRODUCT, PRODUCT_ID } from '../constants';
+import { QUERY_SUCCESS } from '../constants';
+// import {
+//     Network,
+//     Product,
+//     ProductId
+// } from '../types';
 import { ICall } from '../common/commonTypes'
 
 const route: any = getConfig('route');

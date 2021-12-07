@@ -2,7 +2,6 @@ import fs from 'fs';
 import moment from 'moment';
 import { pool } from '../handler/queryHandler';
 import { getConfig } from '../../common/configUtil';
-import pg from 'pg';
 import { TABLE_WHITELIST } from '../constants';
 
 const copyTo = require('pg-copy-streams').to

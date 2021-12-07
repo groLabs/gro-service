@@ -9,45 +9,11 @@ const TABLE_WHITELIST = [
     'PROTOCOL_PRICE_CHECK_DETAILED',
 ];
 
-enum NETWORK {
-    MAINNET = 'mainnet',
-    ROPSTEN = 'ropsten',
-    RINKEBY = 'rinkeby',
-    GOERLI = 'goerli',
-    KOVAN = 'kovan',
-    AVALANCHE = 'avalanche',
-}
-
-enum NETWORK_ID {
-    MAINNET = 1,
-    ROPSTEN = 3,
-    RINKEBY = 4,
-    GOERLI = 5,
-    KOVAN = 42,
-    AVALANCHE = 43114,
-}
-
-enum PRODUCT {
-    PWRD = 'pwrd',
-    GVT = 'gvt',
-    GRO = 'gro',
-}
-
-enum PRODUCT_ID {
-    PWRD = 1,
-    GVT = 2,
-    GRO = 3,
-}
-
 export {
     QUERY_ERROR,
     QUERY_SUCCESS,
     ERC20_TRANSFER_SIGNATURE,
     TABLE_WHITELIST,
     BALANCES_BATCH,
-    NETWORK,
-    NETWORK_ID,
-    PRODUCT,
-    PRODUCT_ID,
 }
 

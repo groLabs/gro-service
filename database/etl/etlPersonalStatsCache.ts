@@ -3,12 +3,13 @@ import { query } from '../handler/queryHandler';
 import { getConfig } from '../../common/configUtil';
 import { getTimestampByBlockNumber } from '../../common/chainUtil';
 import { findBlockByDate } from '../common/globalUtil';
-import { handleErr, Transfer } from '../common/personalUtil';
+import { handleErr } from '../common/personalUtil';
 import { loadUserTransfers, loadTmpUserTransfers } from '../loader/loadUserTransfers';
-import { loadUserApprovals, loadTmpUserApprovals } from '../loader/loadUserApprovals';
+// import { loadUserApprovals, loadTmpUserApprovals } from '../loader/loadUserApprovals';
 import { loadUserBalances } from '../loader/loadUserBalances';
 import { loadUserNetReturns } from '../loader/loadUserNetReturns';
 import { QUERY_ERROR } from '../constants';
+import { Transfer } from '../types'
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);

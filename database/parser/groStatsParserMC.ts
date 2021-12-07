@@ -1,13 +1,18 @@
 import moment from 'moment';
-import { NETWORK, NETWORK_ID, PRODUCT, PRODUCT_ID } from '../constants';
+import {
+    Network,
+    NetworkId,
+    Product,
+    ProductId
+} from '../types';
 import { getNetworkId } from '../common/personalUtil';
 
 
-const defaultData = (stats, network: NETWORK) => {
-    const networkId = (network === NETWORK.MAINNET)
+const defaultData = (stats, network: Network) => {
+    const networkId = (network === Network.MAINNET)
         ? getNetworkId()
-        : (network === NETWORK.AVALANCHE)
-            ? NETWORK_ID.AVALANCHE
+        : (network === Network.AVALANCHE)
+            ? NetworkId.AVALANCHE
             : -1;
 
     return [
@@ -17,7 +22,7 @@ const defaultData = (stats, network: NETWORK) => {
     ];
 };
 
-const getAPY = (stats, network: NETWORK, product: PRODUCT, productId: PRODUCT_ID) => {
+const getAPY = (stats, network: Network, product: Product, productId: ProductId) => {
     const result = [
         ...defaultData(stats, network),
         productId,
@@ -47,7 +52,7 @@ const getAPY = (stats, network: NETWORK, product: PRODUCT, productId: PRODUCT_ID
     return result;
 }
 
-const getTVL = (stats, network: NETWORK) => {
+const getTVL = (stats, network: Network) => {
     let data = [];
     if (network === 'mainnet') {
         data = [
@@ -72,14 +77,14 @@ const getTVL = (stats, network: NETWORK) => {
         ];
     } else if (network === 'avalanche') {
         data = [
-            stats[network].tvl.labs_dai_vault
-                ? stats[network].tvl.labs_dai_vault
+            stats[network].tvl['groDAI.e_vault']
+                ? stats[network].tvl['groDAI.e_vault']
                 : null,
-            stats[network].tvl.labs_usdc_vault
-                ? stats[network].tvl.labs_usdc_vault
+            stats[network].tvl['groUSDC.e_vault']
+                ? stats[network].tvl['groUSDC.e_vault']
                 : null,
-            stats[network].tvl.labs_usdt_vault
-                ? stats[network].tvl.labs_usdt_vault
+            stats[network].tvl['groUSDT.e_vault']
+                ? stats[network].tvl['groUSDT.e_vault']
                 : null,
             stats[network].tvl.total
                 ? stats[network].tvl.total
@@ -96,7 +101,7 @@ const getTVL = (stats, network: NETWORK) => {
     return result;
 }
 
-const getSystem = (stats, network: NETWORK) => {
+const getSystem = (stats, network: Network) => {
     const result = [
         ...defaultData(stats, network),
         stats[network].system.total_share
@@ -116,7 +121,7 @@ const getSystem = (stats, network: NETWORK) => {
     return result;
 }
 
-const getLifeguard = (stats, network: NETWORK) => {
+const getLifeguard = (stats, network: Network) => {
     const result = [
         ...defaultData(stats, network),
         stats[network].system.lifeguard.name
@@ -139,7 +144,7 @@ const getLifeguard = (stats, network: NETWORK) => {
     return result;
 }
 
-const getLifeguardStables = (stats, network: NETWORK) => {
+const getLifeguardStables = (stats, network: Network) => {
     let result = [];
     for (const protocol of stats[network].system.lifeguard.stablecoins) {
         result.push([
@@ -159,7 +164,7 @@ const getLifeguardStables = (stats, network: NETWORK) => {
     return result;
 }
 
-const getVaults = (stats, network: NETWORK) => {
+const getVaults = (stats, network: Network) => {
     let result = [];
 
     if (network === 'mainnet') {
@@ -215,7 +220,7 @@ const getVaults = (stats, network: NETWORK) => {
     return result;
 }
 
-const getReserves = (stats, network: NETWORK) => {
+const getReserves = (stats, network: Network) => {
     let result = [];
 
     const reserves = (network === 'mainnet')
@@ -252,10 +257,10 @@ const getReserves = (stats, network: NETWORK) => {
     return result;
 }
 
-const getStrategies = (stats, network: NETWORK) => {
+const getStrategies = (stats, network: Network) => {
     let result = [];
 
-    if (network === NETWORK.MAINNET) {
+    if (network === Network.MAINNET) {
         for (const vault of stats[network].system.vault) {
             for (const strategy of vault.strategies) {
                 result.push([
@@ -285,7 +290,7 @@ const getStrategies = (stats, network: NETWORK) => {
                 ]);
             }
         }
-    } else if (network === NETWORK.AVALANCHE) {
+    } else if (network === Network.AVALANCHE) {
         for (const vault of stats[network].labs_vault) {
             for (const strategy of vault.strategies) {
                 result.push([
@@ -339,7 +344,7 @@ const getStrategies = (stats, network: NETWORK) => {
     return result;
 }
 
-const getExposureStables = (stats, network: NETWORK) => {
+const getExposureStables = (stats, network: Network) => {
     let result = [];
     for (const stablecoin of stats[network].exposure.stablecoins) {
         result.push([
@@ -359,7 +364,7 @@ const getExposureStables = (stats, network: NETWORK) => {
     return result;
 }
 
-const getExposureProtocols = (stats, network: NETWORK) => {
+const getExposureProtocols = (stats, network: Network) => {
     let result = [];
     for (const protocol of stats[network].exposure.protocols) {
         result.push([

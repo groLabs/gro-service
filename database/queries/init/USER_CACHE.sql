@@ -122,6 +122,9 @@ CREATE TABLE gro."USER_CACHE_FACT_BALANCES" (
     pwrd_unstaked_amount NUMERIC (20, 8) NULL,
     gro_unstaked_amount NUMERIC (20, 8) NULL,
     gro_total_amount NUMERIC (20, 8) NULL,          -- GRO unstaked, staked, vesting, vested, in pools
+    usdc_e_amount NUMERIC (20,8) NULL,              -- USDC in AH2 on AVAX
+    usdt_e_amount NUMERIC (20,8) NULL,              -- USDT in AH2 on AVAX
+    dai_e_amount NUMERIC (20,8) NULL,               -- DAI in AH2 on AVAX
     pool0_lp_staked_amount NUMERIC (20, 8) NULL,    -- GRO 100% in MC
     pool1_lp_pooled_amount NUMERIC (20, 8) NULL,    -- LP GVT 50% / GRO 50% in pool
     pool1_lp_staked_amount NUMERIC (20, 8) NULL,    -- LP GVT 50% / GRO 50% in MC
@@ -167,6 +170,9 @@ CREATE TABLE gro."USER_CACHE_FACT_NET_RETURNS" (
     total_unstaked_value NUMERIC (20, 8) NULL,
     pwrd_unstaked_value NUMERIC (20, 8) NULL,
     gvt_unstaked_value NUMERIC (20, 8) NULL,
+    usdc_e_value NUMERIC (20,8) NULL,
+    usdt_e_value NUMERIC (20,8) NULL,
+    dai_e_value NUMERIC (20,8) NULL,
     creation_date TIMESTAMP (6) NULL,
     CONSTRAINT "USER_CACHE_FACT_NET_RETURNS_pkey" PRIMARY KEY (balance_date, user_address) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);

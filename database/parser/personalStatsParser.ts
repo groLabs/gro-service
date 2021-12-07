@@ -4,8 +4,20 @@ import BN from 'bignumber.js';
 import moment from 'moment';
 import { getConfig } from '../../common/configUtil';
 import { div } from '../../common/digitalUtil';
-import { getNetworkId, getStableCoinIndex, handleErr, isDeposit, Transfer, transferType } from '../common/personalUtil';
-import { getGroVault, getPowerD, getBuoy, getStables } from '../common/contractUtil';
+import { 
+    getNetworkId,
+    getStableCoinIndex,
+    handleErr,
+    isDeposit,
+    transferType,
+} from '../common/personalUtil';
+import {
+    getGroVault,
+    getPowerD,
+    getBuoy,
+    getStables
+} from '../common/contractUtil';
+import { Transfer } from '../types';
 
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const botEnv = process.env.BOT_ENV.toLowerCase();

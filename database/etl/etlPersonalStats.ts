@@ -1,7 +1,7 @@
 import { query } from '../handler/queryHandler';
 import moment from 'moment';
 import { findBlockByDate } from '../common/globalUtil';
-import { generateDateRange, handleErr, isPlural, Load, Transfer } from '../common/personalUtil';
+import { generateDateRange, handleErr, isPlural} from '../common/personalUtil';
 import { loadUserTransfers, loadTmpUserTransfers } from '../loader/loadUserTransfers';
 //import { loadUserApprovals, loadTmpUserApprovals } from '../loader/loadUserApprovals';
 import { loadUserBalances } from '../loader/loadUserBalances';
@@ -9,6 +9,10 @@ import { loadTokenPrice } from '../loader/loadTokenPrice';
 import { loadUserNetReturns } from '../loader/loadUserNetReturns';
 import { checkDateRange } from '../common/globalUtil';
 import { QUERY_ERROR } from '../constants';
+import {
+    Load,
+    Transfer,
+} from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -208,8 +212,8 @@ const loadTransfers = async (fromDate, toDate, loadType) => {
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_IN, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_OUT, null),
+                // loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_IN, null),
+                // loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_OUT, null),
             ]);
 
             if (res.every(Boolean)) {
