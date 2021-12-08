@@ -31,8 +31,6 @@ const {
     getLatestContractsAddress,
 } = require('../../dist/registry/registryLoader');
 
-const { getVotingAggregator } = require('../../dist/contract/allContracts');
-
 const { getLatestSystemContract } = require('../common/contractStorage');
 const { getAllAirdropResults } = require('./airdropService');
 // const { getPoolTransactions } = require('./lpoolService');
@@ -799,9 +797,15 @@ async function getTransactionHistories(account) {
 }
 
 async function getCombinedGROBalance(account) {
-    const votingInstance = getVotingAggregator(providerKey);
-    const balance = votingInstance.balanceOf(account);
-    return balance;
+    if (process.env.NODE_ENV !== 'mainnet') {
+        return '0';
+    }
+    const votingInstance = getLatestSystemContract(
+        ContractNames.VotingAggregator,
+        providerKey
+    ).contract;
+    const balance = await votingInstance.balanceOf(account);
+    return div(balance, CONTRACT_ASSET_DECIMAL, amountDecimal);
 }
 
 async function ethereumPersonalStats(account) {

@@ -31,6 +31,7 @@
         "TokenCounter",
         "GroDAOVesting",
         "GroDAOToken",
+        "VotingAggregator",
         "AVAXDAIVault",
         "AVAXUSDCVault",
         "AVAXUSDTVault",
@@ -468,6 +469,18 @@
             "metaData": {},
             "active": true
         },
+        "VotingAggregator": {
+            "address": "0x2c57F9067E50E819365df7c5958e2c4C14A91C2D",
+            "deployedBlock": 13548959,
+            "startBlock": 13548959,
+            "abiVersion": "fa8e260",
+            "tag": "Governance",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        },
         "AVAXDAIVault": {
             "address": "0x0B2E717e1f11c8294A655D6A235F8D1AD7ef395a",
             "deployedBlock": 7075621,
@@ -522,9 +535,7 @@
             "startBlock": 7075693,
             "abiVersion": "4ff4e8d",
             "tag": "Other",
-            "tokens": [
-                "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"
-            ],
+            "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {
@@ -540,9 +551,7 @@
             "startBlock": 7075462,
             "abiVersion": "4ff4e8d",
             "tag": "Other",
-            "tokens": [
-                "0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"
-            ],
+            "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {
@@ -558,9 +567,7 @@
             "startBlock": 7075549,
             "abiVersion": "4ff4e8d",
             "tag": "Other",
-            "tokens": [
-                "0xc7198437980c041c805A1EDcbA50c1Ce5db95118"
-            ],
+            "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {
@@ -1748,8 +1755,24 @@
                 "address": "0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7",
                 "deployedBlock": 13265186,
                 "startBlock": 13265186,
+                "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Other",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "VotingAggregator": [
+            {
+                "address": "0x2c57F9067E50E819365df7c5958e2c4C14A91C2D",
+                "deployedBlock": 13548959,
+                "startBlock": 13548959,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Governance",
                 "tokens": [],
                 "protocols": [],
                 "protocolsDisplayName": [],
@@ -1810,9 +1833,7 @@
                 "endBlock": null,
                 "abiVersion": "4ff4e8d",
                 "tag": "Other",
-                "tokens": [
-                    "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"
-                ],
+                "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
                 "protocols": [],
                 "protocolsDisplayName": [],
                 "metaData": {},
@@ -1827,9 +1848,7 @@
                 "endBlock": null,
                 "abiVersion": "4ff4e8d",
                 "tag": "Other",
-                "tokens": [
-                    "0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"
-                ],
+                "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
                 "protocols": [],
                 "protocolsDisplayName": [],
                 "metaData": {},
@@ -1844,9 +1863,7 @@
                 "endBlock": null,
                 "abiVersion": "4ff4e8d",
                 "tag": "Other",
-                "tokens": [
-                    "0xc7198437980c041c805A1EDcbA50c1Ce5db95118"
-                ],
+                "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
                 "protocols": [],
                 "protocolsDisplayName": [],
                 "metaData": {},

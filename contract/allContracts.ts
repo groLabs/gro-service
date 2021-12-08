@@ -1,9 +1,26 @@
 import { ethers } from 'ethers';
-import { getAlchemyRpcProvider, getWalletNonceManager } from '../common/chainUtil';
+import {
+    getAlchemyRpcProvider,
+    getWalletNonceManager,
+} from '../common/chainUtil';
 import { ContractCallError } from '../common/error';
 import { getConfig } from '../common/configUtil';
-import { Controller, Insurance, PnL, Vault, Exposure, Strategy, VaultAdaptorYearnV2032 as VaultAdaptor, DepositHandler, WithdrawHandler, LifeGuard3Pool, Buoy3Pool as Buoy, ERC20, RebasingGToken, NonRebasingGToken } from './types'
-import { VotingAggregator } from './types/VotingAggregator';
+import {
+    Controller,
+    Insurance,
+    PnL,
+    Vault,
+    Exposure,
+    Strategy,
+    VaultAdaptorYearnV2032 as VaultAdaptor,
+    DepositHandler,
+    WithdrawHandler,
+    LifeGuard3Pool,
+    Buoy3Pool as Buoy,
+    ERC20,
+    RebasingGToken,
+    NonRebasingGToken,
+} from './types';
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 const nodeEnv = process.env.NODE_ENV?.toLowerCase();
@@ -35,7 +52,6 @@ const buoyABI = require('./abis/Buoy3Pool.json');
 const VaultABI = require('./abis/Vault.json');
 const erc20ABI = require('./abis/ERC20.json');
 const strategyABI = require('./abis/Strategy.json');
-const votingAggregatorABI = require('./abis/VotingAggregator.json')
 
 const nonceManager = getWalletNonceManager();
 
@@ -50,7 +66,6 @@ let withdrawHandler: WithdrawHandler;
 let lifeguard: LifeGuard3Pool;
 let buoy: Buoy;
 let curveVault: VaultAdaptor;
-let votingAggregator: VotingAggregator
 const vaults = [];
 const underlyTokens: ERC20[] = [];
 const strategyLength = [];
@@ -70,11 +85,6 @@ function initController() {
     logger.info('controller done!');
 }
 
-async function initVotingAggregator() {
-    const votingAggregatorAddress = getConfig('contracts.votingAggregator') as string;
-    votingAggregator = new ethers.Contract(votingAggregatorAddress, votingAggregatorABI, nonceManager) as VotingAggregator
-}
-
 async function initInsurance() {
     const insuranceAddress = await controller.insurance();
     logger.info(`insurance address: ${insuranceAddress}`);
@@ -86,7 +96,11 @@ async function initInsurance() {
 
     const exposureAddress = await insurance.exposure();
     logger.info(`exposure address: ${exposureAddress}`);
-    exposure = new ethers.Contract(exposureAddress, exposureABI, nonceManager) as Exposure;
+    exposure = new ethers.Contract(
+        exposureAddress,
+        exposureABI,
+        nonceManager
+    ) as Exposure;
 }
 
 async function initPnl() {
@@ -274,7 +288,11 @@ async function initVaultStableCoins() {
         const token = await vaults[i].token();
         vaultStableCoins.tokens[vaults[i].address] = [token];
         vaultStableCoins.tokens[vaults[lastIndex].address].push(token);
-        const stableCoin = new ethers.Contract(token, erc20ABI, nonceManager) as ERC20;
+        const stableCoin = new ethers.Contract(
+            token,
+            erc20ABI,
+            nonceManager
+        ) as ERC20;
         underlyTokens.push(stableCoin);
         // eslint-disable-next-line no-await-in-loop
         const decimals = await stableCoin.decimals();
@@ -298,7 +316,6 @@ async function initAllContracts() {
     promises.push(initLifeguard());
     promises.push(initDepositHandler());
     promises.push(initWithdrawHandler());
-    promises.push(initVotingAggregator())
     await Promise.all(promises).catch((error) => {
         logger.error(error);
         throw new ContractCallError('Initilize all used contracts failed');
@@ -411,16 +428,6 @@ function getController(providerKey, signerKey) {
     return getOrCreateContract(
         controller,
         'controller',
-        providerKey,
-        signerKey
-    );
-}
-
-function getVotingAggregator(providerKey, signerKey?) {
-    if (!providerKey) return votingAggregator;
-    return getOrCreateContract(
-        votingAggregator,
-        'votingAggregator',
         providerKey,
         signerKey
     );
@@ -547,6 +554,5 @@ export {
     getVaultAndStrategyLabels,
     getVaultStableCoins,
     getUnderlyTokens,
-    getVotingAggregator,
     getYearnVaults,
 };

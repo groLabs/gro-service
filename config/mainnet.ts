@@ -37,7 +37,7 @@ export const airdrop = {
 };
 export const gro_gate = {
     folder: '../grogate',
-    files: [],
+    files: ['bouncer-3-proofs.json'],
 };
 export const buoy_start_block = 13304056;
 export const blockchain = {
@@ -151,7 +151,7 @@ export const transaction_long_pending = {
 };
 export const keep_stats_file_number = 250;
 export const stats_folder = '../stats';
-export const log_folder = '../logs';
+export const log_folder = './logs';
 export const blockNumberFile = '../stats/lastBlockNumber.json';
 export const stats_latest = '../stats/gro-latest.json';
 export const pendingTransactionFile = '../pendingTransaction.json';
@@ -288,12 +288,12 @@ export const discord = {
     token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
     retry: 3,
     channel: {
-        trades: '840219146277093456',
-        protocol_assets: '840219248915120148',
-        protocol_events: '840219356860514405',
-        crit_action_events: '840219422509760522',
-        bot_alerts: '840219078185713705',
-        bot_logs: '840219541488402473',
+        trades: '825998630828638239',
+        protocol_assets: '825998746696810536',
+        protocol_events: '825998886249168896',
+        crit_action_events: '825998966691987456',
+        bot_alerts: '825999025487609927',
+        bot_logs: '825999075971039283',
     },
 };
 export const database = {
@@ -354,5 +354,3 @@ export const subgraph = {
     balancerV2_pool_id_gro_weth:
         '0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
 };
-
-
