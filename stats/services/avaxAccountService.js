@@ -345,17 +345,10 @@ async function getVaultTokenTransferHistory(
     });
     await calcuateUsdAmountForTransferEvents(inLogs, decimals);
     await calcuateUsdAmountForTransferEvents(outLogs, decimals);
-
     return { inLogs: transferIn, outLogs: transferOut };
 }
 
-async function getApprovalHistory(
-    account,
-    contractName,
-    decimals,
-    token,
-    depositEventHashs
-) {
+async function getApprovalHistory(account, contractName, decimals, token) {
     const logs = await getAvaxApprovalEvents(
         account,
         contractName,
@@ -367,43 +360,30 @@ async function getApprovalHistory(
             account
         );
     });
-
     const result = [];
     if (!logs.length) return result;
     await appendEventTimestamp(logs);
     logs.forEach((log) => {
-        const { transactionHash, args } = log;
-        if (!depositEventHashs.includes(transactionHash)) {
-            const amount = formatNumber2(args[2], decimals, amountDecimal);
-            log.amount = amount;
-            log.coin_amount = amount;
-            log.spender = args[1].toString();
-            log.token = token;
-            result.push(log);
-        }
+        const { args } = log;
+        const amount = formatNumber2(args[2], decimals, amountDecimal);
+        log.amount = amount;
+        log.coin_amount = amount;
+        log.spender = args[1].toString();
+        log.token = token;
+        result.push(log);
     });
     return result;
 }
 
 async function singleVaultEvents(account, adpaterType, token, decimals) {
-    const depositEvents = await getDepositHistory(
-        account,
-        token,
-        adpaterType,
-        decimals
-    );
-    const withdrawEvents = await getWithdrawHistory(
-        account,
-        token,
-        adpaterType,
-        decimals
-    );
-    const transferEvents = await getVaultTokenTransferHistory(
-        account,
-        token,
-        adpaterType,
-        decimals
-    );
+    const eventsPromise = [
+        getDepositHistory(account, token, adpaterType, decimals),
+        getWithdrawHistory(account, token, adpaterType, decimals),
+        getVaultTokenTransferHistory(account, token, adpaterType, decimals),
+        getApprovalHistory(account, adpaterType, decimals, token),
+    ];
+    const [depositEvents, withdrawEvents, transferEvents, approvalEvents] =
+        await Promise.all(eventsPromise);
 
     let depositAmount = new BN(0);
     let withdrawAmount = new BN(0);
@@ -440,28 +420,26 @@ async function singleVaultEvents(account, adpaterType, token, decimals) {
             distPerPrice = estimatedPerPrice;
         }
     }
-
     const amount = balance.mul(distPerPrice);
     const currentBalance = formatNumber2(amount, decimals * 2, amountDecimal);
 
     // net return
     const netReturn = BN(currentBalance).minus(netAmountAdded);
 
-    // approval event
-    const approvalEvents = await getApprovalHistory(
-        account,
-        adpaterType,
-        decimals,
-        token,
-        depositEventHashs
-    );
-
+    // handle approval event
+    const distApprovalEvents = [];
+    approvalEvents.forEach((log) => {
+        const { transactionHash } = log;
+        if (!depositEventHashs.includes(transactionHash)) {
+            distApprovalEvents.push(log);
+        }
+    });
     return {
         depositEvents,
         withdrawEvents,
         transferEvents,
-        approvalEvents,
         currentBalance,
+        approvalEvents: distApprovalEvents,
         netAmountAdded: netAmountAdded.toFixed(amountDecimal),
         netReturn: netReturn.toFixed(amountDecimal),
         amountAdded: depositAmount.toFixed(amountDecimal),
@@ -494,11 +472,11 @@ async function avaxPersonalStats(account) {
     const [daiVaultEvents, usdcVaultEvents, usdtVaultEvents] =
         await Promise.all(vaultEventsPromise);
 
-    fullData(result, daiVaultEvents, 'dai_vault');
+    fullData(result, daiVaultEvents, 'groDAI.e_vault');
 
-    fullData(result, usdcVaultEvents, 'usdc_vault');
+    fullData(result, usdcVaultEvents, 'groUSDC.e_vault');
 
-    fullData(result, usdtVaultEvents, 'usdt_vault');
+    fullData(result, usdtVaultEvents, 'groUSDT.e_vault');
 
     calculateTotal(result, [
         'amount_added',
@@ -583,7 +561,6 @@ async function avaxPersonalStats(account) {
         });
     }
     result.transaction.failures = failedItems;
-
     // gro gate
     const allowance = await getAccountAllowance(account, provider);
     result.gro_gate = allowance;

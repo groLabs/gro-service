@@ -482,9 +482,9 @@
             "active": true
         },
         "AVAXDAIVault": {
-            "address": "0x0B2E717e1f11c8294A655D6A235F8D1AD7ef395a",
-            "deployedBlock": 7075621,
-            "startBlock": 7075693,
+            "address": "0x5E57E11483A3F60A76af3045303604522059dA2a",
+            "deployedBlock": 7727040,
+            "startBlock": 7727040,
             "abiVersion": "4ff4e8d",
             "tag": "Other",
             "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
@@ -498,9 +498,9 @@
             "active": true
         },
         "AVAXUSDCVault": {
-            "address": "0x48cB6fD436D34A909523A74de8f82d6bF59E6A3C",
-            "deployedBlock": 7073712,
-            "startBlock": 7075462,
+            "address": "0x57DaED1ee021BE9991F5d30CF494b6B09B5B449E",
+            "deployedBlock": 7726393,
+            "startBlock": 7726393,
             "abiVersion": "4ff4e8d",
             "tag": "Other",
             "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
@@ -514,9 +514,9 @@
             "active": true
         },
         "AVAXUSDTVault": {
-            "address": "0x720e5ecfe240a65ca236e5Ec626f91036Ecc260d",
-            "deployedBlock": 7075500,
-            "startBlock": 7075549,
+            "address": "0x471F4B4b9A97F82C3a25b034B33A8E306eE9Beb5",
+            "deployedBlock": 7726828,
+            "startBlock": 7726828,
             "abiVersion": "4ff4e8d",
             "tag": "Other",
             "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
@@ -530,10 +530,10 @@
             "active": true
         },
         "AVAXDAIStrategy": {
-            "address": "0x5D1294Eba42438C2742697f9Fc6aa455622C5292",
-            "deployedBlock": 7075621,
-            "startBlock": 7075693,
-            "abiVersion": "4ff4e8d",
+            "address": "0x4c7EA5b8032C5Ea82DdF617DAc7972c70E0c0478",
+            "deployedBlock": 7727050,
+            "startBlock": 7727050,
+            "abiVersion": "c3aca46",
             "tag": "Other",
             "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
             "protocols": [],
@@ -546,10 +546,10 @@
             "active": true
         },
         "AVAXUSDCStrategy": {
-            "address": "0x855b33e57d0cdf28f089fc6d9d38a4b45ef6c2dc",
-            "deployedBlock": 7073712,
-            "startBlock": 7075462,
-            "abiVersion": "4ff4e8d",
+            "address": "0x247AF6E106549033d3a65354fC3A72FF3794FA99",
+            "deployedBlock": 7726462,
+            "startBlock": 7726462,
+            "abiVersion": "c3aca46",
             "tag": "Other",
             "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
             "protocols": [],
@@ -562,10 +562,10 @@
             "active": true
         },
         "AVAXUSDTStrategy": {
-            "address": "0x5ee227C35ec7f70a2406e4b9D623a709277ee9aD",
-            "deployedBlock": 7075500,
-            "startBlock": 7075549,
-            "abiVersion": "4ff4e8d",
+            "address": "0x94a7c3419504ceA9FbA06eE739717B236Ada0638",
+            "deployedBlock": 7726836,
+            "startBlock": 7726836,
+            "abiVersion": "c3aca46",
             "tag": "Other",
             "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
             "protocols": [],
@@ -1782,46 +1782,58 @@
         ],
         "AVAXDAIVault": [
             {
-                "address": "0x0B2E717e1f11c8294A655D6A235F8D1AD7ef395a",
-                "deployedBlock": 7075621,
-                "startBlock": 7075693,
+                "address": "0x5E57E11483A3F60A76af3045303604522059dA2a",
+                "deployedBlock": 7727040,
+                "startBlock": 7727040,
                 "endBlock": null,
                 "abiVersion": "4ff4e8d",
                 "tag": "Other",
                 "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
                 "protocols": [],
                 "protocolsDisplayName": [],
-                "metaData": {},
+                "metaData": {
+                    "N": "groDAI.e_vault",
+                    "DN": "Gro Labs DAI.e AVAX Vault",
+                    "DY": 117589
+                },
                 "active": true
             }
         ],
         "AVAXUSDCVault": [
             {
-                "address": "0x48cB6fD436D34A909523A74de8f82d6bF59E6A3C",
-                "deployedBlock": 7073712,
-                "startBlock": 7075462,
+                "address": "0x57DaED1ee021BE9991F5d30CF494b6B09B5B449E",
+                "deployedBlock": 7726393,
+                "startBlock": 7726393,
                 "endBlock": null,
                 "abiVersion": "4ff4e8d",
                 "tag": "Other",
                 "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
                 "protocols": [],
                 "protocolsDisplayName": [],
-                "metaData": {},
+                "metaData": {
+                    "N": "groUSDC.e_vault",
+                    "DN": "Gro Labs USDC.e AVAX Vault",
+                    "DY": 117589
+                },
                 "active": true
             }
         ],
         "AVAXUSDTVault": [
             {
-                "address": "0x720e5ecfe240a65ca236e5Ec626f91036Ecc260d",
-                "deployedBlock": 7075500,
-                "startBlock": 7075549,
+                "address": "0x471F4B4b9A97F82C3a25b034B33A8E306eE9Beb5",
+                "deployedBlock": 7726828,
+                "startBlock": 7726828,
                 "endBlock": null,
                 "abiVersion": "4ff4e8d",
                 "tag": "Other",
                 "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
                 "protocols": [],
                 "protocolsDisplayName": [],
-                "metaData": {},
+                "metaData": {
+                    "N": "groUSDT.e_vault",
+                    "DN": "Gro Labs USDT.e AVAX Vault",
+                    "DY": 117589
+                },
                 "active": true
             }
         ],
@@ -1830,13 +1842,30 @@
                 "address": "0x5D1294Eba42438C2742697f9Fc6aa455622C5292",
                 "deployedBlock": 7075621,
                 "startBlock": 7075693,
-                "endBlock": null,
+                "endBlock": 7727050,
                 "abiVersion": "4ff4e8d",
                 "tag": "Other",
                 "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
                 "protocols": [],
                 "protocolsDisplayName": [],
                 "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0x4c7EA5b8032C5Ea82DdF617DAc7972c70E0c0478",
+                "deployedBlock": 7727050,
+                "startBlock": 7727050,
+                "endBlock": null,
+                "abiVersion": "c3aca46",
+                "tag": "Other",
+                "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {
+                    "N": "ah_DAI.e_strat",
+                    "DN": "DAI.e AH",
+                    "DY": 117589
+                },
                 "active": true
             }
         ],
@@ -1845,13 +1874,30 @@
                 "address": "0x855b33e57d0cdf28f089fc6d9d38a4b45ef6c2dc",
                 "deployedBlock": 7073712,
                 "startBlock": 7075462,
-                "endBlock": null,
+                "endBlock": 7726462,
                 "abiVersion": "4ff4e8d",
                 "tag": "Other",
                 "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
                 "protocols": [],
                 "protocolsDisplayName": [],
                 "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0x247AF6E106549033d3a65354fC3A72FF3794FA99",
+                "deployedBlock": 7726462,
+                "startBlock": 7726462,
+                "endBlock": null,
+                "abiVersion": "c3aca46",
+                "tag": "Other",
+                "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {
+                    "N": "ah_USDC.e_strat",
+                    "DN": "USDC.e AH",
+                    "DY": 117589
+                },
                 "active": true
             }
         ],
@@ -1860,13 +1906,30 @@
                 "address": "0x5ee227C35ec7f70a2406e4b9D623a709277ee9aD",
                 "deployedBlock": 7075500,
                 "startBlock": 7075549,
-                "endBlock": null,
+                "endBlock": 7726836,
                 "abiVersion": "4ff4e8d",
                 "tag": "Other",
                 "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
                 "protocols": [],
                 "protocolsDisplayName": [],
                 "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0x94a7c3419504ceA9FbA06eE739717B236Ada0638",
+                "deployedBlock": 7726836,
+                "startBlock": 7726836,
+                "endBlock": null,
+                "abiVersion": "c3aca46",
+                "tag": "Other",
+                "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {
+                    "N": "ah_USDT.e_strat",
+                    "DN": "USDT.e AH",
+                    "DY": 117589
+                },
                 "active": true
             }
         ],

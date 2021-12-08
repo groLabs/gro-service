@@ -43,9 +43,9 @@ export const buoy_start_block = 13304056;
 export const blockchain = {
     network: 'mainnet',
     start_block: 12522788,
-    avax_start_block: 7075659,
+    avax_start_block: 7726890,
     start_timestamp: 1622204347,
-    avax_launch_timestamp: 1637173912,
+    avax_launch_timestamp: 1638483222,
     default_api_keys: {
         alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
         infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
@@ -151,7 +151,7 @@ export const transaction_long_pending = {
 };
 export const keep_stats_file_number = 250;
 export const stats_folder = '../stats';
-export const log_folder = './logs';
+export const log_folder = '../logs';
 export const blockNumberFile = '../stats/lastBlockNumber.json';
 export const stats_latest = '../stats/gro-latest.json';
 export const pendingTransactionFile = '../pendingTransaction.json';
@@ -288,12 +288,12 @@ export const discord = {
     token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
     retry: 3,
     channel: {
-        trades: '825998630828638239',
-        protocol_assets: '825998746696810536',
-        protocol_events: '825998886249168896',
-        crit_action_events: '825998966691987456',
-        bot_alerts: '825999025487609927',
-        bot_logs: '825999075971039283',
+        trades: '840219146277093456',
+        protocol_assets: '840219248915120148',
+        protocol_events: '840219356860514405',
+        crit_action_events: '840219422509760522',
+        bot_alerts: '840219078185713705',
+        bot_logs: '840219541488402473',
     },
 };
 export const database = {
