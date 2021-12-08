@@ -218,6 +218,7 @@ async function getGroPrice(blockNumberStr) {
         logger.info(`${e}`);
     }
     logger.info(`oracleCheckTolerance ${oracleCheckTolerance}`);
+    logger.info(`curveCheckTolerance ${curveCheckTolerance}`);
     const curvePoolAddr = await buoyInstance.curvePool();
     logger.info(`curvePoolAddr ${curvePoolAddr}`);
     // const nonceManager = getWalletNonceManager(providerKey, walletKey);
@@ -231,10 +232,7 @@ async function getGroPrice(blockNumberStr) {
     const chainlink = await getChainlinkPrice(buoyInstance, blockTag);
     const curveVsCache = compareCurveToRef(curve, groCache);
     const curveVsChainlink = compareCurveToRef(curve, chainlink);
-    const curveVsCacheCheck = checkTolerance(
-        curveVsCache,
-        oracleCheckTolerance
-    );
+    const curveVsCacheCheck = checkTolerance(curveVsCache, curveCheckTolerance);
     const curveVsChainlinkCheck = checkTolerance(
         curveVsChainlink,
         oracleCheckTolerance

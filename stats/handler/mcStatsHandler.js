@@ -210,6 +210,7 @@ async function generateGroStatsMcFile() {
             'open_amount',
             'close_amount',
             'current_amount',
+            'tvl_cap',
         ]
     );
     const groStatsMultiChain = {

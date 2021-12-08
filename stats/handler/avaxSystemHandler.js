@@ -209,9 +209,9 @@ async function calculatePositionReturn(
     const openPricePerShare = openEstimated
         .mul(DECIMALS[vaultIndex])
         .div(openTotalSupply);
-    console.log(
-        `${openBlock} openTotalSupply ${openTotalSupply} openEstimated ${openEstimated}`
-    );
+    // console.log(
+    //     `${openBlock} openTotalSupply ${openTotalSupply} openEstimated ${openEstimated}`
+    // );
     const closeTotalSupply = await vaultAdapter.totalSupply({
         blockTag: endBlock,
     });
@@ -222,9 +222,9 @@ async function calculatePositionReturn(
         .mul(DECIMALS[vaultIndex])
         .div(closeTotalSupply);
 
-    console.log(
-        `closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated}`
-    );
+    // console.log(
+    //     `closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated}`
+    // );
     const positionReturn = closePricePerShare
         .sub(openPricePerShare)
         .mul(SHARE_DECIMAL)
@@ -366,25 +366,23 @@ async function getAvaxExposure(
     console.log(`collateralSize ${collateralSize} ${debt}`);
     const swapPool = POOLS[vaultIndex];
     const token0 = await swapPool.token0();
+    const token1 = await swapPool.token1();
     const poolReserves = await swapPool.getReserves();
     const poolTotalSupply = await swapPool.totalSupply();
-    const totalAvax = token0 === WAVAX ? poolReserves[0] : poolReserves[1];
+    console.log(`token0 == WAVAX ${token0.toLowerCase() == WAVAX}`);
+    const totalAvax =
+        token0.toLowerCase() == WAVAX ? poolReserves[0] : poolReserves[1];
     const avaxAmount = totalAvax.mul(collateralSize).div(poolTotalSupply);
+    const diff = avaxAmount.sub(debt[0]);
     console.log(
-        `++++  totalAvax ${totalAvax} poolTotalSupply ${poolTotalSupply} avaxAmount ${avaxAmount} debt[0] ${debt[0]} ${avaxprice} ${vaultAssets}`
+        `++++  totalAvax ${totalAvax} poolTotalSupply ${poolTotalSupply} avaxAmount ${avaxAmount} debt[0] ${debt[0]} ${avaxprice} ${vaultAssets} poolReserves0 ${poolReserves[0]}  poolReserves1 ${poolReserves[1]} diff ${diff} ${token0} ${token1}`
     );
-    let avaxExposure = ZERO;
-    if (avaxAmount.gte(debt[0])) {
-        const avaxBalance = avaxAmount.sub(debt[0]);
-        avaxExposure = avaxBalance
-            .mul(avaxprice)
-            .mul(SHARE_DECIMAL)
-            .div(vaultAssets)
-            .div(E18);
-        logger.info(`more avaxBalance ${avaxExposure}`);
-    } else {
-        logger.info(`less avaxBalance ${avaxExposure}`);
-    }
+    const avaxExposure = diff
+        .mul(avaxprice)
+        .mul(SHARE_DECIMAL)
+        .div(vaultAssets)
+        .div(E18);
+    logger.info(`avaxExposure ${avaxExposure}`);
     return avaxExposure;
 }
 
@@ -417,17 +415,17 @@ async function calculateVaultReturn(
     const closeEstimated = await vaultAdapter.totalEstimatedAssets({
         blockTag: endBlock,
     });
-    console.log(
-        `apy === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} endBlock ${endBlock}`
-    );
+    // console.log(
+    //     `apy === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} endBlock ${endBlock}`
+    // );
     const closePricePerShare = closeEstimated
         .mul(DECIMALS[vaultIndex])
         .div(closeTotalSupply);
-    console.log(
-        `apy duration endTimestamp ${endTimestamp} startTimestamp ${startTimestamp} duration ${
-            endTimestamp - startTimestamp
-        } === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} openPricePerShare ${openPricePerShare} closePricePerShare ${closePricePerShare}`
-    );
+    // console.log(
+    //     `apy duration endTimestamp ${endTimestamp} startTimestamp ${startTimestamp} duration ${
+    //         endTimestamp - startTimestamp
+    //     } === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} openPricePerShare ${openPricePerShare} closePricePerShare ${closePricePerShare}`
+    // );
     const diff = endTimestamp - startTimestamp;
     const duration = BigNumber.from(diff);
     const vaultReturn = closePricePerShare
@@ -537,7 +535,8 @@ async function getAvaxSystemStats() {
         vaultPercent = vaultPercent.add(strategyPercent);
 
         const depositLimit = await vaultAdapter.depositLimit();
-
+        const depositLimitUsd = depositLimit.mul(E18).div(DECIMALS[vaultIndex]);
+        logger.info(`depositLimitUsd ${depositLimitUsd}`);
         const strategyInfo = {
             name: strategyContractInfo.metaData.N,
             display_name: strategyContractInfo.metaData.DN,
@@ -549,7 +548,7 @@ async function getAvaxSystemStats() {
             sharpe_ratio: ZERO,
             sortino_ratio: ZERO,
             romad_ratio: ZERO,
-            tvl_cap: `${depositLimit.div(E18)}`,
+            tvl_cap: depositLimitUsd,
             open_position: {},
             past_5_closed_positions: [],
         };
@@ -736,7 +735,7 @@ async function getAvaxSystemStats() {
                 closedPositions = positions;
             }
         }
-        labsVault.avax_exposure = avaxExposure;
+        labsVaultData.avax_exposure = avaxExposure;
         strategyInfo.open_position = openPosition;
         strategyInfo.past_5_closed_positions = closedPositions;
     }
