@@ -83,6 +83,7 @@ async function generateReport(account) {
         net_amount_added: statsOnEthereum.net_amount_added,
         current_balance: statsOnEthereum.current_balance,
         net_returns: statsOnEthereum.net_returns,
+        gro_balance_combined: statsOnEthereum.gro_balance_combined,
     };
 
     return {

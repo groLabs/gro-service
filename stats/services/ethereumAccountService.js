@@ -796,6 +796,18 @@ async function getTransactionHistories(account) {
     return { groVault, powerD, approval: approval.approvalEvents };
 }
 
+async function getCombinedGROBalance(account) {
+    if (process.env.NODE_ENV !== 'mainnet') {
+        return '0';
+    }
+    const votingInstance = getLatestSystemContract(
+        ContractNames.VotingAggregator,
+        providerKey
+    ).contract;
+    const balance = await votingInstance.balanceOf(account);
+    return div(balance, CONTRACT_ASSET_DECIMAL, amountDecimal);
+}
+
 async function ethereumPersonalStats(account) {
     const latestBlock = await provider.getBlock();
     const promises = [];
@@ -825,6 +837,7 @@ async function ethereumPersonalStats(account) {
     // airdrops.push(await getThirdAirdropResult(account));
     // const pools = await getPoolTransactions(account, latestBlock.number);
     // transaction.pools = pools;
+    const combinedGROBalance = await getCombinedGROBalance(account);
     const result = {
         airdrops,
         transaction,
@@ -838,6 +851,7 @@ async function ethereumPersonalStats(account) {
         net_returns: {},
         net_returns_ratio: {},
         address: account,
+        gro_balance_combined: combinedGROBalance,
     };
 
     // calculate groVault deposit & withdraw

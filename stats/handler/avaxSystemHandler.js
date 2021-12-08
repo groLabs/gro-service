@@ -535,6 +535,9 @@ async function getAvaxSystemStats() {
         logger.info(`strategyPercent ${strategyPercent}`);
 
         vaultPercent = vaultPercent.add(strategyPercent);
+
+        const depositLimit = await vaultAdapter.depositLimit();
+
         const strategyInfo = {
             name: strategyContractInfo.metaData.N,
             display_name: strategyContractInfo.metaData.DN,
@@ -546,6 +549,7 @@ async function getAvaxSystemStats() {
             sharpe_ratio: ZERO,
             sortino_ratio: ZERO,
             romad_ratio: ZERO,
+            tvl_cap: `${depositLimit.div(E18)}`,
             open_position: {},
             past_5_closed_positions: [],
         };
