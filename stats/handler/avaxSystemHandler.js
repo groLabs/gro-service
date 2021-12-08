@@ -63,7 +63,7 @@ const STABLECOINS = ['DAI.e', 'USDC.e', 'USDT.e'];
 const RISK_FREE_RATE = BigNumber.from(2400);
 
 const E18 = BigNumber.from(10).pow(BigNumber.from(18));
-const BLOCKS_OF_3DAYS = 120000;
+const BLOCKS_OF_3DAYS = 130000;
 const START_TIME_STAMP = [1638707119, 1638549778, 1638549778];
 const START_BLOCK = [7838860, 7759709, 7759709];
 const providerKey = 'stats_gro';
@@ -198,7 +198,8 @@ async function calculatePositionReturn(
     openBlock,
     endBlock,
     duration,
-    positionId
+    positionId,
+    closed
 ) {
     const openTotalSupply = await vaultAdapter.totalSupply({
         blockTag: openBlock,
@@ -255,7 +256,7 @@ async function calculatePositionReturn(
     );
     const loss = strategyInfoAfter.totalLoss.sub(strategyInfoBefore.totalLoss);
     let wantClose = wantOpen.add(profit).sub(loss);
-    if (profit.eq(ZERO) && loss.eq(ZERO)) {
+    if (profit.eq(ZERO) && loss.eq(ZERO) && closed) {
         wantOpen = strategyInfoAfter.totalDebt;
         wantClose = await strategyContract.estimatedTotalAssets({
             blockTag: endBlock,
@@ -415,17 +416,17 @@ async function calculateVaultReturn(
     const closeEstimated = await vaultAdapter.totalEstimatedAssets({
         blockTag: endBlock,
     });
-    // console.log(
-    //     `apy === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} endBlock ${endBlock}`
-    // );
+    console.log(
+        `apy === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} endBlock ${endBlock}`
+    );
     const closePricePerShare = closeEstimated
         .mul(DECIMALS[vaultIndex])
         .div(closeTotalSupply);
-    // console.log(
-    //     `apy duration endTimestamp ${endTimestamp} startTimestamp ${startTimestamp} duration ${
-    //         endTimestamp - startTimestamp
-    //     } === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} openPricePerShare ${openPricePerShare} closePricePerShare ${closePricePerShare}`
-    // );
+    console.log(
+        `apy duration endTimestamp ${endTimestamp} startTimestamp ${startTimestamp} duration ${
+            endTimestamp - startTimestamp
+        } === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} openPricePerShare ${openPricePerShare} closePricePerShare ${closePricePerShare}`
+    );
     const diff = endTimestamp - startTimestamp;
     const duration = BigNumber.from(diff);
     const vaultReturn = closePricePerShare
@@ -436,11 +437,11 @@ async function calculateVaultReturn(
         .div(duration);
 
     let vaultReturn3Days = vaultReturn;
-    console.log(
-        `endBlock - BLOCKS_OF_3DAYS ${
-            endBlock - BLOCKS_OF_3DAYS
-        } startBlock ${startBlock}`
-    );
+    // console.log(
+    //     `endBlock - BLOCKS_OF_3DAYS ${
+    //         endBlock - BLOCKS_OF_3DAYS
+    //     } startBlock ${startBlock}`
+    // );
     if (endBlock - BLOCKS_OF_3DAYS > startBlock) {
         const blockNumber3DaysAgo = endBlock - BLOCKS_OF_3DAYS;
         const block3DaysAgo = await provider.getBlock(blockNumber3DaysAgo);
@@ -453,9 +454,9 @@ async function calculateVaultReturn(
         });
         let open3DaysAgoPricePerShare = DECIMALS[vaultIndex];
         if (!startEstimated.isZero()) {
-            open3DaysAgoPricePerShare = startTotalSupply
+            open3DaysAgoPricePerShare = startEstimated
                 .mul(DECIMALS[vaultIndex])
-                .div(startEstimated);
+                .div(startTotalSupply);
         }
         const duration = BigNumber.from(endTimestamp - block3DaysAgo.timestamp);
         vaultReturn3Days = closePricePerShare
@@ -464,9 +465,9 @@ async function calculateVaultReturn(
             .mul(MS_PER_YEAR)
             .div(openPricePerShare)
             .div(duration);
-        console.log(
-            `${blockNumber3DaysAgo} open3DaysAgoTotalSupply ${startTotalSupply} open3DaysAgoEstimated ${startEstimated}`
-        );
+        // console.log(
+        //     `~~~~ 3days ${duration} ${blockNumber3DaysAgo} open3DaysAgoTotalSupply ${startTotalSupply} open3DaysAgoEstimated ${startEstimated} open3DaysAgoPricePerShare ${open3DaysAgoPricePerShare}`
+        // );
     }
 
     console.log(
@@ -640,7 +641,8 @@ async function getAvaxSystemStats() {
                         open.block,
                         close.block,
                         duration,
-                        key
+                        key,
+                        true
                     );
                 returns[i] = positionReturn;
 
@@ -655,7 +657,7 @@ async function getAvaxSystemStats() {
                     apy: positionReturn,
                 };
                 positions.push(positionInfo);
-                console.log(
+                logger.info(
                     `--- positionInfo ${key}\n open ${
                         positionInfo.open_amount
                     } ${positionInfo.open_ts} ${new Date(
@@ -678,10 +680,11 @@ async function getAvaxSystemStats() {
                         open.block,
                         block.number,
                         duration,
-                        key
+                        key,
+                        false
                     );
-                console.log(
-                    `activePosition ${wantOpen} ${wantClose} ${positionReturn}`
+                logger.info(
+                    `activePosition ${vaultIndex} ${wantOpen} ${wantClose} ${positionReturn}`
                 );
                 openPosition = {
                     active_position: 'true',
