@@ -63,7 +63,7 @@ const STABLECOINS = ['DAI.e', 'USDC.e', 'USDT.e'];
 const RISK_FREE_RATE = BigNumber.from(2400);
 
 const E18 = BigNumber.from(10).pow(BigNumber.from(18));
-const BLOCKS_OF_3DAYS = 120000;
+const BLOCKS_OF_3DAYS = 130000;
 const START_TIME_STAMP = [1638707119, 1638549778, 1638549778];
 const START_BLOCK = [7838860, 7759709, 7759709];
 const providerKey = 'stats_gro';
@@ -415,17 +415,17 @@ async function calculateVaultReturn(
     const closeEstimated = await vaultAdapter.totalEstimatedAssets({
         blockTag: endBlock,
     });
-    // console.log(
-    //     `apy === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} endBlock ${endBlock}`
-    // );
+    console.log(
+        `apy === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} endBlock ${endBlock}`
+    );
     const closePricePerShare = closeEstimated
         .mul(DECIMALS[vaultIndex])
         .div(closeTotalSupply);
-    // console.log(
-    //     `apy duration endTimestamp ${endTimestamp} startTimestamp ${startTimestamp} duration ${
-    //         endTimestamp - startTimestamp
-    //     } === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} openPricePerShare ${openPricePerShare} closePricePerShare ${closePricePerShare}`
-    // );
+    console.log(
+        `apy duration endTimestamp ${endTimestamp} startTimestamp ${startTimestamp} duration ${
+            endTimestamp - startTimestamp
+        } === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} openPricePerShare ${openPricePerShare} closePricePerShare ${closePricePerShare}`
+    );
     const diff = endTimestamp - startTimestamp;
     const duration = BigNumber.from(diff);
     const vaultReturn = closePricePerShare
@@ -453,9 +453,9 @@ async function calculateVaultReturn(
         });
         let open3DaysAgoPricePerShare = DECIMALS[vaultIndex];
         if (!startEstimated.isZero()) {
-            open3DaysAgoPricePerShare = startTotalSupply
+            open3DaysAgoPricePerShare = startEstimated
                 .mul(DECIMALS[vaultIndex])
-                .div(startEstimated);
+                .div(startTotalSupply);
         }
         const duration = BigNumber.from(endTimestamp - block3DaysAgo.timestamp);
         vaultReturn3Days = closePricePerShare
@@ -465,7 +465,7 @@ async function calculateVaultReturn(
             .div(openPricePerShare)
             .div(duration);
         console.log(
-            `${blockNumber3DaysAgo} open3DaysAgoTotalSupply ${startTotalSupply} open3DaysAgoEstimated ${startEstimated}`
+            `~~~~ 3days ${duration} ${blockNumber3DaysAgo} open3DaysAgoTotalSupply ${startTotalSupply} open3DaysAgoEstimated ${startEstimated} open3DaysAgoPricePerShare ${open3DaysAgoPricePerShare}`
         );
     }
 
