@@ -19,12 +19,14 @@ const GRO_GVT_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_gvt_pool_a
 const GRO_USDC_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_usdc_pool_address');
 const CRV_PWRD_ADDRESS = getConfig('staker_pools.contracts.curve_pwrd3crv_pool_address');
 const GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address');
+const VOTE_AGGREGATOR_ADDRESS = '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D';
 
 let rowCount = 0;
 
 let gvt = [];
 let pwrd = [];
 let gro = [];
+let groTotal = [];
 let lpGroGvt = [];
 let lpGroUsdc = [];
 let lpCrvPwrd = [];
@@ -56,6 +58,7 @@ const getBalancesSC = async (users, block, offset) => {
             gvtUpdate,
             pwrdUpdate,
             groUpdate,
+            groTotalUpdate,
             lpGroGvtUpdate,
             lpGroUsdcUpdate,
             lpCrvPwrdUpdate,
@@ -64,6 +67,9 @@ const getBalancesSC = async (users, block, offset) => {
             getBalances(getGroVault().address, userBatch, block),
             getBalances(getPowerD().address, userBatch, block),
             getBalances(GRO_ADDRESS, userBatch, block),
+            (nodeEnv === 'mainnet')
+                ? getBalances(VOTE_AGGREGATOR_ADDRESS, userBatch, block)
+                : [],
             getBalancesUniBalLP(GRO_GVT_ADDRESS, userBatch, block),
             getBalancesUniBalLP(GRO_USDC_ADDRESS, userBatch, block),
             getBalancesCrvLP(CRV_PWRD_ADDRESS, userBatch, block),
@@ -76,6 +82,7 @@ const getBalancesSC = async (users, block, offset) => {
             gvt = gvtUpdate;
             pwrd = pwrdUpdate;
             gro = groUpdate;
+            groTotal = groTotalUpdate;
             lpGroGvt = lpGroGvtUpdate;
             lpGroUsdc = lpGroUsdcUpdate;
             lpCrvPwrd = lpCrvPwrdUpdate;
@@ -87,6 +94,9 @@ const getBalancesSC = async (users, block, offset) => {
             pwrd[1].amount_staked.push(...pwrdUpdate[1].amount_staked);
             gro[0].amount_unstaked.push(...groUpdate[0].amount_unstaked);
             gro[1].amount_staked.push(...groUpdate[1].amount_staked);
+            (nodeEnv === 'mainnet')
+                ? groTotal[0].amount_unstaked.push(...groTotalUpdate[0].amount_unstaked)
+                : [];
             lpGroGvt[0].amount_pooled_lp.push(...lpGroGvtUpdate[0].amount_pooled_lp);
             lpGroGvt[1].amount_staked_lp.push(...lpGroGvtUpdate[1].amount_staked_lp);
             lpGroGvt[2].lp_position.push(...lpGroGvtUpdate[2].lp_position);
@@ -108,7 +118,7 @@ const getBalancesSC = async (users, block, offset) => {
         }
 
         return (newOffset >= users.length)
-            ? [gvt, pwrd, gro, lpGroGvt, lpGroUsdc, lpCrvPwrd, lpGroWeth]
+            ? [gvt, pwrd, gro, groTotal, lpGroGvt, lpGroUsdc, lpCrvPwrd, lpGroWeth]
             : getBalancesSC(users, block, newOffset);
 
     } catch (err) {
@@ -120,7 +130,6 @@ const getBalancesSC = async (users, block, offset) => {
 const insertBalances = async (account, i, day, addr, isSnapshot) => {
     return new Promise(async (resolve) => {
         try {
-
             const params = [
                 day,
                 getNetworkId(),
@@ -128,6 +137,9 @@ const insertBalances = async (account, i, day, addr, isSnapshot) => {
                 gvt[0].amount_unstaked[i],          // unstaked gvt
                 pwrd[0].amount_unstaked[i],         // unstaked pwrd
                 gro[0].amount_unstaked[i],          // unstaked gro
+                (nodeEnv === 'mainnet')
+                    ? groTotal[0].amount_unstaked[i]    // total gro
+                    : null,
                 gro[1].amount_staked[i],            // pool0 - staked lp
                 lpGroGvt[0].amount_pooled_lp[i],    // pool1 - pooled lp
                 lpGroGvt[1].amount_staked_lp[i],    // pool1 - staked lp
@@ -175,6 +187,7 @@ const cleanseVars = (scope) => {
         gvt = [];
         pwrd = [];
         gro = [];
+        groTotal = [];
         lpGroGvt = [];
         lpGroUsdc = [];
         lpCrvPwrd = [];
@@ -276,25 +289,27 @@ const loadUserBalances = async (
             // @ts-ignore
             const block = (await findBlockByDate(day, false)).block;
 
+            // Retrieve balances from the SC
             [
                 gvt,
                 pwrd,
                 gro,
+                groTotal,
                 lpGroGvt,
                 lpGroUsdc,
                 lpCrvPwrd,
                 lpGroWeth
             ] = await getBalancesSC(users, block, 0);
 
+            // Insert balances into the DB
             for (let i = 0; i < users.length; i++) {
-
                 const addr = users[i];
-
                 const res = await insertBalances(account, i, day, addr, isSnapshot);
                 if (!res)
                     return false;
             }
 
+            // Show amount of inserted records
             const table = (account)
                 ? 'USER_CACHE_FACT_BALANCES'
                 : (isSnapshot)

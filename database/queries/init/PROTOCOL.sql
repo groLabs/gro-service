@@ -231,3 +231,91 @@ VALUES (2, 'dai_usdt', 'DAI - USDT', now()::timestamp);
 INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
 VALUES (3, 'usdt_usdc', 'USDT - USDC', now()::timestamp);
 
+-- AVAX tables
+
+CREATE TABLE gro."PROTOCOL_AVAX_TVL"
+(
+   "current_timestamp" INTEGER NOT NULL,
+   "current_date" TIMESTAMP (6) NULL,
+   "network_id" INTEGER NOT NULL,
+   "labs_dai_vault" NUMERIC (20, 8) NULL,
+   "labs_usdc_vault" NUMERIC (20, 8) NULL,
+   "labs_usdt_vault" NUMERIC (20, 8) NULL,
+   "total" NUMERIC (20, 8) NULL,
+   "creation_date" TIMESTAMP (6) NULL,
+   CONSTRAINT "PROTOCOL_AVAX_TVL_pkey" PRIMARY KEY
+      ("current_timestamp", "network_id")
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+)
+WITH (OIDS = FALSE);
+
+ALTER TABLE gro."PROTOCOL_AVAX_TVL" OWNER to postgres;
+
+CREATE TABLE gro."PROTOCOL_AVAX_VAULTS"
+(
+   "current_timestamp" INTEGER NOT NULL,
+   "current_date" TIMESTAMP (6) NULL,
+   "network_id" INTEGER NOT NULL,
+   "name" CHARACTER VARYING (100) NOT NULL,
+   "display_name" CHARACTER VARYING (100) NULL,
+   "stablecoin" CHARACTER VARYING (100) NULL,
+   "amount" NUMERIC (20, 8) NULL,
+   "share" NUMERIC (20, 8) NULL,
+   "last3d_apy" NUMERIC (20, 8) NULL,
+   "creation_date" TIMESTAMP (6) NULL,
+   CONSTRAINT "PROTOCOL_AVAX_VAULTS_pkey" PRIMARY KEY
+      ("current_timestamp", "network_id", "name")
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+)
+WITH (OIDS = FALSE);
+
+ALTER TABLE gro."PROTOCOL_AVAX_VAULTS" OWNER to postgres;
+
+CREATE TABLE gro."PROTOCOL_AVAX_RESERVES"
+(
+   "current_timestamp" INTEGER NOT NULL,
+   "current_date" TIMESTAMP (6) NULL,
+   "network_id" INTEGER NOT NULL,
+   "vault_name" CHARACTER VARYING (100) NOT NULL,
+   "reserve_name" CHARACTER VARYING (100) NOT NULL,
+   "display_name" CHARACTER VARYING (100) NULL,
+   "amount" NUMERIC (20, 8) NULL,
+   "share" NUMERIC (20, 8) NULL,
+   "last3d_apy" NUMERIC (20, 8) NULL,
+   "creation_date" TIMESTAMP (6) NULL,
+   CONSTRAINT "PROTOCOL_AVAX_RESERVES_pkey" PRIMARY KEY ("current_timestamp",
+                                                    "network_id",
+                                                    "vault_name",
+                                                    "reserve_name")
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+)
+WITH (OIDS = FALSE);
+
+ALTER TABLE gro."PROTOCOL_AVAX_RESERVES" OWNER to postgres;
+
+CREATE TABLE gro."PROTOCOL_AVAX_STRATEGIES"
+(
+   "current_timestamp" INTEGER NOT NULL,
+   "current_date" TIMESTAMP (6) NULL,
+   "network_id" INTEGER NOT NULL,
+   "vault_name" CHARACTER VARYING (100) NOT NULL,
+   "strategy_name" CHARACTER VARYING (100) NOT NULL,
+   "display_name" CHARACTER VARYING (100) NULL,
+   "address" CHARACTER VARYING (42) NULL,
+   "amount" NUMERIC (20, 8) NULL,
+   "share" NUMERIC (20, 8) NULL,
+   "last3d_apy" NUMERIC (20, 8) NULL,
+   "all_time_apy" NUMERIC (20, 8) NULL,
+   "sharpe_ratio" NUMERIC (20, 8) NULL,
+   "sortino_ratio" NUMERIC (20, 8) NULL,
+   "romad_ratio" NUMERIC (20, 8) NULL,
+   "creation_date" TIMESTAMP (6) NULL,
+   CONSTRAINT "PROTOCOL_AVAX_STRATEGIES_pkey" PRIMARY KEY ("current_timestamp",
+                                                      "network_id",
+                                                      "vault_name",
+                                                      "strategy_name")
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+)
+WITH (OIDS = FALSE);
+
+ALTER TABLE gro."PROTOCOL_AVAX_STRATEGIES" OWNER to postgres;

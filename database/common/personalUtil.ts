@@ -2,14 +2,21 @@ import { ethers } from 'ethers';
 import moment from 'moment';
 import { ContractNames } from '../../registry/registry';
 import { getFilterEvents } from '../../common/logFilter-new';
-import { getLatestContractEventFilter, getContractHistoryEventFilters, getCoinApprovalFilters } from '../../common/filterGenerateTool';
+import {
+    getLatestContractEventFilter,
+    getContractHistoryEventFilters,
+    getCoinApprovalFilters
+} from '../../common/filterGenerateTool';
 import { getProvider } from './globalUtil';
 import { query } from '../handler/queryHandler';
-import { QUERY_ERROR, ERC20_TRANSFER_SIGNATURE } from '../constants';
+import { 
+    QUERY_ERROR, 
+    ERC20_TRANSFER_SIGNATURE
+} from '../constants';
+import { Transfer } from '../types';
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-
 
 
 const ZERO_ADDRESS =
@@ -20,23 +27,6 @@ const isPlural = (count) => (count > 1 ? 's' : '');
 const handleErr = async (func, err) => {
     logger.error(`**DB: ${func} \n Message: ${err}`);
 };
-
-const Load = Object.freeze({
-    FULL: 1,
-    TRANSFERS: 2,
-});
-
-const Transfer = Object.freeze({
-    DEPOSIT: 1,
-    WITHDRAWAL: 2,
-    TRANSFER_GVT_IN: 3,
-    TRANSFER_PWRD_IN: 4,
-    TRANSFER_GVT_OUT: 5,
-    TRANSFER_PWRD_OUT: 6,
-    TRANSFER_GRO_IN: 7,
-    TRANSFER_GRO_OUT: 8,
-    STABLECOIN_APPROVAL: 20,
-});
 
 const transferType = (side) => {
     switch (side) {
@@ -56,6 +46,18 @@ const transferType = (side) => {
             return 'transfer-gro-in';
         case Transfer.TRANSFER_GRO_OUT:
             return 'transfer-gro-out';
+        case Transfer.TRANSFER_groUSDCe_IN:
+            return 'transfer_groUSDCe_in';
+        case Transfer.TRANSFER_groUSDCe_OUT:
+            return 'transfer_groUSDCe_out';
+        case Transfer.TRANSFER_groUSDTe_IN:
+            return 'transfer_groUSDCe_in';
+        case Transfer.TRANSFER_groUSDTe_OUT:
+            return 'transfer_groUSDCe_out';
+        case Transfer.TRANSFER_groDAIe_IN:
+            return 'transfer_groDAIe_in';
+        case Transfer.TRANSFER_groDAIe_OUT:
+            return 'transfer_groDAIe_out';
         case Transfer.STABLECOIN_APPROVAL:
             return 'coin-approve';
         default:
@@ -67,7 +69,10 @@ const isDeposit = (side) => {
     return side === Transfer.DEPOSIT ||
         side === Transfer.TRANSFER_GVT_IN ||
         side === Transfer.TRANSFER_PWRD_IN ||
-        side === Transfer.TRANSFER_GRO_IN
+        side === Transfer.TRANSFER_GRO_IN ||
+        side === Transfer.TRANSFER_groUSDCe_IN ||
+        side === Transfer.TRANSFER_groUSDTe_IN ||
+        side === Transfer.TRANSFER_groDAIe_IN
         ? true
         : false;
 };
@@ -97,7 +102,7 @@ const getNetworkId = () => {
     }
 };
 
-// DUPLICATED: to be moved to /common
+// TODO/DUPLICATED: to be moved to /common
 function getStableCoinIndex(tokenSymbol) {
     switch (tokenSymbol) {
         case 'DAI':
@@ -140,10 +145,7 @@ const generateDateRange = (_fromDate, _toDate) => {
         }
         return dates;
     } catch (err) {
-        handleErr(
-            `personalUtil->generateDateRange() [from: ${_fromDate}, to: ${_toDate}]`,
-            err
-        );
+        handleErr(`personalUtil->generateDateRange() [from: ${_fromDate}, to: ${_toDate}]`, err);
     }
 };
 
@@ -182,63 +184,6 @@ const calcLoadingDateRange = async () => {
         return [];
     }
 }
-
-// Get all approval events for a given block range
-// TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
-const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
-    try {
-        const logApprovals = await getCoinApprovalFilters(
-            'default',
-            fromBlock,
-            toBlock,
-            account
-        );
-        const logPromises = [];
-        for (let i = 0; i < logApprovals.length; i += 1) {
-            const approvalEvent = logApprovals[i];
-            logPromises.push(
-                getFilterEvents(
-                    approvalEvent.filter,
-                    approvalEvent.interface,
-                    'default'
-                )
-            );
-        }
-        const logs = await Promise.all(logPromises);
-
-        // Remove approvals referring to deposits (only get stablecoin approvals)
-        const depositTx = [];
-        const q = account
-            ? 'select_cache_tmp_deposits.sql'
-            : 'select_tmp_deposits.sql';
-        const res = await query(q, []);
-        if (res.status === QUERY_ERROR) {
-            return false;
-        } else if (res.rows.length === 0) {
-            logger.info(
-                `**DB: Warning! 0 deposit transfers before processing approval events`
-            );
-        } else {
-            for (const tx of res.rows) {
-                depositTx.push(tx.tx_hash);
-            }
-        }
-        let logsFiltered = [];
-        for (let i = 0; i < logs.length; i++) {
-            logsFiltered.push(logs[i].filter(
-                (item) => !depositTx.includes(item.transactionHash)
-            ));
-        }
-
-        return logsFiltered;
-    } catch (err) {
-        handleErr(
-            `personalUtil->getApprovalEvents() [blocks: from ${fromBlock} to: ${toBlock}, account: ${account}]`,
-            err
-        );
-        return false;
-    }
-};
 
 const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
     try {
@@ -287,8 +232,8 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
             case Transfer.TRANSFER_GRO_IN:
                 eventType = 'Transfer';
                 contractName = ContractNames.GroDAOToken;
-                sender = account;
-                receiver = null;
+                sender = null;
+                receiver = account;
                 break;
             case Transfer.TRANSFER_GRO_OUT:
                 eventType = 'Transfer';
@@ -296,15 +241,29 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 sender = account;
                 receiver = null;
                 break;
+            // AVAX new data
+            case Transfer.TRANSFER_groUSDCe_IN:
+                eventType = 'Transfer';
+                contractName = ContractNames.AVAXUSDCVault;
+                sender = null;
+                receiver = account;
+                break;
+            case Transfer.TRANSFER_groUSDCe_OUT:
+                eventType = 'Transfer';
+                contractName = ContractNames.AVAXUSDCVault;
+                sender = account;
+                receiver = null;
+                break;
             default:
-                handleErr(`personalUtil->getTransferEvents2()->switch: Invalid event`, null);
+                handleErr(`personalUtil->getTransferEvents2()->switch: Invalid event:`, side);
                 return false;
         }
 
-        let events;
-        if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) {
+        let filters;
+        if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
+            || side === Transfer.TRANSFER_groUSDCe_IN || side === Transfer.TRANSFER_groUSDCe_OUT) {
             // returns an array
-            events = getContractHistoryEventFilters(
+            filters = getContractHistoryEventFilters(
                 'default',
                 contractName,
                 eventType,
@@ -314,7 +273,7 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
             );
         } else {
             // returns an object
-            events = getLatestContractEventFilter(
+            filters = getLatestContractEventFilter(
                 'default',
                 contractName,
                 eventType,
@@ -322,13 +281,13 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 toBlock,
                 [sender, receiver]
             );
-            events = [events];
+            filters = [filters];
         }
 
         const logPromises = [];
 
-        for (let i = 0; i < events.length; i += 1) {
-            const transferEventFilter = events[i];
+        for (let i = 0; i < filters.length; i += 1) {
+            const transferEventFilter = filters[i];
             const result = await getFilterEvents(
                 transferEventFilter.filter,
                 transferEventFilter.interface,
@@ -361,7 +320,7 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
             return logResults;
         }
 
-        //console.log('side', side, 'logResults', logResults[0][0]);
+        // console.log('side', side, 'logResults', logResults[0][0]);
 
     } catch (err) {
         handleErr(`personalUtil->getTransferEvents2() [side: ${side}]`, err);
@@ -436,6 +395,63 @@ const getGTokenFromTx = async (result, side, account) => {
     }
 };
 
+// Get all approval events for a given block range
+// TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
+const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
+    try {
+        const logApprovals = await getCoinApprovalFilters(
+            'default',
+            fromBlock,
+            toBlock,
+            account
+        );
+        const logPromises = [];
+        for (let i = 0; i < logApprovals.length; i += 1) {
+            const approvalEvent = logApprovals[i];
+            logPromises.push(
+                getFilterEvents(
+                    approvalEvent.filter,
+                    approvalEvent.interface,
+                    'default'
+                )
+            );
+        }
+        const logs = await Promise.all(logPromises);
+
+        // Remove approvals referring to deposits (only get stablecoin approvals)
+        const depositTx = [];
+        const q = account
+            ? 'select_cache_tmp_deposits.sql'
+            : 'select_tmp_deposits.sql';
+        const res = await query(q, []);
+        if (res.status === QUERY_ERROR) {
+            return false;
+        } else if (res.rows.length === 0) {
+            logger.info(
+                `**DB: Warning! 0 deposit transfers before processing approval events`
+            );
+        } else {
+            for (const tx of res.rows) {
+                depositTx.push(tx.tx_hash);
+            }
+        }
+        let logsFiltered = [];
+        for (let i = 0; i < logs.length; i++) {
+            logsFiltered.push(logs[i].filter(
+                (item) => !depositTx.includes(item.transactionHash)
+            ));
+        }
+
+        return logsFiltered;
+    } catch (err) {
+        handleErr(
+            `personalUtil->getApprovalEvents() [blocks: from ${fromBlock} to: ${toBlock}, account: ${account}]`,
+            err
+        );
+        return false;
+    }
+};
+
 export {
     QUERY_ERROR,
     getBlockData,
@@ -449,7 +465,5 @@ export {
     handleErr,
     isDeposit,
     isPlural,
-    Transfer,
-    Load,
     transferType,
 };

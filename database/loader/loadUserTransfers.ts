@@ -2,11 +2,19 @@ import moment from 'moment';
 import { query } from '../handler/queryHandler';
 import { loadEthBlocks } from './loadEthBlocks';
 import { loadTableUpdates } from './loadTableUpdates';
-import { handleErr, isDeposit, isPlural, getTransferEvents2, getGTokenFromTx, Transfer, transferType } from '../common/personalUtil';
+import {
+    handleErr,
+    isDeposit,
+    isPlural,
+    getTransferEvents2,
+    getGTokenFromTx,
+    transferType,
+} from '../common/personalUtil';
 import { parseTransferEvents } from '../parser/personalStatsParser';
 import { parseAmount } from '../parser/personalStatsParser';
 import { getGroVault } from '../common/contractUtil';
 import { QUERY_ERROR } from '../constants';
+import { Transfer } from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -20,8 +28,13 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 /// @param  toDdate End date to load transfers
 /// @param  account User address for cache loading; null for daily loads
 /// @return True if no exceptions found, false otherwise
-const loadUserTransfers = async (fromDate, toDate, account) => {
+const loadUserTransfers = async (
+    fromDate,
+    toDate,
+    account
+) => {
     try {
+console.log('fromDate', fromDate, 'toDate', toDate);
         // Add new blocks into ETH_BLOCKS (incl. block timestamp)
         if (await loadEthBlocks('loadUserTransfers', account)) {
             // Insert deposits, withdrawals & transfers
@@ -94,7 +107,6 @@ const loadTmpUserTransfers = async (
                     side === Transfer.TRANSFER_GVT_OUT ||
                     side === Transfer.TRANSFER_GVT_IN) {
                     // Calc the GVT price for contract transfers
-
                     for (const item of result) {
                         const priceGVT = parseAmount(await getGroVault().getPricePerShare({ blockTag: item.block_number }), 'USD');
                         item.usd_value = item.gvt_amount * priceGVT;

@@ -1,6 +1,7 @@
 import schedule from 'node-schedule';
 import { getConfig } from '../../common/configUtil';
 import { etlGroStats } from '../etl/etlGroStats';
+import { etlGroStatsMC } from '../etl/etlGroStatsMC';
 import { etlPriceCheck } from '../etl/etlPriceCheck';
 import { etlPersonalStats } from '../etl/etlPersonalStats';
 import { calcLoadingDateRange } from '../common/personalUtil';
@@ -23,7 +24,8 @@ const groStatsJob = async () => {
     schedule.scheduleJob(groStatsJobSetting, async () => {
         try {
             logger.info('**DB: groStatsJob started');
-            await etlGroStats();
+            // await etlGroStats();
+            await etlGroStatsMC();
             logger.info('**DB: groStatsJob finished');
         } catch (err) {
             logger.error(`**DB: Error in dbStatsScheduler.js->groStatsJob(): ${err}`);

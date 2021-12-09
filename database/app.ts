@@ -133,7 +133,7 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
             process.exit(0);
         }
 
-        await isContract();
+        // await isContract();
 
         // Testing groStats
         // await etlGroStats();
