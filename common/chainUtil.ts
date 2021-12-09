@@ -13,7 +13,7 @@ import { botBalanceMessage } from '../discordMessage/botBalanceMessage';
 import { sendAlertMessage } from './alertMessageSender';
 import { getConfig } from './configUtil';
 import { PrivateProvider } from './privateProvider';
-const { AvaxPrcProvider } = require('./avaxRpcProvider');
+import { AvaxPrcProvider } from './avaxRpcProvider';
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
