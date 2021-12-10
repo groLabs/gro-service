@@ -5,11 +5,14 @@ const {
     getAvaxAggregator,
     getJoeToken,
 } = require('../contract/avaxAllContracts');
-const { harvestMessage } = require('../../dist/discordMessage/harvestMessage');
 const { borrowLimit } = require('./borrowLimitHandler');
 const { sendTransaction } = require('../common/avaxChainUtil');
 const logger = require('../avaxharvestLogger');
-const { updateLimitMessage } = require('../../dist/discordMessage/avaxMessage');
+const {
+    updateLimitMessage,
+    harvestMessage,
+} = require('../../dist/discordMessage/avaxMessage');
+
 const E18 = BigNumber.from('1000000000000000000');
 
 async function harvest(vault) {

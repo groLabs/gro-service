@@ -67,8 +67,43 @@ function forceCloseMessage(content) {
     sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
 }
 
+function harvestMessage(content) {
+    const {
+        vaultName,
+        vaultAddress,
+        transactionHash,
+        strategyName,
+        strategyAddress,
+    } = content;
+    const txLabel = shortAccount(transactionHash);
+    const discordMessage = {
+        type: MESSAGE_TYPES.harvest,
+        message: `Calling strategyHarvest function to harvest ${vaultName}:${vaultAddress}'s ${strategyName}`,
+        description: `${MESSAGE_EMOJI.company} ${txLabel} Calling ${vaultName}'s ${strategyName}'s harvest function`,
+        urls: [
+            {
+                label: txLabel,
+                type: 'tx',
+                value: transactionHash,
+            },
+            {
+                label: vaultName,
+                type: 'account',
+                value: vaultAddress,
+            },
+            {
+                label: strategyName,
+                type: 'account',
+                value: strategyAddress,
+            },
+        ],
+    };
+    sendMessageToChannel(DISCORD_CHANNELS.protocolEvents, discordMessage);
+}
+
 module.exports = {
     tendMessage,
     updateLimitMessage,
     forceCloseMessage,
+    harvestMessage,
 };
