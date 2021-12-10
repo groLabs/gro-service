@@ -1,8 +1,26 @@
 import { ethers } from 'ethers';
-import { getAlchemyRpcProvider, getWalletNonceManager } from '../common/chainUtil';
+import {
+    getAlchemyRpcProvider,
+    getWalletNonceManager,
+} from '../common/chainUtil';
 import { ContractCallError } from '../common/error';
 import { getConfig } from '../common/configUtil';
-import { Controller, Insurance, PnL, Vault, Exposure, Strategy, VaultAdaptorYearnV2032 as VaultAdaptor, DepositHandler, WithdrawHandler, LifeGuard3Pool, Buoy3Pool as Buoy , ERC20, RebasingGToken, NonRebasingGToken} from './types'
+import {
+    Controller,
+    Insurance,
+    PnL,
+    Vault,
+    Exposure,
+    Strategy,
+    VaultAdaptorYearnV2032 as VaultAdaptor,
+    DepositHandler,
+    WithdrawHandler,
+    LifeGuard3Pool,
+    Buoy3Pool as Buoy,
+    ERC20,
+    RebasingGToken,
+    NonRebasingGToken,
+} from './types';
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 const nodeEnv = process.env.NODE_ENV?.toLowerCase();
@@ -49,7 +67,7 @@ let lifeguard: LifeGuard3Pool;
 let buoy: Buoy;
 let curveVault: VaultAdaptor;
 const vaults = [];
-const underlyTokens : ERC20[] = [];
+const underlyTokens: ERC20[] = [];
 const strategyLength = [];
 const vaultAndStrategyLabels = {};
 const vaultStableCoins = { tokens: {}, decimals: {}, symbols: {} };
@@ -78,7 +96,11 @@ async function initInsurance() {
 
     const exposureAddress = await insurance.exposure();
     logger.info(`exposure address: ${exposureAddress}`);
-    exposure = new ethers.Contract(exposureAddress, exposureABI, nonceManager) as Exposure;
+    exposure = new ethers.Contract(
+        exposureAddress,
+        exposureABI,
+        nonceManager
+    ) as Exposure;
 }
 
 async function initPnl() {
@@ -266,7 +288,11 @@ async function initVaultStableCoins() {
         const token = await vaults[i].token();
         vaultStableCoins.tokens[vaults[i].address] = [token];
         vaultStableCoins.tokens[vaults[lastIndex].address].push(token);
-        const stableCoin = new ethers.Contract(token, erc20ABI, nonceManager) as ERC20;
+        const stableCoin = new ethers.Contract(
+            token,
+            erc20ABI,
+            nonceManager
+        ) as ERC20;
         underlyTokens.push(stableCoin);
         // eslint-disable-next-line no-await-in-loop
         const decimals = await stableCoin.decimals();

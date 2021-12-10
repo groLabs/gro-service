@@ -37,15 +37,15 @@ export const airdrop = {
 };
 export const gro_gate = {
     folder: '../grogate',
-    files: [],
+    files: ['bouncer-6-proofs.json'],
 };
 export const buoy_start_block = 13304056;
 export const blockchain = {
     network: 'mainnet',
     start_block: 12522788,
-    avax_start_block: 7075659,
+    avax_start_block: 7726890,
     start_timestamp: 1622204347,
-    avax_launch_timestamp: 1637173912,
+    avax_launch_timestamp: 1638483222,
     default_api_keys: {
         alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
         infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
@@ -212,6 +212,7 @@ export const fail_percentage_total = 1000;
 export const fail_percentage_pre_price = 500;
 export const contracts = {
     controller: '0xCC5c60A319D33810b9EaB9764717EeF84deFB8F4',
+    votingAggregator: '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D',
 };
 export const staker_pools = {
     contracts: {

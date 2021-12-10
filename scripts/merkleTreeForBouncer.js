@@ -7,12 +7,12 @@ const { BigNumber: BN } = require('bignumber.js');
 const fakeAirdropItems = [
     {
         address: '0x6D1e68d2cc52696241fA17Ae198f41Ce84078328',
-        gro: 0,
+        groBalance: 0,
         amount: 0,
     },
     {
         address: '0x085873B5fb1BC6833CE995a4Cd856D0Cc6C95748',
-        gro: 0,
+        groBalance: 0,
         amount: 0,
     },
     {

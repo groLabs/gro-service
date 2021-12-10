@@ -30,16 +30,16 @@ export const airdrop = {
 };
 export const gro_gate = {
     folder: '../grogate',
-    files: ['bouncer-0-proofs.json'],
+    files: ['bouncer-2-proofs.json'],
 };
 
 export const buoy_start_block = 10633347;
 export const blockchain = {
     network: 'ropsten',
     start_block: 10525267,
-    avax_start_block: 7075659,
+    avax_start_block: 7726890,
     start_timestamp: 1624827717,
-    avax_launch_timestamp: 1637173912,
+    avax_launch_timestamp: 1638483222,
     default_api_keys: {
         alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
         infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',

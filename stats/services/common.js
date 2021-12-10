@@ -176,23 +176,18 @@ async function getAvaxApproveEventFilters(account, contractName, provider) {
     ];
     const filters = [];
     const contractInterfaces = [];
-    const latestAvaxVault = getLatestSystemContractOnAVAX(contractName);
-    const avaxDaiVaultInfo = latestAvaxVault.contractInfo;
-    const { address: vaultAddress, startBlock, tokens } = avaxDaiVaultInfo;
+    const latestAvaxVault = getLatestSystemContractOnAVAX(
+        contractName,
+        provider
+    );
+    const avaxVaultInfo = latestAvaxVault.contractInfo;
+    const { address: vaultAddress, startBlock, tokens } = avaxVaultInfo;
     const coin = new ethers.Contract(tokens[0], abi, provider);
     const filter = coin.filters.Approval(account, vaultAddress);
     filter.fromBlock = startBlock;
     filter.toBlock = 'latest';
     filters.push(filter);
     contractInterfaces.push(coin.interface);
-
-    // vault token: not include now
-    // const avaxDAIVault = latestAvaxVault.contract;
-    // const vaultApprovalFilter = avaxDAIVault.filters.Approval(account, null);
-    // vaultApprovalFilter.fromBlock = startBlock;
-    // vaultApprovalFilter.toBlock = 'latest';
-    // filters.push(vaultApprovalFilter);
-    // contractInterfaces.push(avaxDAIVault.interface);
 
     return { filters, contractInterfaces };
 }

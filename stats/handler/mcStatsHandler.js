@@ -11,8 +11,9 @@ const {
     getAlchemyRpcProvider,
     getTimestampByBlockNumber,
 } = require('../../dist/common/chainUtil');
-const { getSystemApy, getHistoricalSystemApy } = require('./apyHandler');
+const { getSystemApy } = require('./apyHandler');
 const { getGtokenApy, getHodlBonusApy } = require('./currentApyHandler');
+const { getAvaxSystemStats } = require('./avaxSystemHandler');
 const {
     getTvlStats,
     getSystemStats,
@@ -92,7 +93,7 @@ function formatExternalResponse(stats) {
     return externalStats;
 }
 
-async function generateGroStatsFile() {
+async function generateGroStatsMcFile() {
     const latestBlock = await provider.getBlock();
     const latestBlockTag = {
         blockTag: latestBlock.number,
@@ -152,12 +153,12 @@ async function generateGroStatsFile() {
         externalStatsFilename,
         JSON.stringify(formatExternalResponse(stats))
     );
-    const latestFilename = {
-        filename: statsFilename,
-        argentFilename: argentStatsFilename,
-        externalFilename: externalStatsFilename,
-    };
-    fs.writeFileSync(statsLatest, JSON.stringify(latestFilename));
+    // const latestFilename = {
+    //     filename: statsFilename,
+    //     argentFilename: argentStatsFilename,
+    //     externalFilename: externalStatsFilename,
+    // };
+    // fs.writeFileSync(statsLatest, JSON.stringify(latestFilename));
     logger.info(
         `Power Dollar:${stats.tvl.pwrd} Gro Vault:${stats.tvl.gvt} TotalAssets:${stats.tvl.total} Utilization Ratio:${stats.tvl.util_ratio}`
     );
@@ -169,36 +170,69 @@ async function generateGroStatsFile() {
         total: tvl.total,
         utilRatio: tvl.util_ratio,
     });
-    return { mainnet: tvl, statsFilename };
-}
 
-async function generateHistoricalStats(blockNumber, attr) {
-    if (parseInt(blockNumber, 10) < parseInt(launchBlock, 10)) {
-        throw new ParameterError('blockNumber is before launch.');
-    }
-    const block = await provider.getBlock(blockNumber).catch((e) => {
-        logger.error(e);
-        throw new ParameterError('Get block info failed.');
-    });
-    logger.info(`generateHistoricalStats ${blockNumber}`);
-    const launchTimestamp = await getTimestampByBlockNumber(
-        launchBlock,
-        provider
-    );
-
-    const stats = {
-        current_timestamp: block.timestamp.toString(),
-        launch_timestamp: launchTimestamp,
-        network: process.env.NODE_ENV.toLowerCase(),
-        block: blockNumber.toString(),
-        attr,
+    const avaxSystem = await getAvaxSystemStats();
+    const mcTotals = {
+        tvl: {
+            mainnet: tvl.total,
+            avalanche: avaxSystem.tvl.total,
+            total: tvl.total.add(avaxSystem.tvl.total),
+        },
     };
-    const apy = await getHistoricalSystemApy(block, provider);
-    stats.apy = mapper(apy, ['pwrd', 'gvt'], []);
-    return stats;
+    const formattedTvl = mapper(
+        mcTotals,
+        ['total_share', 'share', 'last3d_apy'],
+        ['avalanche', 'total', 'mainnet']
+    );
+    const formattedAvaxSystem = mapper(
+        avaxSystem,
+        [
+            'total_share',
+            'share',
+            'last3d_apy',
+            'all_time_apy',
+            'sharpe_ratio',
+            'sortino_ratio',
+            'romad_ratio',
+            'apy',
+            'last3d_apy',
+            'all_time_apy',
+            'avax_exposure',
+        ],
+        [
+            'total_amount',
+            'total',
+            'avax',
+            'amount',
+            'groDAI.e_vault',
+            'groUSDC.e_vault',
+            'groUSDT.e_vault',
+            'open_amount',
+            'close_amount',
+            'current_amount',
+            'tvl_cap',
+        ]
+    );
+    const groStatsMultiChain = {
+        current_timestamp: latestBlock.timestamp.toString(),
+        network: process.env.NODE_ENV.toLowerCase(),
+        mc_totals: formattedTvl,
+        mainnet: stats,
+        avalanche: formattedAvaxSystem,
+    };
+    const statsMcFilename = `${statsDir}/gro-stats-mc-${latestBlock.timestamp}.json`;
+    fs.writeFileSync(statsMcFilename, JSON.stringify(groStatsMultiChain));
+
+    const latestFilenames = {
+        filename: statsFilename,
+        mcFilename: statsMcFilename,
+        argentFilename: argentStatsFilename,
+        externalFilename: externalStatsFilename,
+    };
+    fs.writeFileSync(statsLatest, JSON.stringify(latestFilenames));
+    return statsFilename;
 }
 
 module.exports = {
-    generateGroStatsFile,
-    generateHistoricalStats,
+    generateGroStatsMcFile,
 };

@@ -7,6 +7,7 @@ const { wrapAsync } = require('../common/wrap');
 const { ParameterError } = require('../../dist/common/error');
 const {
     getGroStatsContent,
+    getGroStatsMcContent,
     getArgentStatsContent,
     getExternalStatsContent,
     reloadContractsFromRegistry,
@@ -134,6 +135,19 @@ router.get(
         }
         const groStats = await getGroStatsContent();
         res.json({ gro_stats: groStats });
+    })
+);
+
+router.get(
+    '/gro_stats_mc',
+    wrapAsync(async (req, res) => {
+        let { network } = req.query;
+        network = network || '';
+        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+            throw new ParameterError('Parameter network failed.');
+        }
+        const groStatsMc = await getGroStatsMcContent();
+        res.json({ gro_stats_mc: groStatsMc });
     })
 );
 
