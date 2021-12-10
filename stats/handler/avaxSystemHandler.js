@@ -198,7 +198,8 @@ async function calculatePositionReturn(
     openBlock,
     endBlock,
     duration,
-    positionId
+    positionId,
+    closed
 ) {
     const openTotalSupply = await vaultAdapter.totalSupply({
         blockTag: openBlock,
@@ -255,7 +256,7 @@ async function calculatePositionReturn(
     );
     const loss = strategyInfoAfter.totalLoss.sub(strategyInfoBefore.totalLoss);
     let wantClose = wantOpen.add(profit).sub(loss);
-    if (profit.eq(ZERO) && loss.eq(ZERO)) {
+    if (profit.eq(ZERO) && loss.eq(ZERO) && closed) {
         wantOpen = strategyInfoAfter.totalDebt;
         wantClose = await strategyContract.estimatedTotalAssets({
             blockTag: endBlock,
@@ -436,11 +437,11 @@ async function calculateVaultReturn(
         .div(duration);
 
     let vaultReturn3Days = vaultReturn;
-    console.log(
-        `endBlock - BLOCKS_OF_3DAYS ${
-            endBlock - BLOCKS_OF_3DAYS
-        } startBlock ${startBlock}`
-    );
+    // console.log(
+    //     `endBlock - BLOCKS_OF_3DAYS ${
+    //         endBlock - BLOCKS_OF_3DAYS
+    //     } startBlock ${startBlock}`
+    // );
     if (endBlock - BLOCKS_OF_3DAYS > startBlock) {
         const blockNumber3DaysAgo = endBlock - BLOCKS_OF_3DAYS;
         const block3DaysAgo = await provider.getBlock(blockNumber3DaysAgo);
@@ -640,7 +641,8 @@ async function getAvaxSystemStats() {
                         open.block,
                         close.block,
                         duration,
-                        key
+                        key,
+                        true
                     );
                 returns[i] = positionReturn;
 
@@ -655,7 +657,7 @@ async function getAvaxSystemStats() {
                     apy: positionReturn,
                 };
                 positions.push(positionInfo);
-                console.log(
+                logger.info(
                     `--- positionInfo ${key}\n open ${
                         positionInfo.open_amount
                     } ${positionInfo.open_ts} ${new Date(
@@ -678,10 +680,11 @@ async function getAvaxSystemStats() {
                         open.block,
                         block.number,
                         duration,
-                        key
+                        key,
+                        false
                     );
-                console.log(
-                    `activePosition ${wantOpen} ${wantClose} ${positionReturn}`
+                logger.info(
+                    `activePosition ${vaultIndex} ${wantOpen} ${wantClose} ${positionReturn}`
                 );
                 openPosition = {
                     active_position: 'true',
