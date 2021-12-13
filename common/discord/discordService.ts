@@ -5,8 +5,9 @@ import { getDiscordClient } from './discord';
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 /* eslint-disable import/no-dynamic-require */
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
-const RETRY_TIMES = getConfig('discord.retry', false) as number || 2;
-const RESEND_DELAY_SETTING = getConfig('discord.resend_delay', false) as number || 2000;
+const RETRY_TIMES = (getConfig('discord.retry', false) as number) || 2;
+const RESEND_DELAY_SETTING =
+    (getConfig('discord.resend_delay', false) as number) || 2000;
 
 interface DiscordChannels {
     trades: string;
@@ -19,8 +20,12 @@ interface DiscordChannels {
 
 const DISCORD_CHANNELS: DiscordChannels = {} as DiscordChannels;
 DISCORD_CHANNELS.trades = getConfig('discord.channel.trades') as string;
-DISCORD_CHANNELS.protocolAssets = getConfig('discord.channel.protocol_assets') as string;
-DISCORD_CHANNELS.protocolEvents = getConfig('discord.channel.protocol_events') as string;
+DISCORD_CHANNELS.protocolAssets = getConfig(
+    'discord.channel.protocol_assets'
+) as string;
+DISCORD_CHANNELS.protocolEvents = getConfig(
+    'discord.channel.protocol_events'
+) as string;
 DISCORD_CHANNELS.critActionEvents = getConfig(
     'discord.channel.crit_action_events'
 ) as string;
@@ -49,6 +54,7 @@ const MESSAGE_TYPES = {
     stats: 'Generate Stats',
     regularBot: 'Harvest Bot',
     statsBot: 'Stats Bot',
+    avaxBot: 'Avax Bot',
     criticalBot: 'Critical Bot',
     chainPrice: 'Update Chain Price',
     totalAssetsChange: 'Total Assets Change',
@@ -60,7 +66,7 @@ const MESSAGE_TYPES = {
     other: 'Others',
 };
 
-type MessageTypes = typeof MESSAGE_TYPES
+type MessageTypes = typeof MESSAGE_TYPES;
 
 interface MessageEmoji extends MessageTypes {
     Vault: string;
@@ -68,19 +74,18 @@ interface MessageEmoji extends MessageTypes {
     error: string;
     company: string;
     reverted: string;
-
-
 }
 
 const MESSAGE_EMOJI: MessageEmoji = {} as MessageEmoji;
 MESSAGE_EMOJI.Vault =
-    getConfig('emoji.gvt', false) as string || '<:Vault:834796096797802507>';
+    (getConfig('emoji.gvt', false) as string) || '<:Vault:834796096797802507>';
 MESSAGE_EMOJI.PWRD =
-    getConfig('emoji.pwrd', false) as string || '<:PWRD:834796096915767306>';
-MESSAGE_EMOJI.error = getConfig('emoji.error', false) as string || '';
+    (getConfig('emoji.pwrd', false) as string) || '<:PWRD:834796096915767306>';
+MESSAGE_EMOJI.error = (getConfig('emoji.error', false) as string) || '';
 MESSAGE_EMOJI.company =
-    getConfig('emoji.company', false) as string || '<:GRO:834796096685211689>';
-MESSAGE_EMOJI.reverted = getConfig('emoji.reverted', false) as string || '';
+    (getConfig('emoji.company', false) as string) ||
+    '<:GRO:834796096685211689>';
+MESSAGE_EMOJI.reverted = (getConfig('emoji.reverted', false) as string) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.miniStatsPersonal] =
     getConfig('emoji.miniStatsPersonal', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.stats] = getConfig('emoji.stats', false) || '';
@@ -115,6 +120,7 @@ MESSAGE_EMOJI[MESSAGE_TYPES.statsBot] =
     getConfig('emoji.statsBot', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.criticalBot] =
     getConfig('emoji.criticalBot', false) || '';
+MESSAGE_EMOJI[MESSAGE_TYPES.avaxBot] = getConfig('emoji.avaxBot', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.chainPrice] =
     getConfig('emoji.curveCheck', false) || '';
 

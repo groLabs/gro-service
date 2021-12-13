@@ -72,6 +72,7 @@ export const trigger_scheduler = {
     tend: '10 * * * * *',
     harvest: '20 * * * * *',
     force_close: '*/10 * * * * *',
+    bot_balance_check: '* * * * *',
 };
 
 export const emoji = {
