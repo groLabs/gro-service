@@ -1,7 +1,10 @@
 import { ethers } from 'ethers';
 import moment from 'moment';
 import { ContractNames } from '../../registry/registry';
-import { getFilterEvents } from '../../common/logFilter-new';
+import {
+    getEvents,
+    getFilterEvents
+} from '../../common/logFilter-new';
 import {
     getLatestContractEventFilter,
     getContractHistoryEventFilters,
@@ -14,6 +17,7 @@ import {
     ERC20_TRANSFER_SIGNATURE
 } from '../constants';
 import { Transfer } from '../types';
+import { getConfig } from '../../common/configUtil';
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -21,12 +25,15 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 const ZERO_ADDRESS =
     '0x0000000000000000000000000000000000000000000000000000000000000000';
-
 const isPlural = (count) => (count > 1 ? 's' : '');
-
 const handleErr = async (func, err) => {
     logger.error(`**DB: ${func} \n Message: ${err}`);
 };
+const rpcURL : any =
+    getConfig('blockchain.avalanche_rpc_url', false) ||
+    'https://api.avax.network/ext/bc/C/rpc';
+const providerAVAX = new ethers.providers.JsonRpcProvider(rpcURL);
+// const providerAVAX = new ethers.providers.JsonRpcProvider('https://api.avax.network/ext/bc/C/rpc');
 
 const transferType = (side) => {
     switch (side) {
@@ -259,6 +266,10 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 return false;
         }
 
+        const isAvax = (side === Transfer.TRANSFER_groUSDCe_IN || side === Transfer.TRANSFER_groUSDCe_OUT)
+        ? true
+        : false;
+
         let filters;
         if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
             || side === Transfer.TRANSFER_groUSDCe_IN || side === Transfer.TRANSFER_groUSDCe_OUT) {
@@ -297,9 +308,34 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 logPromises.push(result);
             }
         }
+        // if (isAvax) {
+        //     for (let i = 0; i < filters.length; i += 1) {
+        //         const transferEventFilter = filters[i];
+        //         const result = await getEvents(
+        //             transferEventFilter.filter,
+        //             transferEventFilter.interface,
+        //             providerAVAX,
+        //         );
+        //         if (result.length > 0) {
+        //             logPromises.push(result);
+        //         }
+        //     }
+        // } else {
+        //     for (let i = 0; i < filters.length; i += 1) {
+        //         const transferEventFilter = filters[i];
+        //         const result = await getFilterEvents(
+        //             transferEventFilter.filter,
+        //             transferEventFilter.interface,
+        //             'default',
+        //         );
+        //         if (result.length > 0) {
+        //             logPromises.push(result);
+        //         }
+        //     }
+        // }
 
         let logResults = await Promise.all(logPromises);
-
+//console.log('logResults', logResults);
         let logTrades = [];
 
         // Exclude mint or burn logs in transfers (sender or receiver address is 0x0)

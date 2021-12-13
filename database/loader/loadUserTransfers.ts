@@ -34,7 +34,6 @@ const loadUserTransfers = async (
     account
 ) => {
     try {
-console.log('fromDate', fromDate, 'toDate', toDate);
         // Add new blocks into ETH_BLOCKS (incl. block timestamp)
         if (await loadEthBlocks('loadUserTransfers', account)) {
             // Insert deposits, withdrawals & transfers

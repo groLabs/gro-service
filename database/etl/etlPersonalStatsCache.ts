@@ -20,7 +20,7 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 ///           in USER_BALANCES for a given user address
 /// @param account User address for whom cache load will be performed
 /// @return Array with start block and last date to be processed
-const preloadCache = async (account) => {
+const preloadCache = async (account: string) => {
     try {
         const params = [account];
         // TODO: if (res.every( val => (val !== 400 ))) {
@@ -93,7 +93,7 @@ const preloadCache = async (account) => {
     }
 }
 
-const loadCache = async (account) => {
+const loadCache = async (account: string) => {
     try {
         const [fromBlock, toDate] = await preloadCache(account);
         const fromDate = toDate;
@@ -136,7 +136,7 @@ const loadCache = async (account) => {
     }
 }
 
-const etlPersonalStatsCache = async (account) => {
+const etlPersonalStatsCache = async (account: string) => {
     try {
         const res = await loadCache(account);
         if (res) {

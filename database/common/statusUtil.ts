@@ -5,7 +5,10 @@ const {
     getPowerD: getPWRD,
     // getGroDAO: getGRO,
 } = require('../common/contractUtil');
-import { checkTime } from './balanceUtil';
+import { 
+    checkTime,
+    getBalances,
+} from './balanceUtil';
 import { checkDateRange } from './globalUtil';
 import { parseAmount } from '../parser/personalStatsParser';
 import { getProvider, findBlockByDate } from './globalUtil';
@@ -13,8 +16,7 @@ import { getConfig } from '../../common/configUtil';
 const statsDir = getConfig('stats_folder');
 
 // DUMPS:
-// const { balances } = require('../files/balances_cream');
-const {groHolders : balances} = require('../files/groHolders');
+const {airdropHoldersAvax : balances} = require('../files/airdropHoldersAvax');
 // const {argentHolders : balances} = require('../files/argentHolders');
 
 
@@ -74,26 +76,38 @@ const status = async (targetDate, targetTime, targetBlock) => {
     console.log(`total assets: $ ${totalAssetsPWRDparsed.toLocaleString()} [ ${totalAssetsPWRDparsed} ${totalAssetsPWRD.toString()} ]`);
     console.log(`----GRO------------------`);
     // console.log(`total shares: ${totalSupplyGROparsed.toLocaleString()} [ ${totalSupplyGROparsed} ${totalSupplyGRO.toString()} ]`);
-
-
-
-
 }
 
+// input:
+// output:
 const isContract = async () => {
-    console.log('balances', balances);
     const currentFile = `${statsDir}/gro_balances.txt`;
     const maxLength = balances.length;
     for (let i = 0; i < maxLength; i++) {
         const value = await getProvider().getCode(balances[i]);
         const result = `${balances[i]}|${(value !== '0x') ? 'Y' : 'N'}\r\n`;
         console.log(`${i} of ${maxLength} -> ${result}`);
-        // fs.appendFileSync(currentFile, JSON.stringify(result));
         fs.appendFileSync(currentFile, result);
+    }
+}
+
+// goal:    workaround to get combined GRO from manually added wallets to the AVAX allocance list.
+// input:   ./files/airdropHoldersAvax.ts
+// output:  console.log => wallet|gro_amount
+const getCombinedGro = async () => {
+    const VOTE_AGGREGATOR_ADDRESS = '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D';
+    // @ts-ignore
+    const block = (await findBlockByDate(moment.unix(1639353599), false)).block;
+    console.log(`Balances at block ${block}:`)
+    const res = await getBalances(VOTE_AGGREGATOR_ADDRESS, balances, block);
+    const combinedGro = res[0].amount_unstaked;
+    for (let i=0; i<balances.length; i++) {
+        console.log(`${balances[i]}|${combinedGro[i]}`);
     }
 }
 
 export {
     status,
     isContract,
+    getCombinedGro,
 }

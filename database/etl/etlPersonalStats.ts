@@ -1,7 +1,7 @@
 import { query } from '../handler/queryHandler';
 import moment from 'moment';
 import { findBlockByDate } from '../common/globalUtil';
-import { generateDateRange, handleErr, isPlural} from '../common/personalUtil';
+import { generateDateRange, handleErr, isPlural } from '../common/personalUtil';
 import { loadUserTransfers, loadTmpUserTransfers } from '../loader/loadUserTransfers';
 //import { loadUserApprovals, loadTmpUserApprovals } from '../loader/loadUserApprovals';
 import { loadUserBalances } from '../loader/loadUserBalances';
@@ -22,7 +22,10 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 /// @param fromDate Start date to process data [format: 'DD/MM/YYYY']
 /// @param toDdate End date to process data [format: 'DD/MM/YYYY']
 /// @return Array with start block, end block and list of dates to be processed
-const preload = async (_fromDate, _toDate) => {
+const preload = async (
+    _fromDate: string,
+    _toDate: string
+) => {
     try {
         // Truncate temporary tables
         const res = await Promise.all([
@@ -66,7 +69,11 @@ const preload = async (_fromDate, _toDate) => {
 /// @param  fromDate Start date to delete data
 /// @param  toDdate End date to delete data
 /// @return True if no exceptions found; false otherwise
-const remove = async (fromDate, toDate, loadType) => {
+const remove = async (
+    fromDate: string,
+    toDate: string,
+    loadType: Load,
+) => {
     try {
         const fromDateParsed = moment(fromDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
         const toDateParsed = moment(toDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
@@ -146,7 +153,12 @@ const remove = async (fromDate, toDate, loadType) => {
 ///         - If any data load fails, execution is stopped (to avoid data inconsistency)
 /// @param fromDate Start date to reload data
 /// @param toDdate End date to reload data
-const load = async (fromDate, toDate, loadType) => {
+/// etc
+const load = async (
+    fromDate: string,
+    toDate: string,
+    loadType: Load,
+) : Promise<boolean> => {
     try {
         // Truncate temporary tables and calculate dates & blocks to be processed
         const [fromBlock, toBlock, dates] = await preload(fromDate, toDate);
@@ -163,8 +175,8 @@ const load = async (fromDate, toDate, loadType) => {
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
                 loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_IN, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_OUT, null),
+                // loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_IN, null),
+                // loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_OUT, null),
             ]);
 
             if (res.every(Boolean)) {
@@ -193,9 +205,13 @@ const load = async (fromDate, toDate, loadType) => {
 };
 
 // TODO (specially for mainnet)
-const reloadApprovals = async () => { };
+// const reloadApprovals = async () => { };
 
-const loadTransfers = async (fromDate, toDate, loadType) => {
+const loadTransfers = async (
+    fromDate: string,
+    toDate: string,
+    loadType: Load,
+) : Promise<boolean> => {
     try {
         // Truncate temporary tables and calculate dates & blocks to be processed
         const [fromBlock, toBlock, dates] = await preload(fromDate, toDate);
@@ -235,7 +251,11 @@ const loadTransfers = async (fromDate, toDate, loadType) => {
     }
 }
 
-const etlPersonalStats = async (fromDate, toDate, loadType) => {
+const etlPersonalStats = async (
+    fromDate: string,
+    toDate: string,
+    loadType: Load,
+) => {
     try {
         if (checkDateRange(fromDate, toDate)) {
             let res;
