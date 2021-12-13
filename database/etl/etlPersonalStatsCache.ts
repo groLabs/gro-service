@@ -9,7 +9,10 @@ import { loadUserTransfers, loadTmpUserTransfers } from '../loader/loadUserTrans
 import { loadUserBalances } from '../loader/loadUserBalances';
 import { loadUserNetReturns } from '../loader/loadUserNetReturns';
 import { QUERY_ERROR } from '../constants';
-import { Transfer } from '../types'
+import {
+    Transfer,
+    Bool
+} from '../types'
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -116,10 +119,10 @@ const loadCache = async (account: string) => {
                 //if (await loadTmpUserApprovals(fromBlock, 'latest', account))
                 if (await loadUserTransfers(null, null, account))
                     //if (await loadUserApprovals(null, null, account))
-                        // TODO: time should be now(), otherwise it will take 23:59:59
-                        if (await loadUserBalances(fromDate, toDate, account, null, false))
-                            if (await loadUserNetReturns(fromDate, toDate, account))
-                                return true;
+                    // TODO: time should be now(), otherwise it will take 23:59:59
+                    if (await loadUserBalances(fromDate, toDate, account, null, Bool.FALSE))
+                        if (await loadUserNetReturns(fromDate, toDate, account))
+                            return true;
 
 
             } else {

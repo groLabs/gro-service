@@ -8,6 +8,7 @@ import { QUERY_ERROR } from '../constants';
 import { checkTime, getBalances, getBalancesUniBalLP, getBalancesCrvLP } from '../common/balanceUtil';
 import { BALANCES_BATCH as BATCH } from '../constants';
 import { getConfig } from '../../common/configUtil';
+import { Bool } from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
@@ -239,7 +240,11 @@ const checkTokenCounterDate = (day) => {
 }
 
 /// @notice Show message logs after successful loads
-const showMsg = (account, date, table) => {
+const showMsg = (
+    account, 
+    date, 
+    table
+) => {
     let msg3 = `**DB${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} `;
     msg3 += `added into ${table} `;
     msg3 += `for date ${moment(date).format('DD/MM/YYYY')}`;
@@ -253,13 +258,17 @@ const showMsg = (account, date, table) => {
 /// @param  fromDate Start date to load balances (date format: 'DD/MM/YYYY')
 /// @param  toDdate End date to load balances (date format: 'DD/MM/YYYY')
 /// @param  account User address for cache loading; null for daily loads
+/// @param  time Specific time to load balances (time format: 'HH:MM:SS')
+/// @param  isSnapshot:
+///             - if 'true', load balances into table USER_STD_FACT_BALANCES_SNAPSHOT
+///             - if 'false', load balances into table USER_STD_FACT_BALANCES
 /// @return True if no exceptions found, false otherwise
 const loadUserBalances = async (
-    fromDate,
-    toDate,
-    account,
-    time,
-    isSnapshot,
+    fromDate: string,
+    toDate: string,
+    account: string,
+    time: string,
+    isSnapshot: Bool,
 ) => {
     try {
         // Retrieve target time to load balances (23:59:59 by default)
@@ -272,6 +281,17 @@ const loadUserBalances = async (
 
         // Generate range of dates to be processed (in case fromDate <> toDate)
         const dates = generateDateRange(fromDate, toDate);
+
+        // Truncate table if snapshot load
+        if (isSnapshot === Bool.TRUE) {
+            const result = await query('truncate_user_std_fact_balances_snapshot.sql', []);
+            if (result.status === QUERY_ERROR) {
+                return false;
+            } else {
+                logger.info(`**DB: Table USER_STD_FACT_BALANCES_SNAPSHOT truncated`);
+            }
+
+        }
 
         logger.info(`**DB${account ? ' CACHE' : ''}: Processing ${users.length} user balance${isPlural(users.length)}...`);
 

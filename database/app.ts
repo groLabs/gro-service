@@ -21,7 +21,7 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
 
 (async () => {
     try {
-        const params = process.argv.slice(2);
+        const params: string[] = process.argv.slice(2);
 
         if (params.length > 0) {
             switch (params[0]) {
@@ -77,16 +77,16 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
                     break;
                 // load only balances for personal stats
                 case 'loadBalances':
-                    if (params.length === 6 && checkDateRange(params[1], params[2])) {
+                    if (params.length === 6 && checkDateRange(params[1], params[2]) && (params[5] === '0' || params[5] === '1')) {
                         await loadContractInfoFromRegistry();
                         await loadUserBalances(
                             params[1],              // start date
                             params[2],              // end date
                             params[3],              // account
                             params[4],              // time
-                            params[5]);             // snapshot (true / false)
+                            parseInt(params[5]));   // snapshot (0: false / 1: true)
                     } else {
-                        console.log(`Wrong parameters for loadBalances - e.g.: loadBalances 16/11/2021 16/11/2021 "" 15:00:00 true`);
+                        console.log(`Wrong parameters for loadBalances - e.g.: loadBalances 16/11/2021 16/11/2021 "" 15:00:00 1`);
                     }
                     break;
                 case 'airdrop4':
@@ -111,12 +111,12 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
                     }
                     break;
                 case 'dumpTable':
-                    if (params.length === 3) {
+                    if (params.length === 3 && (params[2] === '0' || params[2] === '1')) {
                         await dumpTable(
-                            params[1],      // table name
-                            params[2]);     // isAdmin (true / false)
+                            params[1],              // table name
+                            parseInt(params[2]));   // isAdmin (0: false / 1: true)
                     } else {
-                        console.log('Wrong parameters for dumpTable - e.g.: dumpTable PROTOCOL_PRICE_CHECK_DETAIL true');
+                        console.log('Wrong parameters for dumpTable - e.g.: dumpTable PROTOCOL_PRICE_CHECK_DETAIL 1');
                     }
                     break;
                 case 'status':

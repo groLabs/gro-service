@@ -51,6 +51,11 @@ enum Transfer {
     STABLECOIN_APPROVAL = 20,
 };
 
+enum Bool {
+    FALSE = 0,
+    TRUE = 1,
+}
+
 export {
     Network,
     NetworkId,
@@ -58,4 +63,5 @@ export {
     ProductId,
     Load,
     Transfer,
+    Bool,
 }

@@ -12,6 +12,7 @@ import { QUERY_ERROR } from '../constants';
 import {
     Load,
     Transfer,
+    Bool
 } from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -184,7 +185,7 @@ const load = async (
                 if (await remove(fromDate, toDate, loadType))
                     if (await loadUserTransfers(fromDate, toDate, null))
                         // if (await loadUserApprovals(fromDate, toDate, null))
-                        if (await loadUserBalances(fromDate, toDate, null, null, false))
+                        if (await loadUserBalances(fromDate, toDate, null, null, Bool.FALSE))
                             //TODO: token price return null (eg: reload before Gro token)
                             if (await loadTokenPrice(fromDate, toDate))
                                 if (await loadUserNetReturns(fromDate, toDate, null))
