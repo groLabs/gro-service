@@ -215,16 +215,16 @@ async function syncManagerNonce(providerkey, walletKey) {
     }
 }
 
-async function checkAccountBalance(walletManager, botBalanceWarnVault) {
-    const botAccount = walletManager.signer.address;
+async function checkAccountBalance(signer, botBalanceWarnVault, walletKey) {
+    const botAccount = signer.address;
     const botType = `${process.env.BOT_ENV.toLowerCase()}Bot`;
     const accountLabel = shortAccount(botAccount);
-    const balance = await walletManager.getBalance().catch((error) => {
+    const balance = await signer.getBalance().catch((error) => {
         logger.error(error);
         failedTimes.accountBalance += 1;
         const embedMessage = {
             type: MESSAGE_TYPES[botType],
-            description: `[WARN] B7 - Call ${botType} ${accountLabel}'s ETH balance txn failed, check balance didn't complate`,
+            description: `[WARN][Avalanche] B7 - Call ${botType} ${accountLabel}'s AVAX balance txn failed, check balance didn't complate`,
             urls: [
                 {
                     label: accountLabel,
@@ -239,7 +239,7 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
             });
         }
         throw new BlockChainCallError(
-            `Get ETH balance of bot:${botAccount} failed.`,
+            `Get AVAX balance of bot:${botAccount} failed.`,
             MESSAGE_TYPES[botType]
         );
     });
@@ -253,6 +253,8 @@ async function checkAccountBalance(walletManager, botBalanceWarnVault) {
             botType,
             balance,
             level,
+            walletKey,
+            chain: 'avax',
         });
     }
 }
@@ -266,7 +268,8 @@ async function checkAccountsBalance(botBalanceWarnVault) {
             checkPromise.push(
                 checkAccountBalance(
                     botWallets[providerskey[i]][walletsKey[j]],
-                    botBalanceWarnVault
+                    botBalanceWarnVault,
+                    walletsKey[j]
                 )
             );
         }

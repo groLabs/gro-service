@@ -5,7 +5,7 @@ const {
 const { forceClose } = require('../handler/borrowLimitHandler');
 const { harvest } = require('../handler/harvestHandler');
 const { tend } = require('../handler/tendHandler');
-
+const { checkAccountsBalance } = require('../common/avaxChainUtil');
 const { getVaults } = require('../contract/avaxAllContracts');
 const { getConfig } = require('../../dist/common/configUtil');
 const tendSchedulerSetting = getConfig('trigger_scheduler.tend', false);
@@ -14,6 +14,11 @@ const forceCloseSchedulerSetting = getConfig(
     'trigger_scheduler.force_close',
     false
 );
+const botBalanceSchedulerSetting =
+    getConfig('trigger_scheduler.bot_balance_check', false) || '20 * * * *';
+const botBalanceWarnVault = getConfig('bot_balance', false) || {};
+
+const logger = require('../avaxharvestLogger');
 
 function harvestScheduler() {
     console.log('start harvest');
@@ -41,7 +46,19 @@ function harvestScheduler() {
     });
 }
 
+function checkBotAccountBalance() {
+    schedule.scheduleJob(botBalanceSchedulerSetting, async () => {
+        logger.info(`checkBotAccountBalance running at ${Date.now()}`);
+        try {
+            await checkAccountsBalance(botBalanceWarnVault);
+        } catch (error) {
+            sendErrorMessageToLogChannel(error);
+        }
+    });
+}
+
 function startHarvestJobs() {
+    checkBotAccountBalance();
     harvestScheduler();
     // const vaults = getVaults();
     // harvest(vaults[0]).catch((e) => console.log(e));
