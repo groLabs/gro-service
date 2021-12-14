@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS gro."PROTOCOL_APY" (
     apy_all_time numeric(20, 8),
     apy_current numeric(20, 8),
     creation_date timestamp(6) without time zone,
-    CONSTRAINT "PROTOCOL_APY_pkey" PRIMARY KEY ("current_timestamp", network_id, product_id)
+    CONSTRAINT "PROTOCOL_APY_pkey" PRIMARY KEY ("current_timestamp", "network_id", "product_id")
 ) TABLESPACE pg_default;
 
 ALTER TABLE gro."PROTOCOL_APY" OWNER to postgres;
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS gro."PROTOCOL_EXPOSURE_PROTOCOLS" (
     display_name character varying(100) COLLATE pg_catalog."default",
     concentration numeric(20, 8),
     creation_date timestamp(6) without time zone,
-    CONSTRAINT "PROTOCOL_EXPOSURE_PROTOCOLS_pkey" PRIMARY KEY ("current_timestamp", network_id, name)
+    CONSTRAINT "PROTOCOL_EXPOSURE_PROTOCOLS_pkey" PRIMARY KEY ("current_timestamp", "network_id", "name")
 ) TABLESPACE pg_default;
 
 ALTER TABLE gro."PROTOCOL_EXPOSURE_PROTOCOLS" OWNER to postgres;
@@ -32,12 +32,12 @@ ALTER TABLE gro."PROTOCOL_EXPOSURE_PROTOCOLS" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_EXPOSURE_STABLES" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id integer NOT NULL,
+    "network_id" integer NOT NULL,
     name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
     concentration numeric(20, 8),
     creation_date timestamp(6) without time zone,
-    CONSTRAINT "PROTOCOL_EXPOSURE_STABLES_pkey" PRIMARY KEY ("current_timestamp", network_id, name)
+    CONSTRAINT "PROTOCOL_EXPOSURE_STABLES_pkey" PRIMARY KEY ("current_timestamp", "network_id", "name")
 ) TABLESPACE pg_default;
 
 ALTER TABLE gro."PROTOCOL_EXPOSURE_STABLES" OWNER to postgres;
@@ -45,14 +45,14 @@ ALTER TABLE gro."PROTOCOL_EXPOSURE_STABLES" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_LIFEGUARD" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id integer NOT NULL,
+    "network_id" integer NOT NULL,
     name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
     amount numeric(20, 8),
     share numeric(20, 8),
     last3d_apy numeric(20, 8),
     creation_date timestamp(6) without time zone,
-    CONSTRAINT "PROTOCOL_LIFEGUARD_pkey" PRIMARY KEY ("current_timestamp", network_id, name)
+    CONSTRAINT "PROTOCOL_LIFEGUARD_pkey" PRIMARY KEY ("current_timestamp", "network_id", "name")
 ) TABLESPACE pg_default;
 
 ALTER TABLE gro."PROTOCOL_LIFEGUARD" OWNER to postgres;
@@ -60,7 +60,7 @@ ALTER TABLE gro."PROTOCOL_LIFEGUARD" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_RESERVES" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id integer NOT NULL,
+    "network_id" integer NOT NULL,
     vault_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     reserve_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS gro."PROTOCOL_RESERVES" (
     creation_date timestamp(6) without time zone,
     CONSTRAINT "PROTOCOL_RESERVES_pkey" PRIMARY KEY (
         "current_timestamp",
-        network_id,
+        "network_id",
         vault_name,
         reserve_name
     )
@@ -81,7 +81,7 @@ ALTER TABLE gro."PROTOCOL_RESERVES" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_STRATEGIES" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id integer NOT NULL,
+    "network_id" integer NOT NULL,
     vault_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     strategy_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS gro."PROTOCOL_STRATEGIES" (
     creation_date timestamp(6) without time zone,
     CONSTRAINT "PROTOCOL_STRATEGIES_pkey" PRIMARY KEY (
         "current_timestamp",
-        network_id,
+        "network_id",
         vault_name,
         strategy_name
     )
@@ -103,13 +103,13 @@ ALTER TABLE gro."PROTOCOL_STRATEGIES" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_SYSTEM" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id integer NOT NULL,
+    "network_id" integer NOT NULL,
     total_share numeric(20, 8),
     total_amount numeric(20, 8),
     last3d_apy numeric(20, 8),
     hodl_bonus numeric(20, 8),
     creation_date timestamp(6) without time zone,
-    CONSTRAINT "PROTOCOL_SYSTEM_pkey" PRIMARY KEY ("current_timestamp", network_id)
+    CONSTRAINT "PROTOCOL_SYSTEM_pkey" PRIMARY KEY ("current_timestamp", "network_id")
 ) TABLESPACE pg_default;
 
 ALTER TABLE gro."PROTOCOL_SYSTEM" OWNER to postgres;
@@ -117,7 +117,7 @@ ALTER TABLE gro."PROTOCOL_SYSTEM" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_TVL" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id integer NOT NULL,
+    "network_id" integer NOT NULL,
     tvl_pwrd numeric(20, 8),
     tvl_gvt numeric(20, 8),
     tvl_total numeric(20, 8),
@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS gro."PROTOCOL_TVL" (
     util_ratio_limit_pwrd numeric(20, 8),
     util_ratio_limit_gvt numeric(20, 8),
     creation_date timestamp(6) without time zone,
-    CONSTRAINT "PROTOCOL_TVL_pkey" PRIMARY KEY ("current_timestamp", network_id)
+    CONSTRAINT "PROTOCOL_TVL_pkey" PRIMARY KEY ("current_timestamp", "network_id")
 ) TABLESPACE pg_default;
 
 ALTER TABLE gro."PROTOCOL_TVL" OWNER to postgres;
@@ -133,14 +133,14 @@ ALTER TABLE gro."PROTOCOL_TVL" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_VAULTS" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id integer NOT NULL,
+    "network_id" integer NOT NULL,
     name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
     amount numeric(20, 8),
     share numeric(20, 8),
     last3d_apy numeric(20, 8),
     creation_date timestamp(6) without time zone,
-    CONSTRAINT "PROTOCOL_VAULTS_pkey" PRIMARY KEY ("current_timestamp", network_id, name)
+    CONSTRAINT "PROTOCOL_VAULTS_pkey" PRIMARY KEY ("current_timestamp", "network_id", "name")
 ) TABLESPACE pg_default;
 
 ALTER TABLE gro."PROTOCOL_VAULTS" OWNER to postgres;
@@ -148,12 +148,12 @@ ALTER TABLE gro."PROTOCOL_VAULTS" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_SYSTEM_LIFEGUARD_STABLES" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id integer NOT NULL,
+    "network_id" integer NOT NULL,
     name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
     amount numeric(20, 8),
     creation_date timestamp(6) without time zone,
-    CONSTRAINT "PROTOCOL_SYSTEM_LIFEGUARD_STABLES_pkey" PRIMARY KEY ("current_timestamp", network_id, name)
+    CONSTRAINT "PROTOCOL_SYSTEM_LIFEGUARD_STABLES_pkey" PRIMARY KEY ("current_timestamp", "network_id", "name")
 ) TABLESPACE pg_default;
 
 ALTER TABLE gro."PROTOCOL_SYSTEM_LIFEGUARD_STABLES" OWNER to postgres;
@@ -162,7 +162,7 @@ ALTER TABLE gro."PROTOCOL_SYSTEM_LIFEGUARD_STABLES" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."SYS_PROTOCOL_LOADS" (
     table_name character varying(256) NULL,
     last_timestamp integer NOT NULL,
-    network_id integer,
+    "network_id" integer,
     update_date timestamp(6) without time zone
 ) TABLESPACE pg_default;
 
@@ -185,7 +185,7 @@ CREATE TABLE gro."PROTOCOL_PRICE_CHECK_GLOBAL" (
     creation_date TIMESTAMP (6) NULL,
     oracle_check_tolerance NUMERIC (20, 8) NULL,
     curve_check_tolerance NUMERIC (20, 8) NULL,
-    CONSTRAINT "PROTOCOL_PRICE_CHECK_GLOBAL_pkey" PRIMARY KEY (block_number) NOT DEFERRABLE INITIALLY IMMEDIATE
+    CONSTRAINT "PROTOCOL_PRICE_CHECK_GLOBAL_pkey" PRIMARY KEY (block_number, network_id) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."PROTOCOL_PRICE_CHECK_GLOBAL" OWNER to postgres;
@@ -204,7 +204,7 @@ CREATE TABLE gro."PROTOCOL_PRICE_CHECK_DETAILED" (
     curve_chainlink_diff NUMERIC (20, 8) NULL,
     curve_chainlink_check BOOLEAN NULL,
     creation_date TIMESTAMP (6) NULL,
-    CONSTRAINT "PROTOCOL_PRICE_CHECK_DETAILED_pkey" PRIMARY KEY (block_number, stablecoin_pair_id) NOT DEFERRABLE INITIALLY IMMEDIATE
+    CONSTRAINT "PROTOCOL_PRICE_CHECK_DETAILED_pkey" PRIMARY KEY (block_number, block_timestamp, network_id, stablecoin_pair_id) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."PROTOCOL_PRICE_CHECK_DETAILED" OWNER to postgres;
@@ -219,16 +219,16 @@ CREATE TABLE gro."MD_STABLECOIN_PAIRS" (
 
 ALTER TABLE gro."MD_STABLECOIN_PAIRS" OWNER to postgres;
 
-INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
+INSERT INTO gro."MD_STABLECOIN_PAIRS"("pair_id", "name", "description", "creation_date")
 VALUES (0, 'undefined', 'Undefined', now()::timestamp);
 
-INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
+INSERT INTO gro."MD_STABLECOIN_PAIRS"("pair_id", "name", "description", "creation_date")
 VALUES (1, 'dai_usdc', 'DAI - USDC', now()::timestamp);
 
-INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
+INSERT INTO gro."MD_STABLECOIN_PAIRS"("pair_id", "name", "description", "creation_date")
 VALUES (2, 'dai_usdt', 'DAI - USDT', now()::timestamp);
 
-INSERT INTO gro."MD_STABLECOIN_PAIRS"(pair_id, "name", "description", creation_date)
+INSERT INTO gro."MD_STABLECOIN_PAIRS"("pair_id", "name", "description", "creation_date")
 VALUES (3, 'usdt_usdc', 'USDT - USDC', now()::timestamp);
 
 -- AVAX tables

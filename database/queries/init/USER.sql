@@ -4,7 +4,7 @@ CREATE TABLE gro."ETH_BLOCKS" (
     block_date TIMESTAMP (6) NULL,
     network_id INTEGER NULL,
     creation_date TIMESTAMP (6) NULL,
-    CONSTRAINT "ETH_BLOCKS_pkey" PRIMARY KEY (block_number) 
+    CONSTRAINT "ETH_BLOCKS_pkey" PRIMARY KEY (block_number, network_id) 
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -49,7 +49,7 @@ CREATE TABLE gro."USER_STD_FACT_APPROVALS" (
     coin_value NUMERIC (20, 8) NULL,
     creation_date TIMESTAMP (6) NULL,
     CONSTRAINT "USER_STD_FACT_APPROVALS_pkey" 
-        PRIMARY KEY (block_number, tx_hash, sender_address) 
+        PRIMARY KEY (block_number, network_id, tx_hash, sender_address) 
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -66,7 +66,7 @@ CREATE TABLE gro."USER_STD_TMP_APPROVALS" (
     coin_value NUMERIC (20, 8) NULL,
     creation_date TIMESTAMP (6) NULL,
     CONSTRAINT "USER_STD_TMP_APPROVALS_pkey" 
-        PRIMARY KEY (block_number, tx_hash, sender_address) 
+        PRIMARY KEY (block_number, network_id, tx_hash, sender_address) 
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -98,6 +98,7 @@ CREATE TABLE gro."USER_STD_FACT_TRANSFERS" (
     CONSTRAINT "USER_STD_FACT_TRANSFERS_pkey" PRIMARY KEY (
         block_number,
         tx_hash,
+        network_id,
         transfer_type,
         user_address
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
@@ -194,7 +195,7 @@ CREATE TABLE gro."USER_STD_FACT_BALANCES" (
     pool5_gro_amount NUMERIC (20, 8) NULL,          -- GRO
     pool5_weth_amount NUMERIC (20, 8) NULL,         -- WETH
     creation_date    TIMESTAMP (6) NULL,
-   CONSTRAINT "USER_STD_FACT_BALANCES_pkey" PRIMARY KEY (balance_date, user_address)
+   CONSTRAINT "USER_STD_FACT_BALANCES_pkey" PRIMARY KEY (balance_date, network_id, user_address)
       NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -230,7 +231,7 @@ CREATE TABLE gro."USER_STD_FACT_BALANCES_SNAPSHOT" (
     pool5_gro_amount NUMERIC (20, 8) NULL,          -- GRO
     pool5_weth_amount NUMERIC (20, 8) NULL,         -- WETH
     creation_date    TIMESTAMP (6) NULL,
-    CONSTRAINT "USER_STD_FACT_BALANCES_SNAPSHOT_pkey" PRIMARY KEY (balance_date, user_address) 
+    CONSTRAINT "USER_STD_FACT_BALANCES_SNAPSHOT_pkey" PRIMARY KEY (balance_date, network_id, user_address) 
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -262,7 +263,7 @@ CREATE TABLE gro."USER_STD_FACT_NET_RETURNS" (
     usdt_e_value NUMERIC (20,8) NULL,
     dai_e_value NUMERIC (20,8) NULL,
     creation_date TIMESTAMP (6) NULL,
-    CONSTRAINT "USER_STD_FACT_NET_RETURNS_pkey" PRIMARY KEY (balance_date, user_address) 
+    CONSTRAINT "USER_STD_FACT_NET_RETURNS_pkey" PRIMARY KEY (balance_date, network_id, user_address) 
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
