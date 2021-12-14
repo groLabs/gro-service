@@ -510,21 +510,21 @@
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_positionId",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "_check",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "_minAmount",
-                "type": "uint256"
-            }
+        {
+            "internalType": "uint256",
+            "name": "_positionId",
+            "type": "uint256"
+        },
+        {
+            "internalType": "address[]",
+            "name": "_tokens",
+            "type": "address[]"
+        },
+        {
+            "internalType": "uint256[]",
+            "name": "_minAmounts",
+            "type": "uint256[]"
+        }
         ],
         "name": "forceClose",
         "outputs": [],

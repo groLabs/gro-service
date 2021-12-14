@@ -5,7 +5,6 @@ const {
     getAvaxAggregator,
 } = require('../contract/avaxAllContracts');
 const { sendTransaction } = require('../common/avaxChainUtil');
-const { borrowLimit } = require('./borrowLimitHandler');
 
 const { getConfig } = require('../../dist/common/configUtil');
 const { tendMessage } = require('../../dist/discordMessage/avaxMessage');
@@ -33,10 +32,11 @@ async function tend(vault) {
         logger.info(
             `gasPrice ${gasPrice}, callCostWithPrice: ${callCostWithPrice}`
         );
-        const tendTrigger = await ahStrategy.tendTrigger(
-            callCostWithPrice,
-            blockTag
-        );
+        // const tendTrigger = await ahStrategy.tendTrigger(
+        //     callCostWithPrice,
+        //     blockTag
+        // );
+        const tendTrigger = true;
         logger.info(`Vault name: ${vaultName}, tendTrigger: ${tendTrigger}`);
         if (tendTrigger) {
             // 1. get balance of want in vaultAdaptor and startegy

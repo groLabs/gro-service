@@ -126,7 +126,7 @@ function initAllAvaxContracts() {
     initWavax();
     initAvaxAggregator();
     initCrToken();
-    // initJoeToken();
+    initJoeToken();
     logger.info('Init contracts done!.');
 }
 

@@ -57,11 +57,36 @@ function checkBotAccountBalance() {
     });
 }
 
+function forceCloseScheduler() {
+    console.log('start forceClose');
+    schedule.scheduleJob(forceCloseSchedulerSetting, async () => {
+        try {
+            const vaults = getVaults();
+            const txs = [];
+            for (let i = 0; i < vaults.length; i += 1) {
+                console.log(
+                    `address ${i} ${vaults[i].vaultAdaptorMK2.address}`
+                );
+                txs.push(forceClose(vaults[i]));
+            }
+            await Promise.all(txs);
+        } catch (error) {
+            sendErrorMessageToLogChannel(error);
+            const discordMessage = {
+                description:
+                    "[WARN] B2 -  HarvestTrigger | Harvest txn failed, HarvestTrigger action didn't complate",
+            };
+            // sendAlertMessage({
+            //     discord: discordMessage,
+            // });
+        }
+    });
+}
+
 function startHarvestJobs() {
     checkBotAccountBalance();
+    forceCloseScheduler();
     harvestScheduler();
-    // const vaults = getVaults();
-    // harvest(vaults[0]).catch((e) => console.log(e));
 }
 
 module.exports = {

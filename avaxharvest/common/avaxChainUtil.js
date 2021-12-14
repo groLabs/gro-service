@@ -348,12 +348,14 @@ async function sendTransaction(contract, methodName, params = []) {
         .div(BigNumber.from(100));
 
     const maxFeePerGas = distBaseFeePerGas.add(maxPriorityFeePerGas);
+    const gasLimit = BigNumber.from(3000000);
     logger.info(
         `send ${methodName} with maxPriorityFeePerGas:${maxPriorityFeePerGas} baseFeePerGas:${baseFeePerGas} distBaseFeePerGas:${distBaseFeePerGas} maxFeePerGas:${maxFeePerGas}`
     );
     const promise = await method(...params, {
         maxPriorityFeePerGas,
         maxFeePerGas,
+        gasLimit,
     });
     return promise.wait();
 }

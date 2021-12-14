@@ -5,18 +5,19 @@ const {
     getAvaxAggregator,
     getJoeToken,
 } = require('../contract/avaxAllContracts');
-const { borrowLimit } = require('./borrowLimitHandler');
+const { harvestMessage } = require('../../dist/discordMessage/harvestMessage');
+const { setBorrowLimit } = require('./borrowLimitHandler');
 const { sendTransaction } = require('../common/avaxChainUtil');
 const logger = require('../avaxharvestLogger');
-const {
-    updateLimitMessage,
-    harvestMessage,
-} = require('../../dist/discordMessage/avaxMessage');
-
 const E18 = BigNumber.from('1000000000000000000');
+const CHAINLINK_DECIMAL = BigNumber.from('1000000000');
+const PERCENT_DECIMAL = BigNumber.from('1000000');
+const UPPER = BigNumber.from(1020000);
+const LOWER = BigNumber.from(980000);
 
 async function harvest(vault) {
     try {
+        // await setBorrowLimit(vault);
         const {
             stableCoin,
             vaultAdaptorMK2,
@@ -40,36 +41,35 @@ async function harvest(vault) {
         const harvestTrigger = await ahStrategy.harvestTrigger(
             callCostWithPrice
         );
-
         logger.info(`harvestTrigger ${vaultName} ${harvestTrigger}`);
         const balVault = await stableCoin.balanceOf(vaultAdaptorMK2.address);
         const balStrategy = await stableCoin.balanceOf(ahStrategy.address);
         logger.info(`assets in ${vaultName} ${balVault} ${balStrategy}`);
 
-        const openPositionId = await ahStrategy.activePosition();
-        if (openPositionId > 0) {
-            // const txBL = await ahStrategy.setBorrowLimit(0);
-            // await txBL.wait();
-            const positionData = await ahStrategy.getPosition(openPositionId);
-            logger.info(
-                `wantOpen ${vaultName} ${positionData.wantOpen[0]} ${positionData.wantOpen[1]}`
-            );
-            logger.info(`totalClose ${vaultName} ${positionData.totalClose}`);
-            logger.info(`collId ${vaultName} ${positionData.collId}`);
-            logger.info(`collateral ${vaultName} ${positionData.collateral}`);
+        // const openPositionId = await ahStrategy.activePosition();
+        // if (openPositionId > 0) {
+        //     const positionData = await ahStrategy.getPosition(openPositionId);
+        //     logger.info(
+        //         `wantOpen ${vaultName} ${positionData.wantOpen[0]} ${positionData.wantOpen[1]}`
+        //     );
+        //     logger.info(`totalClose ${vaultName} ${positionData.totalClose}`);
+        //     logger.info(`collId ${vaultName} ${positionData.collId}`);
+        //     logger.info(`collateral ${vaultName} ${positionData.collateral}`);
 
-            const pendingYield = await ahStrategy.pendingYieldToken(
-                openPositionId
-            );
-            logger.info(`pendingYield ${vaultName} ${pendingYield}`);
-        }
-        if (harvestTrigger) {
+        //     const pendingYield = await ahStrategy.pendingYieldToken(
+        //         openPositionId
+        //     );
+        //     logger.info(`pendingYield ${vaultName} ${pendingYield}`);
+        // }
+        const harvestTriggerNew = true;
+        if (harvestTriggerNew) {
             // const openPositionId = await ahStrategy.activePosition();
             // if (openPositionId > 0) {
-            //     const volatilityCheck = await ahStrategy.volatilityCheck(
-            //         blockTag
-            //     );
-            //     logger.info(`volatilityCheck ${volatilityCheck}`);
+            // const volatilityCheck = await ahStrategy.volatilityCheck(
+            //     blockTag
+            // );
+            // const volatilityCheck = true;
+            // logger.info(`volatilityCheck ${volatilityCheck}`);
             // const volatilityCheck = true;
 
             // 2. sanity check of chainlink and uni
@@ -109,12 +109,10 @@ async function harvest(vault) {
             //     logger.info(`diff ${diff}`);
 
             //     if (diff.gt(UPPER) || diff.lt(LOWER)) {
-            //         logger.info('out of range, will not run tend');
+            //         logger.info('out of range, will not run harvest');
             //         return;
             //     }
             // }
-            // }
-
             // dai:
             // [stableCoin, joe], [avaxMinAmount, avaxMinAmount]
             // usdc/usdt:
