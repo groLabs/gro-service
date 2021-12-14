@@ -2,7 +2,7 @@ CREATE TABLE gro."AIRDROP4" (
     a4_block INTEGER NOT NULL,
     a4_date TIMESTAMP (6) NOT NULL,
     a4_timestamp INTEGER NOT NULL,
-    network_id SMALLINT NOT NULL,
+    network_id INTEGER NOT NULL,
     user_address CHARACTER VARYING (42) NOT NULL,
     staked_gro NUMERIC (20, 8) NULL,
     staked_gro_gvt NUMERIC (20, 8) NULL,

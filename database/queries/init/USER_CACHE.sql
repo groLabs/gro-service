@@ -1,6 +1,6 @@
 CREATE TABLE gro."USER_CACHE_TMP_APPROVALS" (
     block_number INTEGER NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     stablecoin_id SMALLINT NULL,
     tx_hash CHARACTER VARYING (66) NULL,
     sender_address CHARACTER VARYING (42) NULL,
@@ -16,7 +16,7 @@ CREATE TABLE gro."USER_CACHE_FACT_APPROVALS" (
     block_number INTEGER NULL,
     block_timestamp INTEGER NULL,
     approval_date TIMESTAMP (6) NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     stablecoin_id SMALLINT NULL,
     tx_hash CHARACTER VARYING (66) NULL,
     sender_address CHARACTER VARYING (42) NULL,
@@ -33,7 +33,7 @@ CREATE TABLE gro."USER_CACHE_FACT_TRANSFERS" (
     block_timestamp INTEGER NULL,
     transfer_date TIMESTAMP (6) NULL,
     tx_hash CHARACTER VARYING (66) NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     transfer_type CHARACTER VARYING (20) NULL,
     user_address CHARACTER VARYING (42) NULL,
     referral_address CHARACTER VARYING (42) NULL,
@@ -58,7 +58,7 @@ ALTER TABLE gro."USER_CACHE_FACT_TRANSFERS" OWNER to postgres;
 CREATE TABLE gro."USER_CACHE_TMP_DEPOSITS" (
     block_number INTEGER NULL,
     tx_hash CHARACTER VARYING (66) NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     transfer_type CHARACTER VARYING (20) NULL,
     user_address CHARACTER VARYING (42) NULL,
     referral_address CHARACTER VARYING (42) NULL,
@@ -80,7 +80,7 @@ ALTER TABLE gro."USER_CACHE_TMP_DEPOSITS" OWNER to postgres;
 CREATE TABLE gro."USER_CACHE_TMP_WITHDRAWALS" (
     block_number INTEGER NULL,
     tx_hash CHARACTER VARYING (66) NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     transfer_type CHARACTER VARYING (20) NULL,
     user_address CHARACTER VARYING (42) NULL,
     referral_address CHARACTER VARYING (42) NULL,
@@ -104,7 +104,7 @@ ALTER TABLE gro."USER_CACHE_TMP_WITHDRAWALS" OWNER to postgres;
 
 -- CREATE TABLE gro."USER_CACHE_FACT_BALANCES_OLD" (
 --     balance_date TIMESTAMP (6) NULL,
---     network_id SMALLINT NULL,
+--     network_id INTEGER NULL,
 --     user_address CHARACTER VARYING (42) NULL,
 --     usd_value NUMERIC (20, 8) NULL,
 --     pwrd_value NUMERIC (20, 8) NULL,
@@ -116,7 +116,7 @@ ALTER TABLE gro."USER_CACHE_TMP_WITHDRAWALS" OWNER to postgres;
 
 CREATE TABLE gro."USER_CACHE_FACT_BALANCES" (
     balance_date TIMESTAMP (6) NOT NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     user_address CHARACTER VARYING (42) NOT NULL,
     gvt_unstaked_amount NUMERIC (20, 8) NULL,
     pwrd_unstaked_amount NUMERIC (20, 8) NULL,
@@ -150,7 +150,7 @@ ALTER TABLE gro."USER_CACHE_FACT_BALANCES" OWNER to postgres;
 
 -- CREATE TABLE gro."USER_CACHE_FACT_NET_RETURNS_OLD" (
 --     balance_date TIMESTAMP (6) NULL,
---     network_id SMALLINT NULL,
+--     network_id INTEGER NULL,
 --     user_address CHARACTER VARYING (42) NULL,
 --     usd_value NUMERIC (20, 8) NULL,
 --     pwrd_value NUMERIC (20, 8) NULL,
@@ -165,7 +165,7 @@ ALTER TABLE gro."USER_CACHE_FACT_BALANCES" OWNER to postgres;
 
 CREATE TABLE gro."USER_CACHE_FACT_NET_RETURNS" (
     balance_date TIMESTAMP (6) NOT NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     user_address CHARACTER VARYING (42) NOT NULL,
     total_unstaked_value NUMERIC (20, 8) NULL,
     pwrd_unstaked_value NUMERIC (20, 8) NULL,

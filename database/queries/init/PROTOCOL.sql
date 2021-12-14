@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_APY" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id smallint NOT NULL,
+    network_id integer NOT NULL,
     product_id integer NOT NULL,
     apy_last24h numeric(20, 8),
     apy_last7d numeric(20, 8),
@@ -19,7 +19,7 @@ ALTER TABLE gro."PROTOCOL_APY" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_EXPOSURE_PROTOCOLS" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id smallint NOT NULL,
+    network_id integer NOT NULL,
     name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
     concentration numeric(20, 8),
@@ -32,7 +32,7 @@ ALTER TABLE gro."PROTOCOL_EXPOSURE_PROTOCOLS" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_EXPOSURE_STABLES" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id smallint NOT NULL,
+    network_id integer NOT NULL,
     name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
     concentration numeric(20, 8),
@@ -45,7 +45,7 @@ ALTER TABLE gro."PROTOCOL_EXPOSURE_STABLES" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_LIFEGUARD" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id smallint NOT NULL,
+    network_id integer NOT NULL,
     name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
     amount numeric(20, 8),
@@ -60,7 +60,7 @@ ALTER TABLE gro."PROTOCOL_LIFEGUARD" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_RESERVES" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id smallint NOT NULL,
+    network_id integer NOT NULL,
     vault_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     reserve_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
@@ -81,7 +81,7 @@ ALTER TABLE gro."PROTOCOL_RESERVES" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_STRATEGIES" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id smallint NOT NULL,
+    network_id integer NOT NULL,
     vault_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     strategy_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
@@ -103,7 +103,7 @@ ALTER TABLE gro."PROTOCOL_STRATEGIES" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_SYSTEM" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id smallint NOT NULL,
+    network_id integer NOT NULL,
     total_share numeric(20, 8),
     total_amount numeric(20, 8),
     last3d_apy numeric(20, 8),
@@ -117,7 +117,7 @@ ALTER TABLE gro."PROTOCOL_SYSTEM" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_TVL" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id smallint NOT NULL,
+    network_id integer NOT NULL,
     tvl_pwrd numeric(20, 8),
     tvl_gvt numeric(20, 8),
     tvl_total numeric(20, 8),
@@ -133,7 +133,7 @@ ALTER TABLE gro."PROTOCOL_TVL" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_VAULTS" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id smallint NOT NULL,
+    network_id integer NOT NULL,
     name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
     amount numeric(20, 8),
@@ -148,7 +148,7 @@ ALTER TABLE gro."PROTOCOL_VAULTS" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."PROTOCOL_SYSTEM_LIFEGUARD_STABLES" (
     "current_timestamp" integer NOT NULL,
     "current_date" timestamp(6) without time zone,
-    network_id smallint NOT NULL,
+    network_id integer NOT NULL,
     name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     display_name character varying(100) COLLATE pg_catalog."default",
     amount numeric(20, 8),
@@ -162,7 +162,7 @@ ALTER TABLE gro."PROTOCOL_SYSTEM_LIFEGUARD_STABLES" OWNER to postgres;
 CREATE TABLE IF NOT EXISTS gro."SYS_PROTOCOL_LOADS" (
     table_name character varying(256) NULL,
     last_timestamp integer NOT NULL,
-    network_id smallint,
+    network_id integer,
     update_date timestamp(6) without time zone
 ) TABLESPACE pg_default;
 
@@ -179,7 +179,7 @@ CREATE TABLE gro."PROTOCOL_PRICE_CHECK_GLOBAL" (
     block_number INTEGER NOT NULL,
     block_timestamp INTEGER NULL,
     block_date TIMESTAMP (6) NULL,
-    network_id SMALLINT NULL,
+    network_id integer NULL,
     safety_check_bound NUMERIC (20, 8) NULL,
     safety_check BOOLEAN NULL,
     creation_date TIMESTAMP (6) NULL,
@@ -194,7 +194,7 @@ CREATE TABLE gro."PROTOCOL_PRICE_CHECK_DETAILED" (
     block_number INTEGER NOT NULL,
     block_timestamp INTEGER NULL,
     block_date TIMESTAMP (6) NULL,
-    network_id SMALLINT NULL,
+    network_id integer NULL,
     stablecoin_pair_id SMALLINT NOT NULL,
     curve_price NUMERIC (20, 8) NULL,
     curve_cache_price NUMERIC (20, 8) NULL,
