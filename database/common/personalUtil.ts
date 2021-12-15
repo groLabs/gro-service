@@ -10,14 +10,17 @@ import {
     getContractHistoryEventFilters,
     getCoinApprovalFilters
 } from '../../common/filterGenerateTool';
-import { getProvider } from './globalUtil';
+import {
+    getProvider,
+    getProviderAvax
+} from './globalUtil';
 import { query } from '../handler/queryHandler';
-import { 
-    QUERY_ERROR, 
+import {
+    QUERY_ERROR,
     ERC20_TRANSFER_SIGNATURE
 } from '../constants';
 import { Transfer } from '../types';
-import { getConfig } from '../../common/configUtil';
+
 const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -29,14 +32,11 @@ const isPlural = (count) => (count > 1 ? 's' : '');
 const handleErr = async (func, err) => {
     logger.error(`**DB: ${func} \n Message: ${err}`);
 };
-const rpcURL : any =
-    getConfig('blockchain.avalanche_rpc_url', false) ||
-    'https://api.avax.network/ext/bc/C/rpc';
-const providerAVAX = new ethers.providers.JsonRpcProvider(rpcURL);
-// const providerAVAX = new ethers.providers.JsonRpcProvider('https://api.avax.network/ext/bc/C/rpc');
 
-const transferType = (side) => {
+
+const transferType = (side: Transfer) => {
     switch (side) {
+        // Ethereum
         case Transfer.DEPOSIT:
             return 'deposit';
         case Transfer.WITHDRAWAL:
@@ -53,6 +53,11 @@ const transferType = (side) => {
             return 'transfer-gro-in';
         case Transfer.TRANSFER_GRO_OUT:
             return 'transfer-gro-out';
+        // Avalanche
+        case Transfer.DEPOSIT_groUSDCe:
+            return 'deposit_groUSDCe';
+        case Transfer.WITHDRAWAL_groUSDCe:
+            return 'withdrawal_groUSDCe';
         case Transfer.TRANSFER_groUSDCe_IN:
             return 'transfer_groUSDCe_in';
         case Transfer.TRANSFER_groUSDCe_OUT:
@@ -72,14 +77,15 @@ const transferType = (side) => {
     }
 };
 
-const isDeposit = (side) => {
-    return side === Transfer.DEPOSIT ||
-        side === Transfer.TRANSFER_GVT_IN ||
-        side === Transfer.TRANSFER_PWRD_IN ||
-        side === Transfer.TRANSFER_GRO_IN ||
-        side === Transfer.TRANSFER_groUSDCe_IN ||
-        side === Transfer.TRANSFER_groUSDTe_IN ||
-        side === Transfer.TRANSFER_groDAIe_IN
+const isDeposit = (side: Transfer) => {
+    return side === Transfer.DEPOSIT
+        || side === Transfer.TRANSFER_GVT_IN
+        || side === Transfer.TRANSFER_PWRD_IN
+        || side === Transfer.TRANSFER_GRO_IN
+        || side === Transfer.DEPOSIT_groUSDCe
+        || side === Transfer.TRANSFER_groUSDCe_IN
+        // || side === Transfer.TRANSFER_groUSDTe_IN
+        // || side === Transfer.TRANSFER_groDAIe_IN
         ? true
         : false;
 };
@@ -93,6 +99,16 @@ const getBlockData = async (blockNumber) => {
     return block;
 };
 
+const getBlockDataAvax = async (blockNumber) => {
+    const block = await getProviderAvax()
+        .getBlock(blockNumber)
+        .catch((err) => {
+            logger.error(err);
+        });
+    return block;
+};
+
+// TODO: to be replaced by getNetworkId2()
 const getNetworkId = () => {
     try {
         switch (process.env.NODE_ENV.toLowerCase()) {
@@ -192,14 +208,20 @@ const calcLoadingDateRange = async () => {
     }
 }
 
-const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
+const getTransferEvents2 = async (
+    side: Transfer,
+    fromBlock,
+    toBlock,    //TODO: number or 'latest'.... so what?
+    account: string
+) => {
     try {
         // Determine event type to apply filters
-        let eventType;
-        let contractName;
-        let sender;
-        let receiver;
+        let eventType: string = '';
+        let contractName: string = '';
+        let sender: string = '';
+        let receiver: string = '';
         switch (side) {
+            // Ethereum
             case Transfer.DEPOSIT:
                 eventType = 'LogNewDeposit';
                 contractName = ContractNames.depositHandler;
@@ -248,7 +270,19 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 sender = account;
                 receiver = null;
                 break;
-            // AVAX new data
+            // Avalanche
+            case Transfer.DEPOSIT_groUSDCe:
+                eventType = 'LogDeposit';
+                contractName = ContractNames.AVAXUSDCVault;
+                sender = account;
+                receiver = null;
+                break;
+            case Transfer.WITHDRAWAL_groUSDCe:
+                eventType = 'LogWithdrawal';
+                contractName = ContractNames.AVAXUSDCVault;
+                sender = account;
+                receiver = null;
+                break;
             case Transfer.TRANSFER_groUSDCe_IN:
                 eventType = 'Transfer';
                 contractName = ContractNames.AVAXUSDCVault;
@@ -266,13 +300,16 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
                 return false;
         }
 
-        const isAvax = (side === Transfer.TRANSFER_groUSDCe_IN || side === Transfer.TRANSFER_groUSDCe_OUT)
-        ? true
-        : false;
+        const isAvax = (side >= 9 && side <= 20)
+            ? true
+            : false;
 
         let filters;
-        if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
-            || side === Transfer.TRANSFER_groUSDCe_IN || side === Transfer.TRANSFER_groUSDCe_OUT) {
+        if (side === Transfer.DEPOSIT
+            || side === Transfer.WITHDRAWAL
+            || side === Transfer.DEPOSIT_groUSDCe
+            || side === Transfer.WITHDRAWAL_groUSDCe
+        ) {
             // returns an array
             filters = getContractHistoryEventFilters(
                 'default',
@@ -297,51 +334,42 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
 
         const logPromises = [];
 
-        for (let i = 0; i < filters.length; i += 1) {
-            const transferEventFilter = filters[i];
-            const result = await getFilterEvents(
-                transferEventFilter.filter,
-                transferEventFilter.interface,
-                'default'
-            );
-            if (result.length > 0) {
-                logPromises.push(result);
+        if (isAvax) {
+            for (let i = 0; i < filters.length; i += 1) {
+                const transferEventFilter = filters[i];
+                const result = await getEvents(
+                    transferEventFilter.filter,
+                    transferEventFilter.interface,
+                    getProviderAvax(),
+                );
+                if (result.length > 0) {
+                    logPromises.push(result);
+                }
+            }
+        } else {
+            for (let i = 0; i < filters.length; i += 1) {
+                const transferEventFilter = filters[i];
+                const result = await getFilterEvents(
+                    transferEventFilter.filter,
+                    transferEventFilter.interface,
+                    'default',
+                );
+                if (result.length > 0) {
+                    logPromises.push(result);
+                }
             }
         }
-        // if (isAvax) {
-        //     for (let i = 0; i < filters.length; i += 1) {
-        //         const transferEventFilter = filters[i];
-        //         const result = await getEvents(
-        //             transferEventFilter.filter,
-        //             transferEventFilter.interface,
-        //             providerAVAX,
-        //         );
-        //         if (result.length > 0) {
-        //             logPromises.push(result);
-        //         }
-        //     }
-        // } else {
-        //     for (let i = 0; i < filters.length; i += 1) {
-        //         const transferEventFilter = filters[i];
-        //         const result = await getFilterEvents(
-        //             transferEventFilter.filter,
-        //             transferEventFilter.interface,
-        //             'default',
-        //         );
-        //         if (result.length > 0) {
-        //             logPromises.push(result);
-        //         }
-        //     }
-        // }
 
         let logResults = await Promise.all(logPromises);
-//console.log('logResults', logResults);
+
         let logTrades = [];
 
         // Exclude mint or burn logs in transfers (sender or receiver address is 0x0)
         if (side > 2 && side < 20 && logResults.length > 0) {
+            // TODO
+            // if (side > 2 && side !== 9 && side !== 10 && logResults.length > 0) {
             for (let i = 0; i < logResults.length; i++) {
-                //console.log('Event type:', eventType, 'side:', side, 'logs:', logResults[i], 'args:');
+                // console.log('Event type:', eventType, 'side:', side, 'logs:', logResults[i]);
                 for (let j = 0; j < logResults[i].length; j++) {
                     const elem = logResults[i][j];
                     // console.log('transfer type: ', eventType, 'element:', elem, 'args:', elem.args);
@@ -356,7 +384,7 @@ const getTransferEvents2 = async (side, fromBlock, toBlock, account) => {
             return logResults;
         }
 
-        // console.log('side', side, 'logResults', logResults[0][0]);
+        //console.log('side', side, 'logResults', logResults[0][0]);
 
     } catch (err) {
         handleErr(`personalUtil->getTransferEvents2() [side: ${side}]`, err);
@@ -491,6 +519,7 @@ const getApprovalEvents2 = async (account, fromBlock, toBlock) => {
 export {
     QUERY_ERROR,
     getBlockData,
+    getBlockDataAvax,
     getNetworkId,
     getStableCoinIndex,
     generateDateRange,

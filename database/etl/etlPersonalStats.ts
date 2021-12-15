@@ -1,6 +1,6 @@
 import { query } from '../handler/queryHandler';
 import moment from 'moment';
-import { findBlockByDate } from '../common/globalUtil';
+import { findBlockByDate, findBlockByDateAvax } from '../common/globalUtil';
 import { generateDateRange, handleErr, isPlural } from '../common/personalUtil';
 import { loadUserTransfers, loadTmpUserTransfers } from '../loader/loadUserTransfers';
 //import { loadUserApprovals, loadTmpUserApprovals } from '../loader/loadUserApprovals';
@@ -10,6 +10,7 @@ import { loadUserNetReturns } from '../loader/loadUserNetReturns';
 import { checkDateRange } from '../common/globalUtil';
 import { QUERY_ERROR } from '../constants';
 import {
+    GlobalNetwork,
     Load,
     Transfer,
     Bool
@@ -34,7 +35,6 @@ const preload = async (
             query('truncate_user_std_tmp_deposits.sql', []),
             query('truncate_user_std_tmp_withdrawals.sql', []),
         ]);
-
         if (
             res[0].status === QUERY_ERROR ||
             res[1].status === QUERY_ERROR ||
@@ -55,7 +55,12 @@ const preload = async (
         const fromBlock = (await findBlockByDate(fromDate, true)).block;
         // @ts-ignore
         const toBlock = (await findBlockByDate(toDate, false)).block;
-        return [fromBlock, toBlock, dates];
+        // @ts-ignore
+        const fromBlockAvax = (await findBlockByDateAvax(fromDate, true)).block;
+        // @ts-ignore
+        const toBlockAvax = (await findBlockByDateAvax(toDate, false)).block;
+
+        return [fromBlock, toBlock, dates, fromBlockAvax, toBlockAvax];
     } catch (err) {
         handleErr(
             `etlPersonalStats->preload() [from: ${_fromDate}, to: ${_toDate}]`,
@@ -90,8 +95,8 @@ const remove = async (
             return false;
         }
 
-        // Remove balances, returns, approvals & sys load
         if (loadType === Load.FULL) {
+            // Remove balances, returns, approvals & sys load
             const [
                 balances,
                 netReturns,
@@ -104,6 +109,7 @@ const remove = async (
                 query('delete_table_loads.sql', params),
             ]);
 
+            // Show amount of records deleted
             if (
                 balances &&
                 netReturns &&
@@ -141,10 +147,7 @@ const remove = async (
 
         return true;
     } catch (err) {
-        handleErr(
-            `etlPersonalStats->remove() [from: ${fromDate}, to: ${toDate}]`,
-            err
-        );
+        handleErr(`etlPersonalStats->remove() [from: ${fromDate}, to: ${toDate}]`, err);
         return false;
     }
 };
@@ -159,25 +162,25 @@ const load = async (
     fromDate: string,
     toDate: string,
     loadType: Load,
-) : Promise<boolean> => {
+): Promise<boolean> => {
     try {
         // Truncate temporary tables and calculate dates & blocks to be processed
-        const [fromBlock, toBlock, dates] = await preload(fromDate, toDate);
+        const [fromBlock, toBlock, dates, fromBlockAvax, toBlockAvax] = await preload(fromDate, toDate);
 
         // Load transfers, balances, net returns & prices
         if (fromBlock > 0 && toBlock > 0 && dates) {
 
             const res = await Promise.all([
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GVT_OUT, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GVT_IN, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_OUT, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
-                // loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_IN, null),
-                // loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_OUT, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.DEPOSIT, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.WITHDRAWAL, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_GVT_OUT, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_GVT_IN, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_PWRD_OUT, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_groUSDCe_IN, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_groUSDCe_OUT, null),
             ]);
 
             if (res.every(Boolean)) {
@@ -212,25 +215,27 @@ const loadTransfers = async (
     fromDate: string,
     toDate: string,
     loadType: Load,
-) : Promise<boolean> => {
+): Promise<boolean> => {
     try {
         // Truncate temporary tables and calculate dates & blocks to be processed
-        const [fromBlock, toBlock, dates] = await preload(fromDate, toDate);
+        const [fromBlock, toBlock, dates, fromBlockAvax, toBlockAvax] = await preload(fromDate, toDate);
 
         // Load transfers, balances, net returns & prices
         if (fromBlock > 0 && toBlock > 0 && dates) {
 
             const res = await Promise.all([
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.DEPOSIT, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.WITHDRAWAL, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GVT_OUT, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GVT_IN, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_OUT, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
-                loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
-                // loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_IN, null),
-                // loadTmpUserTransfers(fromBlock, toBlock, Transfer.TRANSFER_groUSDCe_OUT, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.DEPOSIT, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.WITHDRAWAL, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_GVT_OUT, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_GVT_IN, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_PWRD_OUT, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_groUSDCe, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_groUSDCe, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_groUSDCe_IN, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_groUSDCe_OUT, null),
             ]);
 
             if (res.every(Boolean)) {

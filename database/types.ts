@@ -1,4 +1,11 @@
+enum GlobalNetwork {
+    UNKNOWN = 0,
+    ETHEREUM = 1,
+    AVALANCHE = 2,
+}
+
 enum Network {
+    UNKNOWN = 'unknown',
     MAINNET = 'mainnet',
     ROPSTEN = 'ropsten',
     RINKEBY = 'rinkeby',
@@ -8,6 +15,7 @@ enum Network {
 }
 
 enum NetworkId {
+    UNKNOWN = 0,
     MAINNET = 1,
     ROPSTEN = 3,
     RINKEBY = 4,
@@ -34,6 +42,7 @@ enum Load {
 };
 
 enum Transfer {
+    // Ethereum
     DEPOSIT = 1,
     WITHDRAWAL = 2,
     TRANSFER_GVT_IN = 3,
@@ -42,13 +51,16 @@ enum Transfer {
     TRANSFER_PWRD_OUT = 6,
     TRANSFER_GRO_IN = 7,
     TRANSFER_GRO_OUT = 8,
-    TRANSFER_groUSDCe_IN = 9,
-    TRANSFER_groUSDCe_OUT = 10,
-    TRANSFER_groUSDTe_IN = 11,
-    TRANSFER_groUSDTe_OUT = 12,
-    TRANSFER_groDAIe_IN = 13,
-    TRANSFER_groDAIe_OUT = 14,
-    STABLECOIN_APPROVAL = 20,
+    // Avalanche
+    DEPOSIT_groUSDCe = 9,
+    WITHDRAWAL_groUSDCe = 10,
+    TRANSFER_groUSDCe_IN = 11,
+    TRANSFER_groUSDCe_OUT = 12,
+    TRANSFER_groUSDTe_IN = 13,
+    TRANSFER_groUSDTe_OUT = 14,
+    TRANSFER_groDAIe_IN = 15,
+    TRANSFER_groDAIe_OUT = 16,
+    STABLECOIN_APPROVAL = 100,
 };
 
 enum Bool {
@@ -57,6 +69,7 @@ enum Bool {
 }
 
 export {
+    GlobalNetwork,
     Network,
     NetworkId,
     Product,

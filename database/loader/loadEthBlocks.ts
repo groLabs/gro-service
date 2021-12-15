@@ -1,14 +1,25 @@
 import moment from 'moment';
 import { query } from '../handler/queryHandler';
-import { getBlockData, getNetworkId, handleErr, isPlural } from '../common/personalUtil';
+import { 
+    getBlockData,
+    getBlockDataAvax,
+    getNetworkId,
+    handleErr,
+    isPlural
+} from '../common/personalUtil';
 import { QUERY_ERROR } from '../constants';
+import { getNetworkId2 } from '../common/globalUtil';
+import { NetworkId } from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 /// @notice Adds new blocks into table ETH_BLOCKS
 /// @return True if no exceptions found, false otherwise
-const loadEthBlocks = async (func, account) => {
+const loadEthBlocks = async (
+    func,
+    account,
+) => {
     try {
         // Get block numbers to be processed from temporary tables on transfers (deposits & withdrawals) or approvals
         const q = (func === 'loadUserTransfers')
@@ -30,12 +41,17 @@ const loadEthBlocks = async (func, account) => {
                 : 'approvals'
                 }...`);
             for (const item of blocks.rows) {
-                const block = await getBlockData(item.block_number);
+                let block;
+                if (item.network_id === NetworkId.AVALANCHE) {
+                    block = await getBlockDataAvax(item.block_number);
+                } else {
+                    block = await getBlockData(item.block_number);
+                }
                 const params = [
                     block.number,
                     block.timestamp,
                     moment.unix(block.timestamp),
-                    getNetworkId(),
+                    item.network_id, // getNetworkId(),
                     moment.utc()];
                 const result = await query('insert_eth_blocks.sql', params);
                 if (result.status === QUERY_ERROR)
