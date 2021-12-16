@@ -12,6 +12,7 @@ const { ContractNames } = require('../../dist/registry/registry');
 const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
 const aggregatorABI = require('../abi/aggregator.json');
 const poolABI = require('../abi/Pool.json');
+const routerABI = require('../abi/uniswapRoute.json');
 const erc20ABI = require('../../contract/abis/ERC20.json');
 const { getConfig } = require('../../dist/common/configUtil');
 const { getLatestSystemContractOnAVAX } = require('../common/contractStorage');
@@ -47,6 +48,24 @@ const USDT_POOL = new ethers.Contract(
     poolABI,
     provider
 );
+
+const router = new ethers.Contract(
+    '0x60aE616a2155Ee3d9A68541Ba4544862310933d4',
+    routerABI,
+    provider
+);
+
+const joe = new ethers.Contract(
+    '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd',
+    erc20ABI,
+    provider
+);
+
+const JOE_DAI_PATH = [
+    '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd',
+    '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7',
+    '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
+];
 
 // constant
 const SHARE_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
@@ -93,6 +112,14 @@ async function appendEventTimestamp(transactions) {
         promise.push(fetchTimestamp(transactions[i]));
     }
     await Promise.all(promise);
+}
+
+async function getDaiAdjustEstimatedAssets(pendingJoe) {
+    const joeToDai = await router.getAmountsOut(pendingJoe, JOE_DAI_PATH);
+    logger.info(
+        `Dai pending joe ${pendingJoe} joe2dai ${joeToDai[2]} joe2avax ${joeToDai[1]}`
+    );
+    return joeToDai[2].sub(joeToDai[1]);
 }
 
 async function getPositionOpenEvents(ahStrategy, startBlock, endBlock) {
@@ -176,9 +203,9 @@ async function getLatestStrategies() {
 }
 function getUSDValue(value, decimalIndex) {
     if (value.isZero()) return ZERO;
-    console.log(
-        `getUSDValue decimalIndex ${decimalIndex} ${DECIMALS[decimalIndex]}`
-    );
+    // console.log(
+    //     `getUSDValue decimalIndex ${decimalIndex} ${DECIMALS[decimalIndex]}`
+    // );
     return value.mul(E18).div(DECIMALS[decimalIndex]);
 }
 function calculateSharePercent(assets, total) {
@@ -207,6 +234,7 @@ async function calculatePositionReturn(
     const openEstimated = await vaultAdapter.totalEstimatedAssets({
         blockTag: openBlock,
     });
+
     const openPricePerShare = openEstimated
         .mul(DECIMALS[vaultIndex])
         .div(openTotalSupply);
@@ -216,23 +244,40 @@ async function calculatePositionReturn(
     const closeTotalSupply = await vaultAdapter.totalSupply({
         blockTag: endBlock,
     });
-    const closeEstimated = await vaultAdapter.totalEstimatedAssets({
+    let closeEstimated = await vaultAdapter.totalEstimatedAssets({
         blockTag: endBlock,
     });
+    // fix dai estimated bug
+    let fix = ZERO;
+    if (vaultIndex === 0) {
+        let joeAmount = ZERO;
+        if (closed) {
+            joeAmount = await joe.balanceOf(strategyContract.address, {
+                blockTag: endBlock,
+            });
+        } else {
+            joeAmount = await strategyContract.pendingYieldToken(positionId);
+        }
+        if (joeAmount.gt(ZERO)) {
+            fix = await getDaiAdjustEstimatedAssets(joeAmount);
+            // console.log(`pre ${closeEstimated} ${fix}`);
+            closeEstimated = closeEstimated.add(fix);
+            // console.log(`after ${closeEstimated} `);
+        }
+    }
     const closePricePerShare = closeEstimated
         .mul(DECIMALS[vaultIndex])
         .div(closeTotalSupply);
 
-    // console.log(
-    //     `closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated}`
-    // );
     const positionReturn = closePricePerShare
         .sub(openPricePerShare)
         .mul(SHARE_DECIMAL)
         .mul(MS_PER_YEAR)
         .div(openPricePerShare)
         .div(duration);
-
+    // console.log(
+    //     `~~~~~ openPricePerShare ${openPricePerShare} closePricePerShare ${closePricePerShare} apy ${positionReturn}`
+    // );
     const positionInfo = await strategyContract.getPosition(positionId, {
         blockTag: openBlock,
     });
@@ -256,11 +301,15 @@ async function calculatePositionReturn(
     );
     const loss = strategyInfoAfter.totalLoss.sub(strategyInfoBefore.totalLoss);
     let wantClose = wantOpen.add(profit).sub(loss);
-    if (profit.eq(ZERO) && loss.eq(ZERO) && closed) {
+    if (profit.eq(ZERO) && loss.eq(ZERO)) {
         wantOpen = strategyInfoAfter.totalDebt;
         wantClose = await strategyContract.estimatedTotalAssets({
             blockTag: endBlock,
         });
+        if (vaultIndex === 0) {
+            wantClose = wantClose.add(fix);
+            console.log(`strategy after ${wantClose} `);
+        }
         logger.info(`withdraw ${wantOpen} ${wantClose}`);
     }
     logger.info(
@@ -391,7 +440,8 @@ async function calculateVaultReturn(
     vaultAdapter,
     vaultIndex,
     endBlock,
-    endTimestamp
+    endTimestamp,
+    strategyContract
 ) {
     const startBlock = START_BLOCK[vaultIndex];
     const startTimestamp = START_TIME_STAMP[vaultIndex];
@@ -413,9 +463,26 @@ async function calculateVaultReturn(
     const closeTotalSupply = await vaultAdapter.totalSupply({
         blockTag: endBlock,
     });
-    const closeEstimated = await vaultAdapter.totalEstimatedAssets({
+    let closeEstimated = await vaultAdapter.totalEstimatedAssets({
         blockTag: endBlock,
     });
+    if (vaultIndex === 0) {
+        const positionId = await strategyContract.activePosition();
+        let joeAmount = ZERO;
+        if (positionId.gt(ZERO)) {
+            joeAmount = await strategyContract.pendingYieldToken(positionId);
+        } else {
+            joeAmount = await joe.balanceOf(strategyContract.address, {
+                blockTag: endBlock,
+            });
+        }
+        if (joeAmount.gt(ZERO)) {
+            const fix = await getDaiAdjustEstimatedAssets(joeAmount);
+            console.log(`vault pre ${closeEstimated} ${fix}`);
+            closeEstimated = closeEstimated.add(fix);
+            console.log(`vault after ${closeEstimated} `);
+        }
+    }
     console.log(
         `apy === closeTotalSupply ${closeTotalSupply} closeEstimated ${closeEstimated} endBlock ${endBlock}`
     );
@@ -572,7 +639,8 @@ async function getAvaxSystemStats() {
             vaultAdapter,
             vaultIndex,
             block.number,
-            block.timestamp
+            block.timestamp,
+            strategyContract
         );
         const labsVaultData = {
             name: vaultContractInfo.metaData.N,
@@ -586,17 +654,6 @@ async function getAvaxSystemStats() {
             strategies: [strategyInfo],
         };
         labsVault.push(labsVaultData);
-
-        // const { startTime, startBlock } = vaultContractInfo;
-        // const { positionReturn: allTimeApy } = await calculatePositionReturn(
-        //     vaultAdapter,
-        //     vaultIndex,
-        //     strategyContract,
-        //     startBlock,
-        //     block.number,
-        //     BigNumber.from(block.timestamp - startTime)
-        // );
-        // logger.info(`${startBlock} ${startTime} allTimeApy ${allTimeApy}`);
 
         logger.info('openEvents');
         const openEvents = await getPositionOpenEvents(
