@@ -18,7 +18,10 @@ INSERT INTO gro."USER_STD_TMP_WITHDRAWALS" (
         "creation_date",
         "usd_deduct",
         "usd_return",
-        "lp_amount"
+        "lp_amount",
+        "usdc_e_amount",
+        "usdt_e_amount",
+        "dai_e_amount"
     )
 VALUES (
         $1,
@@ -40,5 +43,8 @@ VALUES (
         $17,
         $18,
         $19,
-        $20
+        $20,
+        $21,
+        $22,
+        $23
     );

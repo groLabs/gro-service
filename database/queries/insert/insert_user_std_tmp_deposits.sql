@@ -15,7 +15,10 @@ INSERT INTO gro."USER_STD_TMP_DEPOSITS" (
         "usdc_amount",
         "usdt_amount",
         "gro_amount",
-        "creation_date"
+        "creation_date",
+        "usdc_e_amount",
+        "usdt_e_amount",
+        "dai_e_amount"
     )
 VALUES (
         $1,
@@ -34,5 +37,8 @@ VALUES (
         $14,
         $15,
         $16,
-        $17
+        $17,
+        $18,
+        $19,
+        $20
     );

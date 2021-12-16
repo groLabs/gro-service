@@ -4,7 +4,8 @@ import BN from 'bignumber.js';
 import moment from 'moment';
 import { getConfig } from '../../common/configUtil';
 import { div } from '../../common/digitalUtil';
-import { 
+import { getNetworkId2 } from '../common/globalUtil';
+import {
     getNetworkId,
     getStableCoinIndex,
     handleErr,
@@ -17,7 +18,10 @@ import {
     getBuoy,
     getStables
 } from '../common/contractUtil';
-import { Transfer } from '../types';
+import {
+    GlobalNetwork,
+    Transfer
+} from '../types';
 
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -63,48 +67,11 @@ const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
     }
 };
 
-const parseApprovalEvents = async (logs) => {
-    try {
-        const stableCoinInfo = await getStables();
-        const approvals = [];
-        for (const log of logs) {
-            const decimal = stableCoinInfo.decimals[log.address];
-            // Decimals should be 6 for USDC & USDT or 18 for DAI, GVT & PWRD.
-            if (decimal >= 6) {
-                // To be included in a parseApprovalEvent() function
-                const tokenSymbol = stableCoinInfo.symbols[log.address];
-                approvals.push({
-                    block_number: log.blockNumber,
-                    network_id: getNetworkId(),
-                    stablecoin_id: getStableCoinIndex(tokenSymbol),
-                    tx_hash: log.transactionHash,
-                    sender_address: log.args[0],
-                    spender_address: log.args[1],
-                    coin_amount: div(log.args[2], new BN(10).pow(decimal), 2),
-                    coin_usd: await getApprovalValue(
-                        log.address,
-                        log.args[2],
-                        tokenSymbol
-                    ),
-                    creation_date: moment.utc(),
-                });
-                // }
-            } else {
-                handleErr(
-                    `personalStatsParser->parseApprovalEvents(): Wrong decimal in coin amount`,
-                    null
-                );
-                return false;
-            }
-        }
-        return approvals;
-    } catch (err) {
-        handleErr(`personalStatsParser->parseApprovalEvents()`, err);
-        return false;
-    }
-};
-
-const parseTransferEvents = async (logs, side) => {
+const parseTransferEvents = async (
+    network: GlobalNetwork,
+    logs,
+    side
+) => {
     try {
         let result = [];
         logs.forEach((log) => {
@@ -163,11 +130,9 @@ const parseTransferEvents = async (logs, side) => {
                     : 0;
 
             const isGVT =
-                ((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && !log.args[2]) ||
-                    side === Transfer.TRANSFER_GVT_IN ||
-                    side === Transfer.TRANSFER_GVT_OUT ||
-                    side === Transfer.EXTERNAL_GVT_CONTRACT_DEPOSIT ||
-                    side === Transfer.EXTERNAL_GVT_CONTRACT_WITHDRAWAL
+                ((side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && !log.args[2])
+                    || side === Transfer.TRANSFER_GVT_IN
+                    || side === Transfer.TRANSFER_GVT_OUT
                     ? true
                     : false;
 
@@ -193,14 +158,16 @@ const parseTransferEvents = async (logs, side) => {
                             : 0;
 
             const userAddress =
-                side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
-                    ? log.args[0] // LogNewDeposit.user or LogNewWithdrawal.user
-                    : (side === Transfer.TRANSFER_GVT_OUT ||
-                        side === Transfer.TRANSFER_PWRD_OUT ||
-                        side === Transfer.EXTERNAL_GVT_CONTRACT_WITHDRAWAL ||
-                        side === Transfer.EXTERNAL_PWRD_CONTRACT_WITHDRAWAL)
-                        ? log.args[0] // LogTransfer.sender
-                        : log.args[1]; // LogTransfer.receiver
+                (side === Transfer.DEPOSIT
+                    || side === Transfer.WITHDRAWAL
+                    || side === Transfer.DEPOSIT_groUSDCe
+                    || side === Transfer.WITHDRAWAL_groUSDCe)
+                    ? log.args[0] // LogNewDeposit.user, LogNewWithdrawal.user, LogDeposit.from, LogWithdrawal.from
+                    : (side === Transfer.TRANSFER_GVT_OUT
+                        || side === Transfer.TRANSFER_PWRD_OUT
+                        || side === Transfer.TRANSFER_GRO_OUT)
+                        ? log.args[0] // Transfer.from
+                        : log.args[1]; // Transfer.to
 
             const referralAddress =
                 side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
@@ -208,16 +175,24 @@ const parseTransferEvents = async (logs, side) => {
                     : '0x0000000000000000000000000000000000000000';
 
             const gro_amount =
-                        side === Transfer.TRANSFER_GRO_IN
-                        ? parseAmount(log.args[2], 'USD') // Transfer.value
-                        : (side === Transfer.TRANSFER_GRO_OUT)
-                            ? -parseAmount(log.args[2], 'USD') // Transfer.value
-                            : 0;
+                side === Transfer.TRANSFER_GRO_IN
+                    ? parseAmount(log.args[2], 'USD') // Transfer.value
+                    : (side === Transfer.TRANSFER_GRO_OUT)
+                        ? -parseAmount(log.args[2], 'USD') // Transfer.value
+                        : 0;
+
+            //TODO
+            const usdc_e_amount = 0;
+            //TODO
+            const usdt_e_amount = 0;
+            //TODO
+            const dai_e_amount = 0;
 
             result.push({
                 block_number: log.blockNumber,
                 tx_hash: log.transactionHash,
-                network_id: getNetworkId(),
+                // network_id: getNetworkId(),
+                network_id: getNetworkId2(network),
                 transfer_type: transferType(side),
                 user_address: userAddress,
                 referral_address: referralAddress,
@@ -235,6 +210,9 @@ const parseTransferEvents = async (logs, side) => {
                 ...(!isDeposit(side) && { usd_deduct: usd_deduct }),
                 ...(!isDeposit(side) && { usd_return: usd_return }),
                 ...(!isDeposit(side) && { lp_amount: lp_amount }),
+                usdc_e_amount: usdc_e_amount,
+                usdt_e_amount: usdt_e_amount,
+                dai_e_amount: dai_e_amount,
             });
         });
         return result;
@@ -243,6 +221,46 @@ const parseTransferEvents = async (logs, side) => {
             `personalStatsParser->parseTransferEvents() [side: ${side}]`,
             err
         );
+    }
+};
+
+const parseApprovalEvents = async (logs) => {
+    try {
+        const stableCoinInfo = await getStables();
+        const approvals = [];
+        for (const log of logs) {
+            const decimal = stableCoinInfo.decimals[log.address];
+            // Decimals should be 6 for USDC & USDT or 18 for DAI, GVT & PWRD.
+            if (decimal >= 6) {
+                // To be included in a parseApprovalEvent() function
+                const tokenSymbol = stableCoinInfo.symbols[log.address];
+                approvals.push({
+                    block_number: log.blockNumber,
+                    network_id: getNetworkId(),
+                    stablecoin_id: getStableCoinIndex(tokenSymbol),
+                    tx_hash: log.transactionHash,
+                    sender_address: log.args[0],
+                    spender_address: log.args[1],
+                    coin_amount: div(log.args[2], new BN(10).pow(decimal), 2),
+                    coin_usd: await getApprovalValue(
+                        log.address,
+                        log.args[2],
+                        tokenSymbol
+                    ),
+                    creation_date: moment.utc(),
+                });
+            } else {
+                handleErr(
+                    `personalStatsParser->parseApprovalEvents(): Wrong decimal in coin amount`,
+                    null
+                );
+                return false;
+            }
+        }
+        return approvals;
+    } catch (err) {
+        handleErr(`personalStatsParser->parseApprovalEvents()`, err);
+        return false;
     }
 };
 

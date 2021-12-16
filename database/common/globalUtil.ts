@@ -1,12 +1,28 @@
+// default key from BOT_ENV in config file => blockchain.alchemy_api_keys.default
 import moment from 'moment';
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const nodeEnv = process.env.NODE_ENV.toLowerCase();
+const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import {
+    Network,
+    NetworkId,
+    GlobalNetwork
+} from '../types';
+// ETH config
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import BlocksScanner from './blockscanner';
-// default key from BOT_ENV in config file => blockchain.alchemy_api_keys.default
 const providerKey = 'default';
 const provider = getAlchemyRpcProvider(providerKey);
 const scanner = new BlocksScanner(provider);
-const botEnvLogger = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnvLogger}/${botEnvLogger}Logger`);
+// AVAX config
+import { ethers } from 'ethers';
+import { getConfig } from '../../common/configUtil';
+const rpcURL: any =
+    getConfig('blockchain.avalanche_rpc_url', false) ||
+    'https://api.avax.network/ext/bc/C/rpc';
+const providerAVAX = new ethers.providers.JsonRpcProvider(rpcURL);
+const scannerAvax = new BlocksScanner(providerAVAX);
+
 
 /// @notice Calculate number of N-second intervals between start and end timestamps
 ///         (in case an historical data load is needed)
@@ -78,17 +94,58 @@ const findBlockByDate = async (scanDate, after = true) => {
     return blockFound;
 }
 
+const findBlockByDateAvax = async (scanDate, after = true) => {
+    const blockFound = await scannerAvax
+        .getDate(scanDate.toDate(), after)
+        .catch((err) => {
+            logger.error(`Could not get block for ${scanDate}: ${err}`);
+        });
+    return blockFound;
+}
+
+
 /// @notice Returns the Alchemy provider based on referring bot key
 const getProvider = () => provider;
 
 /// @notice Returns the Alchemy provider key
 const getProviderKey = () => providerKey;
 
+/// @notice Returns the Avax provider
+const getProviderAvax = () => providerAVAX;
+
+/// @notice Returns the network id
+const getNetworkId2 = (network: GlobalNetwork) => {
+    try {
+        if (network === GlobalNetwork.ETHEREUM) {
+            if (nodeEnv === Network.MAINNET) {
+                return NetworkId.MAINNET;
+            } else if (nodeEnv === Network.ROPSTEN) {
+                return NetworkId.ROPSTEN;
+            } else if (nodeEnv === Network.RINKEBY) {
+                return NetworkId.RINKEBY;
+            } else if (nodeEnv === Network.GOERLI) {
+                return NetworkId.GOERLI;
+            } else {
+                return NetworkId.UNKNOWN;
+            }
+        } else if (network === GlobalNetwork.AVALANCHE) {
+            return NetworkId.AVALANCHE;
+        } else {
+            return NetworkId.UNKNOWN;
+        }
+    } catch (err) {
+        logger.error(`Error in globalUtil->getNetworkId2(): ${err}`);
+        return NetworkId.UNKNOWN;
+    }
+};
 
 export {
     calcRangeTimestamps,
     checkDateRange,
     findBlockByDate,
+    findBlockByDateAvax,
     getProvider,
     getProviderKey,
+    getProviderAvax,
+    getNetworkId2,
 }

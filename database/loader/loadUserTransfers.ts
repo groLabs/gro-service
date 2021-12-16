@@ -14,7 +14,10 @@ import { parseTransferEvents } from '../parser/personalStatsParser';
 import { parseAmount } from '../parser/personalStatsParser';
 import { getGroVault } from '../common/contractUtil';
 import { QUERY_ERROR } from '../constants';
-import { Transfer } from '../types';
+import { 
+    GlobalNetwork,
+    Transfer,
+} from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -84,6 +87,7 @@ const loadUserTransfers = async (
 /// @param account User address for cache loading; null for daily loads
 /// @return True if no exceptions found, false otherwise
 const loadTmpUserTransfers = async (
+    network: GlobalNetwork,
     fromBlock,
     toBlock,
     side,
@@ -96,7 +100,7 @@ const loadTmpUserTransfers = async (
             let result = [];
             for (let i = 0; i < logs.length; i++) {
 
-                result = await parseTransferEvents(logs[i], side);
+                result = await parseTransferEvents(network, logs[i], side);
 
                 if (side === Transfer.DEPOSIT ||
                     side === Transfer.WITHDRAWAL) {

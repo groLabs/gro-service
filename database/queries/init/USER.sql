@@ -2,9 +2,9 @@ CREATE TABLE gro."ETH_BLOCKS" (
     block_number INTEGER NOT NULL,
     block_timestamp INTEGER NULL,
     block_date TIMESTAMP (6) NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     creation_date TIMESTAMP (6) NULL,
-    CONSTRAINT "ETH_BLOCKS_pkey" PRIMARY KEY (block_number) 
+    CONSTRAINT "ETH_BLOCKS_pkey" PRIMARY KEY (block_number, network_id) 
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -12,7 +12,7 @@ ALTER TABLE gro."ETH_BLOCKS" OWNER to postgres;
 
 CREATE TABLE gro."SYS_USER_LOADS" (
     table_name CHARACTER VARYING (50) NOT NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     target_date TIMESTAMP (6) NULL,
     records_loaded INTEGER NULL,
     creation_date TIMESTAMP (6) NULL
@@ -22,7 +22,7 @@ ALTER TABLE gro."SYS_USER_LOADS" OWNER to postgres;
 
 CREATE TABLE gro."TOKEN_PRICE" (
    price_date       TIMESTAMP (6) NOT NULL,
-   network_id       SMALLINT NULL,
+   network_id       INTEGER NULL,
    gvt_value        NUMERIC (20, 8) NULL,
    pwrd_value       NUMERIC (20, 8) NULL,
    gro_value        NUMERIC (20, 8) NULL,
@@ -40,7 +40,7 @@ CREATE TABLE gro."USER_STD_FACT_APPROVALS" (
     block_number INTEGER NOT NULL,
     block_timestamp INTEGER NULL,
     approval_date TIMESTAMP (6) NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     stablecoin_id SMALLINT NULL,
     tx_hash CHARACTER VARYING (66) NOT NULL,
     sender_address CHARACTER VARYING (42) NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE gro."USER_STD_FACT_APPROVALS" (
     coin_value NUMERIC (20, 8) NULL,
     creation_date TIMESTAMP (6) NULL,
     CONSTRAINT "USER_STD_FACT_APPROVALS_pkey" 
-        PRIMARY KEY (block_number, tx_hash, sender_address) 
+        PRIMARY KEY (block_number, network_id, tx_hash, sender_address) 
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -57,7 +57,7 @@ ALTER TABLE gro."USER_STD_FACT_APPROVALS" OWNER to postgres;
 
 CREATE TABLE gro."USER_STD_TMP_APPROVALS" (
     block_number INTEGER NOT NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     stablecoin_id SMALLINT NULL,
     tx_hash CHARACTER VARYING (66) NOT NULL,
     sender_address CHARACTER VARYING (42) NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE gro."USER_STD_TMP_APPROVALS" (
     coin_value NUMERIC (20, 8) NULL,
     creation_date TIMESTAMP (6) NULL,
     CONSTRAINT "USER_STD_TMP_APPROVALS_pkey" 
-        PRIMARY KEY (block_number, tx_hash, sender_address) 
+        PRIMARY KEY (block_number, network_id, tx_hash, sender_address) 
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -77,7 +77,7 @@ CREATE TABLE gro."USER_STD_FACT_TRANSFERS" (
     block_timestamp INTEGER NULL,
     transfer_date TIMESTAMP (6) NULL,
     tx_hash CHARACTER VARYING (66) NOT NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     transfer_type CHARACTER VARYING (20) NOT NULL,
     user_address CHARACTER VARYING (42) NOT NULL,
     referral_address CHARACTER VARYING (42) NULL,
@@ -98,6 +98,7 @@ CREATE TABLE gro."USER_STD_FACT_TRANSFERS" (
     CONSTRAINT "USER_STD_FACT_TRANSFERS_pkey" PRIMARY KEY (
         block_number,
         tx_hash,
+        network_id,
         transfer_type,
         user_address
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
@@ -108,7 +109,7 @@ ALTER TABLE gro."USER_STD_FACT_TRANSFERS" OWNER to postgres;
 CREATE TABLE gro."USER_STD_TMP_DEPOSITS" (
     block_number INTEGER NOT NULL,
     tx_hash CHARACTER VARYING (66) NOT NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     transfer_type CHARACTER VARYING (20) NULL,
     user_address CHARACTER VARYING (42) NOT NULL,
     referral_address CHARACTER VARYING (42) NULL,
@@ -130,7 +131,7 @@ ALTER TABLE gro."USER_STD_TMP_DEPOSITS" OWNER to postgres;
 CREATE TABLE gro."USER_STD_TMP_WITHDRAWALS" (
     block_number INTEGER NOT NULL,
     tx_hash CHARACTER VARYING (66) NOT NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     transfer_type CHARACTER VARYING (20) NULL,
     user_address CHARACTER VARYING (42) NOT NULL,
     referral_address CHARACTER VARYING (42) NULL,
@@ -154,7 +155,7 @@ ALTER TABLE gro."USER_STD_TMP_WITHDRAWALS" OWNER to postgres;
 
 -- CREATE TABLE gro."USER_STD_FACT_BALANCES_OLD" (
 --     balance_date TIMESTAMP (6) NOT NULL,
---     network_id SMALLINT NULL,
+--     network_id INTEGER NULL,
 --     user_address CHARACTER VARYING (42) NOT NULL,
 --     usd_value NUMERIC (20, 8) NULL,
 --     pwrd_value NUMERIC (20, 8) NULL,
@@ -167,7 +168,7 @@ ALTER TABLE gro."USER_STD_TMP_WITHDRAWALS" OWNER to postgres;
 
 CREATE TABLE gro."USER_STD_FACT_BALANCES" (
     balance_date     TIMESTAMP (6) NOT NULL,
-    network_id       SMALLINT NULL,
+    network_id       INTEGER NULL,
     user_address     CHARACTER VARYING (42) NOT NULL,
     gvt_unstaked_amount NUMERIC (20, 8) NULL,
     pwrd_unstaked_amount NUMERIC (20, 8) NULL,
@@ -194,7 +195,7 @@ CREATE TABLE gro."USER_STD_FACT_BALANCES" (
     pool5_gro_amount NUMERIC (20, 8) NULL,          -- GRO
     pool5_weth_amount NUMERIC (20, 8) NULL,         -- WETH
     creation_date    TIMESTAMP (6) NULL,
-   CONSTRAINT "USER_STD_FACT_BALANCES_pkey" PRIMARY KEY (balance_date, user_address)
+   CONSTRAINT "USER_STD_FACT_BALANCES_pkey" PRIMARY KEY (balance_date, network_id, user_address)
       NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -203,7 +204,7 @@ ALTER TABLE gro."USER_STD_FACT_BALANCES" OWNER to postgres;
 -- Same as USER_STD_FACT_BALANCES: intended to do on-demand extractions at a specific date & time
 CREATE TABLE gro."USER_STD_FACT_BALANCES_SNAPSHOT" (
     balance_date TIMESTAMP (6) NOT NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     user_address CHARACTER VARYING (42) NOT NULL,
     gvt_unstaked_amount NUMERIC (20, 8) NULL,
     pwrd_unstaked_amount NUMERIC (20, 8) NULL,
@@ -230,7 +231,7 @@ CREATE TABLE gro."USER_STD_FACT_BALANCES_SNAPSHOT" (
     pool5_gro_amount NUMERIC (20, 8) NULL,          -- GRO
     pool5_weth_amount NUMERIC (20, 8) NULL,         -- WETH
     creation_date    TIMESTAMP (6) NULL,
-    CONSTRAINT "USER_STD_FACT_BALANCES_SNAPSHOT_pkey" PRIMARY KEY (balance_date, user_address) 
+    CONSTRAINT "USER_STD_FACT_BALANCES_SNAPSHOT_pkey" PRIMARY KEY (balance_date, network_id, user_address) 
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -238,7 +239,7 @@ ALTER TABLE gro."USER_STD_FACT_BALANCES_SNAPSHOT" OWNER to postgres;
 
 -- CREATE TABLE gro."USER_STD_FACT_NET_RETURNS_OLD" (
 --    balance_date        TIMESTAMP (6) NOT NULL,
---    network_id          SMALLINT NULL,
+--    network_id          INTEGER NULL,
 --    user_address        CHARACTER VARYING (42) NOT NULL,
 --    total_value         NUMERIC (20, 8) NULL,
 --    pwrd_value          NUMERIC (20, 8) NULL,
@@ -253,7 +254,7 @@ ALTER TABLE gro."USER_STD_FACT_BALANCES_SNAPSHOT" OWNER to postgres;
 
 CREATE TABLE gro."USER_STD_FACT_NET_RETURNS" (
     balance_date TIMESTAMP (6) NOT NULL,
-    network_id SMALLINT NULL,
+    network_id INTEGER NULL,
     user_address CHARACTER VARYING (42) NOT NULL,
     total_unstaked_value NUMERIC (20, 8) NULL,
     pwrd_unstaked_value NUMERIC (20, 8) NULL,
@@ -262,7 +263,7 @@ CREATE TABLE gro."USER_STD_FACT_NET_RETURNS" (
     usdt_e_value NUMERIC (20,8) NULL,
     dai_e_value NUMERIC (20,8) NULL,
     creation_date TIMESTAMP (6) NULL,
-    CONSTRAINT "USER_STD_FACT_NET_RETURNS_pkey" PRIMARY KEY (balance_date, user_address) 
+    CONSTRAINT "USER_STD_FACT_NET_RETURNS_pkey" PRIMARY KEY (balance_date, network_id, user_address) 
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 

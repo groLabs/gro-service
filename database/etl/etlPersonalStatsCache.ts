@@ -10,6 +10,7 @@ import { loadUserBalances } from '../loader/loadUserBalances';
 import { loadUserNetReturns } from '../loader/loadUserNetReturns';
 import { QUERY_ERROR } from '../constants';
 import {
+    GlobalNetwork,
     Transfer,
     Bool
 } from '../types'
@@ -103,12 +104,12 @@ const loadCache = async (account: string) => {
 
         if (fromBlock > 0) {
             const res = await Promise.all([
-                loadTmpUserTransfers(fromBlock, 'latest', Transfer.DEPOSIT, account),
-                loadTmpUserTransfers(fromBlock, 'latest', Transfer.WITHDRAWAL, account),
-                loadTmpUserTransfers(fromBlock, 'latest', Transfer.TRANSFER_GVT_OUT, account),
-                loadTmpUserTransfers(fromBlock, 'latest', Transfer.TRANSFER_GVT_IN, account),
-                loadTmpUserTransfers(fromBlock, 'latest', Transfer.TRANSFER_PWRD_OUT, account),
-                loadTmpUserTransfers(fromBlock, 'latest', Transfer.TRANSFER_PWRD_IN, account),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, 'latest', Transfer.DEPOSIT, account),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, 'latest', Transfer.WITHDRAWAL, account),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, 'latest', Transfer.TRANSFER_GVT_OUT, account),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, 'latest', Transfer.TRANSFER_GVT_IN, account),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, 'latest', Transfer.TRANSFER_PWRD_OUT, account),
+                loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, 'latest', Transfer.TRANSFER_PWRD_IN, account),
             ]);
 
             //console.log('resssss:', res);

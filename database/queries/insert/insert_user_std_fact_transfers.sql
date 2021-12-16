@@ -20,7 +20,10 @@ INSERT INTO gro."USER_STD_FACT_TRANSFERS" (
         "usdc_amount",
         "usdt_amount",
         "gro_amount",
-        "creation_date"
+        "creation_date",
+        "usdc_e_amount",
+        "usdt_e_amount",
+        "dai_e_amount"
     )
 SELECT d."block_number",
     b."block_timestamp",
@@ -43,11 +46,14 @@ SELECT d."block_number",
     sum(d."usdc_amount"),
     sum(d."usdt_amount"),
     sum(d."gro_amount"),
-    now()
+    now(),
+    sum(d."usdc_e_amount"),
+    sum(d."usdt_e_amount"),
+    sum(d."dai_e_amount")
 FROM gro."USER_STD_TMP_DEPOSITS" d
     LEFT JOIN gro."ETH_BLOCKS" b ON d.block_number = b.block_number
-    GROUP BY
-    d."block_number",
+    AND d.network_id = b.network_id
+GROUP BY d."block_number",
     b."block_timestamp",
     to_timestamp(b.block_timestamp)::timestamp,
     d."tx_hash",
@@ -78,11 +84,14 @@ SELECT w."block_number",
     sum(w."usdc_amount"),
     sum(w."usdt_amount"),
     sum(w."gro_amount"),
-    now()
+    now(),
+    sum(w."usdc_e_amount"),
+    sum(w."usdt_e_amount"),
+    sum(w."dai_e_amount")
 FROM gro."USER_STD_TMP_WITHDRAWALS" w
     LEFT JOIN gro."ETH_BLOCKS" b ON w.block_number = b.block_number
-    GROUP BY
-    w."block_number",
+    and w.network_id = b.network_id
+GROUP BY w."block_number",
     b."block_timestamp",
     to_timestamp(b.block_timestamp)::timestamp,
     w."tx_hash",
@@ -91,4 +100,3 @@ FROM gro."USER_STD_TMP_WITHDRAWALS" w
     w."user_address",
     w."referral_address",
     now();
-    
