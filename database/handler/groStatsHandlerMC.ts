@@ -11,7 +11,8 @@ const DIFF_1w = 604800;
 const MARGIN = 200;
 const NA = 'NA';
 
-const getTimeTransformations = (target) => {
+const getTimeTransformations = (target: number) => {
+
     return {
         "MIN_5m": target - (DIFF_5m - MARGIN),
         "MAX_5m": target - (DIFF_5m + MARGIN),
@@ -24,7 +25,11 @@ const getTimeTransformations = (target) => {
     }
 }
 
-const getTimestamps = async (targetTimestamp, table, filter) => {
+const getTimestamps = async (
+    targetTimestamp: number,
+    table: string,
+    filter: string[] | number[]
+) => {
     try {
         const delta = getTimeTransformations(targetTimestamp);
         const [
@@ -41,8 +46,11 @@ const getTimestamps = async (targetTimestamp, table, filter) => {
             query(`select_all_${table}.sql`, [delta.MAX_1w, delta.MIN_1w, ...filter]),
         ]);
 
-        if (current.status === QUERY_ERROR || diff_5m.status === QUERY_ERROR || diff_1h.status === QUERY_ERROR
-            || diff_1d.status === QUERY_ERROR || diff_1w.status === QUERY_ERROR)
+        if (current.status === QUERY_ERROR
+            || diff_5m.status === QUERY_ERROR
+            || diff_1h.status === QUERY_ERROR
+            || diff_1d.status === QUERY_ERROR
+            || diff_1w.status === QUERY_ERROR)
             throw `Query error in getTimestamps [targetTimestamp: ${targetTimestamp}]`;
 
         return {
@@ -64,11 +72,14 @@ const getMaxTimestamp = async () => {
             throw `Query error in getMaxTimestamp`;
         return res.rows[0];
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandlerMC.js->getTimestamps(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getMaxTimestamp(): ${err}`);
     }
 }
 
-const getDistincts = async (targetTimestamp, table) => {
+const getDistincts = async (
+    targetTimestamp: number,
+    table: string
+) => {
     try {
         const res = await query(`select_distinct_${table}.sql`, [targetTimestamp, targetTimestamp]);
         if (res.status === QUERY_ERROR)
@@ -79,7 +90,9 @@ const getDistincts = async (targetTimestamp, table) => {
     }
 }
 
-const calcKPI = (root, kpi) => {
+const calcKPI = (
+    root: any, //TODO
+    kpi: string) => {
     try {
         const current = (root.current) ? parseFloat(root.current[kpi]) : null;
         const dif5m = (root.diff_5m) ? parseFloat(root.diff_5m[kpi]) : null;
@@ -102,7 +115,7 @@ const calcKPI = (root, kpi) => {
     }
 }
 
-const getTVL = async (targetTimestamp) => {
+const getTVL = async (targetTimestamp: number) => {
     try {
         const tvl = await getTimestamps(targetTimestamp, 'protocol_tvl', []);
         if (tvl.current) {
@@ -125,7 +138,7 @@ const getTVL = async (targetTimestamp) => {
     }
 }
 
-const getAvaxTVL = async (targetTimestamp) => {
+const getAvaxTVL = async (targetTimestamp: number) => {
     try {
         const tvl = await getTimestamps(targetTimestamp, 'protocol_avax_tvl', []);
         if (tvl.current) {
@@ -141,11 +154,14 @@ const getAvaxTVL = async (targetTimestamp) => {
             return {};
         }
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandlerMC.js->getTVL(): ${err}`);
+        logger.error(`**DB: Error in groStatsHandlerMC.js->getAvaxTVL(): ${err}`);
     }
 }
 
-const getAPY = async (targetTimestamp, productId) => {
+const getAPY = async (
+    targetTimestamp: number,
+    productId: number
+) => {
     try {
         const apy = await getTimestamps(targetTimestamp, 'protocol_apy', [productId]);
         if (apy.current) {
@@ -168,7 +184,7 @@ const getAPY = async (targetTimestamp, productId) => {
     }
 }
 
-const getLifeguard = async (targetTimestamp) => {
+const getLifeguard = async (targetTimestamp: number) => {
     try {
         const lifeguard = await getTimestamps(targetTimestamp, 'protocol_lifeguard', []);
         if (lifeguard.current) {
@@ -189,7 +205,7 @@ const getLifeguard = async (targetTimestamp) => {
     }
 }
 
-const getSystem = async (targetTimestamp) => {
+const getSystem = async (targetTimestamp: number) => {
     try {
         const system = await getTimestamps(targetTimestamp, 'protocol_system', []);
         if (system.current) {
@@ -209,7 +225,7 @@ const getSystem = async (targetTimestamp) => {
     }
 }
 
-const getSystemLifeguardStables = async (targetTimestamp) => {
+const getSystemLifeguardStables = async (targetTimestamp: number) => {
     try {
         let result = [];
         const stables = await getDistincts(targetTimestamp, 'protocol_system_lifeguard_stables');
@@ -236,7 +252,7 @@ const getSystemLifeguardStables = async (targetTimestamp) => {
     }
 }
 
-const getVaults = async (targetTimestamp) => {
+const getVaults = async (targetTimestamp: number) => {
     try {
         let result = [];
         const vaults = await getDistincts(targetTimestamp, 'protocol_vaults');
@@ -266,7 +282,7 @@ const getVaults = async (targetTimestamp) => {
     }
 }
 
-const getAvaxVaults = async (targetTimestamp) => {
+const getAvaxVaults = async (targetTimestamp: number) => {
     try {
         let result = [];
         const vaults = await getDistincts(targetTimestamp, 'protocol_avax_vaults');
@@ -297,7 +313,7 @@ const getAvaxVaults = async (targetTimestamp) => {
     }
 }
 
-const getReserves = async (targetTimestamp) => {
+const getReserves = async (targetTimestamp: number) => {
     try {
         let result = [];
         const reserves = await getDistincts(targetTimestamp, 'protocol_reserves');
@@ -332,7 +348,7 @@ const getReserves = async (targetTimestamp) => {
     }
 }
 
-const getAvaxReserves = async (targetTimestamp) => {
+const getAvaxReserves = async (targetTimestamp: number) => {
     try {
         let result = [];
         const reserves = await getDistincts(targetTimestamp, 'protocol_avax_reserves');
@@ -367,7 +383,7 @@ const getAvaxReserves = async (targetTimestamp) => {
     }
 }
 
-const getStrategies = async (targetTimestamp) => {
+const getStrategies = async (targetTimestamp: number) => {
     try {
         let result = [];
         const strategies = await getDistincts(targetTimestamp, 'protocol_strategies');
@@ -402,7 +418,7 @@ const getStrategies = async (targetTimestamp) => {
     }
 }
 
-const getAvaxStrategies = async (targetTimestamp) => {
+const getAvaxStrategies = async (targetTimestamp: number) => {
     try {
         let result = [];
         const strategies = await getDistincts(targetTimestamp, 'protocol_avax_strategies');
@@ -442,7 +458,7 @@ const getAvaxStrategies = async (targetTimestamp) => {
     }
 }
 
-const getExposureStables = async (targetTimestamp) => {
+const getExposureStables = async (targetTimestamp: number) => {
     try {
         let result = [];
         const stables = await getDistincts(targetTimestamp, 'protocol_exposure_stables');
@@ -474,7 +490,7 @@ const getExposureStables = async (targetTimestamp) => {
     }
 }
 
-const getExposureProtocols = async (targetTimestamp) => {
+const getExposureProtocols = async (targetTimestamp: number) => {
     try {
         let result = [];
         const protocols = await getDistincts(targetTimestamp, 'protocol_exposure_protocols');
@@ -506,31 +522,67 @@ const getExposureProtocols = async (targetTimestamp) => {
     }
 }
 
+// if any getX() fails, the rest will provide data
 const getAllStatsMC = async () => {
     try {
         const res = await getMaxTimestamp();
         const targetTimestamp = res.current_timestamp;
 
+        const [
+            tvl,
+            tvl_avax,
+            apy1,
+            apy2,
+            lifeguard,
+            lifeguardStables,
+            system,
+            vaults,
+            vaults_avax,
+            reserves,
+            reserves_avax,
+            strategies,
+            strategies_avax,
+            exposureStables,
+            exposureProtocols,
+        ] = await Promise.all([
+            getTVL(targetTimestamp),
+            getAvaxTVL(targetTimestamp),
+            getAPY(targetTimestamp, 1),
+            getAPY(targetTimestamp, 2),
+            getLifeguard(targetTimestamp),
+            getSystemLifeguardStables(targetTimestamp),
+            getSystem(targetTimestamp),
+            getVaults(targetTimestamp),
+            getAvaxVaults(targetTimestamp),
+            getReserves(targetTimestamp),
+            getAvaxReserves(targetTimestamp),
+            getStrategies(targetTimestamp),
+            getAvaxStrategies(targetTimestamp),
+            getExposureStables(targetTimestamp),
+            getExposureProtocols(targetTimestamp),
+        ]);
+
         if (targetTimestamp && targetTimestamp > 0)
             return {
-                tvl: await getTVL(targetTimestamp),
-                tvl_avax: await getAvaxTVL(targetTimestamp),
-                apy1: await getAPY(targetTimestamp, 1),
-                apy2: await getAPY(targetTimestamp, 2),
-                lifeguard: await getLifeguard(targetTimestamp),
-                lifeguardStables: await getSystemLifeguardStables(targetTimestamp),
-                system: await getSystem(targetTimestamp),
-                vaults: await getVaults(targetTimestamp),
-                vaults_avax: await getAvaxVaults(targetTimestamp),
-                reserves: await getReserves(targetTimestamp),
-                reserves_avax: await getAvaxReserves(targetTimestamp),
-                strategies: await getStrategies(targetTimestamp),
-                strategies_avax: await getAvaxStrategies(targetTimestamp),
-                exposureStables: await getExposureStables(targetTimestamp),
-                exposureProtocols: await getExposureProtocols(targetTimestamp),
+                tvl: tvl,
+                tvl_avax: tvl_avax,
+                apy1: apy1,
+                apy2: apy2,
+                lifeguard: lifeguard,
+                lifeguardStables: lifeguardStables,
+                system: system,
+                vaults: vaults,
+                vaults_avax: vaults_avax,
+                reserves: reserves,
+                reserves_avax: reserves_avax,
+                strategies: strategies,
+                strategies_avax: strategies_avax,
+                exposureStables: exposureStables,
+                exposureProtocols: exposureProtocols,
                 config: res,
             };
         return [];
+
     } catch (err) {
         logger.error(`**DB: Error in groStatsHandlerMC.js->getAllStatsMC(): ${err}`);
     }
