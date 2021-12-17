@@ -468,15 +468,40 @@ async function avaxPersonalStats(account) {
         singleVaultEvents(account, ContractNames.AVAXDAIVault, 'DAI.e', 18),
         singleVaultEvents(account, ContractNames.AVAXUSDCVault, 'USDC.e', 6),
         singleVaultEvents(account, ContractNames.AVAXUSDTVault, 'USDT.e', 6),
+        singleVaultEvents(
+            account,
+            ContractNames.AVAXDAIVault_v1_5,
+            'DAI.e',
+            18
+        ),
+        singleVaultEvents(
+            account,
+            ContractNames.AVAXUSDCVault_v1_5,
+            'USDC.e',
+            6
+        ),
+        singleVaultEvents(
+            account,
+            ContractNames.AVAXUSDTVault_v1_5,
+            'USDT.e',
+            6
+        ),
     ];
-    const [daiVaultEvents, usdcVaultEvents, usdtVaultEvents] =
-        await Promise.all(vaultEventsPromise);
+    const [
+        daiVaultEvents,
+        usdcVaultEvents,
+        usdtVaultEvents,
+        daiVaultEvents1,
+        usdcVaultEvents1,
+        usdtVaultEvents1,
+    ] = await Promise.all(vaultEventsPromise);
 
     fullData(result, daiVaultEvents, 'groDAI.e_vault');
-
     fullData(result, usdcVaultEvents, 'groUSDC.e_vault');
-
     fullData(result, usdtVaultEvents, 'groUSDT.e_vault');
+    fullData(result, daiVaultEvents1, 'groDAI.e_vault_v1_5');
+    fullData(result, usdcVaultEvents1, 'groUSDC.e_vault_v1_5');
+    fullData(result, usdtVaultEvents1, 'groUSDT.e_vault_v1_5');
 
     calculateTotal(result, [
         'amount_added',
@@ -487,63 +512,56 @@ async function avaxPersonalStats(account) {
     ]);
 
     // deposit
-    const depositEvents = [];
-    if (daiVaultEvents.depositEvents) {
-        depositEvents.push(...daiVaultEvents.depositEvents);
-    }
-
-    if (usdcVaultEvents.depositEvents) {
-        depositEvents.push(...usdcVaultEvents.depositEvents);
-    }
-
-    if (usdtVaultEvents.depositEvents) {
-        depositEvents.push(...usdtVaultEvents.depositEvents);
-    }
+    const depositEvents = [
+        ...daiVaultEvents.depositEvents,
+        ...usdcVaultEvents.depositEvents,
+        ...usdtVaultEvents.depositEvents,
+        ...daiVaultEvents1.depositEvents,
+        ...usdcVaultEvents1.depositEvents,
+        ...usdtVaultEvents1.depositEvents,
+    ];
     fullTransactionField(result, depositEvents, 'deposits');
 
     // withdrawal
-    const withdrawEvents = [];
-    if (daiVaultEvents.withdrawEvents) {
-        withdrawEvents.push(...daiVaultEvents.withdrawEvents);
-    }
-    if (usdcVaultEvents.withdrawEvents) {
-        withdrawEvents.push(...usdcVaultEvents.withdrawEvents);
-    }
-    if (usdtVaultEvents.withdrawEvents) {
-        withdrawEvents.push(...usdtVaultEvents.withdrawEvents);
-    }
+    const withdrawEvents = [
+        ...daiVaultEvents.withdrawEvents,
+        ...usdcVaultEvents.withdrawEvents,
+        ...usdtVaultEvents.withdrawEvents,
+        ...daiVaultEvents1.withdrawEvents,
+        ...usdcVaultEvents1.withdrawEvents,
+        ...usdtVaultEvents1.withdrawEvents,
+    ];
     fullTransactionField(result, withdrawEvents, 'withdrawals');
 
     // transfer in & transfer out
-    const transferIn = [];
-    const transferOut = [];
-    if (daiVaultEvents.transferEvents) {
-        transferIn.push(...daiVaultEvents.transferEvents.inLogs);
-        transferOut.push(...daiVaultEvents.transferEvents.outLogs);
-    }
-    if (usdcVaultEvents.transferEvents) {
-        transferIn.push(...usdcVaultEvents.transferEvents.inLogs);
-        transferOut.push(...usdcVaultEvents.transferEvents.outLogs);
-    }
-    if (usdtVaultEvents.transferEvents) {
-        transferIn.push(...usdtVaultEvents.transferEvents.inLogs);
-        transferOut.push(...usdtVaultEvents.transferEvents.outLogs);
-    }
-
+    const transferIn = [
+        ...daiVaultEvents.transferEvents.inLogs,
+        ...usdcVaultEvents.transferEvents.inLogs,
+        ...usdtVaultEvents.transferEvents.inLogs,
+        ...daiVaultEvents1.transferEvents.inLogs,
+        ...usdcVaultEvents1.transferEvents.inLogs,
+        ...usdtVaultEvents1.transferEvents.inLogs,
+    ];
+    const transferOut = [
+        ...daiVaultEvents.transferEvents.outLogs,
+        ...usdcVaultEvents.transferEvents.outLogs,
+        ...usdtVaultEvents.transferEvents.outLogs,
+        ...daiVaultEvents1.transferEvents.outLogs,
+        ...usdcVaultEvents1.transferEvents.outLogs,
+        ...usdtVaultEvents1.transferEvents.outLogs,
+    ];
     fullTransactionField(result, transferIn, 'transfers_in');
     fullTransactionField(result, transferOut, 'transfers_out');
 
     // approvals
-    const approvals = [];
-    if (daiVaultEvents.approvalEvents) {
-        approvals.push(...daiVaultEvents.approvalEvents);
-    }
-    if (usdcVaultEvents.approvalEvents) {
-        approvals.push(...usdcVaultEvents.approvalEvents);
-    }
-    if (usdtVaultEvents.approvalEvents) {
-        approvals.push(...usdtVaultEvents.approvalEvents);
-    }
+    const approvals = [
+        ...daiVaultEvents.approvalEvents,
+        ...usdcVaultEvents.approvalEvents,
+        ...usdtVaultEvents.approvalEvents,
+        ...daiVaultEvents1.approvalEvents,
+        ...usdcVaultEvents1.approvalEvents,
+        ...usdtVaultEvents1.approvalEvents,
+    ];
     fullTransactionField(result, approvals, 'approvals');
 
     // Failed transactions

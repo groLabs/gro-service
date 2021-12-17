@@ -19,6 +19,18 @@ const DEFAULT_GRO_STABLE = {
     claimable: 'false',
 };
 
+const currentLiveVaults = {
+    DAILiveVault: ContractNames.AVAXDAIVault_v1_5,
+    USDCLiveVault: ContractNames.AVAXUSDCVault_v1_5,
+    USDTLiveVault: ContractNames.AVAXUSDTVault_v1_5,
+};
+
+const vaultsVersion = {
+    dai: '_v1_5',
+    usdc: '_v1_5',
+    usdt: '_v1_5',
+};
+
 const groGateFileFolder = groGateConfig.folder;
 const groGateFiles = groGateConfig.files || [];
 
@@ -68,19 +80,19 @@ async function getClaimedAmount(account, provider) {
     const amountPromise = [];
     amountPromise.push(
         latestBouncer.getClaimed(
-            latestContractsInfo[ContractNames.AVAXDAIVault].address,
+            latestContractsInfo[currentLiveVaults.DAILiveVault].address,
             account
         )
     );
     amountPromise.push(
         latestBouncer.getClaimed(
-            latestContractsInfo[ContractNames.AVAXUSDCVault].address,
+            latestContractsInfo[currentLiveVaults.USDCLiveVault].address,
             account
         )
     );
     amountPromise.push(
         latestBouncer.getClaimed(
-            latestContractsInfo[ContractNames.AVAXUSDTVault].address,
+            latestContractsInfo[currentLiveVaults.USDTLiveVault].address,
             account
         )
     );
@@ -101,9 +113,6 @@ async function getCurrentRoot(provider) {
 async function getAccountAllowance(account, provider) {
     account = toChecksumAddress(account);
     const result = {
-        'groDAI.e_vault': { ...DEFAULT_GRO_STABLE },
-        'groUSDC.e_vault': { ...DEFAULT_GRO_STABLE },
-        'groUSDT.e_vault': { ...DEFAULT_GRO_STABLE },
         total_claimable_allowance: '0',
         total_remaining_allowance: '0',
         snapshot_ts: '0',
@@ -113,6 +122,10 @@ async function getAccountAllowance(account, provider) {
         root: '',
         root_matched: false,
     };
+    result[`groDAI.e_vault${vaultsVersion.dai}`] = { ...DEFAULT_GRO_STABLE };
+    result[`groUSDC.e_vault${vaultsVersion.usdc}`] = { ...DEFAULT_GRO_STABLE };
+    result[`groUSDT.e_vault${vaultsVersion.usdt}`] = { ...DEFAULT_GRO_STABLE };
+
     try {
         const latestAllowanceFileIndex = groGateFiles.length;
         if (latestAllowanceFileIndex < 1) {
@@ -144,33 +157,39 @@ async function getAccountAllowance(account, provider) {
                 result.proofs = proof;
             }
             if (amount) {
-                result['groDAI.e_vault'].claimable_allowance = amount;
-                result['groUSDC.e_vault'].claimable_allowance = amount;
-                result['groUSDT.e_vault'].claimable_allowance = amount;
+                result[
+                    `groDAI.e_vault${vaultsVersion.dai}`
+                ].claimable_allowance = amount;
+                result[
+                    `groUSDC.e_vault${vaultsVersion.usdc}`
+                ].claimable_allowance = amount;
+                result[
+                    `groUSDT.e_vault${vaultsVersion.usdt}`
+                ].claimable_allowance = amount;
             }
 
             const claimedAmounts = await getClaimedAmount(account, provider);
             const remainingAmountPromise = [
                 getRemainingAllowance(
                     account,
-                    ContractNames.AVAXDAIVault,
+                    currentLiveVaults.DAILiveVault,
                     provider
                 ),
                 getRemainingAllowance(
                     account,
-                    ContractNames.AVAXUSDCVault,
+                    currentLiveVaults.USDCLiveVault,
                     provider
                 ),
                 getRemainingAllowance(
                     account,
-                    ContractNames.AVAXUSDTVault,
+                    currentLiveVaults.USDTLiveVault,
                     provider
                 ),
             ];
             const remainingAmounts = await Promise.all(remainingAmountPromise);
 
             fulledClaimableAndAllowance(
-                'groDAI.e_vault',
+                `groDAI.e_vault${vaultsVersion.dai}`,
                 18,
                 result,
                 claimedAmounts[0],
@@ -178,7 +197,7 @@ async function getAccountAllowance(account, provider) {
                 remainingAmounts[0]
             );
             fulledClaimableAndAllowance(
-                'groUSDC.e_vault',
+                `groDAI.e_vault${vaultsVersion.usdc}`,
                 6,
                 result,
                 claimedAmounts[1],
@@ -186,7 +205,7 @@ async function getAccountAllowance(account, provider) {
                 remainingAmounts[1]
             );
             fulledClaimableAndAllowance(
-                'groUSDT.e_vault',
+                `groDAI.e_vault${vaultsVersion.usdt}`,
                 6,
                 result,
                 claimedAmounts[2],
