@@ -1,30 +1,43 @@
 import { query } from './queryHandler';
 import { QUERY_ERROR } from '../constants';
-
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
+
 
 const DIFF_5m = 300;
 const DIFF_1h = 3600;
 const DIFF_1d = 86400;
 const DIFF_1w = 604800;
-const MARGIN = 200;
+const MARGIN_5m = 180;      // 3m
+const MARGIN_1h = 900;      // 15m
+const MARGIN_1d = 3600;     // 1h
+const MARGIN_1w = 43200;    // 12h;
 const NA = 'NA';
 
+/// @notice Returns an object with all time transformations (-5m, -1h, -1d, -1w)
+///         with a margin up/down from a given target date
+/// @dev:   5m: range between 2m & 8m ago
+///         1h: range between 45m & 75m ago
+///         1d: range between 
 const getTimeTransformations = (target: number) => {
-
     return {
-        "MIN_5m": target - (DIFF_5m - MARGIN),
-        "MAX_5m": target - (DIFF_5m + MARGIN),
-        "MIN_1h": target - (DIFF_1h - MARGIN),
-        "MAX_1h": target - (DIFF_1h + MARGIN),
-        "MIN_1d": target - (DIFF_1d - MARGIN),
-        "MAX_1d": target - (DIFF_1d + MARGIN),
-        "MIN_1w": target - (DIFF_1w - MARGIN),
-        "MAX_1w": target - (DIFF_1w + MARGIN),
+        "MIN_5m": target - (DIFF_5m - MARGIN_5m),
+        "MAX_5m": target - (DIFF_5m + MARGIN_5m),
+        "MIN_1h": target - (DIFF_1h - MARGIN_1h),
+        "MAX_1h": target - (DIFF_1h + MARGIN_1h),
+        "MIN_1d": target - (DIFF_1d - MARGIN_1d),
+        "MAX_1d": target - (DIFF_1d + MARGIN_1d),
+        "MIN_1w": target - (DIFF_1w - MARGIN_1w),
+        "MAX_1w": target - (DIFF_1w + MARGIN_1w),
     }
 }
 
+/// @notice Retrieve data at different time transformations (-5m, -1h, -1d, -1w)
+///         from the last groStats timestamp
+/// @param  targetTimestamp The last groStats timestamp loaded into the DB
+/// @param  table The table to retrieve data from
+/// @param  filter The filters to apply in the queries (eg.: product id, vault name..)
+/// @return An object with data from target table at different points of time (time transf.)
 const getTimestamps = async (
     targetTimestamp: number,
     table: string,
@@ -65,10 +78,11 @@ const getTimestamps = async (
     }
 }
 
+/// @notice Get latest groStats timestamp loaded into the DB
 const getMaxTimestamp = async () => {
     try {
         const res = await query(`select_max_timestamp_protocol_tvl.sql`, []);
-        if (res === QUERY_ERROR)
+        if (res.status === QUERY_ERROR)
             throw `Query error in getMaxTimestamp`;
         return res.rows[0];
     } catch (err) {
@@ -76,22 +90,28 @@ const getMaxTimestamp = async () => {
     }
 }
 
+/// @notice Get distinct names for vaults, reserves, strategies
 const getDistincts = async (
     targetTimestamp: number,
     table: string
 ) => {
     try {
-        const res = await query(`select_distinct_${table}.sql`, [targetTimestamp, targetTimestamp]);
+        const res = await query(`select_distinct_${table}.sql`, [targetTimestamp]);
         if (res.status === QUERY_ERROR)
-            throw `Query error in getTimestamps [targetTimestamp: ${targetTimestamp}]`;
+            throw `Query error in groStatsHandlerMC.ts->getDistincts() [targetTimestamp: ${targetTimestamp}]`;
         return res.rows;
     } catch (err) {
         logger.error(`**DB: Error in groStatsHandlerMC.js->getDistincts(): ${err}`);
     }
 }
 
+/// @notice Calculates the KPIs by comparing latest data vs. same data 
+///         at different points of time (transformations)
+/// @param  root The target data (e.g.: tvl, apy, strategies, vaults)
+/// @param  kpi The KPI to be calculated at different points of time (e.g.: tvl_pwrd, last3d_apy)
+/// @return An object with all KPIs at different points of time
 const calcKPI = (
-    root: any, //TODO
+    root: any, //TODO (dynamic)
     kpi: string) => {
     try {
         const current = (root.current) ? parseFloat(root.current[kpi]) : null;
@@ -523,6 +543,7 @@ const getExposureProtocols = async (targetTimestamp: number) => {
 }
 
 // if any getX() fails, the rest will provide data
+// Provide data from the latest successful load
 const getAllStatsMC = async () => {
     try {
         const res = await getMaxTimestamp();
