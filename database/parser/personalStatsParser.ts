@@ -9,7 +9,9 @@ import {
     getNetworkId,
     getStableCoinIndex,
     handleErr,
-    isDeposit,
+    isInflow,
+    isOutflow,
+    isDepositOrWithdrawal,
     transferType,
 } from '../common/personalUtil';
 import {
@@ -157,15 +159,16 @@ const parseTransferEvents = async (
                             ? -parseAmount(log.args[2], 'USD') // Transfer.value
                             : 0;
 
-            const userAddress =
-                (side === Transfer.DEPOSIT
-                    || side === Transfer.WITHDRAWAL
-                    || side === Transfer.DEPOSIT_groUSDCe
-                    || side === Transfer.WITHDRAWAL_groUSDCe)
+            const userAddress = isDepositOrWithdrawal(side)
+                // (side === Transfer.DEPOSIT
+                //     || side === Transfer.WITHDRAWAL
+                //     || side === Transfer.DEPOSIT_groUSDCe
+                //     || side === Transfer.WITHDRAWAL_groUSDCe)
                     ? log.args[0] // LogNewDeposit.user, LogNewWithdrawal.user, LogDeposit.from, LogWithdrawal.from
-                    : (side === Transfer.TRANSFER_GVT_OUT
-                        || side === Transfer.TRANSFER_PWRD_OUT
-                        || side === Transfer.TRANSFER_GRO_OUT)
+                    // : (side === Transfer.TRANSFER_GVT_OUT
+                    //     || side === Transfer.TRANSFER_PWRD_OUT
+                    //     || side === Transfer.TRANSFER_GRO_OUT)
+                    : isOutflow(side)
                         ? log.args[0] // Transfer.from
                         : log.args[1]; // Transfer.to
 
@@ -207,9 +210,9 @@ const parseTransferEvents = async (
                 usdt_amount: usdt_amount,
                 gro_amount: gro_amount,
                 creation_date: moment.utc(),
-                ...(!isDeposit(side) && { usd_deduct: usd_deduct }),
-                ...(!isDeposit(side) && { usd_return: usd_return }),
-                ...(!isDeposit(side) && { lp_amount: lp_amount }),
+                ...(!isInflow(side) && { usd_deduct: usd_deduct }),
+                ...(!isInflow(side) && { usd_return: usd_return }),
+                ...(!isInflow(side) && { lp_amount: lp_amount }),
                 usdc_e_amount: usdc_e_amount,
                 usdt_e_amount: usdt_e_amount,
                 dai_e_amount: dai_e_amount,

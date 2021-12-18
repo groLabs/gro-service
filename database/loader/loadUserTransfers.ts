@@ -4,7 +4,7 @@ import { loadEthBlocks } from './loadEthBlocks';
 import { loadTableUpdates } from './loadTableUpdates';
 import {
     handleErr,
-    isDeposit,
+    isInflow,
     isPlural,
     getTransferEvents2,
     getGTokenFromTx,
@@ -124,7 +124,7 @@ const loadTmpUserTransfers = async (
                 if (params.length > 0) {
 
                     const [res, rows] = await query(
-                        (isDeposit(side))
+                        (isInflow(side))
                             ? (account)
                                 ? 'insert_user_cache_tmp_deposits.sql'
                                 : 'insert_user_std_tmp_deposits.sql'
@@ -136,7 +136,7 @@ const loadTmpUserTransfers = async (
                     if (!res)
                         return false;
 
-                    logger.info(`**DB${(account) ? ' CACHE' : ''}: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isDeposit(side))
+                    logger.info(`**DB${(account) ? ' CACHE' : ''}: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isInflow(side))
                         ? (account)
                             ? 'USER_CACHE_TMP_DEPOSITS'
                             : 'USER_STD_TMP_DEPOSITS'

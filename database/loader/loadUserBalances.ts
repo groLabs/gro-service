@@ -44,7 +44,11 @@ let lpGroWeth = [];
 ///         to be processed on each iteration
 /// @return An array with 7 fixed subarrays, each of them containing all balances per token
 ///         (gvt, pwrd, gro, gro/gvt, gro/usdc, 3crv, gro/weth)
-const getBalancesSC = async (users, block, offset) => {
+const getBalancesSC = async (
+    users: string[],
+    block: number,
+    offset: number
+) => {
     try {
 
         const newOffset = (offset + BATCH >= users.length)
@@ -128,7 +132,13 @@ const getBalancesSC = async (users, block, offset) => {
     }
 }
 
-const insertBalances = async (account, i, day, addr, isSnapshot) => {
+const insertBalances = async (
+    account: string, 
+    i: number, 
+    day: moment.Moment, 
+    addr: string, 
+    isSnapshot: number,
+) => {
     return new Promise(async (resolve) => {
         try {
             const params = [
@@ -183,7 +193,7 @@ const insertBalances = async (account, i, day, addr, isSnapshot) => {
 }
 
 /// @notice Initialise global vars to 0 or empty
-const cleanseVars = (scope) => {
+const cleanseVars = (scope: string) => {
     if (scope === 'all') {
         gvt = [];
         pwrd = [];
@@ -201,7 +211,7 @@ const cleanseVars = (scope) => {
 ///         from the beginning of the protocol
 /// @param  account The user address for cache query
 /// @return An array with all users to be processed
-const retrieveUsers = async (account) => {
+const retrieveUsers = async (account: string) => {
     let res;
     if (account) {
         res = {
@@ -223,7 +233,7 @@ const retrieveUsers = async (account) => {
 /// @notice Check if target date >= deployment date of TokenCounter SC
 /// @param  day The target day [format: DD/MM/YYYY]
 /// @return True if target >= TokenCounter deployment date; False otherwise
-const checkTokenCounterDate = (day) => {
+const checkTokenCounterDate = (day: moment.Moment) => {
     // TODO: replace by config/registry data (this is mainnet deployment)
     const tokenCounterStartDate = moment.utc('26/10/2021', 'DD/MM/YYYY')
         .add(10, 'hours')

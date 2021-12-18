@@ -170,6 +170,7 @@ const load = async (
         // Load transfers, balances, net returns & prices
         if (fromBlock > 0 && toBlock > 0 && dates) {
 
+            // TODO: split ETH & AVAX into 2 promises to avoid too many simultaneous requests
             const res = await Promise.all([
                 loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.DEPOSIT, null),
                 loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.WITHDRAWAL, null),
@@ -179,8 +180,10 @@ const load = async (
                 loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
                 loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
                 loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
-                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_groUSDCe_IN, null),
-                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_groUSDCe_OUT, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_USDCe, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_USDCe, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDCe_IN, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDCe_OUT, null),
             ]);
 
             if (res.every(Boolean)) {
@@ -223,6 +226,7 @@ const loadTransfers = async (
         // Load transfers, balances, net returns & prices
         if (fromBlock > 0 && toBlock > 0 && dates) {
 
+            // TODO: split ETH & AVAX into 2 promises to avoid too many simultaneous requests
             const res = await Promise.all([
                 loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.DEPOSIT, null),
                 loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.WITHDRAWAL, null),
@@ -232,10 +236,10 @@ const loadTransfers = async (
                 loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
                 loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
                 loadTmpUserTransfers(GlobalNetwork.ETHEREUM, fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
-                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_groUSDCe, null),
-                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_groUSDCe, null),
-                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_groUSDCe_IN, null),
-                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_groUSDCe_OUT, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_USDCe, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_USDCe, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDCe_IN, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDCe_OUT, null),
             ]);
 
             if (res.every(Boolean)) {

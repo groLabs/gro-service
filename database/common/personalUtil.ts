@@ -54,22 +54,30 @@ const transferType = (side: Transfer) => {
         case Transfer.TRANSFER_GRO_OUT:
             return 'transfer-gro-out';
         // Avalanche
-        case Transfer.DEPOSIT_groUSDCe:
-            return 'deposit_groUSDCe';
-        case Transfer.WITHDRAWAL_groUSDCe:
-            return 'withdrawal_groUSDCe';
-        case Transfer.TRANSFER_groUSDCe_IN:
-            return 'transfer_groUSDCe_in';
-        case Transfer.TRANSFER_groUSDCe_OUT:
-            return 'transfer_groUSDCe_out';
-        case Transfer.TRANSFER_groUSDTe_IN:
-            return 'transfer_groUSDCe_in';
-        case Transfer.TRANSFER_groUSDTe_OUT:
-            return 'transfer_groUSDCe_out';
-        case Transfer.TRANSFER_groDAIe_IN:
-            return 'transfer_groDAIe_in';
-        case Transfer.TRANSFER_groDAIe_OUT:
-            return 'transfer_groDAIe_out';
+        case Transfer.DEPOSIT_USDCe:
+            return 'deposit-USDCe';
+        case Transfer.WITHDRAWAL_USDCe:
+            return 'withdrawal-USDCe';
+        case Transfer.TRANSFER_USDCe_IN:
+            return 'transfer-USDCe-in';
+        case Transfer.TRANSFER_USDCe_OUT:
+            return 'transfer-USDCe-out';
+        case Transfer.DEPOSIT_USDTe:
+            return 'deposit-USDTe';
+        case Transfer.WITHDRAWAL_USDTe:
+            return 'withdrawal-USDTe';
+        case Transfer.TRANSFER_USDTe_IN:
+            return 'transfer-USDTe-in';
+        case Transfer.TRANSFER_USDTe_OUT:
+            return 'transfer-USDTe-out';
+        case Transfer.DEPOSIT_DAIe:
+            return 'deposit-DAIe';
+        case Transfer.WITHDRAWAL_DAIe:
+            return 'withdrawal-DAIe';
+        case Transfer.TRANSFER_DAIe_IN:
+            return 'transfer-DAIe-in';
+        case Transfer.TRANSFER_DAIe_OUT:
+            return 'transfer-DAIe-out';
         case Transfer.STABLECOIN_APPROVAL:
             return 'coin-approve';
         default:
@@ -77,18 +85,68 @@ const transferType = (side: Transfer) => {
     }
 };
 
-const isDeposit = (side: Transfer) => {
+// Anything which is incoming: deposits & transfers in
+const isInflow = (side: Transfer) => {
     return side === Transfer.DEPOSIT
         || side === Transfer.TRANSFER_GVT_IN
         || side === Transfer.TRANSFER_PWRD_IN
         || side === Transfer.TRANSFER_GRO_IN
-        || side === Transfer.DEPOSIT_groUSDCe
-        || side === Transfer.TRANSFER_groUSDCe_IN
-        // || side === Transfer.TRANSFER_groUSDTe_IN
-        // || side === Transfer.TRANSFER_groDAIe_IN
+        || side === Transfer.DEPOSIT_USDCe
+        || side === Transfer.TRANSFER_USDCe_IN
+        || side === Transfer.DEPOSIT_USDTe
+        || side === Transfer.TRANSFER_USDTe_IN
+        || side === Transfer.DEPOSIT_DAIe
+        || side === Transfer.TRANSFER_DAIe_IN
         ? true
         : false;
 };
+
+const isOutflow = (side: Transfer) => {
+    return side === Transfer.WITHDRAWAL
+    || side === Transfer.TRANSFER_GVT_OUT
+    || side === Transfer.TRANSFER_PWRD_OUT
+    || side === Transfer.TRANSFER_GRO_OUT
+    || side === Transfer.WITHDRAWAL_USDCe
+    || side === Transfer.TRANSFER_USDCe_OUT
+    || side === Transfer.WITHDRAWAL_USDTe
+    || side === Transfer.TRANSFER_USDTe_OUT
+    || side === Transfer.WITHDRAWAL_DAIe
+    || side === Transfer.TRANSFER_DAIe_OUT
+    ? true
+    : false;
+}
+
+// Only transfers (excludes deposits & withdrawals)
+const isTransfer = (side: Transfer) => {
+    return side === Transfer.TRANSFER_GVT_IN
+        || side === Transfer.TRANSFER_GVT_OUT
+        || side === Transfer.TRANSFER_PWRD_IN
+        || side === Transfer.TRANSFER_PWRD_OUT
+        || side === Transfer.TRANSFER_GRO_IN
+        || side === Transfer.TRANSFER_GRO_OUT
+        || side === Transfer.TRANSFER_USDCe_IN
+        || side === Transfer.TRANSFER_USDCe_OUT
+        || side === Transfer.TRANSFER_USDTe_IN
+        || side === Transfer.TRANSFER_USDTe_OUT
+        || side === Transfer.TRANSFER_DAIe_IN
+        || side === Transfer.TRANSFER_DAIe_OUT
+        ? true
+        : false;
+}
+
+// Only deposits or withdrawals (excludes transfers)
+const isDepositOrWithdrawal = (side: Transfer) => {
+    return side === Transfer.DEPOSIT
+        || side === Transfer.WITHDRAWAL
+        || side === Transfer.DEPOSIT_USDCe
+        || side === Transfer.WITHDRAWAL_USDCe
+        || side === Transfer.DEPOSIT_USDTe
+        || side === Transfer.WITHDRAWAL_USDTe
+        || side === Transfer.DEPOSIT_DAIe
+        || side === Transfer.WITHDRAWAL_DAIe
+        ? true
+        : false;
+}
 
 const getBlockData = async (blockNumber) => {
     const block = await getProvider()
@@ -271,27 +329,75 @@ const getTransferEvents2 = async (
                 receiver = null;
                 break;
             // Avalanche
-            case Transfer.DEPOSIT_groUSDCe:
+            case Transfer.DEPOSIT_USDCe:
                 eventType = 'LogDeposit';
                 contractName = ContractNames.AVAXUSDCVault;
                 sender = account;
                 receiver = null;
                 break;
-            case Transfer.WITHDRAWAL_groUSDCe:
+            case Transfer.WITHDRAWAL_USDCe:
                 eventType = 'LogWithdrawal';
                 contractName = ContractNames.AVAXUSDCVault;
                 sender = account;
                 receiver = null;
                 break;
-            case Transfer.TRANSFER_groUSDCe_IN:
+            case Transfer.TRANSFER_USDCe_IN:
                 eventType = 'Transfer';
                 contractName = ContractNames.AVAXUSDCVault;
                 sender = null;
                 receiver = account;
                 break;
-            case Transfer.TRANSFER_groUSDCe_OUT:
+            case Transfer.TRANSFER_USDCe_OUT:
                 eventType = 'Transfer';
                 contractName = ContractNames.AVAXUSDCVault;
+                sender = account;
+                receiver = null;
+                break;
+            case Transfer.DEPOSIT_USDTe:
+                eventType = 'LogDeposit';
+                contractName = ContractNames.AVAXUSDTVault;
+                sender = account;
+                receiver = null;
+                break;
+            case Transfer.WITHDRAWAL_USDTe:
+                eventType = 'LogWithdrawal';
+                contractName = ContractNames.AVAXUSDTVault;
+                sender = account;
+                receiver = null;
+                break;
+            case Transfer.TRANSFER_USDTe_IN:
+                eventType = 'Transfer';
+                contractName = ContractNames.AVAXUSDTVault;
+                sender = null;
+                receiver = account;
+                break;
+            case Transfer.TRANSFER_USDTe_OUT:
+                eventType = 'Transfer';
+                contractName = ContractNames.AVAXUSDTVault;
+                sender = account;
+                receiver = null;
+                break;
+            case Transfer.DEPOSIT_DAIe:
+                eventType = 'LogDeposit';
+                contractName = ContractNames.AVAXDAIVault;
+                sender = account;
+                receiver = null;
+                break;
+            case Transfer.WITHDRAWAL_DAIe:
+                eventType = 'LogWithdrawal';
+                contractName = ContractNames.AVAXDAIVault;
+                sender = account;
+                receiver = null;
+                break;
+            case Transfer.TRANSFER_DAIe_IN:
+                eventType = 'Transfer';
+                contractName = ContractNames.AVAXDAIVault;
+                sender = null;
+                receiver = account;
+                break;
+            case Transfer.TRANSFER_DAIe_OUT:
+                eventType = 'Transfer';
+                contractName = ContractNames.AVAXDAIVault;
                 sender = account;
                 receiver = null;
                 break;
@@ -305,11 +411,12 @@ const getTransferEvents2 = async (
             : false;
 
         let filters;
-        if (side === Transfer.DEPOSIT
-            || side === Transfer.WITHDRAWAL
-            || side === Transfer.DEPOSIT_groUSDCe
-            || side === Transfer.WITHDRAWAL_groUSDCe
-        ) {
+        if (isDepositOrWithdrawal(side)) {
+        // if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
+        //     || side === Transfer.DEPOSIT_USDCe || side === Transfer.WITHDRAWAL_USDCe
+        //     || side === Transfer.DEPOSIT_USDTe || side === Transfer.WITHDRAWAL_USDTe
+        //     || side === Transfer.DEPOSIT_DAIe || side === Transfer.WITHDRAWAL_DAIe
+        // ) {
             // returns an array
             filters = getContractHistoryEventFilters(
                 'default',
@@ -361,12 +468,11 @@ const getTransferEvents2 = async (
         }
 
         let logResults = await Promise.all(logPromises);
-
         let logTrades = [];
 
         // Exclude mint or burn logs in transfers (sender or receiver address is 0x0)
-        if (side > 2 && side < 20 && logResults.length > 0) {
-            // TODO
+        if (isTransfer(side) && logResults.length > 0) {
+        // if (side > 2 && side < 20 && logResults.length > 0) {
             // if (side > 2 && side !== 9 && side !== 10 && logResults.length > 0) {
             for (let i = 0; i < logResults.length; i++) {
                 // console.log('Event type:', eventType, 'side:', side, 'logs:', logResults[i]);
@@ -383,9 +489,6 @@ const getTransferEvents2 = async (
         } else {
             return logResults;
         }
-
-        //console.log('side', side, 'logResults', logResults[0][0]);
-
     } catch (err) {
         handleErr(`personalUtil->getTransferEvents2() [side: ${side}]`, err);
         return false;
@@ -528,7 +631,9 @@ export {
     getTransferEvents2,
     getGTokenFromTx,
     handleErr,
-    isDeposit,
+    isInflow,
+    isOutflow,
+    isDepositOrWithdrawal,
     isPlural,
     transferType,
 };
