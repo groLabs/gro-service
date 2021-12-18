@@ -94,10 +94,10 @@ const isContract = async () => {
 // goal:    workaround to get combined GRO from manually added wallets to the AVAX allocance list.
 // input:   ./files/airdropHoldersAvax.ts
 // output:  console.log => wallet|gro_amount
-const getCombinedGro = async () => {
+const groAirdropHolders = async (targetTimestamp: number) => {
     const VOTE_AGGREGATOR_ADDRESS = '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D';
     // @ts-ignore
-    const block = (await findBlockByDate(moment.unix(1639526399), false)).block;
+    const block = (await findBlockByDate(moment.unix(targetTimestamp), false)).block;
     console.log(`Balances at block ${block}:`)
     const res = await getBalances(VOTE_AGGREGATOR_ADDRESS, balances, block);
     const combinedGro = res[0].amount_unstaked;
@@ -109,5 +109,5 @@ const getCombinedGro = async () => {
 export {
     status,
     isContract,
-    getCombinedGro,
+    groAirdropHolders,
 }

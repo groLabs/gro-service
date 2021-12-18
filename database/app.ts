@@ -11,10 +11,10 @@ import { getHistoricalAPY } from './handler/historicalAPY';
 import { loadUserBalances } from './loader/loadUserBalances';
 import { loadTokenPrice } from './loader/loadTokenPrice';
 import { dumpTable } from './common/pgUtil';
-import { 
+import {
     status,
     isContract,
-    getCombinedGro,
+    groAirdropHolders,
 } from './common/statusUtil';
 import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/airdrop4handler';
 
@@ -100,6 +100,15 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
                         console.log('Wrong parameters for Airdrop4 - e.g.: airdrop4 0 250');
                     }
                     break;
+                case 'groAirdropHolders':
+                    if (params.length === 2) {
+                        await loadContractInfoFromRegistry();
+                        await groAirdropHolders(
+                            parseInt(params[1]));     // timestamp
+                    } else {
+                        console.log(`Wrong parameters for status - e.g.: status 15/11/2021 15:00:00 ""`);
+                    }
+                    break;
                 case 'checkPosition':
                     if (params.length === 3) {
                         await loadContractInfoFromRegistry();
@@ -138,8 +147,8 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
         }
 
         // Status:
-        await loadContractInfoFromRegistry();
-        await getCombinedGro();
+        // await loadContractInfoFromRegistry();
+        // await getCombinedGro();
         // await isContract();
 
         // Testing groStats
