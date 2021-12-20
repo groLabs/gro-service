@@ -156,6 +156,7 @@ async function getAirdropResultWithProof(
     }
     if (isExpired === 'true') {
         result.claimable = 'false';
+        result.proofs = [];
     }
     return result;
 }

@@ -14,9 +14,9 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 let depositHandlerContracts;
 let withdrawHandlerContracts;
-let avaxDAIVaultContracts;
-let avaxUSDCVaultContracts;
-let avaxUSDTVaultContracts;
+const avaxDAIVaultContracts = {};
+const avaxUSDCVaultContracts = {};
+const avaxUSDTVaultContracts = {};
 
 function getFailedEmbedMessage(account) {
     const label = shortAccount(account);
@@ -62,12 +62,12 @@ function getContracts(provider, contractName) {
     return contracts;
 }
 
-function getDistContracts(accountHandlerHisty, systemHandlerHistroy) {
+function getDistContracts(accountHandlerHistroy, systemHandlerHistroy) {
     let contracts = {};
-    if (accountHandlerHisty) {
-        for (let i = 0; i < accountHandlerHisty.length; i += 1) {
-            contracts[accountHandlerHisty[i]] =
-                systemHandlerHistroy[accountHandlerHisty[i]];
+    if (accountHandlerHistroy) {
+        for (let i = 0; i < accountHandlerHistroy.length; i += 1) {
+            contracts[accountHandlerHistroy[i]] =
+                systemHandlerHistroy[accountHandlerHistroy[i]];
         }
     } else {
         contracts = systemHandlerHistroy;
@@ -104,44 +104,44 @@ function getWithdrawHandlerContracts(provider, accountOwnHistory) {
     return withdrawHandlers;
 }
 
-function getAVAXDAIVaultContracts(provider, accountOwnHistory) {
-    if (!avaxDAIVaultContracts) {
-        avaxDAIVaultContracts = getContracts(
+function getAVAXDAIVaultContracts(provider, vaultType, accountOwnHistory) {
+    if (!avaxDAIVaultContracts[vaultType]) {
+        avaxDAIVaultContracts[vaultType] = getContracts(
             provider,
-            ContractNames.AVAXDAIVault
+            ContractNames[vaultType]
         );
     }
     const AVAXDAIVaults = getDistContracts(
         accountOwnHistory,
-        avaxDAIVaultContracts
+        avaxDAIVaultContracts[vaultType]
     );
     return AVAXDAIVaults;
 }
 
-function getAVAXUSDCVaultContracts(provider, accountOwnHistory) {
-    if (!avaxUSDCVaultContracts) {
-        avaxUSDCVaultContracts = getContracts(
+function getAVAXUSDCVaultContracts(provider, vaultType, accountOwnHistory) {
+    if (!avaxDAIVaultContracts[vaultType]) {
+        avaxDAIVaultContracts[vaultType] = getContracts(
             provider,
-            ContractNames.AVAXUSDCVault
+            ContractNames[vaultType]
         );
     }
     const AVAXUSDCVaults = getDistContracts(
         accountOwnHistory,
-        avaxUSDCVaultContracts
+        avaxDAIVaultContracts[vaultType]
     );
     return AVAXUSDCVaults;
 }
 
-function getAVAXUSDTVaultContracts(provider, accountOwnHistory) {
-    if (!avaxUSDTVaultContracts) {
-        avaxUSDTVaultContracts = getContracts(
+function getAVAXUSDTVaultContracts(provider, vaultType, accountOwnHistory) {
+    if (!avaxDAIVaultContracts[vaultType]) {
+        avaxDAIVaultContracts[vaultType] = getContracts(
             provider,
-            ContractNames.AVAXUSDTVault
+            ContractNames[vaultType]
         );
     }
     const AVAXUSDTVaults = getDistContracts(
         accountOwnHistory,
-        avaxUSDTVaultContracts
+        avaxDAIVaultContracts[vaultType]
     );
     return AVAXUSDTVaults;
 }
@@ -222,13 +222,46 @@ async function getHandlerEvents(
             );
             break;
         case ContractNames.AVAXDAIVault:
-            contracts = getAVAXDAIVaultContracts(provider, accountOwnHistory);
+            contracts = getAVAXDAIVaultContracts(
+                provider,
+                'AVAXDAIVault',
+                accountOwnHistory
+            );
             break;
         case ContractNames.AVAXUSDCVault:
-            contracts = getAVAXUSDCVaultContracts(provider, accountOwnHistory);
+            contracts = getAVAXUSDCVaultContracts(
+                provider,
+                'AVAXUSDCVault',
+                accountOwnHistory
+            );
             break;
         case ContractNames.AVAXUSDTVault:
-            contracts = getAVAXUSDTVaultContracts(provider, accountOwnHistory);
+            contracts = getAVAXUSDTVaultContracts(
+                provider,
+                'AVAXUSDTVault',
+                accountOwnHistory
+            );
+            break;
+        case ContractNames.AVAXDAIVault_v1_5:
+            contracts = getAVAXDAIVaultContracts(
+                provider,
+                'AVAXDAIVault_v1_5',
+                accountOwnHistory
+            );
+            break;
+        case ContractNames.AVAXUSDCVault_v1_5:
+            contracts = getAVAXUSDCVaultContracts(
+                provider,
+                'AVAXUSDCVault_v1_5',
+                accountOwnHistory
+            );
+            break;
+        case ContractNames.AVAXUSDTVault_v1_5:
+            contracts = getAVAXUSDTVaultContracts(
+                provider,
+                'AVAXUSDTVault_v1_5',
+                accountOwnHistory
+            );
             break;
         default:
             logger.info(`Can't find handler for ${contractName}`);

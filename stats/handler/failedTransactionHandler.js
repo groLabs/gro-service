@@ -1,7 +1,10 @@
 const axios = require('axios');
 const logger = require('../statsLogger');
 const { getConfig } = require('../../dist/common/configUtil');
-const { getContractsHistory } = require('../../dist/registry/registryLoader');
+const {
+    getContractsHistory,
+    getLatestContractsAddress,
+} = require('../../dist/registry/registryLoader');
 const { ContractNames } = require('../../dist/registry/registry');
 
 const apiKey = getConfig('etherscan_api_key');
@@ -61,31 +64,22 @@ function getDistAddresses() {
 }
 
 function getDistAddressesOnAVAX() {
-    const daiVaultAddresses = [];
-    const usdcVaultAddresses = [];
-    const usdtVaultAddresses = [];
+    const latestContracts = getLatestContractsAddress();
 
-    const contractsHistory = getContractsHistory();
-
-    const daiVaultHistory = contractsHistory[ContractNames.AVAXDAIVault];
-    for (let i = 0; i < daiVaultHistory.length; i += 1) {
-        daiVaultAddresses.push(daiVaultHistory[i].address.toLowerCase());
-    }
-
-    const usdcVaultHistory = contractsHistory[ContractNames.AVAXUSDCVault];
-    for (let i = 0; i < usdcVaultHistory.length; i += 1) {
-        usdcVaultAddresses.push(usdcVaultHistory[i].address.toLowerCase());
-    }
-
-    const usdtVaultHistory = contractsHistory[ContractNames.AVAXUSDTVault];
-    for (let i = 0; i < usdtVaultHistory.length; i += 1) {
-        usdtVaultAddresses.push(usdtVaultHistory[i].address.toLowerCase());
-    }
+    const daiVault = latestContracts[ContractNames.AVAXDAIVault];
+    const usdcVault = latestContracts[ContractNames.AVAXUSDCVault];
+    const usdtVault = latestContracts[ContractNames.AVAXUSDTVault];
+    const daiVault_v1_5 = latestContracts[ContractNames.AVAXDAIVault_v1_5];
+    const usdcVault_v1_5 = latestContracts[ContractNames.AVAXUSDCVault_v1_5];
+    const usdtVault_v1_5 = latestContracts[ContractNames.AVAXUSDTVault_v1_5];
 
     return {
-        daiVaultAddresses,
-        usdcVaultAddresses,
-        usdtVaultAddresses,
+        daiVaultAddresses: daiVault.address.toLowerCase(),
+        usdcVaultAddresses: usdcVault.address.toLowerCase(),
+        usdtVaultAddresses: usdtVault.address.toLowerCase(),
+        daiVaultAddresses_v1_5: daiVault_v1_5.address.toLowerCase(),
+        usdcVaultAddresses_v1_5: usdcVault_v1_5.address.toLowerCase(),
+        usdtVaultAddresses_v1_5: usdtVault_v1_5.address.toLowerCase(),
     };
 }
 
@@ -144,8 +138,14 @@ async function getAccountFailTransactions(accountAddress) {
 
 async function getAccountFailTransactionsOnAVAX(accountAddress) {
     const transactions = await getTransactionsByAccount(accountAddress, 'AVAX');
-    const { daiVaultAddresses, usdcVaultAddresses, usdtVaultAddresses } =
-        getDistAddressesOnAVAX();
+    const {
+        daiVaultAddresses,
+        usdcVaultAddresses,
+        usdtVaultAddresses,
+        daiVaultAddresses_v1_5,
+        usdcVaultAddresses_v1_5,
+        usdtVaultAddresses_v1_5,
+    } = getDistAddressesOnAVAX();
     const failedTransactions = [];
     for (let i = 0; i < transactions.length; i += 1) {
         const { to, isError } = transactions[i];
@@ -158,6 +158,15 @@ async function getAccountFailTransactionsOnAVAX(accountAddress) {
                 failedTransactions.push(transactions[i]);
             } else if (usdtVaultAddresses.includes(to)) {
                 transactions[i].contractName = 'USDTVaultMK2';
+                failedTransactions.push(transactions[i]);
+            } else if (daiVaultAddresses_v1_5.includes(to)) {
+                transactions[i].contractName = 'DAIVaultMK2_v1_5';
+                failedTransactions.push(transactions[i]);
+            } else if (usdcVaultAddresses_v1_5.includes(to)) {
+                transactions[i].contractName = 'USDCVaultMK2_v1_5';
+                failedTransactions.push(transactions[i]);
+            } else if (usdtVaultAddresses_v1_5.includes(to)) {
+                transactions[i].contractName = 'USDTVaultMK2_v1_5';
                 failedTransactions.push(transactions[i]);
             }
         }

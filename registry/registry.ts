@@ -60,6 +60,9 @@ const ContractNames = {
     AVAXDAIVault: 'AVAXDAIVault',
     AVAXUSDCVault: 'AVAXUSDCVault',
     AVAXUSDTVault: 'AVAXUSDTVault',
+    AVAXDAIVault_v1_5: 'AVAXDAIVault_v1_5',
+    AVAXUSDCVault_v1_5: 'AVAXUSDCVault_v1_5',
+    AVAXUSDTVault_v1_5: 'AVAXUSDTVault_v1_5',
     AVAXDAIStrategy: 'AVAXDAIStrategy',
     AVAXUSDCStrategy: 'AVAXUSDCStrategy',
     AVAXUSDTStrategy: 'AVAXUSDTStrategy',
@@ -102,6 +105,9 @@ ContractABIMapping[ContractNames.VotingAggregator] = 'VoteAggregator';
 ContractABIMapping[ContractNames.AVAXDAIVault] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXUSDCVault] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXUSDTVault] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXDAIVault_v1_5] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXUSDCVault_v1_5] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXUSDTVault_v1_5] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXDAIStrategy] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDCStrategy] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDTStrategy] = 'AHv2Farmer';
