@@ -1,16 +1,26 @@
 import { ethers } from 'ethers';
-import { getProvider, getProviderKey } from './globalUtil';
-import { ContractNames } from '../../registry/registry';
-import  { newSystemLatestContracts } from '../../registry/contracts'
 import erc20ABI from '../../abi/ERC20.json';
-
+import {
+    getProvider,
+    getProviderKey,
+    getProviderAvax,
+} from './globalUtil';
+import {
+    ContractNames,
+    ContractABIMapping,
+} from '../../registry/registry';
+import { newSystemLatestContracts } from '../../registry/contracts';
+import { getLatestContractsAddress } from '../../registry/registryLoader';
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
+
 
 const stableCoins = [];
 const stableCoinsInfo: any = {};
 const latestSystemContracts = {};
+const latestContractsOnAVAX = {};
 
+// TODO : this is copied from stats/common/contractStorage. Move to global common?
 function getLatestSystemContract(contractName, providerKey) {
     providerKey = providerKey || 'stats_gro';
     if (!latestSystemContracts[providerKey]) {
@@ -18,6 +28,36 @@ function getLatestSystemContract(contractName, providerKey) {
             newSystemLatestContracts(providerKey);
     }
     return latestSystemContracts[providerKey][contractName];
+}
+
+// TODO : this is copied from stats/common/contractStorage. Move to global common?
+function newContract(contractName, contractInfo, providerOrWallet) {
+    const contractAddress = contractInfo.address;
+    let contract;
+    if (contractAddress === '0x0000000000000000000000000000000000000000') {
+        logger.error(`Not find address for contract: ${contractName}`);
+        return contract;
+    }
+    const abiVersion = contractInfo.abiVersion.replace(/\./g, '-');
+    const contractABIFileName = ContractABIMapping[contractName];
+    // eslint-disable-next-line global-require
+    const abi = require(`../../abi/${abiVersion}/${contractABIFileName}.json`);
+    contract = new ethers.Contract(contractAddress, abi, providerOrWallet);
+    logger.info(`Created new ${contractName} contract.`);
+    return { contract, contractInfo };
+}
+
+// TODO : this is copied from stats/common/contractStorage. Move to global common?
+function getLatestSystemContractOnAVAX(contractName, providerOrWallet) {
+    if (!latestContractsOnAVAX[contractName]) {
+        const contractInfo = getLatestContractsAddress()[contractName];
+        latestContractsOnAVAX[contractName] = newContract(
+            contractName,
+            contractInfo,
+            providerOrWallet
+        );
+    }
+    return latestContractsOnAVAX[contractName];
 }
 
 const getGroVault = () => {
@@ -29,11 +69,6 @@ const getPowerD = () => {
     return getLatestSystemContract(ContractNames.powerD, getProviderKey())
         .contract;
 }
-
-// const getGroDAO = () => {
-//     return getLatestSystemContract(ContractNames.getGroDAO, getProviderKey())
-//         .contract;
-// }
 
 const getTokenCounter = () => {
     return getLatestSystemContract(ContractNames.TokenCounter, getProviderKey())
@@ -94,12 +129,28 @@ const getStableCoinsInfo = async () => {
     return stableCoinsInfo;
 }
 
+const getUSDCeVault = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault, getProviderAvax())
+        .contract;
+}
+
+const getUSDTeVault = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault, getProviderAvax())
+        .contract;
+}
+
+const getDAIeVault = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault, getProviderAvax())
+        .contract;
+}
 
 export {
     getGroVault,
     getPowerD,
-    // getGroDAO,
     getBuoy,
     getStables,
     getTokenCounter,
+    getUSDCeVault,
+    getUSDTeVault,
+    getDAIeVault,
 };

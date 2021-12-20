@@ -141,11 +141,9 @@ const parseTransferEvents = async (
             const gvt_amount =
                 (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL) && isGVT
                     ? 1 // calculated afterwards for Transfer.DEPOSIT & Transfer.WITHDRAWAL in tx
-                    : (side === Transfer.TRANSFER_GVT_IN ||
-                        side === Transfer.EXTERNAL_GVT_CONTRACT_DEPOSIT)
+                    : side === Transfer.TRANSFER_GVT_IN
                         ? parseAmount(log.args[2], 'USD') // Transfer.value
-                        : (side === Transfer.TRANSFER_GVT_OUT ||
-                            side === Transfer.EXTERNAL_GVT_CONTRACT_WITHDRAWAL)
+                        : side === Transfer.TRANSFER_GVT_OUT
                             ? -parseAmount(log.args[2], 'USD') // Transfer.value
                             : 0;
 
@@ -154,47 +152,60 @@ const parseTransferEvents = async (
                     ? 1 // calculated afterwards for Transfer.DEPOSIT & Transfer.WITHDRAWAL in tx
                     : side === Transfer.TRANSFER_PWRD_IN
                         ? parseAmount(log.args[2], 'USD') // Transfer.value
-                        : (side === Transfer.TRANSFER_PWRD_OUT ||
-                            side === Transfer.EXTERNAL_PWRD_CONTRACT_WITHDRAWAL)
+                        : side === Transfer.TRANSFER_PWRD_OUT
                             ? -parseAmount(log.args[2], 'USD') // Transfer.value
                             : 0;
 
             const userAddress = isDepositOrWithdrawal(side)
-                // (side === Transfer.DEPOSIT
-                //     || side === Transfer.WITHDRAWAL
-                //     || side === Transfer.DEPOSIT_groUSDCe
-                //     || side === Transfer.WITHDRAWAL_groUSDCe)
-                    ? log.args[0] // LogNewDeposit.user, LogNewWithdrawal.user, LogDeposit.from, LogWithdrawal.from
-                    // : (side === Transfer.TRANSFER_GVT_OUT
-                    //     || side === Transfer.TRANSFER_PWRD_OUT
-                    //     || side === Transfer.TRANSFER_GRO_OUT)
-                    : isOutflow(side)
-                        ? log.args[0] // Transfer.from
-                        : log.args[1]; // Transfer.to
+                ? log.args[0] // LogNewDeposit.user, LogNewWithdrawal.user, LogDeposit.from, LogWithdrawal.from
+                : isOutflow(side)
+                    ? log.args[0] // Transfer.from
+                    : log.args[1]; // Transfer.to
 
             const referralAddress =
                 side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
                     ? log.args[1]
                     : '0x0000000000000000000000000000000000000000';
 
+            //TODO: falta minting i burning
+            //TODO: shouldn't the price be calculated also at the transaction time (like gvt or pwrd?)
             const gro_amount =
                 side === Transfer.TRANSFER_GRO_IN
                     ? parseAmount(log.args[2], 'USD') // Transfer.value
-                    : (side === Transfer.TRANSFER_GRO_OUT)
+                    : side === Transfer.TRANSFER_GRO_OUT
                         ? -parseAmount(log.args[2], 'USD') // Transfer.value
                         : 0;
 
-            //TODO
-            const usdc_e_amount = 0;
-            //TODO
-            const usdt_e_amount = 0;
-            //TODO
-            const dai_e_amount = 0;
+            const usdc_e_amount =
+                side === Transfer.DEPOSIT_USDCe
+                    || side === Transfer.TRANSFER_USDCe_IN
+                    ? parseAmount(log.args[2], 'USDC') // LogDeposit.shares, Transfer.value
+                    : side === Transfer.WITHDRAWAL_USDCe
+                        || side === Transfer.TRANSFER_USDCe_OUT
+                        ? -parseAmount(log.args[2], 'USDC') // LogWithdrawal.shares, Transfer.value
+                        : 0;
+
+            const usdt_e_amount =
+                side === Transfer.DEPOSIT_USDTe
+                    || side === Transfer.TRANSFER_USDTe_IN
+                    ? parseAmount(log.args[2], 'USDT') // LogDeposit.shares, Transfer.value
+                    : side === Transfer.WITHDRAWAL_USDTe
+                        || side === Transfer.TRANSFER_USDTe_OUT
+                        ? -parseAmount(log.args[2], 'USDT') // LogWithdrawal.shares, Transfer.value
+                        : 0;
+
+            const dai_e_amount =
+                side === Transfer.DEPOSIT_DAIe
+                    || side === Transfer.TRANSFER_DAIe_IN
+                    ? parseAmount(log.args[2], 'DAI') // LogDeposit.shares, Transfer.value
+                    : side === Transfer.WITHDRAWAL_DAIe
+                        || side === Transfer.TRANSFER_DAIe_OUT
+                        ? -parseAmount(log.args[2], 'DAI') // LogWithdrawal.shares, Transfer.value
+                        : 0;
 
             result.push({
                 block_number: log.blockNumber,
                 tx_hash: log.transactionHash,
-                // network_id: getNetworkId(),
                 network_id: getNetworkId2(network),
                 transfer_type: transferType(side),
                 user_address: userAddress,

@@ -406,17 +406,12 @@ const getTransferEvents2 = async (
                 return false;
         }
 
-        const isAvax = (side >= 9 && side <= 20)
+        const isAvax = (side >= 20 && side <= 31)
             ? true
             : false;
 
         let filters;
         if (isDepositOrWithdrawal(side)) {
-        // if (side === Transfer.DEPOSIT || side === Transfer.WITHDRAWAL
-        //     || side === Transfer.DEPOSIT_USDCe || side === Transfer.WITHDRAWAL_USDCe
-        //     || side === Transfer.DEPOSIT_USDTe || side === Transfer.WITHDRAWAL_USDTe
-        //     || side === Transfer.DEPOSIT_DAIe || side === Transfer.WITHDRAWAL_DAIe
-        // ) {
             // returns an array
             filters = getContractHistoryEventFilters(
                 'default',
@@ -495,6 +490,7 @@ const getTransferEvents2 = async (
     }
 };
 
+//TODO: rename by getAmountFromTx?
 const getGTokenFromTx = async (result, side, account) => {
     try {
         const numTx = result.length;
@@ -524,7 +520,7 @@ const getGTokenFromTx = async (result, side, account) => {
                         ? 1     // from is 0x0
                         : 2;    // to is 0x0
 
-                    // Only when a token is minted (from: 0x)
+                    // Only when a token is minted (from: 0x) or burnt (to: 0x)
                     if (log.topics[index] === ZERO_ADDRESS) {
                         const data = log.data;
                         const topics = log.topics;

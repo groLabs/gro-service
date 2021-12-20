@@ -12,9 +12,14 @@ import {
 } from '../common/personalUtil';
 import { parseTransferEvents } from '../parser/personalStatsParser';
 import { parseAmount } from '../parser/personalStatsParser';
-import { getGroVault } from '../common/contractUtil';
+import {
+    getGroVault,
+    getUSDCeVault,
+    getUSDTeVault,
+    getDAIeVault,
+} from '../common/contractUtil';
 import { QUERY_ERROR } from '../constants';
-import { 
+import {
     GlobalNetwork,
     Transfer,
 } from '../types';
@@ -109,11 +114,35 @@ const loadTmpUserTransfers = async (
                 } else if (
                     side === Transfer.TRANSFER_GVT_OUT ||
                     side === Transfer.TRANSFER_GVT_IN) {
-                    // Calc the GVT price for contract transfers
+                    // Calc the GVT price for direct transfers
                     for (const item of result) {
                         const priceGVT = parseAmount(await getGroVault().getPricePerShare({ blockTag: item.block_number }), 'USD');
                         item.usd_value = item.gvt_amount * priceGVT;
                         item.gvt_value = item.usd_value;
+                    }
+                } else if (
+                    side === Transfer.TRANSFER_USDCe_IN
+                    || side === Transfer.TRANSFER_USDCe_OUT) {
+                    // Calc the USDCe price for direct transfers
+                    for (const item of result) {
+                        const priceUSDCe = parseAmount(await getUSDCeVault().getPricePerShare({ blockTag: item.block_number }), 'USDC');
+                        item.usd_value = item.usdc_e_amount * priceUSDCe;
+                    }
+                } else if (
+                    side === Transfer.TRANSFER_USDTe_IN
+                    || side === Transfer.TRANSFER_USDTe_OUT) {
+                    // Calc the USDTe price for direct transfers
+                    for (const item of result) {
+                        const priceUSDTe = parseAmount(await getUSDTeVault().getPricePerShare({ blockTag: item.block_number }), 'USDT');
+                        item.usd_value = item.usdt_e_amount * priceUSDTe;
+                    }
+                } else if (
+                    side === Transfer.TRANSFER_DAIe_IN
+                    || side === Transfer.TRANSFER_DAIe_OUT) {
+                    // Calc the DAIe price for direct transfers
+                    for (const item of result) {
+                        const priceDAIe = parseAmount(await getDAIeVault().getPricePerShare({ blockTag: item.block_number }), 'DAI');
+                        item.usd_value = item.dai_e_amount * priceDAIe;
                     }
                 }
 
