@@ -268,6 +268,15 @@ async function getAccountAllowance(account, provider) {
             result[`groUSDC.e_vault${vaultsVersion.dai}`].base_allowance,
             result[`groUSDT.e_vault${vaultsVersion.dai}`].base_allowance,
         ] = baseAllowance;
+        result[
+            `groDAI.e_vault${vaultsVersion.dai}`
+        ].base_allowance_claimed = `${userClaimed[0]}`;
+        result[
+            `groUSDC.e_vault${vaultsVersion.dai}`
+        ].base_allowance_claimed = `${userClaimed[1]}`;
+        result[
+            `groUSDT.e_vault${vaultsVersion.dai}`
+        ].base_allowance_claimed = `${userClaimed[2]}`;
 
         const latestAllowanceFileIndex = groGateFiles.length;
         if (latestAllowanceFileIndex < 1) {
