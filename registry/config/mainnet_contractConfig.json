@@ -30,6 +30,7 @@
         "BalancerWeightedPool",
         "TokenCounter",
         "GroDAOVesting",
+        "GroVesting",
         "GroDAOToken",
         "VotingAggregator",
         "AVAXDAIVault",
@@ -449,6 +450,18 @@
             "address": "0x63d96236fD0e1c395D3E464a38F46B1adca247DE",
             "deployedBlock": 13405944,
             "startBlock": 13405944,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        },
+        "GroVesting": {
+            "address": "0xA28693bf01Dc261887b238646Bb9636cB3a3730B",
+            "deployedBlock": 13405101,
+            "startBlock": 13405101,
             "abiVersion": "fa8e260",
             "tag": "Vesting",
             "tokens": [],
@@ -1740,6 +1753,21 @@
                 "address": "0x63d96236fD0e1c395D3E464a38F46B1adca247DE",
                 "deployedBlock": 13405944,
                 "startBlock": 13405944,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "GroVesting": [
+            {
+                "address": "0xA28693bf01Dc261887b238646Bb9636cB3a3730B",
+                "deployedBlock": 13405101,
+                "startBlock": 13405101,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Vesting",
