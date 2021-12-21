@@ -55,6 +55,7 @@ const ContractNames = {
     BalancerWeightedPool: 'BalancerWeightedPool',
     TokenCounter: 'TokenCounter',
     GroDAOVesting: 'GroDAOVesting',
+    GroVesting: 'GroVesting',
     GroDAOToken: 'GroDAOToken',
     VotingAggregator: 'VotingAggregator',
     AVAXDAIVault: 'AVAXDAIVault',
@@ -100,6 +101,7 @@ ContractABIMapping[ContractNames.CRVPrimary] = 'BaseStrategy';
 ContractABIMapping[ContractNames.BalancerWeightedPool] = 'BalancerWeightedPool';
 ContractABIMapping[ContractNames.TokenCounter] = 'TokenCounter';
 ContractABIMapping[ContractNames.GroDAOVesting] = 'GroDAOVesting';
+ContractABIMapping[ContractNames.GroVesting] = 'GroVesting';
 ContractABIMapping[ContractNames.GroDAOToken] = 'GroDAOToken';
 ContractABIMapping[ContractNames.VotingAggregator] = 'VoteAggregator';
 ContractABIMapping[ContractNames.AVAXDAIVault] = 'VaultAdaptorMK2';
