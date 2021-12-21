@@ -240,6 +240,14 @@ const loadTransfers = async (
                 // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_USDCe, null),
                 // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDCe_IN, null),
                 // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDCe_OUT, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_USDTe, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_USDTe, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDTe_IN, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDTe_OUT, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_DAIe, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_DAIe, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_DAIe_IN, null),
+                // loadTmpUserTransfers(GlobalNetwork.AVALANCHE, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_DAIe_OUT, null),
             ]);
 
             if (res.every(Boolean)) {
