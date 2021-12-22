@@ -12,9 +12,7 @@ import { ZERO_ADDRESS, handleError, getHandlerEvents, getContracts, getTransferH
 
 const logger = require('../statsLogger');
 
-const rpcURL =
-    getConfig('blockchain.avalanche_rpc_url', false) ||
-    'https://api.avax.network/ext/bc/C/rpc';
+const rpcURL = 'https://api.avax.network/ext/bc/C/rpc';
 
 const provider = new ethers.providers.JsonRpcProvider(rpcURL);
 

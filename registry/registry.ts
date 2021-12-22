@@ -15,7 +15,13 @@ const configFileFolder = `${__dirname}/config`;
 const registryAddress = getConfig('registry_address', false) as
     | string
     | undefined;
-const provider = getAlchemyRpcProvider();
+
+const rpcURL =
+    getConfig('blockchain.avalanche_rpc_url', false) ||
+    'https://api.avax.network/ext/bc/C/rpc';
+
+const provider = new ethers.providers.JsonRpcProvider(rpcURL);
+const ethererumProvider = getAlchemyRpcProvider();
 
 let registry;
 if (registryAddress) {
@@ -221,7 +227,11 @@ async function parseTokenExposure(tokens) {
             });
         let tokenSymbol = '';
         if (tokenAddress) {
-            const token = new ethers.Contract(tokenAddress, erc20ABI, provider);
+            const token = new ethers.Contract(
+                tokenAddress,
+                erc20ABI,
+                ethererumProvider
+            );
             // eslint-disable-next-line no-await-in-loop
             tokenSymbol = await token.symbol().catch((error) => {
                 logger.error(error);
