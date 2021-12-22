@@ -41,6 +41,7 @@ enum Load {
     TRANSFERS = 2,
 };
 
+// For deposit, withdrawal & transfer events
 enum Transfer {
     // Ethereum
     DEPOSIT = 1,
@@ -72,6 +73,16 @@ enum Bool {
     TRUE = 1,
 }
 
+// For multicall
+enum ReturnType {
+    UINT = 0,
+    BOOL = 1,
+    ADDRESS = 2,
+    UINT_UINT = 3,
+    arrUINT_arrUINT_arrUINT = 4,
+    arrUINT_arrUINT_arrarrUINT = 5,
+}
+
 export {
     GlobalNetwork,
     Network,
@@ -81,4 +92,5 @@ export {
     Load,
     Transfer,
     Bool,
+    ReturnType,
 }

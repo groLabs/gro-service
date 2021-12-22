@@ -1,5 +1,5 @@
 import { query } from '../handler/queryHandler';
-import { apiCaller } from '../common/apiCaller';
+import { apiCaller } from '../caller/apiCaller';
 import { getConfig } from '../../common/configUtil';
 import moment from 'moment';
 import { loadAllTables } from '../loader/loadPriceCheck';

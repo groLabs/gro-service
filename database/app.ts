@@ -11,12 +11,14 @@ import { getHistoricalAPY } from './handler/historicalAPY';
 import { loadUserBalances } from './loader/loadUserBalances';
 import { loadTokenPrice } from './loader/loadTokenPrice';
 import { dumpTable } from './common/pgUtil';
+import { runTest } from './caller/multiCaller';
 import {
     status,
     isContract,
     groAirdropHolders,
 } from './common/statusUtil';
 import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/airdrop4handler';
+
 
 
 (async () => {
@@ -150,6 +152,9 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
         // await loadContractInfoFromRegistry();
         // await getCombinedGro();
         // await isContract();
+
+        // Multicall
+        await runTest();
 
         // Testing groStats
         // await etlGroStats();

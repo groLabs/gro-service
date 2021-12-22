@@ -1,5 +1,5 @@
 import { query } from '../handler/queryHandler'; // if removed, discord error event it's not used
-import { apiCaller } from '../common/apiCaller';
+import { apiCaller } from '../caller/apiCaller';
 import { getConfig } from '../../common/configUtil';
 import { loadAllTables, loadAPY } from '../loader/loadGroStatsMC';
 import { checkLastTimestamp } from '../common/protocolUtil';

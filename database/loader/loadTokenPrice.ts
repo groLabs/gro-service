@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { findBlockByDate } from '../common/globalUtil';
-import { apiCaller } from '../common/apiCaller';
+import { apiCaller } from '../caller/apiCaller';
 import { query } from '../handler/queryHandler';
 import { loadTableUpdates } from './loadTableUpdates';
 import { getNetworkId, generateDateRange } from '../common/personalUtil';
