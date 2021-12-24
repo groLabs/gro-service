@@ -2,10 +2,7 @@ const BN = require('bignumber.js');
 const { ethers, BigNumber } = require('ethers');
 const logger = require('../statsLogger');
 const { getFilterEvents } = require('../../dist/common/logFilter-new');
-const {
-    getAlchemyRpcProvider,
-    getTimestampByBlockNumber,
-} = require('../../dist/common/chainUtil');
+const { getAlchemyRpcProvider } = require('../../dist/common/chainUtil');
 const {
     ContractCallError,
     ParameterError,
@@ -38,6 +35,7 @@ const { getAllAirdropResults } = require('./airdropService');
 const erc20ABI = require('../../abi/ERC20.json');
 
 const fromBlock = getConfig('blockchain.start_block');
+const fromTimestamp = getConfig('blockchain.start_timestamp');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
 
@@ -809,40 +807,13 @@ async function getCombinedGROBalance(account) {
 }
 
 async function ethereumPersonalStats(account) {
-    const latestBlock = await provider.getBlock();
-    const promises = [];
-    account = account.toLowerCase();
-    promises.push(getTransactionHistories(account));
-    promises.push(getLatestPowerD().getAssets(account));
-    promises.push(getLatestGroVault().getAssets(account));
-    const results = await Promise.all(promises);
-    const data = results[0];
-    const pwrdBalance = new BN(results[1].toString());
-    const gvtBalance = new BN(results[2].toString());
-
-    // logger.info(`${account} historical: ${JSON.stringify(data)}`);
-    const { groVault, powerD, approval } = data;
-    const failTransactions = await getAccountFailTransactions(account);
-    const transactions = await getTransactions(groVault, powerD, provider);
-    const transaction = await getTransaction(
-        transactions,
-        approval,
-        failTransactions,
-        provider
-    );
-    const launchTime = await getTimestampByBlockNumber(fromBlock, provider);
-    const airdrops = await getAllAirdropResults(account, latestBlock.number);
-    // airdrops.push(await getFirstAirdropResult(account));
-    // airdrops.push(await getSecondAirdropResult(account));
-    // airdrops.push(await getThirdAirdropResult(account));
-    // const pools = await getPoolTransactions(account, latestBlock.number);
-    // transaction.pools = pools;
-    const combinedGROBalance = await getCombinedGROBalance(account);
     const result = {
-        airdrops,
-        transaction,
-        current_timestamp: latestBlock.timestamp.toString(),
-        launch_timestamp: launchTime,
+        status: 'error',
+        network_id: 'NA',
+        airdrops: [],
+        transaction: {},
+        current_timestamp: '0',
+        launch_timestamp: fromTimestamp,
         network: process.env.NODE_ENV,
         amount_added: {},
         amount_removed: {},
@@ -851,136 +822,180 @@ async function ethereumPersonalStats(account) {
         net_returns: {},
         net_returns_ratio: {},
         address: account,
-        gro_balance_combined: combinedGROBalance,
+        gro_balance_combined: '0',
     };
+    try {
+        const network = await getNetwork();
+        result.network_id = `${network.chainId}`;
 
-    // calculate groVault deposit & withdraw
-    let groVaultDepositAmount = new BN(0);
-    let groVaultWithdrawAmount = new BN(0);
-    data.groVault.deposit.forEach((log) => {
-        groVaultDepositAmount = groVaultDepositAmount.plus(log.amount);
-    });
-    data.groVault.withdraw.forEach((log) => {
-        groVaultWithdrawAmount = groVaultWithdrawAmount.plus(log.amount);
-    });
+        const latestBlock = await provider.getBlock();
+        result.current_timestamp = latestBlock.timestamp.toString();
 
-    // calcuate powerd deposti & withdraw
-    let powerDDepositAmount = new BN(0);
-    let powerDWithdrawAmount = new BN(0);
-    data.powerD.deposit.forEach((log) => {
-        powerDDepositAmount = powerDDepositAmount.plus(log.amount);
-    });
-    data.powerD.withdraw.forEach((log) => {
-        powerDWithdrawAmount = powerDWithdrawAmount.plus(log.amount);
-    });
-    // amount_added
-    const depositAmount = powerDDepositAmount.plus(groVaultDepositAmount);
-    result.amount_added.pwrd = div(
-        powerDDepositAmount,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
-    result.amount_added.gvt = div(
-        groVaultDepositAmount,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
-    result.amount_added.total = div(
-        depositAmount,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
+        const promises = [];
+        account = account.toLowerCase();
+        promises.push(getTransactionHistories(account));
+        promises.push(getLatestPowerD().getAssets(account));
+        promises.push(getLatestGroVault().getAssets(account));
+        const results = await Promise.all(promises);
+        const data = results[0];
+        const pwrdBalance = new BN(results[1].toString());
+        const gvtBalance = new BN(results[2].toString());
 
-    // amount_removed
-    const withdrawAmount = powerDWithdrawAmount.plus(groVaultWithdrawAmount);
-    result.amount_removed.pwrd = div(
-        powerDWithdrawAmount,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
-    result.amount_removed.gvt = div(
-        groVaultWithdrawAmount,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
-    result.amount_removed.total = div(
-        withdrawAmount,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
+        // logger.info(`${account} historical: ${JSON.stringify(data)}`);
+        const { groVault, powerD, approval } = data;
+        const failTransactions = await getAccountFailTransactions(account);
+        const transactions = await getTransactions(groVault, powerD, provider);
+        const transaction = await getTransaction(
+            transactions,
+            approval,
+            failTransactions,
+            provider
+        );
 
-    // net_amount_added
-    const netPwrdAmount = powerDDepositAmount.minus(powerDWithdrawAmount);
-    const netGvtAmount = groVaultDepositAmount.minus(groVaultWithdrawAmount);
-    const netTotal = depositAmount.minus(withdrawAmount);
-    result.net_amount_added.pwrd = div(
-        netPwrdAmount,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
-    result.net_amount_added.gvt = div(
-        netGvtAmount,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
-    result.net_amount_added.total = div(
-        netTotal,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
+        result.transaction = transaction;
+        const airdrops = await getAllAirdropResults(
+            account,
+            latestBlock.number
+        );
+        result.airdrops = airdrops;
+        const combinedGROBalance = await getCombinedGROBalance(account);
+        result.gro_balance_combined = combinedGROBalance;
 
-    // current_balance
-    const totalBalance = pwrdBalance.plus(gvtBalance);
-    result.current_balance.pwrd = div(
-        pwrdBalance,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
-    result.current_balance.gvt = div(
-        gvtBalance,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
-    result.current_balance.total = div(
-        totalBalance,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
+        // calculate groVault deposit & withdraw
+        let groVaultDepositAmount = new BN(0);
+        let groVaultWithdrawAmount = new BN(0);
+        data.groVault.deposit.forEach((log) => {
+            groVaultDepositAmount = groVaultDepositAmount.plus(log.amount);
+        });
+        data.groVault.withdraw.forEach((log) => {
+            groVaultWithdrawAmount = groVaultWithdrawAmount.plus(log.amount);
+        });
 
-    // net_returns
-    const pwrdReturn = pwrdBalance.minus(netPwrdAmount);
-    const gvtReturn = gvtBalance.minus(netGvtAmount);
-    const totalReturn = pwrdReturn.plus(gvtReturn);
-    result.net_returns.pwrd = div(
-        pwrdReturn,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
-    result.net_returns.gvt = div(
-        gvtReturn,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
-    result.net_returns.total = div(
-        totalReturn,
-        CONTRACT_ASSET_DECIMAL,
-        amountDecimal
-    );
+        // calcuate powerd deposti & withdraw
+        let powerDDepositAmount = new BN(0);
+        let powerDWithdrawAmount = new BN(0);
+        data.powerD.deposit.forEach((log) => {
+            powerDDepositAmount = powerDDepositAmount.plus(log.amount);
+        });
+        data.powerD.withdraw.forEach((log) => {
+            powerDWithdrawAmount = powerDWithdrawAmount.plus(log.amount);
+        });
+        // amount_added
+        const depositAmount = powerDDepositAmount.plus(groVaultDepositAmount);
+        result.amount_added.pwrd = div(
+            powerDDepositAmount,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+        result.amount_added.gvt = div(
+            groVaultDepositAmount,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+        result.amount_added.total = div(
+            depositAmount,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
 
-    // net_returns_ratio
-    const pwrdRatio = pwrdReturn.eq(new BN(0))
-        ? new BN(0)
-        : pwrdReturn.div(netPwrdAmount);
-    const gvtRatio = gvtReturn.eq(new BN(0))
-        ? new BN(0)
-        : gvtReturn.div(netGvtAmount);
-    const totalRatio = totalReturn.eq(new BN(0))
-        ? new BN(0)
-        : totalReturn.div(netTotal);
-    result.net_returns_ratio.pwrd = pwrdRatio.toFixed(ratioDecimal);
-    result.net_returns_ratio.gvt = gvtRatio.toFixed(ratioDecimal);
-    result.net_returns_ratio.total = totalRatio.toFixed(ratioDecimal);
+        // amount_removed
+        const withdrawAmount = powerDWithdrawAmount.plus(
+            groVaultWithdrawAmount
+        );
+        result.amount_removed.pwrd = div(
+            powerDWithdrawAmount,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+        result.amount_removed.gvt = div(
+            groVaultWithdrawAmount,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+        result.amount_removed.total = div(
+            withdrawAmount,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
 
+        // net_amount_added
+        const netPwrdAmount = powerDDepositAmount.minus(powerDWithdrawAmount);
+        const netGvtAmount = groVaultDepositAmount.minus(
+            groVaultWithdrawAmount
+        );
+        const netTotal = depositAmount.minus(withdrawAmount);
+        result.net_amount_added.pwrd = div(
+            netPwrdAmount,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+        result.net_amount_added.gvt = div(
+            netGvtAmount,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+        result.net_amount_added.total = div(
+            netTotal,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+
+        // current_balance
+        const totalBalance = pwrdBalance.plus(gvtBalance);
+        result.current_balance.pwrd = div(
+            pwrdBalance,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+        result.current_balance.gvt = div(
+            gvtBalance,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+        result.current_balance.total = div(
+            totalBalance,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+
+        // net_returns
+        const pwrdReturn = pwrdBalance.minus(netPwrdAmount);
+        const gvtReturn = gvtBalance.minus(netGvtAmount);
+        const totalReturn = pwrdReturn.plus(gvtReturn);
+        result.net_returns.pwrd = div(
+            pwrdReturn,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+        result.net_returns.gvt = div(
+            gvtReturn,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+        result.net_returns.total = div(
+            totalReturn,
+            CONTRACT_ASSET_DECIMAL,
+            amountDecimal
+        );
+
+        // net_returns_ratio
+        const pwrdRatio = pwrdReturn.eq(new BN(0))
+            ? new BN(0)
+            : pwrdReturn.div(netPwrdAmount);
+        const gvtRatio = gvtReturn.eq(new BN(0))
+            ? new BN(0)
+            : gvtReturn.div(netGvtAmount);
+        const totalRatio = totalReturn.eq(new BN(0))
+            ? new BN(0)
+            : totalReturn.div(netTotal);
+        result.net_returns_ratio.pwrd = pwrdRatio.toFixed(ratioDecimal);
+        result.net_returns_ratio.gvt = gvtRatio.toFixed(ratioDecimal);
+        result.net_returns_ratio.total = totalRatio.toFixed(ratioDecimal);
+        result.status = 'ok';
+    } catch (error) {
+        logger.error(`Get personal stats for ${account} from ethereum failed.`);
+        logger.error(error);
+    }
     return result;
 }
 

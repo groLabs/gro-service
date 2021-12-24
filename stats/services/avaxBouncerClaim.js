@@ -62,6 +62,12 @@ function fulledClaimableAndAllowance(
     } else {
         orignal[type].claimable = false;
     }
+
+    const distBaseAllowance = BigNumber.from(baseAllowance).sub(
+        BigNumber.from(5000)
+    );
+    orignal[type].base_allowance = distBaseAllowance.toString();
+    orignal[type].base_allowance_claimed = claimed.toString();
     return allowance;
 }
 
@@ -300,13 +306,13 @@ async function getAccountAllowance(account, provider) {
                 }
                 if (amount) {
                     result[
-                        `groDAI.e_vault${vaultsVersion.dai}`
+                        `groDAI.e_vault${vaultsVersion.DAI}`
                     ].claimable_allowance = amount;
                     result[
-                        `groUSDC.e_vault${vaultsVersion.usdc}`
+                        `groUSDC.e_vault${vaultsVersion.USDC}`
                     ].claimable_allowance = amount;
                     result[
-                        `groUSDT.e_vault${vaultsVersion.usdt}`
+                        `groUSDT.e_vault${vaultsVersion.USDT}`
                     ].claimable_allowance = amount;
                 }
 
@@ -315,7 +321,7 @@ async function getAccountAllowance(account, provider) {
                     provider
                 );
                 const daiAllowance = fulledClaimableAndAllowance(
-                    `groDAI.e_vault${vaultsVersion.dai}`,
+                    `groDAI.e_vault${vaultsVersion.DAI}`,
                     result,
                     claimedAmounts[0],
                     amount,
@@ -324,7 +330,7 @@ async function getAccountAllowance(account, provider) {
                     userAllowance[0]
                 );
                 const usdcAllowance = fulledClaimableAndAllowance(
-                    `groUSDC.e_vault${vaultsVersion.usdc}`,
+                    `groUSDC.e_vault${vaultsVersion.USDT}`,
                     result,
                     claimedAmounts[1],
                     amount,
@@ -333,7 +339,7 @@ async function getAccountAllowance(account, provider) {
                     userAllowance[1]
                 );
                 const usdtAllowance = fulledClaimableAndAllowance(
-                    `groUSDT.e_vault${vaultsVersion.usdt}`,
+                    `groUSDT.e_vault${vaultsVersion.USDT}`,
                     result,
                     claimedAmounts[2],
                     amount,
