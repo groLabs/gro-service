@@ -42,6 +42,9 @@
         "AVAXDAIStrategy",
         "AVAXUSDCStrategy",
         "AVAXUSDTStrategy",
+        "AVAXDAIStrategy_v1_5",
+        "AVAXUSDCStrategy_v1_5",
+        "AVAXUSDTStrategy_v1_5",
         "AVAXBouncer"
     ],
     "latestContracts": {
@@ -267,7 +270,7 @@
             "protocolsDisplayName": [],
             "metaData": {
                 "N": "groDAI.e_vault_v1_5",
-                "DN": "Gro Labs DAI.e AVAX Vault",
+                "DN": "Gro Labs DAI.e AVAX Vault v1.5",
                 "DY": 117589
             },
             "active": true
@@ -283,7 +286,7 @@
             "protocolsDisplayName": [],
             "metaData": {
                 "N": "groUSDC.e_vault_v1_5",
-                "DN": "Gro Labs USDC.e AVAX Vault",
+                "DN": "Gro Labs USDC.e AVAX Vault v1.5",
                 "DY": 117589
             },
             "active": true
@@ -299,7 +302,7 @@
             "protocolsDisplayName": [],
             "metaData": {
                 "N": "groUSDT.e_vault_v1_5",
-                "DN": "Gro Labs USDT.e AVAX Vault",
+                "DN": "Gro Labs USDT.e AVAX Vault v1.5",
                 "DY": 117589
             },
             "active": true
@@ -348,6 +351,60 @@
             "metaData": {
                 "N": "ah_USDT.e_strat",
                 "DN": "USDT.e AH",
+                "DY": 117589
+            },
+            "active": true
+        },
+        "AVAXDAIStrategy_v1_5": {
+            "address": "0xE0d6EFf0F64dA98B2c0e47102d59709B24cFc76f",
+            "deployedBlock": 7727050,
+            "startBlock": 7727050,
+            "abiVersion": "c3aca46",
+            "tag": "AVAX",
+            "tokens": [
+                "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"
+            ],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_DAI.e_strat_v1_5",
+                "DN": "DAI.e AH v1.5",
+                "DY": 117589
+            },
+            "active": true
+        },
+        "AVAXUSDCStrategy_v1_5": {
+            "address": "0x45Fa601854326DE028B982Df9839a27d22f36344",
+            "deployedBlock": 7726462,
+            "startBlock": 7726462,
+            "abiVersion": "c3aca46",
+            "tag": "AVAX",
+            "tokens": [
+                "0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"
+            ],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_USDC.e_strat_v1_5",
+                "DN": "USDC.e AH v1.5",
+                "DY": 117589
+            },
+            "active": true
+        },
+        "AVAXUSDTStrategy_v1_5": {
+            "address": "0xB29380360A44a7630f404C7609114e48Fde0DDEE",
+            "deployedBlock": 7726836,
+            "startBlock": 7726836,
+            "abiVersion": "c3aca46",
+            "tag": "AVAX",
+            "tokens": [
+                "0xc7198437980c041c805A1EDcbA50c1Ce5db95118"
+            ],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_USDT.e_strat_v1_5",
+                "DN": "USDT.e AH v1.5",
                 "DY": 117589
             },
             "active": true
@@ -525,7 +582,7 @@
                 "protocolsDisplayName": [],
                 "metaData": {
                     "N": "groDAI.e_vault_v1_5",
-                    "DN": "Gro Labs DAI.e AVAX Vault",
+                    "DN": "Gro Labs DAI.e AVAX Vault v1.5",
                     "DY": 117589
                 },
                 "active": true
@@ -544,7 +601,7 @@
                 "protocolsDisplayName": [],
                 "metaData": {
                     "N": "groUSDC.e_vault_v1_5",
-                    "DN": "Gro Labs USDC.e AVAX Vault",
+                    "DN": "Gro Labs USDC.e AVAX Vault v1.5",
                     "DY": 117589
                 },
                 "active": true
@@ -563,7 +620,7 @@
                 "protocolsDisplayName": [],
                 "metaData": {
                     "N": "groUSDT.e_vault_v1_5",
-                    "DN": "Gro Labs USDT.e AVAX Vault",
+                    "DN": "Gro Labs USDT.e AVAX Vault v1.5",
                     "DY": 117589
                 },
                 "active": true
@@ -660,6 +717,66 @@
                 "metaData": {
                     "N": "ah_USDT.e_strat",
                     "DN": "USDT.e AH",
+                    "DY": 117589
+                },
+                "active": true
+            }
+        ],
+        "AVAXDAIStrategy_v1_5": [
+            {
+                "address": "0xE0d6EFf0F64dA98B2c0e47102d59709B24cFc76f",
+                "deployedBlock": 7727050,
+                "startBlock": 7727050,
+                "abiVersion": "c3aca46",
+                "tag": "AVAX",
+                "tokens": [
+                    "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"
+                ],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {
+                    "N": "ah_DAI.e_strat_v1_5",
+                    "DN": "DAI.e AH v1.5",
+                    "DY": 117589
+                },
+                "active": true
+            }
+        ],
+        "AVAXUSDCStrategy_v1_5": [
+            {
+                "address": "0x45Fa601854326DE028B982Df9839a27d22f36344",
+                "deployedBlock": 7726462,
+                "startBlock": 7726462,
+                "abiVersion": "c3aca46",
+                "tag": "AVAX",
+                "tokens": [
+                    "0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"
+                ],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {
+                    "N": "ah_USDC.e_strat_v1_5",
+                    "DN": "USDC.e AH v1.5",
+                    "DY": 117589
+                },
+                "active": true
+            }
+        ],
+        "AVAXUSDTStrategy_v1_5": [
+            {
+                "address": "0xB29380360A44a7630f404C7609114e48Fde0DDEE",
+                "deployedBlock": 7726836,
+                "startBlock": 7726836,
+                "abiVersion": "c3aca46",
+                "tag": "AVAX",
+                "tokens": [
+                    "0xc7198437980c041c805A1EDcbA50c1Ce5db95118"
+                ],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {
+                    "N": "ah_USDT.e_strat_v1_5",
+                    "DN": "USDT.e AH v1.5",
                     "DY": 117589
                 },
                 "active": true

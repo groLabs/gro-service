@@ -75,16 +75,21 @@ const DECIMALS = [
     BigNumber.from(10).pow(BigNumber.from(18)),
     BigNumber.from(10).pow(BigNumber.from(6)),
     BigNumber.from(10).pow(BigNumber.from(6)),
+    BigNumber.from(10).pow(BigNumber.from(18)),
+    BigNumber.from(10).pow(BigNumber.from(6)),
+    BigNumber.from(10).pow(BigNumber.from(6)),
 ];
-const POOLS = [DAI_POOL, USDC_POOL, USDT_POOL];
+const POOLS = [DAI_POOL, USDC_POOL, USDT_POOL, DAI_POOL, USDC_POOL, USDT_POOL];
 const MS_PER_YEAR = BigNumber.from('31536000');
-const STABLECOINS = ['DAI.e', 'USDC.e', 'USDT.e'];
+const STABLECOINS = ['DAI.e', 'USDC.e', 'USDT.e', 'DAI.e', 'USDC.e', 'USDT.e'];
 const RISK_FREE_RATE = BigNumber.from(2400);
 
 const E18 = BigNumber.from(10).pow(BigNumber.from(18));
 const BLOCKS_OF_3DAYS = 130000;
-const START_TIME_STAMP = [1638707119, 1638549778, 1638549778];
-const START_BLOCK = [7838860, 7759709, 7759709];
+const START_TIME_STAMP = [
+    1638707119, 1638549778, 1638549778, 1639664984, 1639664984, 1639664984,
+];
+const START_BLOCK = [7838860, 7759709, 7759709, 8317127, 8317127, 8317127];
 const providerKey = 'stats_gro';
 
 function getLatestAVAXContract(adapaterType) {
@@ -183,6 +188,15 @@ async function getLatestVaultAdapters() {
     vaultAdaptorPromise.push(
         getLatestAVAXContract(ContractNames.AVAXUSDTVault)
     );
+    vaultAdaptorPromise.push(
+        getLatestAVAXContract(ContractNames.AVAXDAIVault_v1_5)
+    );
+    vaultAdaptorPromise.push(
+        getLatestAVAXContract(ContractNames.AVAXUSDCVault_v1_5)
+    );
+    vaultAdaptorPromise.push(
+        getLatestAVAXContract(ContractNames.AVAXUSDTVault_v1_5)
+    );
     const vaultAdapters = await Promise.all(vaultAdaptorPromise);
     return vaultAdapters;
 }
@@ -197,6 +211,15 @@ async function getLatestStrategies() {
     );
     strategiesPromise.push(
         getLatestAVAXContract(ContractNames.AVAXUSDTStrategy)
+    );
+    strategiesPromise.push(
+        getLatestAVAXContract(ContractNames.AVAXDAIStrategy_v1_5)
+    );
+    strategiesPromise.push(
+        getLatestAVAXContract(ContractNames.AVAXUSDCStrategy_v1_5)
+    );
+    strategiesPromise.push(
+        getLatestAVAXContract(ContractNames.AVAXUSDTStrategy_v1_5)
     );
     const strategies = await Promise.all(strategiesPromise);
     return strategies;
@@ -325,7 +348,15 @@ function getTvlStats(assets) {
         'groDAI.e_vault': assets[0],
         'groUSDC.e_vault': assets[1],
         'groUSDT.e_vault': assets[2],
-        total: assets[0].add(assets[1]).add(assets[2]),
+        'groDAI.e_vault_v1_5': assets[3],
+        'groUSDC.e_vault_v1_5': assets[4],
+        'groUSDT.e_vault_v1_5': assets[5],
+        total: assets[0]
+            .add(assets[1])
+            .add(assets[2])
+            .add(assets[3])
+            .add(assets[4])
+            .add(assets[5]),
     };
     return tvl;
 }
@@ -543,6 +574,90 @@ async function calculateVaultReturn(
     return { vaultReturn, vaultReturn3Days };
 }
 
+async function calculateVaultRealizedReturn(
+    vaultAdapter,
+    vaultIndex,
+    positions
+) {
+    const startBlock = START_BLOCK[vaultIndex];
+    const startTimestamp = START_TIME_STAMP[vaultIndex];
+    const openPricePerShare = await vaultAdapter.getPricePerShare({
+        blockTag: startBlock,
+    });
+    // console.log(
+    //     `${startBlock} openTotalSupply ${startTotalSupply} openEstimated ${startEstimated}`
+    // );
+    const lastPosition = positions[positions.length - 1];
+    console.log(`lastPosition ${JSON.stringify(lastPosition)}`);
+    const closePricePerShare = await vaultAdapter.getPricePerShare({
+        blockTag: lastPosition.block,
+    });
+    console.log(
+        `vault return duration lastPosition.timestamp ${
+            lastPosition.timestamp
+        } startTimestamp ${startTimestamp} duration ${
+            lastPosition.timestamp - startTimestamp
+        } openPricePerShare ${openPricePerShare} closePricePerShare ${closePricePerShare}`
+    );
+    const diff = lastPosition.timestamp - startTimestamp;
+    const duration = BigNumber.from(diff);
+    const vaultReturn = closePricePerShare
+        .sub(openPricePerShare)
+        .mul(SHARE_DECIMAL)
+        .mul(MS_PER_YEAR)
+        .div(openPricePerShare)
+        .div(duration);
+
+    let vaultReturn3Days = vaultReturn;
+    // console.log(
+    //     `endBlock - BLOCKS_OF_3DAYS ${
+    //         endBlock - BLOCKS_OF_3DAYS
+    //     } startBlock ${startBlock}`
+    // );
+    let timestampPositionClosed3DayAgo = START_TIME_STAMP[vaultIndex];
+    let endBlockPositionClosed3DayAgo = START_BLOCK[vaultIndex];
+    const cutOffTime = lastPosition.timestamp - 3600 * 24 * 3;
+    for (let pidx = 0; pidx < positions.length; pidx += 1) {
+        const ptn = positions[pidx];
+        logger.info(
+            ` ptn ${ptn.timestamp} ${timestampPositionClosed3DayAgo} ${lastPosition.timestamp} ${cutOffTime}`
+        );
+        if (
+            ptn.timestamp > timestampPositionClosed3DayAgo &&
+            ptn.timestamp < cutOffTime
+        ) {
+            logger.info(` ptn less ${ptn.timestamp} ${cutOffTime}`);
+            endBlockPositionClosed3DayAgo = ptn.block;
+            timestampPositionClosed3DayAgo = ptn.timestamp;
+        }
+    }
+    if (endBlockPositionClosed3DayAgo > startBlock) {
+        logger.info(
+            `block.timestamp 3days ago ${endBlockPositionClosed3DayAgo}`
+        );
+        const open3DaysAgoPricePerShare = await vaultAdapter.getPricePerShare({
+            blockTag: endBlockPositionClosed3DayAgo,
+        });
+        const duration = BigNumber.from(
+            lastPosition.timestamp - timestampPositionClosed3DayAgo
+        );
+        vaultReturn3Days = closePricePerShare
+            .sub(open3DaysAgoPricePerShare)
+            .mul(SHARE_DECIMAL)
+            .mul(MS_PER_YEAR)
+            .div(openPricePerShare)
+            .div(duration);
+        logger.info(
+            `~~~~ realized 3days ${duration} ${timestampPositionClosed3DayAgo} open3DaysAgoPricePerShare ${open3DaysAgoPricePerShare}`
+        );
+    }
+
+    logger.info(
+        `realized  vaultReturn ${vaultReturn} vaultReturn3Days ${vaultReturn3Days}`
+    );
+    return { vaultReturn, vaultReturn3Days };
+}
+
 async function getAvaxSystemStats() {
     const block = await provider.getBlock();
     logger.info(`block.number ${block.number}`);
@@ -680,6 +795,7 @@ async function getAvaxSystemStats() {
         let closedPositions = [];
         const durations = [];
         const returns = [];
+        const blockOfPositionClosed = [];
         for (let i = 0; i < keys.length; i += 1) {
             const key = keys[i];
             const open = openEvents[key];
@@ -713,6 +829,10 @@ async function getAvaxSystemStats() {
                     close_amount: wantClose.mul(E18).div(DECIMALS[vaultIndex]),
                     apy: positionReturn,
                 };
+                blockOfPositionClosed.push({
+                    block: close.block,
+                    timestamp: close.timestamp,
+                });
                 positions.push(positionInfo);
                 logger.info(
                     `--- positionInfo ${key}\n open ${
@@ -794,6 +914,18 @@ async function getAvaxSystemStats() {
             } else {
                 closedPositions = positions;
             }
+        }
+        if (vaultIndex === 0) {
+            const { vaultReturn: daiVaultApy, vaultReturn3Days: daiLast3dApy } =
+                await calculateVaultRealizedReturn(
+                    vaultAdapter,
+                    vaultIndex,
+                    blockOfPositionClosed
+                );
+            labsVaultData.last3d_apy = daiLast3dApy;
+            console.log(
+                `labsVaultData.last3d_apy ${labsVaultData.last3d_apy} ${daiLast3dApy}`
+            );
         }
         labsVaultData.avax_exposure = avaxExposure;
         strategyInfo.open_position = openPosition;
