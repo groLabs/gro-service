@@ -263,6 +263,27 @@ async function getHandlerEvents(
                 accountOwnHistory
             );
             break;
+        case ContractNames.AVAXDAIVault_v1_5_1:
+            contracts = getAVAXDAIVaultContracts(
+                provider,
+                'AVAXDAIVault_v1_5_1',
+                accountOwnHistory
+            );
+            break;
+        case ContractNames.AVAXUSDCVault_v1_5_1:
+            contracts = getAVAXUSDCVaultContracts(
+                provider,
+                'AVAXUSDCVault_v1_5_1',
+                accountOwnHistory
+            );
+            break;
+        case ContractNames.AVAXUSDTVault_v1_5_1:
+            contracts = getAVAXUSDTVaultContracts(
+                provider,
+                'AVAXUSDTVault_v1_5_1',
+                accountOwnHistory
+            );
+            break;
         default:
             logger.info(`Can't find handler for ${contractName}`);
     }

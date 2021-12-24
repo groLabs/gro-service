@@ -449,6 +449,7 @@ async function singleVaultEvents(account, adpaterType, token, decimals) {
 
 async function avaxPersonalStats(account) {
     const result = {
+        status: 'error',
         launch_timestamp: launchTimestamp,
         amount_added: {},
         amount_removed: {},
@@ -463,125 +464,188 @@ async function avaxPersonalStats(account) {
     // console.log(`avax network: ${JSON.stringify(network)}`);
     result.network_id = '43114'; // getNetwork not work for avax
 
-    // deposit & withdraw & transfer & approval events
-    const vaultEventsPromise = [
-        singleVaultEvents(account, ContractNames.AVAXDAIVault, 'DAI.e', 18),
-        singleVaultEvents(account, ContractNames.AVAXUSDCVault, 'USDC.e', 6),
-        singleVaultEvents(account, ContractNames.AVAXUSDTVault, 'USDT.e', 6),
-        singleVaultEvents(
-            account,
-            ContractNames.AVAXDAIVault_v1_5,
-            'DAI.e',
-            18
-        ),
-        singleVaultEvents(
-            account,
-            ContractNames.AVAXUSDCVault_v1_5,
-            'USDC.e',
-            6
-        ),
-        singleVaultEvents(
-            account,
-            ContractNames.AVAXUSDTVault_v1_5,
-            'USDT.e',
-            6
-        ),
-    ];
-    const [
-        daiVaultEvents,
-        usdcVaultEvents,
-        usdtVaultEvents,
-        daiVaultEvents1,
-        usdcVaultEvents1,
-        usdtVaultEvents1,
-    ] = await Promise.all(vaultEventsPromise);
+    try {
+        // deposit & withdraw & transfer & approval events
+        const vaultEventsPromise = [
+            singleVaultEvents(account, ContractNames.AVAXDAIVault, 'DAI.e', 18),
+            singleVaultEvents(
+                account,
+                ContractNames.AVAXUSDCVault,
+                'USDC.e',
+                6
+            ),
+            singleVaultEvents(
+                account,
+                ContractNames.AVAXUSDTVault,
+                'USDT.e',
+                6
+            ),
+            singleVaultEvents(
+                account,
+                ContractNames.AVAXDAIVault_v1_5,
+                'DAI.e',
+                18
+            ),
+            singleVaultEvents(
+                account,
+                ContractNames.AVAXUSDCVault_v1_5,
+                'USDC.e',
+                6
+            ),
+            singleVaultEvents(
+                account,
+                ContractNames.AVAXUSDTVault_v1_5,
+                'USDT.e',
+                6
+            ),
+            singleVaultEvents(
+                account,
+                ContractNames.AVAXDAIVault_v1_5_1,
+                'DAI.e',
+                18
+            ),
+            singleVaultEvents(
+                account,
+                ContractNames.AVAXUSDCVault_v1_5_1,
+                'USDC.e',
+                6
+            ),
+            singleVaultEvents(
+                account,
+                ContractNames.AVAXUSDTVault_v1_5_1,
+                'USDT.e',
+                6
+            ),
+        ];
+        const [
+            daiVaultEvents,
+            usdcVaultEvents,
+            usdtVaultEvents,
+            daiVaultEvents1,
+            usdcVaultEvents1,
+            usdtVaultEvents1,
+            daiVaultEvents2,
+            usdcVaultEvents2,
+            usdtVaultEvents2,
+        ] = await Promise.all(vaultEventsPromise);
 
-    fullData(result, daiVaultEvents, 'groDAI.e_vault');
-    fullData(result, usdcVaultEvents, 'groUSDC.e_vault');
-    fullData(result, usdtVaultEvents, 'groUSDT.e_vault');
-    fullData(result, daiVaultEvents1, 'groDAI.e_vault_v1_5');
-    fullData(result, usdcVaultEvents1, 'groUSDC.e_vault_v1_5');
-    fullData(result, usdtVaultEvents1, 'groUSDT.e_vault_v1_5');
+        fullData(result, daiVaultEvents, 'groDAI.e_vault');
+        fullData(result, usdcVaultEvents, 'groUSDC.e_vault');
+        fullData(result, usdtVaultEvents, 'groUSDT.e_vault');
+        fullData(result, daiVaultEvents1, 'groDAI.e_vault_v1_5');
+        fullData(result, usdcVaultEvents1, 'groUSDC.e_vault_v1_5');
+        fullData(result, usdtVaultEvents1, 'groUSDT.e_vault_v1_5');
+        fullData(result, daiVaultEvents2, 'groDAI.e_vault_v1_5_1');
+        fullData(result, usdcVaultEvents2, 'groUSDC.e_vault_v1_5_1');
+        fullData(result, usdtVaultEvents2, 'groUSDT.e_vault_v1_5_1');
 
-    calculateTotal(result, [
-        'amount_added',
-        'amount_removed',
-        'net_amount_added',
-        'current_balance',
-        'net_returns',
-    ]);
+        calculateTotal(result, [
+            'amount_added',
+            'amount_removed',
+            'net_amount_added',
+            'current_balance',
+            'net_returns',
+        ]);
 
-    // deposit
-    const depositEvents = [
-        ...daiVaultEvents.depositEvents,
-        ...usdcVaultEvents.depositEvents,
-        ...usdtVaultEvents.depositEvents,
-        ...daiVaultEvents1.depositEvents,
-        ...usdcVaultEvents1.depositEvents,
-        ...usdtVaultEvents1.depositEvents,
-    ];
-    fullTransactionField(result, depositEvents, 'deposits');
+        // deposit
+        const depositEvents = [
+            ...daiVaultEvents.depositEvents,
+            ...usdcVaultEvents.depositEvents,
+            ...usdtVaultEvents.depositEvents,
+            ...daiVaultEvents1.depositEvents,
+            ...usdcVaultEvents1.depositEvents,
+            ...usdtVaultEvents1.depositEvents,
+            ...daiVaultEvents2.depositEvents,
+            ...usdcVaultEvents2.depositEvents,
+            ...usdtVaultEvents2.depositEvents,
+        ];
+        fullTransactionField(result, depositEvents, 'deposits');
 
-    // withdrawal
-    const withdrawEvents = [
-        ...daiVaultEvents.withdrawEvents,
-        ...usdcVaultEvents.withdrawEvents,
-        ...usdtVaultEvents.withdrawEvents,
-        ...daiVaultEvents1.withdrawEvents,
-        ...usdcVaultEvents1.withdrawEvents,
-        ...usdtVaultEvents1.withdrawEvents,
-    ];
-    fullTransactionField(result, withdrawEvents, 'withdrawals');
+        // withdrawal
+        const withdrawEvents = [
+            ...daiVaultEvents.withdrawEvents,
+            ...usdcVaultEvents.withdrawEvents,
+            ...usdtVaultEvents.withdrawEvents,
+            ...daiVaultEvents1.withdrawEvents,
+            ...usdcVaultEvents1.withdrawEvents,
+            ...usdtVaultEvents1.withdrawEvents,
+            ...daiVaultEvents2.withdrawEvents,
+            ...usdcVaultEvents2.withdrawEvents,
+            ...usdtVaultEvents2.withdrawEvents,
+        ];
+        fullTransactionField(result, withdrawEvents, 'withdrawals');
 
-    // transfer in & transfer out
-    const transferIn = [
-        ...daiVaultEvents.transferEvents.inLogs,
-        ...usdcVaultEvents.transferEvents.inLogs,
-        ...usdtVaultEvents.transferEvents.inLogs,
-        ...daiVaultEvents1.transferEvents.inLogs,
-        ...usdcVaultEvents1.transferEvents.inLogs,
-        ...usdtVaultEvents1.transferEvents.inLogs,
-    ];
-    const transferOut = [
-        ...daiVaultEvents.transferEvents.outLogs,
-        ...usdcVaultEvents.transferEvents.outLogs,
-        ...usdtVaultEvents.transferEvents.outLogs,
-        ...daiVaultEvents1.transferEvents.outLogs,
-        ...usdcVaultEvents1.transferEvents.outLogs,
-        ...usdtVaultEvents1.transferEvents.outLogs,
-    ];
-    fullTransactionField(result, transferIn, 'transfers_in');
-    fullTransactionField(result, transferOut, 'transfers_out');
+        // transfer in & transfer out
+        const transferIn = [
+            ...daiVaultEvents.transferEvents.inLogs,
+            ...usdcVaultEvents.transferEvents.inLogs,
+            ...usdtVaultEvents.transferEvents.inLogs,
+            ...daiVaultEvents1.transferEvents.inLogs,
+            ...usdcVaultEvents1.transferEvents.inLogs,
+            ...usdtVaultEvents1.transferEvents.inLogs,
+            ...daiVaultEvents2.transferEvents.inLogs,
+            ...usdcVaultEvents2.transferEvents.inLogs,
+            ...usdtVaultEvents2.transferEvents.inLogs,
+        ];
+        const transferOut = [
+            ...daiVaultEvents.transferEvents.outLogs,
+            ...usdcVaultEvents.transferEvents.outLogs,
+            ...usdtVaultEvents.transferEvents.outLogs,
+            ...daiVaultEvents1.transferEvents.outLogs,
+            ...usdcVaultEvents1.transferEvents.outLogs,
+            ...usdtVaultEvents1.transferEvents.outLogs,
+            ...daiVaultEvents2.transferEvents.outLogs,
+            ...usdcVaultEvents2.transferEvents.outLogs,
+            ...usdtVaultEvents2.transferEvents.outLogs,
+        ];
+        fullTransactionField(result, transferIn, 'transfers_in');
+        fullTransactionField(result, transferOut, 'transfers_out');
 
-    // approvals
-    const approvals = [
-        ...daiVaultEvents.approvalEvents,
-        ...usdcVaultEvents.approvalEvents,
-        ...usdtVaultEvents.approvalEvents,
-        ...daiVaultEvents1.approvalEvents,
-        ...usdcVaultEvents1.approvalEvents,
-        ...usdtVaultEvents1.approvalEvents,
-    ];
-    fullTransactionField(result, approvals, 'approvals');
+        // approvals
+        const approvals = [
+            ...daiVaultEvents.approvalEvents,
+            ...usdcVaultEvents.approvalEvents,
+            ...usdtVaultEvents.approvalEvents,
+            ...daiVaultEvents1.approvalEvents,
+            ...usdcVaultEvents1.approvalEvents,
+            ...usdtVaultEvents1.approvalEvents,
+            ...daiVaultEvents2.approvalEvents,
+            ...usdcVaultEvents2.approvalEvents,
+            ...usdtVaultEvents2.approvalEvents,
+        ];
+        fullTransactionField(result, approvals, 'approvals');
 
-    // Failed transactions
-    const failTransactions = await getAccountFailTransactionsOnAVAX(account);
-    const failedItems = [];
-    for (let i = 0; i < failTransactions.length; i += 1) {
-        const { contractName, hash, blockNumber, timeStamp, to } =
-            failTransactions[i];
-        failedItems.push({
-            hash,
-            contract_name: contractName,
-            contract_address: to,
-            timestamp: timeStamp,
-            block_number: blockNumber,
+        // Failed transactions
+        const failTransactions = await getAccountFailTransactionsOnAVAX(
+            account
+        ).catch((error) => {
+            logger.error(error);
+            return [];
         });
+        const failedItems = [];
+        for (let i = 0; i < failTransactions.length; i += 1) {
+            const { contractName, hash, blockNumber, timeStamp, to } =
+                failTransactions[i];
+            failedItems.push({
+                hash,
+                contract_name: contractName,
+                contract_address: to,
+                timestamp: timeStamp,
+                block_number: blockNumber,
+            });
+        }
+        result.transaction.failures = failedItems;
+        // gro gate
+        const allowance = await getAccountAllowance(account, provider);
+        result.gro_gate = allowance;
+        result.status = 'ok';
+    } catch (error) {
+        logger.error(
+            `Get personal stats for ${account} from avalanche failed.`
+        );
+        logger.error(error);
     }
-    result.transaction.failures = failedItems;
-    // gro gate
-    const allowance = await getAccountAllowance(account, provider);
-    result.gro_gate = allowance;
+
     return result;
 }
 
