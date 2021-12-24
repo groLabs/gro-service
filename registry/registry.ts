@@ -73,6 +73,9 @@ const ContractNames = {
     AVAXDAIStrategy_v1_5: 'AVAXDAIStrategy_v1_5',
     AVAXUSDCStrategy_v1_5: 'AVAXUSDCStrategy_v1_5',
     AVAXUSDTStrategy_v1_5: 'AVAXUSDTStrategy_v1_5',
+    AVAXDAIStrategy_v1_5_1: 'AVAXDAIStrategy_v1_5_1',
+    AVAXUSDCStrategy_v1_5_1: 'AVAXUSDCStrategy_v1_5_1',
+    AVAXUSDTStrategy_v1_5_1: 'AVAXUSDTStrategy_v1_5_1',
     AVAXBouncer: 'AVAXBouncer',
 };
 
@@ -128,6 +131,9 @@ ContractABIMapping[ContractNames.AVAXUSDTVault_v1_5_1] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXDAIStrategy_v1_5] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_5] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_5] = 'AHv2Farmer';
+ContractABIMapping[ContractNames.AVAXDAIStrategy_v1_5_1] = 'AHv2Farmer';
+ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_5_1] = 'AHv2Farmer';
+ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_5_1] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXBouncer] = 'Bouncer';
 
 function readLocalContractConfig(isReload = false) {
