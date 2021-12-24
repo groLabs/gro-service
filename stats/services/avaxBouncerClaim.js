@@ -17,18 +17,20 @@ const DEFAULT_GRO_STABLE = {
     claimable_allowance: '0',
     remaining_allowance: '0',
     claimable: 'false',
+    base_allowance: '0',
+    base_allowance_claimed: 'false',
 };
 
 const currentLiveVaults = {
-    DAILiveVault: ContractNames.AVAXDAIVault_v1_5,
-    USDCLiveVault: ContractNames.AVAXUSDCVault_v1_5,
-    USDTLiveVault: ContractNames.AVAXUSDTVault_v1_5,
+    DAILiveVault: ContractNames.AVAXDAIVault_v1_5_1,
+    USDCLiveVault: ContractNames.AVAXUSDCVault_v1_5_1,
+    USDTLiveVault: ContractNames.AVAXUSDTVault_v1_5_1,
 };
 
 const vaultsVersion = {
-    dai: '_v1_5',
-    usdc: '_v1_5',
-    usdt: '_v1_5',
+    DAI: '_v1_5_1',
+    USDC: '_v1_5_1',
+    USDT: '_v1_5_1',
 };
 
 const groGateFileFolder = groGateConfig.folder;
@@ -53,7 +55,8 @@ function fulledClaimableAndAllowance(
     if (claimed) {
         allowance = remainAmount;
     }
-    orignal[type].remaining_allowance = allowance;
+    allowance = BigNumber.from(allowance).sub(BigNumber.from(5000));
+    orignal[type].remaining_allowance = allowance.toString();
     if (BigNumber.from(claimableAmount).gt(claimedAmount)) {
         orignal[type].claimable = true;
     } else {
@@ -196,55 +199,57 @@ async function prepareData(account, provider) {
         ],
     };
 }
-
-function fullupRemainingAllowance(
+function fullupSingleVault(
     dataSource,
+    vaultType,
     baseAllowance,
     userAllowance,
-    userClaimed
+    userClaimed,
+    deduceBase = 0
 ) {
-    const [daiVaultUserClaimed, usdcVaultUserClaimed, usdtVaultUserClaimed] =
-        userClaimed;
-    const [
-        daiVaultUserAllowance,
-        usdcVaultUserAllowance,
-        usdtVaultUserAllowance,
-    ] = userAllowance;
-    const [
-        daiVaultBaseAllowance,
-        usdcVaultBaseAllowance,
-        usdtVaultBaseAllowance,
-    ] = baseAllowance;
-
-    let daiAllowance = daiVaultBaseAllowance;
-    if (daiVaultUserClaimed) {
-        daiAllowance = daiVaultUserAllowance;
+    let allowance = baseAllowance;
+    if (userClaimed) {
+        allowance = userAllowance;
     }
-    dataSource[`groDAI.e_vault${vaultsVersion.dai}`].remaining_allowance =
-        daiAllowance;
+    allowance = BigNumber.from(allowance).sub(BigNumber.from(deduceBase));
+    dataSource[
+        `gro${vaultType}.e_vault${vaultsVersion[vaultType]}`
+    ].remaining_allowance = allowance.toString();
 
-    let usdcAllowance = usdcVaultBaseAllowance;
-    if (usdcVaultUserClaimed) {
-        usdcAllowance = usdcVaultUserAllowance;
-    }
-    dataSource[`groUSDC.e_vault${vaultsVersion.usdc}`].remaining_allowance =
-        usdcAllowance;
+    const distBaseAllowance = BigNumber.from(baseAllowance).sub(
+        BigNumber.from(deduceBase)
+    );
+    dataSource[
+        `gro${vaultType}.e_vault${vaultsVersion[vaultType]}`
+    ].base_allowance = distBaseAllowance.toString();
 
-    let usdtAllowance = usdtVaultBaseAllowance;
-    if (usdtVaultUserClaimed) {
-        usdtAllowance = usdtVaultUserAllowance;
+    dataSource[
+        `gro${vaultType}.e_vault${vaultsVersion[vaultType]}`
+    ].base_allowance_claimed = userClaimed.toString();
+
+    return allowance;
+}
+function fullupVaults(dataSource, baseAllowance, userAllowance, userClaimed) {
+    const vaultTypes = ['DAI', 'USDC', 'USDT'];
+    let remainingTotal = BigNumber.from(0);
+    for (let i = 0; i < vaultTypes.length; i += 1) {
+        const allowance = fullupSingleVault(
+            dataSource,
+            vaultTypes[i],
+            baseAllowance[i],
+            userAllowance[i],
+            userClaimed[i],
+            5000
+        );
+        remainingTotal = remainingTotal.add(allowance);
     }
-    dataSource[`groUSDT.e_vault${vaultsVersion.usdt}`].remaining_allowance =
-        usdtAllowance;
-    const totalRemainingAllowance = BigNumber.from(daiAllowance)
-        .add(BigNumber.from(usdcAllowance))
-        .add(BigNumber.from(usdtAllowance));
-    dataSource.total_remaining_allowance = `${totalRemainingAllowance}`;
+    dataSource.total_remaining_allowance = `${remainingTotal}`;
 }
 
 async function getAccountAllowance(account, provider) {
     account = toChecksumAddress(account);
     const result = {
+        status: 'error',
         total_claimable_allowance: '0',
         total_remaining_allowance: '0',
         snapshot_ts: '0',
@@ -254,39 +259,20 @@ async function getAccountAllowance(account, provider) {
         root: '',
         root_matched: false,
     };
-    result[`groDAI.e_vault${vaultsVersion.dai}`] = { ...DEFAULT_GRO_STABLE };
-    result[`groUSDC.e_vault${vaultsVersion.usdc}`] = { ...DEFAULT_GRO_STABLE };
-    result[`groUSDT.e_vault${vaultsVersion.usdt}`] = { ...DEFAULT_GRO_STABLE };
+    result[`groDAI.e_vault${vaultsVersion.DAI}`] = { ...DEFAULT_GRO_STABLE };
+    result[`groUSDC.e_vault${vaultsVersion.USDC}`] = { ...DEFAULT_GRO_STABLE };
+    result[`groUSDT.e_vault${vaultsVersion.USDT}`] = { ...DEFAULT_GRO_STABLE };
 
     try {
         const { baseAllowance, userAllowance, userClaimed } = await prepareData(
             account,
             provider
         );
-        [
-            result[`groDAI.e_vault${vaultsVersion.dai}`].base_allowance,
-            result[`groUSDC.e_vault${vaultsVersion.dai}`].base_allowance,
-            result[`groUSDT.e_vault${vaultsVersion.dai}`].base_allowance,
-        ] = baseAllowance;
-        result[
-            `groDAI.e_vault${vaultsVersion.dai}`
-        ].base_allowance_claimed = `${userClaimed[0]}`;
-        result[
-            `groUSDC.e_vault${vaultsVersion.dai}`
-        ].base_allowance_claimed = `${userClaimed[1]}`;
-        result[
-            `groUSDT.e_vault${vaultsVersion.dai}`
-        ].base_allowance_claimed = `${userClaimed[2]}`;
 
         const latestAllowanceFileIndex = groGateFiles.length;
         if (latestAllowanceFileIndex < 1) {
             // Haven't proof file
-            fullupRemainingAllowance(
-                result,
-                baseAllowance,
-                userAllowance,
-                userClaimed
-            );
+            fullupVaults(result, baseAllowance, userAllowance, userClaimed);
         } else {
             const filePath = `${groGateFileFolder}/${
                 groGateFiles[latestAllowanceFileIndex - 1]
@@ -358,9 +344,9 @@ async function getAccountAllowance(account, provider) {
                 const claimableTotal = BigNumber.from(amount).mul(
                     BigNumber.from(3)
                 );
-                const remainTotal = BigNumber.from(daiAllowance)
-                    .add(BigNumber.from(usdcAllowance))
-                    .add(BigNumber.from(usdtAllowance));
+                const remainTotal = daiAllowance
+                    .add(usdcAllowance)
+                    .add(usdtAllowance);
                 result.total_claimable_allowance = claimableTotal.toString();
                 result.total_remaining_allowance = remainTotal.toString();
 
@@ -370,14 +356,11 @@ async function getAccountAllowance(account, provider) {
                 }
             } else {
                 // have proof file, but not include the account
-                fullupRemainingAllowance(
-                    result,
-                    baseAllowance,
-                    userAllowance,
-                    userClaimed
-                );
+                fullupVaults(result, baseAllowance, userAllowance, userClaimed);
             }
         }
+        // update status
+        result.status = 'ok';
     } catch (error) {
         logger.error(`Get gro gate for ${account} failed.`);
         logger.error(error);

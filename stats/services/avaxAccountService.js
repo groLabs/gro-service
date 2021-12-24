@@ -486,6 +486,24 @@ async function avaxPersonalStats(account) {
             'USDT.e',
             6
         ),
+        singleVaultEvents(
+            account,
+            ContractNames.AVAXDAIVault_v1_5_1,
+            'DAI.e',
+            18
+        ),
+        singleVaultEvents(
+            account,
+            ContractNames.AVAXUSDCVault_v1_5_1,
+            'USDC.e',
+            6
+        ),
+        singleVaultEvents(
+            account,
+            ContractNames.AVAXUSDTVault_v1_5_1,
+            'USDT.e',
+            6
+        ),
     ];
     const [
         daiVaultEvents,
@@ -494,6 +512,9 @@ async function avaxPersonalStats(account) {
         daiVaultEvents1,
         usdcVaultEvents1,
         usdtVaultEvents1,
+        daiVaultEvents2,
+        usdcVaultEvents2,
+        usdtVaultEvents2,
     ] = await Promise.all(vaultEventsPromise);
 
     fullData(result, daiVaultEvents, 'groDAI.e_vault');
@@ -502,6 +523,9 @@ async function avaxPersonalStats(account) {
     fullData(result, daiVaultEvents1, 'groDAI.e_vault_v1_5');
     fullData(result, usdcVaultEvents1, 'groUSDC.e_vault_v1_5');
     fullData(result, usdtVaultEvents1, 'groUSDT.e_vault_v1_5');
+    fullData(result, daiVaultEvents2, 'groDAI.e_vault_v1_5_1');
+    fullData(result, usdcVaultEvents2, 'groUSDC.e_vault_v1_5_1');
+    fullData(result, usdtVaultEvents2, 'groUSDT.e_vault_v1_5_1');
 
     calculateTotal(result, [
         'amount_added',
@@ -519,6 +543,9 @@ async function avaxPersonalStats(account) {
         ...daiVaultEvents1.depositEvents,
         ...usdcVaultEvents1.depositEvents,
         ...usdtVaultEvents1.depositEvents,
+        ...daiVaultEvents2.depositEvents,
+        ...usdcVaultEvents2.depositEvents,
+        ...usdtVaultEvents2.depositEvents,
     ];
     fullTransactionField(result, depositEvents, 'deposits');
 
@@ -530,6 +557,9 @@ async function avaxPersonalStats(account) {
         ...daiVaultEvents1.withdrawEvents,
         ...usdcVaultEvents1.withdrawEvents,
         ...usdtVaultEvents1.withdrawEvents,
+        ...daiVaultEvents2.withdrawEvents,
+        ...usdcVaultEvents2.withdrawEvents,
+        ...usdtVaultEvents2.withdrawEvents,
     ];
     fullTransactionField(result, withdrawEvents, 'withdrawals');
 
@@ -541,6 +571,9 @@ async function avaxPersonalStats(account) {
         ...daiVaultEvents1.transferEvents.inLogs,
         ...usdcVaultEvents1.transferEvents.inLogs,
         ...usdtVaultEvents1.transferEvents.inLogs,
+        ...daiVaultEvents2.transferEvents.inLogs,
+        ...usdcVaultEvents2.transferEvents.inLogs,
+        ...usdtVaultEvents2.transferEvents.inLogs,
     ];
     const transferOut = [
         ...daiVaultEvents.transferEvents.outLogs,
@@ -549,6 +582,9 @@ async function avaxPersonalStats(account) {
         ...daiVaultEvents1.transferEvents.outLogs,
         ...usdcVaultEvents1.transferEvents.outLogs,
         ...usdtVaultEvents1.transferEvents.outLogs,
+        ...daiVaultEvents2.transferEvents.outLogs,
+        ...usdcVaultEvents2.transferEvents.outLogs,
+        ...usdtVaultEvents2.transferEvents.outLogs,
     ];
     fullTransactionField(result, transferIn, 'transfers_in');
     fullTransactionField(result, transferOut, 'transfers_out');
@@ -561,6 +597,9 @@ async function avaxPersonalStats(account) {
         ...daiVaultEvents1.approvalEvents,
         ...usdcVaultEvents1.approvalEvents,
         ...usdtVaultEvents1.approvalEvents,
+        ...daiVaultEvents2.approvalEvents,
+        ...usdcVaultEvents2.approvalEvents,
+        ...usdtVaultEvents2.approvalEvents,
     ];
     fullTransactionField(result, approvals, 'approvals');
 
