@@ -1,4 +1,7 @@
-import { getProvider } from '../common/globalUtil';
+import { 
+    getProvider,
+    getProviderAvax,
+ } from '../common/globalUtil';
 import { BigNumber as BN } from 'ethers';
 import { getConfig } from '../../common/configUtil';
 import {
@@ -6,8 +9,12 @@ import {
     ContractCallResults,
     ContractCallContext,
 } from 'ethereum-multicall';
-import { ReturnType } from '../types';
-import { parseAmount } from '../parser/personalStatsParser'
+import {
+    Base,
+    GlobalNetwork,
+    ReturnType,
+} from '../types';
+import { parseAmount } from '../common/globalUtil';
 import gvtABI from '../../abi/ce7b149/NonRebasingGToken.json';
 import getVestingABI from '../../abi/GROVesting.json';
 import tokenCounterABI from '../../abi/fa8e260/TokenCounter.json';
@@ -20,19 +27,23 @@ const CRV_PWRD_ADDRESS = getConfig('staker_pools.contracts.curve_pwrd3crv_pool_a
 // const VOTE_AGGREGATOR_ADDRESS = '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D';
 
 const multicall = new Multicall({ ethersProvider: getProvider(), tryAggregate: true });
+const multicallAvax = new Multicall({ ethersProvider: getProviderAvax(), tryAggregate: true });
 
 
 const multiCall = async (
+    globalNetwork: GlobalNetwork,
     contractAddress: string,
     poolAddress: string,
     abi: any,
     methodName: string,
     addresses: string[],
     returnType: ReturnType,
+    base: Base,
 ) => {
 
     let items = [];
     let result = [];
+    let results: ContractCallResults;
 
     for (let i = 0; i < addresses.length; i++) {
         items.push({
@@ -42,7 +53,6 @@ const multiCall = async (
                 ? [poolAddress, [addresses[i]]]
                 : [addresses[i]]
         });
-        console.log(items[i]);
     }
 
     const contractCallContext: ContractCallContext[] = [
@@ -54,38 +64,42 @@ const multiCall = async (
         },
     ];
 
-    const results: ContractCallResults = await multicall.call(contractCallContext);
+    if (globalNetwork === GlobalNetwork.ETHEREUM) {
+        results = await multicall.call(contractCallContext);
+    } else if (globalNetwork === GlobalNetwork.AVALANCHE) {
+        results = await multicallAvax.call(contractCallContext);
+    }
 
     for (let item of results.results.ref.callsReturnContext) {
-        console.log('item:', item);
         if (item.success) {
             switch (returnType) {
                 case ReturnType.UINT:
-                    result.push(parseAmount(BN.from(item.returnValues[0].hex), 'USD'));
+                    result.push(parseAmount(BN.from(item.returnValues[0].hex), base));
                     break;
                 case ReturnType.BOOL:
                     result.push(item.returnValues[0]);
                     break;
                 case ReturnType.UINT_UINT:
                     result.push([
-                        parseAmount(BN.from(item.returnValues[0].hex), 'USD'),
-                        parseAmount(BN.from(item.returnValues[1].hex), 'USD'),
+                        parseAmount(BN.from(item.returnValues[0].hex), base),
+                        parseAmount(BN.from(item.returnValues[1].hex), base),
                     ]);
                     break;
                 case ReturnType.arrUINT_arrUINT_arrUINT:
                     result.push([
-                        parseAmount(BN.from(item.returnValues[0][0].hex), 'USD'),
-                        parseAmount(BN.from(item.returnValues[1][0].hex), 'USD'),
-                        parseAmount(BN.from(item.returnValues[2][0].hex), 'USD'),
+                        parseAmount(BN.from(item.returnValues[0][0].hex), base),
+                        parseAmount(BN.from(item.returnValues[1][0].hex), base),
+                        parseAmount(BN.from(item.returnValues[2][0].hex), base),
                     ]);
                     break;
                 case ReturnType.arrUINT_arrUINT_arrarrUINT:
                     result.push([
-                        parseAmount(BN.from(item.returnValues[0][0].hex), 'USD'),
-                        parseAmount(BN.from(item.returnValues[1][0].hex), 'USD'),
-                        parseAmount(BN.from(item.returnValues[2][0][0].hex), 'USD'),
-                        parseAmount(BN.from(item.returnValues[2][0][1].hex),
-                            poolAddress === GRO_USDC_ADDRESS ? 'USDC' : 'USD'),
+                        parseAmount(BN.from(item.returnValues[0][0].hex), base),
+                        parseAmount(BN.from(item.returnValues[1][0].hex), base),
+                        parseAmount(BN.from(item.returnValues[2][0][0].hex), base),
+                        parseAmount(BN.from(item.returnValues[2][0][1].hex), base),
+                        // parseAmount(BN.from(item.returnValues[2][0][1].hex),
+                        //     poolAddress === GRO_USDC_ADDRESS ? Base.D6 : Base.D18),
                     ])
                 default:
                     break;
@@ -96,7 +110,8 @@ const multiCall = async (
         }
     }
 
-    console.log('result', result);
+    // console.log('result', result);
+    return result;
     // console.log(results.results.ref.callsReturnContext);
     // console.log(results.results.ref.callsReturnContext[0].returnValues);
     // console.log(BN.from(results.results.ref.callsReturnContext[0].returnValues[0].hex).toString());
@@ -145,6 +160,7 @@ const runTest = async () => {
 
     // tokenCounter - getCurvePwrd
     await multiCall(
+        GlobalNetwork.ETHEREUM,
         '0xAFFbD08B4754c3423f3583398C5749Bc22F26Ad7',   // contractAddress
         CRV_PWRD_ADDRESS,   // pool address (GRO/GVT pool)
         tokenCounterABI,
@@ -153,7 +169,8 @@ const runTest = async () => {
             '0x2B19fDE5d7377b48BE50a5D0A78398a496e8B15C',
             '0xAd192a9eAEe1E342CAbB1Cd32f01de3b77D8598f',
         ],
-        ReturnType.arrUINT_arrUINT_arrUINT
+        ReturnType.arrUINT_arrUINT_arrUINT,
+        Base.D18,
     );
 }
 
