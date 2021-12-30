@@ -375,13 +375,59 @@ async function getApprovalHistory(account, contractName, decimals, token) {
     return result;
 }
 
-async function singleVaultEvents(account, adpaterType, token, decimals) {
-    const eventsPromise = [
-        getDepositHistory(account, token, adpaterType, decimals),
-        getWithdrawHistory(account, token, adpaterType, decimals),
-        getVaultTokenTransferHistory(account, token, adpaterType, decimals),
-        getApprovalHistory(account, adpaterType, decimals, token),
+async function getUserAllowanceClaimed(vaultContract, vaultType, account) {
+    let claimed = true;
+    const vaultV1 = [
+        ContractNames.AVAXDAIVault,
+        ContractNames.AVAXUSDTVault,
+        ContractNames.AVAXUSDCVault,
     ];
+    if (vaultV1.includes(vaultType)) {
+        const latestBouncer = getLatestSystemContractOnAVAX(
+            ContractNames.AVAXBouncer,
+            provider
+        ).contract;
+        const claimedAmount = await latestBouncer.claimed(
+            vaultContract.address,
+            account
+        );
+        if (claimedAmount.isZero()) {
+            claimed = false;
+        }
+    } else {
+        claimed = await vaultContract.claimed(account);
+    }
+    return claimed;
+}
+
+async function singleVaultEvents(account, adpaterType, token, decimals) {
+    // current balance
+    const latestVault = getLatestAVAXVault(adpaterType);
+    const balance = await latestVault.balanceOf(account);
+
+    // user's claimed
+    const claimed = await getUserAllowanceClaimed(
+        latestVault,
+        adpaterType,
+        account
+    );
+    let eventsPromise;
+    if (!claimed && balance.isZero()) {
+        eventsPromise = [
+            Promise.resolve([]),
+            Promise.resolve([]),
+            Promise.resolve({ inLogs: [], outLogs: [] }),
+            Promise.resolve([]),
+        ];
+    } else {
+        eventsPromise = [
+            getDepositHistory(account, token, adpaterType, decimals),
+            getWithdrawHistory(account, token, adpaterType, decimals),
+            getVaultTokenTransferHistory(account, token, adpaterType, decimals),
+            getApprovalHistory(account, adpaterType, decimals, token),
+        ];
+    }
+
     const [depositEvents, withdrawEvents, transferEvents, approvalEvents] =
         await Promise.all(eventsPromise);
 
@@ -405,23 +451,24 @@ async function singleVaultEvents(account, adpaterType, token, decimals) {
 
     const netAmountAdded = depositAmount.minus(withdrawAmount);
 
-    // current balance
-    const latestVault = getLatestAVAXVault(adpaterType);
-    const balance = await latestVault.balanceOf(account);
-    const perPrice = await latestVault.getPricePerShare();
-    const totalSupply = await latestVault.totalSupply();
-    let distPerPrice = perPrice;
-    if (!totalSupply.isZero()) {
-        const totalEstimatedAssets = await latestVault.totalEstimatedAssets();
-        const estimatedPerPrice = totalEstimatedAssets
-            .mul(BigNumber.from(10).pow(decimals))
-            .div(totalSupply);
-        if (perPrice.gt(estimatedPerPrice)) {
-            distPerPrice = estimatedPerPrice;
+    let currentBalance = formatNumber2(0, 0, amountDecimal);
+    if (!balance.isZero()) {
+        const perPrice = await latestVault.getPricePerShare();
+        const totalSupply = await latestVault.totalSupply();
+        let distPerPrice = perPrice;
+        if (!totalSupply.isZero()) {
+            const totalEstimatedAssets =
+                await latestVault.totalEstimatedAssets();
+            const estimatedPerPrice = totalEstimatedAssets
+                .mul(BigNumber.from(10).pow(decimals))
+                .div(totalSupply);
+            if (perPrice.gt(estimatedPerPrice)) {
+                distPerPrice = estimatedPerPrice;
+            }
         }
+        const amount = balance.mul(distPerPrice);
+        currentBalance = formatNumber2(amount, decimals * 2, amountDecimal);
     }
-    const amount = balance.mul(distPerPrice);
-    const currentBalance = formatNumber2(amount, decimals * 2, amountDecimal);
 
     // net return
     const netReturn = BN(currentBalance).minus(netAmountAdded);
