@@ -2,9 +2,10 @@ enum GlobalNetwork {
     UNKNOWN = 0,
     ETHEREUM = 1,
     AVALANCHE = 2,
+    ALL = 100,
 }
 
-enum Network {
+enum NetworkName {
     UNKNOWN = 'unknown',
     MAINNET = 'mainnet',
     ROPSTEN = 'ropsten',
@@ -24,49 +25,35 @@ enum NetworkId {
     AVALANCHE = 43114,
 }
 
-enum Product {
+enum SqlCommand {
+    DELETE = 'delete',
+    INSERT = 'insert',
+    SELECT = 'select',
+    TRUNCATE = 'truncate',
+    UPDATE = 'update',
+    VIEW = 'view', // TODO: To be deleted, not used
+}
+
+//TODO: TokenName
+enum TokenName {
     PWRD = 'pwrd',
     GVT = 'gvt',
     GRO = 'gro',
+    groUSDC_e = 'gro_usdc_e',
+    groUSDT_e = 'gro_usdt_e',
+    groDAI_e = 'gro_dai_e',
 }
 
-enum ProductId {
+// Must be aligned with table MD_TOKENS
+enum TokenId {
+    UNKNOWN = 0,
     PWRD = 1,
     GVT = 2,
     GRO = 3,
+    groUSDC_e = 4,
+    groUSDT_e = 5,
+    groDAI_e = 6,
 }
-
-enum Load {
-    FULL = 1,
-    TRANSFERS = 2,
-};
-
-// For deposit, withdrawal & transfer events
-enum Transfer {
-    // Ethereum
-    DEPOSIT = 1,
-    WITHDRAWAL = 2,
-    TRANSFER_GVT_IN = 3,
-    TRANSFER_PWRD_IN = 4,  // TODO: PWRD_OUT
-    TRANSFER_GVT_OUT = 5,
-    TRANSFER_PWRD_OUT = 6,
-    TRANSFER_GRO_IN = 7,
-    TRANSFER_GRO_OUT = 8,
-    // Avalanche
-    DEPOSIT_USDCe = 20,
-    WITHDRAWAL_USDCe = 21,
-    TRANSFER_USDCe_IN = 22,
-    TRANSFER_USDCe_OUT = 23,
-    DEPOSIT_USDTe = 24,
-    WITHDRAWAL_USDTe = 25,
-    TRANSFER_USDTe_IN = 26,
-    TRANSFER_USDTe_OUT = 27,
-    DEPOSIT_DAIe = 28,
-    WITHDRAWAL_DAIe = 29,
-    TRANSFER_DAIe_IN = 30,
-    TRANSFER_DAIe_OUT = 31,
-    STABLECOIN_APPROVAL = 100,
-};
 
 enum Bool {
     FALSE = 0,
@@ -83,14 +70,59 @@ enum ReturnType {
     arrUINT_arrUINT_arrarrUINT = 5,
 }
 
+// Base 10**6 or 10**18
+enum Base {
+    D6 = 0,
+    D18 = 1,
+}
+
+// For AVAX ETL
+enum ContractVersion {
+    NO_VERSION = 0,
+    VAULT_1_0 = 1,
+    VAULT_1_5 = 2,
+    VAULT_1_5_1 = 3,
+}
+
+// Must be aligned with table MD_TRANSFERS
+// Existing values can't be updated (DB misalignment vs. current loaded values)
+enum Transfer {
+    UNKNOWN = 0,
+    // Ethereum (range 1 to 499)
+    DEPOSIT = 1,
+    WITHDRAWAL = 2,
+    TRANSFER_GVT_IN = 3,
+    TRANSFER_GVT_OUT = 4,
+    TRANSFER_PWRD_IN = 5,
+    TRANSFER_PWRD_OUT = 6,
+    TRANSFER_GRO_IN = 7,
+    TRANSFER_GRO_OUT = 8,
+    STABLECOIN_APPROVAL = 9,
+    // Avalanche (range 500 to 999)
+    DEPOSIT_USDCe = 500,
+    WITHDRAWAL_USDCe = 501,
+    TRANSFER_USDCe_IN = 502,
+    TRANSFER_USDCe_OUT = 503,
+    DEPOSIT_USDTe = 504,
+    WITHDRAWAL_USDTe = 505,
+    TRANSFER_USDTe_IN = 506,
+    TRANSFER_USDTe_OUT = 507,
+    DEPOSIT_DAIe = 508,
+    WITHDRAWAL_DAIe = 509,
+    TRANSFER_DAIe_IN = 510,
+    TRANSFER_DAIe_OUT = 511,
+};
+
 export {
     GlobalNetwork,
-    Network,
+    NetworkName,
     NetworkId,
-    Product,
-    ProductId,
-    Load,
     Transfer,
+    TokenName,
+    TokenId,
     Bool,
     ReturnType,
+    Base,
+    ContractVersion,
+    SqlCommand,
 }

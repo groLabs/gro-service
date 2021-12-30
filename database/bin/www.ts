@@ -1,10 +1,9 @@
 #!/usr/bin/env ts-node
-// @ts-nocheck
 /**
  * Module dependencies.
  */
 
-var app = require('../app-express');
+var app = require('../app');
 var debug = require('debug')('winsure-service:server');
 var http = require('http');
 
