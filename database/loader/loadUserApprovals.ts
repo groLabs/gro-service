@@ -1,9 +1,11 @@
 import { query } from '../handler/queryHandler';
-import { loadEthBlocks } from './loadEthBlocks';
+import { loadEthBlocks } from './old_loadEthBlocks';
 import { loadTableUpdates } from './loadTableUpdates';
-import { handleErr, isPlural, getApprovalEvents2 } from '../common/personalUtil';
+import { handleErr, isPlural } from '../common/personalUtil';
+import { getApprovalEvents } from '../listener/getApprovalEvents';
 import { parseApprovalEvents } from '../parser/personalStatsParser';
 import { QUERY_ERROR } from '../constants';
+import { GlobalNetwork } from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -58,7 +60,7 @@ const loadTmpUserApprovals = async (
 ) => {
     try {
         // Get all approval events for a given block range
-        const logs = await getApprovalEvents2(account, fromBlock, toBlock);
+        const logs = await getApprovalEvents(account, fromBlock, toBlock);
         if (!logs || logs.length < 1)
             return false;
 
@@ -67,7 +69,7 @@ const loadTmpUserApprovals = async (
             if (logs[i]) {
                 // Parse approval events
                 logger.info(`**DB${account ? ' CACHE' : ''}: Processing ${logs[i].length} approval event${isPlural(logs.length)}...`);
-                const approvals = await parseApprovalEvents(logs[i]);
+                const approvals = await parseApprovalEvents(GlobalNetwork.ETHEREUM, logs[i]);
 
                 // Insert approvals into USER_APPROVALS
                 // TODO: returning different types will be a problem in TS
@@ -75,8 +77,8 @@ const loadTmpUserApprovals = async (
                     for (const item of approvals) {
                         const params = (Object.values(item));
                         const q = (account)
-                            ? 'insert_user_cache_tmp_approvals.sql'
-                            : 'insert_user_std_tmp_approvals.sql'
+                            ? 'insert_user_approvals_tmp_cache.sql'
+                            : 'insert_user_approvals_tmp.sql'
                         const res = await query(q, params);
                         if (res.status === QUERY_ERROR)
                             return false;

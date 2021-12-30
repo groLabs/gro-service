@@ -1,4 +1,3 @@
-import moment from 'moment';
 import { query } from '../handler/queryHandler';
 import { loadEthBlocks } from './loadEthBlocks';
 import { loadTableUpdates } from './loadTableUpdates';
@@ -6,24 +5,21 @@ import {
     handleErr,
     isInflow,
     isPlural,
-    getTransferEvents2,
-    getGTokenFromTx,
     transferType,
 } from '../common/personalUtil';
-import { parseTransferEvents } from '../parser/personalStatsParser';
-import { parseAmount } from '../parser/personalStatsParser';
+import { getTransferEvents } from '../listener/getTransferEvents';
+import { getNetwork } from '../common/globalUtil'
+import { parseTransferEvents2 } from '../parser/personalStatsTransfersParser2';
 import {
-    getGroVault,
-    getUSDCeVault,
-    getUSDTeVault,
-    getDAIeVault,
-} from '../common/contractUtil';
-import { QUERY_ERROR } from '../constants';
+    GENESIS,
+    QUERY_ERROR
+} from '../constants';
 import {
-    GlobalNetwork,
     Transfer,
+    NetworkId,
+    GlobalNetwork,
+    ContractVersion,
 } from '../types';
-
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
@@ -37,17 +33,17 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 /// @param  account User address for cache loading; null for daily loads
 /// @return True if no exceptions found, false otherwise
 const loadUserTransfers = async (
-    fromDate,
-    toDate,
-    account
-) => {
+    fromDate: number | string,
+    toDate: number | string,
+    account: string
+): Promise<boolean> => {
     try {
         // Add new blocks into ETH_BLOCKS (incl. block timestamp)
         if (await loadEthBlocks('loadUserTransfers', account)) {
             // Insert deposits, withdrawals & transfers
             const q = (account)
-                ? 'insert_user_cache_fact_transfers.sql'
-                : 'insert_user_std_fact_transfers.sql';
+                ? 'insert_user_transfers_cache.sql'
+                : 'insert_user_transfers.sql';
             const params = (account)
                 ? [account]
                 : [];
@@ -55,7 +51,8 @@ const loadUserTransfers = async (
             if (res.status === QUERY_ERROR)
                 return false;
             const numTransfers = res.rowCount;
-            logger.info(`**DB${account ? ' CACHE' : ''}: ${numTransfers} record${isPlural(numTransfers)} added into USER_STD_FACT_TRANSFERS`);
+            const table = `added into ${account ? 'USER_TRANSFERS_CACHE' : 'USER_TRANSFERS'}`;
+            logger.info(`**DB${account ? ' CACHE' : ''}: ${numTransfers} record${isPlural(numTransfers)} ${table}`);
         } else {
             return false;
         }
@@ -63,124 +60,187 @@ const loadUserTransfers = async (
         if (account) {
             return true;
         } else {
-            const res = await loadTableUpdates('USER_STD_FACT_TRANSFERS', fromDate, toDate);
+            const res = await loadTableUpdates('USER_TRANSFERS', fromDate, toDate);
             return (res) ? true : false;
         }
     } catch (err) {
-        handleErr('loadUserTransfers->loadUserTransfers()', err);
+        handleErr('loadUserTransfers.ts->loadUserTransfers()', err);
         return false;
     }
 }
 
 //TBR
-/// @notice - Loads deposits, withdrawals & transfers into temporary tables
-///         - Gtoken amount is retrieved from its related transaction
-///         - Rest of data is retrieved from related event
-/// @dev    - Truncates always temporary tables beforehand even if no data to be processed,
+/// @notice - Loads deposits & withdrawals into temporary tables USER_STD_TMP_DEPOSITS 
+///         & USER_STD_TMP_WITHDRAWALS respectively
+///         - Amount for GVT & PWRD deposits/withdrawals is retrieved from its TRANSFER event
+///         - Value for GTO, USDCe, USDTe & DAIe is retrieve by multiplying amount x pricePerShare
+/// @dev    - Truncates always temporary tables beforehand even if no data is to be processed,
 ///         otherwise, old data would be loaded if no new deposits/withdrawals
-/// @param fromBlock Starting block to search for events
-/// @param toBlock Ending block to search for events
-/// @param side Load type:
-///         - deposits: Transfer.Deposit
-///         - withdrawals: Transfer.Withdraw
-///
-///
-///
-///
-///
-///
-/// @param account User address for cache loading; null for daily loads
+/// @param network The global network to retrieve data (Ethereum, Avalanche)
+/// @param contractVersion The contract version for AVAX vaults (1.0, 1.5, 1.5.1)
+/// @param _fromBlock The starting block to search for events
+/// @param toBlock The ending block to search for events
+/// @param side The transfer type (see types->Transfer)
+/// @param account The user address for cache loading; null for daily loads
 /// @return True if no exceptions found, false otherwise
 const loadTmpUserTransfers = async (
     network: GlobalNetwork,
-    fromBlock,
-    toBlock,
-    side,
-    account,
-) => {
+    contractVersion: ContractVersion,
+    _fromBlock: number,
+    toBlock: number | string,
+    side: Transfer,
+    account: string,
+): Promise<boolean> => {
     try {
-        const logs = await getTransferEvents2(side, fromBlock, toBlock, account);
+        const [
+            isDeployed,
+            fromBlock
+        ] = isContractDeployed(network, contractVersion, side, _fromBlock);
 
-        if (logs && logs.length > 0) {
-            let result = [];
-            for (let i = 0; i < logs.length; i++) {
+        if (isDeployed) {
+            const logs = await getTransferEvents(contractVersion, side, fromBlock, toBlock, account);
 
-                result = await parseTransferEvents(network, logs[i], side);
+            if (logs && logs.length > 0) {
+                let result = [];
+                for (let i = 0; i < logs.length; i++) {
 
-                if (side === Transfer.DEPOSIT ||
-                    side === Transfer.WITHDRAWAL) {
-                    // Retrieve Gtoken amounts from tx for deposits or withdrawals
-                    result = await getGTokenFromTx(result, side, account);
-                } else if (
-                    side === Transfer.TRANSFER_GVT_OUT ||
-                    side === Transfer.TRANSFER_GVT_IN) {
-                    // Calc the GVT price for direct transfers
-                    for (const item of result) {
-                        const priceGVT = parseAmount(await getGroVault().getPricePerShare({ blockTag: item.block_number }), 'USD');
-                        item.usd_value = item.gvt_amount * priceGVT;
-                        item.gvt_value = item.usd_value;
-                    }
-                } else if (
-                    side === Transfer.TRANSFER_USDCe_IN
-                    || side === Transfer.TRANSFER_USDCe_OUT) {
-                    // Calc the USDCe price for direct transfers
-                    for (const item of result) {
-                        const priceUSDCe = parseAmount(await getUSDCeVault().getPricePerShare({ blockTag: item.block_number }), 'USDC');
-                        item.usd_value = item.usdc_e_amount * priceUSDCe;
-                    }
-                } else if (
-                    side === Transfer.TRANSFER_USDTe_IN
-                    || side === Transfer.TRANSFER_USDTe_OUT) {
-                    // Calc the USDTe price for direct transfers
-                    for (const item of result) {
-                        const priceUSDTe = parseAmount(await getUSDTeVault().getPricePerShare({ blockTag: item.block_number }), 'USDT');
-                        item.usd_value = item.usdt_e_amount * priceUSDTe;
-                    }
-                } else if (
-                    side === Transfer.TRANSFER_DAIe_IN
-                    || side === Transfer.TRANSFER_DAIe_OUT) {
-                    // Calc the DAIe price for direct transfers
-                    for (const item of result) {
-                        const priceDAIe = parseAmount(await getDAIeVault().getPricePerShare({ blockTag: item.block_number }), 'DAI');
-                        item.usd_value = item.dai_e_amount * priceDAIe;
-                    }
-                }
+                    result = await parseTransferEvents2(contractVersion, network, logs[i], side, account);
 
-                let params = [];
-                for (const item of result)
-                    params.push(Object.values(item));
+                    // Convert params from object to array
+                    let params = [];
+                    for (const item of result)
+                        params.push(Object.values(item));
 
-                if (params.length > 0) {
+                    if (params.length > 0) {
 
-                    const [res, rows] = await query(
-                        (isInflow(side))
+                        const [res, rows] = await query(
+                            (isInflow(side))
+                                ? (account)
+                                    ? 'insert_user_deposits_cache.sql'
+                                    : 'insert_user_deposits_tmp.sql'
+                                : (account)
+                                    ? 'insert_user_withdrawals_cache.sql'
+                                    : 'insert_user_withdrawals_tmp.sql'
+                            , params);
+
+                        if (!res)
+                            return false;
+
+                        logger.info(`**DB${(account) ? ' CACHE' : ''}: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isInflow(side))
                             ? (account)
-                                ? 'insert_user_cache_tmp_deposits.sql'
-                                : 'insert_user_std_tmp_deposits.sql'
+                                ? 'USER_DEPOSITS_CACHE'
+                                : 'USER_DEPOSITS_TMP'
                             : (account)
-                                ? 'insert_user_cache_tmp_withdrawals.sql'
-                                : 'insert_user_std_tmp_withdrawals.sql'
-                        , params);
-
-                    if (!res)
-                        return false;
-
-                    logger.info(`**DB${(account) ? ' CACHE' : ''}: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isInflow(side))
-                        ? (account)
-                            ? 'USER_CACHE_TMP_DEPOSITS'
-                            : 'USER_STD_TMP_DEPOSITS'
-                        : (account)
-                            ? 'USER_CACHE_TMP_WITHDRAWALS'
-                            : 'USER_STD_TMP_WITHDRAWALS'
-                        }`);
+                                ? 'USER_WITHDRAWALS_CACHE'
+                                : 'USER_WITHDRAWALS_TMP'
+                            }`);
+                    }
                 }
             }
+        } else {
+            let msg = `**DB: Block ${_fromBlock} is older than SC deployment for transfer type ${side} (${transferType(side)}) `;
+            logger.warn(`${msg} ${contractVersion === ContractVersion.VAULT_1_0
+                ? 'Vault 1.0'
+                : contractVersion === ContractVersion.VAULT_1_5
+                    ? 'Vault 1.5'
+                    : contractVersion === ContractVersion.VAULT_1_5_1
+                        ? 'Vault 1.5.1'
+                        : ''} -> No data load required`);
         }
         return true;
+
     } catch (err) {
-        const params = `[blocks from: ${fromBlock} to ${toBlock}, side: ${side}, account: ${account}]`;
+        const params = `[blocks from: ${_fromBlock} to ${toBlock}, side: ${side}, account: ${account}]`;
         handleErr(`loadUserTransfers->loadTmpUserTransfers(): ${params} `, err);
         return false;
+    }
+}
+
+///@notice
+///     Case 1: block >= block at start day of deplyment date but 
+///             block <= deployment block => return true & deployment block as new fromBlock,
+///             otherwise, this day would be incorrectly exluded from the loads
+///     Case 2: block >= deployment block => return true & block as fromBlock
+///     Case 3: block < block at start day of deployment date, return false & block as fromBlock
+///             This last case will prevent loading data
+const checkGenesisDate = (
+    block: number,
+    startOfDayBlock: number,
+    deploymentBlock: number
+) => {
+    if ((block >= startOfDayBlock - 1)
+        && (block < deploymentBlock)) {
+        return [true, deploymentBlock];
+    } else if (block > deploymentBlock) {
+        return [true, block];
+    } else {
+        return [false, block];
+    }
+}
+
+//@notice:  Determine if data needs to be loaded depending on the date of SC deployment
+const isContractDeployed = (
+    network: GlobalNetwork,
+    contractVersion: ContractVersion,
+    side: Transfer,
+    block: number
+) => {
+    const networkId = getNetwork(network).id;
+
+    if (network === GlobalNetwork.ETHEREUM && networkId === NetworkId.MAINNET) {
+
+        switch (side) {
+            case Transfer.DEPOSIT:
+            case Transfer.WITHDRAWAL:
+            case Transfer.TRANSFER_GVT_IN:
+            case Transfer.TRANSFER_GVT_OUT:
+            case Transfer.TRANSFER_PWRD_IN:
+            case Transfer.TRANSFER_PWRD_OUT:
+                return checkGenesisDate(
+                    block,
+                    GENESIS.ETHEREUM.GVT_START_OF_DAY_BLOCK,
+                    GENESIS.ETHEREUM.GVT_DEPLOYMENT_BLOCK,
+                );
+            case Transfer.TRANSFER_GRO_IN:
+            case Transfer.TRANSFER_GRO_OUT:
+                return checkGenesisDate(
+                    block,
+                    GENESIS.ETHEREUM.GRO_START_OF_DAY_BLOCK,
+                    GENESIS.ETHEREUM.GRO_DEPLOYMENT_BLOCK,
+                );
+            default:
+                logger.error(`**DB: Error in loadUserTransfers.ts->isContractDeployed(): Unknown transfer type ${side} for Ethereum`);
+                return [false, block];
+        }
+
+    } else if (network === GlobalNetwork.AVALANCHE) {
+
+        if (contractVersion === ContractVersion.VAULT_1_0)
+            return checkGenesisDate(
+                block,
+                GENESIS.AVALANCHE.VAULTS_1_0_START_OF_DAY_BLOCK,
+                GENESIS.AVALANCHE.VAULT_USDC_1_0_DEPLOYMENT_BLOCK,
+            );
+        else if (contractVersion === ContractVersion.VAULT_1_5)
+            return checkGenesisDate(
+                block,
+                GENESIS.AVALANCHE.VAULTS_1_5_START_OF_DAY_BLOCK,
+                GENESIS.AVALANCHE.VAULT_USDT_1_5_DEPLOYMENT_BLOCK,
+            );
+        else if (contractVersion === ContractVersion.VAULT_1_5_1)
+            return checkGenesisDate(
+                block,
+                GENESIS.AVALANCHE.VAULTS_1_5_1_START_OF_DAY_BLOCK,
+                GENESIS.AVALANCHE.VAULT_USDT_1_5_1_DEPLOYMENT_BLOCK,
+            );
+        else {
+            logger.error(`**DB: Error in loadUserTransfers.ts->isContractDeployed(): Unknown transfer type ${side} for Avalanche`);
+            return [false, block];
+        }
+
+    } else {
+        // No checks in testnets
+        return [true, block];
     }
 }
 

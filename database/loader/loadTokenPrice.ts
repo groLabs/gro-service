@@ -1,125 +1,95 @@
 import moment from 'moment';
-import { findBlockByDate } from '../common/globalUtil';
-import { apiCaller } from '../caller/apiCaller';
 import { query } from '../handler/queryHandler';
-import { loadTableUpdates } from './loadTableUpdates';
-import { getNetworkId, generateDateRange } from '../common/personalUtil';
-import { parseAmount } from '../parser/personalStatsParser';
-import { QUERY_ERROR, QUERY_SUCCESS } from '../constants';
-import { getGroVault, getPowerD } from '../common/contractUtil';
-import { ICall } from '../common/commonTypes'
+import { parseAmount } from '../common/globalUtil';
+import { getPriceFromCoingecko } from '../etl/etlTokenPrice';
+import {
+    getGroVault,
+    getPowerD,
+    getUSDCeVault_1_5_1,
+    getUSDTeVault_1_5_1,
+    getDAIeVault_1_5_1,
+} from '../common/contractUtil';
+import { QUERY_ERROR } from '../constants';
+import { Base } from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 
-// Rretrieve GRO price for a given date via Coingecko API
-const getPriceFromCoingecko = async (date, coin) => {
-    return new Promise(async (resolve) => {
-        try {
-            // Transform date 'DD/MM/YYYY' to 'DD-MM-YYYY'
-            const re = new RegExp('/', 'g');
-            const coingeckoDateFormat = date.replace(re, '-');
-
-            // Call API
-            const options = {
-                hostname: `api.coingecko.com`,
-                port: 443,
-                path: `/api/v3/coins/${coin}/history?date=${coingeckoDateFormat}`,
-                method: 'GET',
-            };
-            const call: ICall = await apiCaller(options);
-            if (call.status === QUERY_SUCCESS) {
-                const data = JSON.parse(call.data);
-                if (data.market_data) {
-                    resolve(data.market_data.current_price.usd);
-                } else {
-                    logger.error(`**DB: No GRO token price available from Coingecko for date ${date}`);
-                }
-            } else {
-                logger.error(`**DB: API call to Coingecko for GRO token price failed: ${call.data}`);
-            }
-            resolve(null);
-        } catch (err) {
-            logger.error(`**DB: Error in loadTokenPrice.js->getPriceFromCoingecko(): ${err}`);
-            resolve(null);
-        }
-    })
-}
-
-const loadTokenPrice = async (fromDate, toDate) => {
+const loadTokenPrice = async () => {
     try {
-        // Remove previous data
-        const fromDateParsed = moment(fromDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
-        const toDateParsed = moment(toDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
-        const params = [fromDateParsed, toDateParsed];
-        const res = await query('delete_token_price.sql', params);
-        if (res.status === QUERY_ERROR)
+        const now = moment.utc();
+        const dateString = moment(now).format('DD/MM/YYYY');
+
+        // Retrieve token prices
+        const [
+            priceGVT,
+            pricePWRD,
+            priceGRO,
+            priceWETH,
+            priceBAL,
+            priceAVAX,
+            priceUSDCe,
+            priceUSDTe,
+            priceDAIe,
+        ] = await Promise.all([
+            getGroVault().getPricePerShare(),
+            getPowerD().getPricePerShare(),
+            getPriceFromCoingecko(dateString, 'gro-dao-token'),
+            getPriceFromCoingecko(dateString, 'weth'),
+            getPriceFromCoingecko(dateString, 'balancer'),
+            getPriceFromCoingecko(dateString, 'avalanche-2'),
+            getUSDCeVault_1_5_1().getPricePerShare(),
+            getUSDTeVault_1_5_1().getPricePerShare(),
+            getDAIeVault_1_5_1().getPricePerShare(),
+        ]);
+
+        if (priceGRO.status === QUERY_ERROR
+            || priceWETH.status === QUERY_ERROR
+            || priceBAL.status === QUERY_ERROR
+            || priceAVAX.status === QUERY_ERROR
+        ) {
+            logger.error(`**DB: Error in loadTokenPrice.ts->loadTokenPrice() while retrieving prices from CoinGecko`);
             return false;
-
-        const dates = generateDateRange(fromDate, toDate);
-        for (const date of dates) {
-
-            // Calc blockTag for target date
-            const day = date
-                .add(23, 'hours')
-                .add(59, 'minutes')
-                .add(59, 'seconds');
-            const blockTag = {
-                // @ts-ignore
-                blockTag: (await findBlockByDate(day, false)).block
-            }
-
-            //TODO ****** : test data reload before GRO token
-            // Retrieve token prices
-            const dateString = moment(date).format('DD/MM/YYYY');
-            const [
-                priceGVT,
-                pricePWRD,
-                priceGRO,
-                priceWETH,
-                priceBAL,
-                priceAVAX
-            ] = await Promise.all([
-                getGroVault().getPricePerShare(blockTag),
-                getPowerD().getPricePerShare(blockTag),
-                getPriceFromCoingecko(dateString, 'gro-dao-token'),
-                getPriceFromCoingecko(dateString, 'weth'),
-                getPriceFromCoingecko(dateString, 'balancer'),
-                getPriceFromCoingecko(dateString, 'avalanche-2')
-            ]);
-            if (!priceGRO || !priceWETH || !priceBAL || !priceAVAX) {
-                logger.error(`**DB: Error in loadTokenPrice.js->loadTokenPrice() while retrieving prices from Coingecko`);
-                return false;
-            }
-
-            // Set params for the insert
-            const params = [
-                day,
-                getNetworkId(),
-                parseAmount(priceGVT, 'USD'),
-                parseAmount(pricePWRD, 'USD'),
-                priceGRO,
-                priceWETH,
-                priceBAL,
-                priceAVAX,
-                moment.utc()
-            ];
-
-            // Insert token prices into DB
-            const result = await query('insert_token_price.sql', params);
-            if (result.status !== QUERY_ERROR) {
-                let tokenPrices = `GVT: ${parseAmount(priceGVT, 'USD')}, PWRD: ${parseAmount(pricePWRD, 'USD')}`;
-                tokenPrices += `, GRO: ${priceGRO}, WETH: ${priceWETH}, BAL: ${priceBAL}, AVAX: ${priceAVAX}`;
-                logger.info(`**DB: Added token prices for ${dateString} => ${tokenPrices}`);
-            } else {
-                const msg = ` while insterting token prices into DB with params: ${params}`;
-                logger.error(`**DB: Error in loadTokenPrice.js->loadTokenPrice() ${msg}`);
-            }
         }
 
-        // Update table SYS_USER_LOADS with the last loads
-        return await loadTableUpdates('TOKEN_PRICE', fromDate, toDate);
+        // Set params for the insert
+        const params = [
+            now,
+            parseAmount(priceGVT, Base.D18),
+            parseAmount(pricePWRD, Base.D18),
+            priceGRO.data,
+            priceWETH.data,
+            priceBAL.data,
+            priceAVAX.data,
+            parseAmount(priceUSDCe, Base.D6),
+            parseAmount(priceUSDTe, Base.D6),
+            parseAmount(priceDAIe, Base.D18),
+            now,
+        ];
+
+        // Insert prices if they didn't exist in the DB or update them if they existed in the DB
+        let result;
+        const isToken = await query('select_token_price.sql', []);
+        if (isToken.status === QUERY_ERROR) {
+            logger.error(`**DB: Error in loadTokenPrice.ts->loadTokenPrice() while retrieving token data`)
+            return false;
+        } else if (isToken.rowCount > 0) {
+            result = await query('update_token_price.sql', params);
+        } else {
+            result = await query('insert_token_price.sql', params);
+        }
+
+        // Show log
+        if (result.status !== QUERY_ERROR) {
+            let msg = `GVT: ${parseAmount(priceGVT, Base.D18)}, PWRD: ${parseAmount(pricePWRD, Base.D18)}`;
+            msg += `, GRO: ${priceGRO.data}, WETH: ${priceWETH.data}, BAL: ${priceBAL.data}, AVAX: ${priceAVAX.data}`;
+            const action = (isToken.rowCount > 0) ? 'Updated' : 'Added';
+            logger.info(`**DB: ${action} token prices for ${now.format('DD/MM/YYYY HH:mm:ss')} => ${msg}`);
+        } else {
+            const msg = ` while insterting token prices into DB with params: ${params}`;
+            logger.error(`**DB: Error in loadTokenPrice.ts->loadTokenPrice() ${msg}`);
+        }
 
     } catch (err) {
         logger.error(`**DB: Error in loadTokenPrice.js->loadTokenPrice(): ${err}`);

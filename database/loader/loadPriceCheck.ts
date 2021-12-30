@@ -1,6 +1,4 @@
-import moment from 'moment';
 import { query } from '../handler/queryHandler';
-import { getNetworkId, getBlockData } from '../common/personalUtil';
 import { getPriceGlobal, getPriceDetail } from '../parser/priceCheckParser';
 import { checkQueryResult, updateTimeStamp } from '../common/protocolUtil';
 

@@ -10,9 +10,9 @@ import { query } from '../handler/queryHandler';
 import * as parser from '../parser/groStatsParserMC';
 import { checkQueryResult, updateTimeStamp } from '../common/protocolUtil';
 import {
-    Network,
-    Product,
-    ProductId
+    NetworkName,
+    TokenName,
+    TokenId
 } from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -31,10 +31,10 @@ const loadAPY = async (stats) => {
         ] = await Promise.all([
             query(
                 'insert_protocol_apy.sql',
-                parser.getAPY(stats, Network.MAINNET, Product.PWRD, ProductId.PWRD)),
+                parser.getAPY(stats, NetworkName.MAINNET, TokenName.PWRD, TokenId.PWRD)),
             query(
                 'insert_protocol_apy.sql',
-                parser.getAPY(stats, Network.MAINNET, Product.GVT, ProductId.GVT))
+                parser.getAPY(stats, NetworkName.MAINNET, TokenName.GVT, TokenId.GVT))
         ]);
         return (checkQueryResult(pwrd, 'PROTOCOL_APY')
             && checkQueryResult(gvt, 'PROTOCOL_APY'))
@@ -53,10 +53,10 @@ const loadTVL = async (stats) => {
         ] = await Promise.all([
             query(
                 'insert_protocol_tvl.sql',
-                parser.getTVL(stats, Network.MAINNET)),
+                parser.getTVL(stats, NetworkName.MAINNET)),
             query(
                 'insert_protocol_avax_tvl.sql',
-                parser.getTVL(stats, Network.AVALANCHE)),
+                parser.getTVL(stats, NetworkName.AVALANCHE)),
         ]);
         return (checkQueryResult(tvl, 'PROTOCOL_TVL'))
             && (checkQueryResult(tvl, 'PROTOCOL_AVAX_TVL'))
@@ -71,7 +71,7 @@ const loadLifeguard = async (stats) => {
     try {
         const lifeguard = await query(
             'insert_protocol_lifeguard.sql',
-            parser.getLifeguard(stats, Network.MAINNET));
+            parser.getLifeguard(stats, NetworkName.MAINNET));
         return (checkQueryResult(lifeguard, 'PROTOCOL_LIFEGUARD')) ? true : false;
     } catch (err) {
         logger.error(`**DB: Error in loadGroStatsMC.js->loadLifeguard(): ${err}`);
@@ -82,7 +82,7 @@ const loadLifeguard = async (stats) => {
 const loadLifeguardStables = async (stats) => {
     try {
         let rows = 0;
-        for (const stable of parser.getLifeguardStables(stats, Network.MAINNET)) {
+        for (const stable of parser.getLifeguardStables(stats, NetworkName.MAINNET)) {
             const stables = await query('insert_protocol_system_lifeguard_stables.sql', stable);
             if (checkQueryResult(stables, 'PROTOCOL_SYSTEM_LIFEGUARD_STABLES')) {
                 rows += stables.rowCount;
@@ -100,7 +100,7 @@ const loadLifeguardStables = async (stats) => {
 
 const loadSystem = async (stats) => {
     try {
-        const system = await query('insert_protocol_system.sql', parser.getSystem(stats, Network.MAINNET));
+        const system = await query('insert_protocol_system.sql', parser.getSystem(stats, NetworkName.MAINNET));
         return (checkQueryResult(system, 'PROTOCOL_SYSTEM')) ? true : false;
     } catch (err) {
         logger.error(`**DB: Error in loadGroStatsMC.js->loadSystem(): ${err}`);
@@ -112,7 +112,7 @@ const loadVaults = async (stats) => {
     try {
         // Ethereum
         let rows = 0;
-        for (const vault of parser.getVaults(stats, Network.MAINNET)) {
+        for (const vault of parser.getVaults(stats, NetworkName.MAINNET)) {
             const vaults = await query('insert_protocol_vaults.sql', vault);
             if (checkQueryResult(vaults, 'PROTOCOL_VAULTS')) {
                 rows += vaults.rowCount;
@@ -121,10 +121,9 @@ const loadVaults = async (stats) => {
             }
         }
         logger.info(`**DB: ${rows} records added into ${'PROTOCOL_VAULTS'}`);
-
         // Avalanche
         rows = 0;
-        for (const vault of parser.getVaults(stats, Network.AVALANCHE)) {
+        for (const vault of parser.getVaults(stats, NetworkName.AVALANCHE)) {
             const vaults = await query('insert_protocol_avax_vaults.sql', vault);
             if (checkQueryResult(vaults, 'PROTOCOL_AVAX_VAULTS')) {
                 rows += vaults.rowCount;
@@ -133,7 +132,6 @@ const loadVaults = async (stats) => {
             }
         }
         logger.info(`**DB: ${rows} records added into ${'PROTOCOL_AVAX_VAULTS'}`);
-
         return true;
     } catch (err) {
         logger.error(`**DB: Error in loadGroStatsMC.js->loadVaults(): ${err}`);
@@ -145,7 +143,7 @@ const loadReserves = async (stats) => {
     try {
         // Ethereum
         let rows = 0;
-        for (const vault of parser.getReserves(stats, Network.MAINNET)) {
+        for (const vault of parser.getReserves(stats, NetworkName.MAINNET)) {
             const vaults = await query('insert_protocol_reserves.sql', vault);
             if (checkQueryResult(vaults, 'PROTOCOL_RESERVES')) {
                 rows += vaults.rowCount;
@@ -157,7 +155,7 @@ const loadReserves = async (stats) => {
 
         //Avalanche
         rows = 0;
-        for (const vault of parser.getReserves(stats, Network.AVALANCHE)) {
+        for (const vault of parser.getReserves(stats, NetworkName.AVALANCHE)) {
             const vaults = await query('insert_protocol_avax_reserves.sql', vault);
             if (checkQueryResult(vaults, 'PROTOCOL_AVAX_RESERVES')) {
                 rows += vaults.rowCount;
@@ -178,7 +176,7 @@ const loadStrategies = async (stats) => {
     try {
         // Ethereum
         let rows = 0;
-        for (const strategy of parser.getStrategies(stats, Network.MAINNET)) {
+        for (const strategy of parser.getStrategies(stats, NetworkName.MAINNET)) {
             const strategies = await query('insert_protocol_strategies.sql', strategy);
             if (checkQueryResult(strategies, 'PROTOCOL_STRATEGIES')) {
                 rows += strategies.rowCount;
@@ -190,7 +188,7 @@ const loadStrategies = async (stats) => {
 
         // Avalanche
         rows = 0;
-        for (const strategy of parser.getStrategies(stats, Network.AVALANCHE)) {
+        for (const strategy of parser.getStrategies(stats, NetworkName.AVALANCHE)) {
             const strategies = await query('insert_protocol_avax_strategies.sql', strategy);
             if (checkQueryResult(strategies, 'PROTOCOL_AVAX_STRATEGIES')) {
                 rows += strategies.rowCount;
@@ -210,7 +208,7 @@ const loadStrategies = async (stats) => {
 const loadExposureStables = async (stats) => {
     try {
         let rows = 0;
-        for (const stable of parser.getExposureStables(stats, Network.MAINNET)) {
+        for (const stable of parser.getExposureStables(stats, NetworkName.MAINNET)) {
             const stables = await query('insert_protocol_exposure_stables.sql', stable);
             if (checkQueryResult(stables, 'PROTOCOL_EXPOSURE_STABLES')) {
                 rows += stables.rowCount;
@@ -229,7 +227,7 @@ const loadExposureStables = async (stats) => {
 const loadExposureProtocols = async (stats) => {
     try {
         let rows = 0;
-        for (const stable of parser.getExposureProtocols(stats, Network.MAINNET)) {
+        for (const stable of parser.getExposureProtocols(stats, NetworkName.MAINNET)) {
             const stables = await query('insert_protocol_exposure_protocols.sql', stable);
             if (checkQueryResult(stables, 'PROTOCOL_EXPOSURE_PROTOCOLS')) {
                 rows += stables.rowCount;

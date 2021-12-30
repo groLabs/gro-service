@@ -1,14 +1,14 @@
 import moment from 'moment';
 import { query } from '../handler/queryHandler';
-import { 
-    getBlockData,
-    getBlockDataAvax,
-    getNetworkId,
+import {
     handleErr,
     isPlural
 } from '../common/personalUtil';
+import {
+    getBlockData,
+    getBlockDataAvax,
+} from '../common/globalUtil';
 import { QUERY_ERROR } from '../constants';
-import { getNetworkId2 } from '../common/globalUtil';
 import { NetworkId } from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -51,7 +51,7 @@ const loadEthBlocks = async (
                     block.number,
                     block.timestamp,
                     moment.unix(block.timestamp),
-                    item.network_id, // getNetworkId(),
+                    item.network_id,
                     moment.utc()];
                 const result = await query('insert_eth_blocks.sql', params);
                 if (result.status === QUERY_ERROR)

@@ -1,14 +1,43 @@
 import moment from 'moment';
 import { query } from '../handler/queryHandler';
-import { loadTableUpdates } from './loadTableUpdates';
-import { findBlockByDate } from '../common/globalUtil';
-import { generateDateRange, getNetworkId, handleErr, isPlural } from '../common/personalUtil';
-import { getGroVault, getPowerD } from '../common/contractUtil';
+import {
+    getNetwork,
+    findBlockByDate,
+} from '../common/globalUtil';
+import {
+    generateDateRange,
+    handleErr,
+    isPlural
+} from '../common/personalUtil';
+import {
+    getGroVault,
+    getPowerD,
+    getUSDCeVault,
+    getUSDCeVault_1_5,
+    getUSDCeVault_1_5_1,
+    getUSDTeVault,
+    getUSDTeVault_1_5,
+    getUSDTeVault_1_5_1,
+    getDAIeVault,
+    getDAIeVault_1_5,
+    getDAIeVault_1_5_1,
+} from '../common/contractUtil';
 import { QUERY_ERROR } from '../constants';
-import { checkTime, getBalances, getBalancesUniBalLP, getBalancesCrvLP } from '../common/balanceUtil';
+import {
+    checkTime,
+    getBalances,
+    getBalancesUniBalLP,
+    getBalancesCrvLP
+} from '../common/balanceUtil';
+import { multiCall } from '../caller/multiCaller';
+import gvtABI from '../../abi/ce7b149/NonRebasingGToken.json'; // To be able to call function balanceOf()
 import { BALANCES_BATCH as BATCH } from '../constants';
 import { getConfig } from '../../common/configUtil';
-import { Bool } from '../types';
+import {
+    ReturnType,
+    GlobalNetwork as GN,
+    Base,
+} from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
@@ -23,16 +52,6 @@ const GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_poo
 const VOTE_AGGREGATOR_ADDRESS = '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D';
 
 let rowCount = 0;
-
-let gvt = [];
-let pwrd = [];
-let gro = [];
-let groTotal = [];
-let lpGroGvt = [];
-let lpGroUsdc = [];
-let lpCrvPwrd = [];
-let lpGroWeth = [];
-
 
 /// @notice Retrieve user balances in a recursive way by batches
 /// @dev    - The amount of users per batch is defined in constant <BATCH>
@@ -50,6 +69,23 @@ const getBalancesSC = async (
     offset: number
 ) => {
     try {
+        let gvt = [];
+        let pwrd = [];
+        let gro = [];
+        let groTotal = [];
+        let lpGroGvt = [];
+        let lpGroUsdc = [];
+        let lpCrvPwrd = [];
+        let lpGroWeth = [];
+        let usdce_1_0 = [];
+        let usdte_1_0 = [];
+        let daie_1_0 = [];
+        let usdce_1_5 = [];
+        let usdte_1_5 = [];
+        let daie_1_5 = [];
+        let usdce_1_5_1 = [];
+        let usdte_1_5_1 = [];
+        let daie_1_5_1 = [];
 
         const newOffset = (offset + BATCH >= users.length)
             ? users.length
@@ -68,6 +104,15 @@ const getBalancesSC = async (
             lpGroUsdcUpdate,
             lpCrvPwrdUpdate,
             lpGroWethUpdate,
+            usdceUpdate_1_0,
+            usdteUpdate_1_0,
+            daieUpdate_1_0,
+            usdceUpdate_1_5,
+            usdteUpdate_1_5,
+            daieUpdate_1_5,
+            usdceUpdate_1_5_1,
+            usdteUpdate_1_5_1,
+            daieUpdate_1_5_1,
         ] = await Promise.all([
             getBalances(getGroVault().address, userBatch, block),
             getBalances(getPowerD().address, userBatch, block),
@@ -81,8 +126,18 @@ const getBalancesSC = async (
             (nodeEnv === 'mainnet')
                 ? getBalancesUniBalLP(GRO_WETH_ADDRESS, userBatch, block)
                 : [],
+            multiCall(GN.AVALANCHE, getUSDCeVault().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
+            multiCall(GN.AVALANCHE, getUSDTeVault().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
+            multiCall(GN.AVALANCHE, getDAIeVault().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
+            multiCall(GN.AVALANCHE, getUSDCeVault_1_5().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
+            multiCall(GN.AVALANCHE, getUSDTeVault_1_5().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
+            multiCall(GN.AVALANCHE, getDAIeVault_1_5().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
+            multiCall(GN.AVALANCHE, getUSDCeVault_1_5_1().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
+            multiCall(GN.AVALANCHE, getUSDTeVault_1_5_1().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
+            multiCall(GN.AVALANCHE, getDAIeVault_1_5_1().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
         ]);
 
+        //TODO: careful. Only GVT? what about AVAX?
         if (gvt.length === 0) {
             gvt = gvtUpdate;
             pwrd = pwrdUpdate;
@@ -92,6 +147,15 @@ const getBalancesSC = async (
             lpGroUsdc = lpGroUsdcUpdate;
             lpCrvPwrd = lpCrvPwrdUpdate;
             lpGroWeth = lpGroWethUpdate;
+            usdce_1_0 = usdceUpdate_1_0;
+            usdte_1_0 = usdteUpdate_1_0;
+            daie_1_0 = daieUpdate_1_0;
+            usdce_1_5 = usdceUpdate_1_5;
+            usdte_1_5 = usdteUpdate_1_5;
+            daie_1_5 = daieUpdate_1_5;
+            usdce_1_5_1 = usdceUpdate_1_5_1;
+            usdte_1_5_1 = usdteUpdate_1_5_1;
+            daie_1_5_1 = daieUpdate_1_5_1;
         } else {
             gvt[0].amount_unstaked.push(...gvtUpdate[0].amount_unstaked);
             gvt[1].amount_staked.push(...gvtUpdate[1].amount_staked);
@@ -120,62 +184,90 @@ const getBalancesSC = async (
             (nodeEnv === 'mainnet')
                 ? lpGroWeth[2].lp_position.push(...lpGroWethUpdate[2].lp_position)
                 : [];
+            usdce_1_0.push(...usdceUpdate_1_0);
+            usdte_1_0.push(...usdteUpdate_1_0);
+            daie_1_0.push(...daieUpdate_1_0);
+            usdce_1_5.push(...usdceUpdate_1_5);
+            usdte_1_5.push(...usdteUpdate_1_5);
+            daie_1_5.push(...daieUpdate_1_5);
+            usdce_1_5_1.push(...usdceUpdate_1_5_1);
+            usdte_1_5_1.push(...usdteUpdate_1_5_1);
+            daie_1_5_1.push(...daieUpdate_1_5_1);
         }
 
         return (newOffset >= users.length)
-            ? [gvt, pwrd, gro, groTotal, lpGroGvt, lpGroUsdc, lpCrvPwrd, lpGroWeth]
+            ? {
+                gvt: gvt,
+                pwrd: pwrd,
+                gro: gro,
+                groTotal: groTotal,
+                lpGroGvt: lpGroGvt,
+                lpGroUsdc: lpGroUsdc,
+                lpCrvPwrd: lpCrvPwrd,
+                lpGroWeth: lpGroWeth,
+                usdce_1_0: usdce_1_0,
+                usdte_1_0: usdte_1_0,
+                daie_1_0: daie_1_0,
+                usdce_1_5: usdce_1_5,
+                usdte_1_5: usdte_1_5,
+                daie_1_5: daie_1_5,
+                usdce_1_5_1: usdce_1_5_1,
+                usdte_1_5_1: usdte_1_5_1,
+                daie_1_5_1: daie_1_5_1,
+            }
             : getBalancesSC(users, block, newOffset);
 
     } catch (err) {
         handleErr(`loadUserBalances->getBalancesSC()`, err);
-        // return [] ?
+        return {};
     }
 }
 
 const insertBalances = async (
-    account: string, 
-    i: number, 
-    day: moment.Moment, 
-    addr: string, 
-    isSnapshot: number,
+    account: string,
+    i: number,
+    day: moment.Moment,
+    addr: string,
+    res: any,
 ) => {
     return new Promise(async (resolve) => {
         try {
             const params = [
                 day,
-                getNetworkId(),
+                getNetwork(GN.ETHEREUM).id,
                 addr,
-                gvt[0].amount_unstaked[i],          // unstaked gvt
-                pwrd[0].amount_unstaked[i],         // unstaked pwrd
-                gro[0].amount_unstaked[i],          // unstaked gro
+                res.gvt[0].amount_unstaked[i],          // unstaked gvt
+                res.pwrd[0].amount_unstaked[i],         // unstaked pwrd
+                res.gro[0].amount_unstaked[i],          // unstaked gro
                 (nodeEnv === 'mainnet')
-                    ? groTotal[0].amount_unstaked[i]    // total gro
+                    ? res.groTotal[0].amount_unstaked[i]    // total gro
                     : null,
-                gro[1].amount_staked[i],            // pool0 - staked lp
-                lpGroGvt[0].amount_pooled_lp[i],    // pool1 - pooled lp
-                lpGroGvt[1].amount_staked_lp[i],    // pool1 - staked lp
-                lpGroGvt[2].lp_position[i][0],      // pool1 - staked gvt
-                lpGroGvt[2].lp_position[i][1],      // pool1 - staked gro
-                lpGroUsdc[0].amount_pooled_lp[i],   // pool2 - pooled lp
-                lpGroUsdc[1].amount_staked_lp[i],   // pool2 - staked lp
-                lpGroUsdc[2].lp_position[i][0],     // pool2 - staked gro
-                lpGroUsdc[2].lp_position[i][1],     // pool2 - staked usdc
-                gvt[1].amount_staked[i],            // pool3 - staked lp
-                lpCrvPwrd[0].amount_pooled_lp[i],   // pool4 - pooled lp
-                lpCrvPwrd[1].amount_staked_lp[i],   // pool4 - staked lp
-                lpCrvPwrd[2].lp_position[i],        // pool4 - staked pwrd
-                lpGroWeth[0].amount_pooled_lp[i],   // pool5 - pooled lp
-                lpGroWeth[1].amount_staked_lp[i],   // pool5 - staked lp
-                lpGroWeth[2].lp_position[i][0],     // pool5 - staked gro
-                lpGroWeth[2].lp_position[i][1],     // pool5 - staked weth
+                res.gro[1].amount_staked[i],            // pool0 - staked lp
+                res.lpGroGvt[0].amount_pooled_lp[i],    // pool1 - pooled lp
+                res.lpGroGvt[1].amount_staked_lp[i],    // pool1 - staked lp
+                res.lpGroGvt[2].lp_position[i][0],      // pool1 - staked gvt
+                res.lpGroGvt[2].lp_position[i][1],      // pool1 - staked gro
+                res.lpGroUsdc[0].amount_pooled_lp[i],   // pool2 - pooled lp
+                res.lpGroUsdc[1].amount_staked_lp[i],   // pool2 - staked lp
+                res.lpGroUsdc[2].lp_position[i][0],     // pool2 - staked gro
+                res.lpGroUsdc[2].lp_position[i][1],     // pool2 - staked usdc
+                res.gvt[1].amount_staked[i],            // pool3 - staked lp
+                res.lpCrvPwrd[0].amount_pooled_lp[i],   // pool4 - pooled lp
+                res.lpCrvPwrd[1].amount_staked_lp[i],   // pool4 - staked lp
+                res.lpCrvPwrd[2].lp_position[i],        // pool4 - staked pwrd
+                res.lpGroWeth[0].amount_pooled_lp[i],   // pool5 - pooled lp
+                res.lpGroWeth[1].amount_staked_lp[i],   // pool5 - staked lp
+                res.lpGroWeth[2].lp_position[i][0],     // pool5 - staked gro
+                res.lpGroWeth[2].lp_position[i][1],     // pool5 - staked weth
+                res.usdce_1_0[i] + res.usdce_1_5[i] + res.usdce_1_5_1[i],
+                res.usdte_1_0[i] + res.usdte_1_5[i] + res.usdte_1_5_1[i],
+                res.daie_1_0[i] + res.daie_1_5[i] + res.daie_1_5_1[i],
                 moment.utc(),
             ];
 
             const q = (account)
-                ? 'insert_user_cache_fact_balances.sql'
-                : (isSnapshot)
-                    ? 'insert_user_std_fact_balances_snapshot.sql'
-                    : 'insert_user_std_fact_balances.sql';
+                ? 'insert_user_balances_cache.sql'
+                : 'insert_user_balances_snapshot.sql'
             const result = await query(q, params);
 
             if (result.status === QUERY_ERROR)
@@ -190,21 +282,6 @@ const insertBalances = async (
             resolve(false);
         }
     });
-}
-
-/// @notice Initialise global vars to 0 or empty
-const cleanseVars = (scope: string) => {
-    if (scope === 'all') {
-        gvt = [];
-        pwrd = [];
-        gro = [];
-        groTotal = [];
-        lpGroGvt = [];
-        lpGroUsdc = [];
-        lpCrvPwrd = [];
-        lpGroWeth = [];
-    }
-    rowCount = 0;
 }
 
 /// @notice Retrieve all distinct users that did any transfer (deposit, withdrawal, transer)
@@ -251,9 +328,9 @@ const checkTokenCounterDate = (day: moment.Moment) => {
 
 /// @notice Show message logs after successful loads
 const showMsg = (
-    account, 
-    date, 
-    table
+    account: string,
+    date: string,
+    table: string
 ) => {
     let msg3 = `**DB${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} `;
     msg3 += `added into ${table} `;
@@ -278,7 +355,6 @@ const loadUserBalances = async (
     toDate: string,
     account: string,
     time: string,
-    isSnapshot: Bool,
 ) => {
     try {
         // Retrieve target time to load balances (23:59:59 by default)
@@ -292,13 +368,13 @@ const loadUserBalances = async (
         // Generate range of dates to be processed (in case fromDate <> toDate)
         const dates = generateDateRange(fromDate, toDate);
 
-        // Truncate table if snapshot load
-        if (isSnapshot === Bool.TRUE) {
-            const result = await query('truncate_user_std_fact_balances_snapshot.sql', []);
+        // Truncate table
+        if (!account) {
+            const result = await query('truncate_user_balances_snapshot.sql', []);
             if (result.status === QUERY_ERROR) {
                 return false;
             } else {
-                logger.info(`**DB: Table USER_STD_FACT_BALANCES_SNAPSHOT truncated`);
+                logger.info(`**DB: Table USER_BALANCES_SNAPSHOT truncated`);
             }
 
         }
@@ -320,44 +396,26 @@ const loadUserBalances = async (
             const block = (await findBlockByDate(day, false)).block;
 
             // Retrieve balances from the SC
-            [
-                gvt,
-                pwrd,
-                gro,
-                groTotal,
-                lpGroGvt,
-                lpGroUsdc,
-                lpCrvPwrd,
-                lpGroWeth
-            ] = await getBalancesSC(users, block, 0);
+            const result = await getBalancesSC(users, block, 0);
+            // TODO: check if response failed
 
             // Insert balances into the DB
             for (let i = 0; i < users.length; i++) {
                 const addr = users[i];
-                const res = await insertBalances(account, i, day, addr, isSnapshot);
+                const res = await insertBalances(account, i, day, addr, result);
                 if (!res)
                     return false;
             }
 
             // Show amount of inserted records
             const table = (account)
-                ? 'USER_CACHE_FACT_BALANCES'
-                : (isSnapshot)
-                    ? 'USER_STD_FACT_BALANCES_SNAPSHOT'
-                    : 'USER_STD_FACT_BALANCES';
+                ? 'USER_BALANCES_CACHE'
+                : 'USER_BALANCES_SNAPSHOT';
             showMsg(account, date, table);
-            cleanseVars('rows');
+            rowCount = 0;
         }
-
-        cleanseVars('all');
-
-        // Update table SYS_USER_LOADS with the last loads
-        if (account || isSnapshot) {
-            return true;
-        } else {
-            const res = await loadTableUpdates('USER_STD_FACT_BALANCES', fromDate, toDate);
-            return (res) ? true : false;
-        }
+        rowCount = 0;
+        return true;
 
     } catch (err) {
         handleErr(`loadUserBalances->loadUserBalances() [from: ${fromDate}, to: ${toDate}]`, err);

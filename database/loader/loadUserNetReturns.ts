@@ -7,15 +7,15 @@ import { QUERY_ERROR } from '../constants';
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
-/// @notice Load net returns into USER_STD_FACT_NET_RETURNS_UNSTAKED
-/// @dev    Data sourced from USER_STD_FACT_DEPOSITS & USER_STD_FACT_TRANSACTIONS (full load w/o filters)
+/// @notice Load net returns into USER_STD_FACT_NET_RETURNS
+/// @dev    Data sourced from USER_STD_FACT_TRANSFERS, USER_STD_FACT_BALANCES & TOKEN_PRICE (full load w/o filters)
 /// @param  fromDate Start date to load net returns
 /// @param  toDdate End date to load net returns
 /// @param  account User address for cache loading; null for daily loads
 const loadUserNetReturns = async (
     fromDate,
     toDate,
-    account,
+    account: string,
 ) => {
     try {
         const dates = generateDateRange(fromDate, toDate);
@@ -46,7 +46,7 @@ const loadUserNetReturns = async (
         }
 
     } catch (err) {
-        handleErr(`loadUserNetReturns->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}]`, err);
+        handleErr(`loadUserNetReturns.ts->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}]`, err);
     }
 }
 
