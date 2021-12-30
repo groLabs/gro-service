@@ -1,0 +1,73 @@
+import { apiCaller } from '../caller/apiCaller';
+import { loadTokenPrice } from '../loader/loadTokenPrice';
+import { ICall } from '../common/commonTypes';
+import {
+    QUERY_ERROR,
+    QUERY_SUCCESS,
+} from '../constants';
+
+const botEnv = process.env.BOT_ENV.toLowerCase();
+const logger = require(`../../${botEnv}/${botEnv}Logger`);
+
+const ERROR: ICall = {
+    data: null,
+    status: QUERY_ERROR,
+}
+
+
+// Rretrieve token price for a given date via Coingecko API
+const getPriceFromCoingecko = async (
+    date: string,
+    coin: string,
+): Promise<ICall> => {
+    return new Promise(async (resolve) => {
+        try {
+            // Transform date 'DD/MM/YYYY' to 'DD-MM-YYYY'
+            const re = new RegExp('/', 'g');
+            const coingeckoDateFormat = date.replace(re, '-');
+
+            // Call API
+            const options = {
+                hostname: `api.coingecko.com`,
+                port: 443,
+                path: `/api/v3/coins/${coin}/history?date=${coingeckoDateFormat}`,
+                method: 'GET',
+            };
+
+            // Resolve result
+            const call: ICall = await apiCaller(options);
+
+            if (call.status === QUERY_SUCCESS) {
+                const data = JSON.parse(call.data);
+                if (data.market_data) {
+                    resolve({
+                        data: data.market_data.current_price.usd,
+                        status: QUERY_SUCCESS,
+                    });
+                } else {
+                    logger.warn(`**DB: No ${coin} token price available from Coingecko for date ${date}`);
+                    resolve({
+                        data: 0,
+                        status: QUERY_SUCCESS,
+                    });
+                }
+            } else {
+                logger.error(`**DB: API call to Coingecko for ${coin} token price failed: ${call.data}`);
+                resolve(ERROR);
+            }
+
+        } catch (err) {
+            logger.error(`**DB: Error in etlTokenPrice.ts->getPriceFromCoingecko(): ${err}`);
+            resolve(ERROR);
+        }
+    });
+}
+
+const etlTokenPrice = async () => {
+    await loadTokenPrice();
+}
+
+export {
+    getPriceFromCoingecko,
+    etlTokenPrice,
+};
