@@ -2,7 +2,7 @@
 SELECT a.block_number
 FROM (
         SELECT DISTINCT block_number as block_number
-        FROM gro."USER_CACHE_TMP_APPROVALS"
+        FROM gro."USER_APPROVALS_TMP_CACHE"
     ) a
     LEFT OUTER JOIN (
         SELECT b.block_number as block_number

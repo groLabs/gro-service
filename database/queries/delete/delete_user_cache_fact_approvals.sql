@@ -1,2 +1,0 @@
-DELETE FROM gro."USER_CACHE_FACT_APPROVALS"
-WHERE sender_address = $1;

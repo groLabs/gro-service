@@ -1,0 +1,2 @@
+SELECT 1
+FROM gro."TOKEN_PRICE";

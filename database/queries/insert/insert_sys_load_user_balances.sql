@@ -1,3 +1,4 @@
+--TODO: needed?
 INSERT INTO gro."SYS_USER_LOADS" (
 		table_name,
 		network_id,
@@ -10,7 +11,7 @@ SELECT $1 as table_name,
 	b.balance_date as target_date,
 	count(1) as records_loaded,
 	$4 as creation_date
-FROM gro."USER_STD_FACT_BALANCES" b
+FROM gro."USER_BALANCES" b
 WHERE date(b.balance_date) BETWEEN $2 AND $3
 GROUP BY b.network_id,
 	b.balance_date;

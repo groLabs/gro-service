@@ -1,0 +1,2 @@
+DELETE FROM gro."USER_TRANSFERS_CACHE"
+WHERE user_address = $1;
