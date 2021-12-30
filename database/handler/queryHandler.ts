@@ -2,12 +2,10 @@ require('dotenv').config()
 import pg from 'pg';
 import fs from 'fs';
 import path from 'path';
+import { SqlCommand } from '../types';
 const { getConfig } = require('../../common/configUtil');
-// import { DatabaseCallError } from '../../common/error';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
-const nodeEnv = process.env.NODE_ENV.toLowerCase();
-// eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 const db = getConfig('database');
@@ -20,9 +18,6 @@ const dbConnection = {
 }
 const pool = new pg.Pool(dbConnection);
 
-const QUERY_OK = 200;
-const QUERY_NO_DATA = 204;
-// const QUERY_ERROR = 400;
 const { QUERY_ERROR } = require('../constants');
 
 
@@ -33,39 +28,42 @@ const NO_DATA = {
     status: 204,
 }
 
-const query = async (file, params) => {
+const query = async (
+    file: string,
+    params: any[],
+) => {
     try {
         let option;
         switch (file.slice(0, 4)) {
             case 'inse':
-                option = 'insert';
+                option = SqlCommand.INSERT;
                 break;
             case 'sele':
-                option = 'select';
+                option = SqlCommand.SELECT;
                 break;
             case 'trun':
-                option = 'truncate';
+                option = SqlCommand.TRUNCATE;
                 break;
             case 'dele':
-                option = 'delete';
+                option = SqlCommand.DELETE;
                 break;
             case 'upda':
-                option = 'update';
+                option = SqlCommand.UPDATE;
                 break;
             case 'view':
-                option = 'view';
+                option = SqlCommand.VIEW;  //TODO: to be deleted, not used.
             default: return ERROR;
         }
 
         const q = fs.readFileSync(path.join(__dirname, `/../queries/${option}/${file}`), 'utf8');
 
-        const result = (
-            file === 'insert_user_std_tmp_deposits.sql' ||
-            file === 'insert_user_std_tmp_withdrawals.sql' ||
-            file === 'insert_user_cache_tmp_deposits.sql' ||
-            file === 'insert_user_cache_tmp_withdrawals.sql')
-            ? await batchQuery(q, file, option, params)
-            : await singleQuery(q, file, option, params);
+        const result =
+            file === 'insert_user_deposits_tmp.sql'
+                || file === 'insert_user_withdrawals_tmp.sql'
+                || file === 'insert_user_deposits_cache.sql'
+                || file === 'insert_user_withdrawals_cache.sql'
+                ? await batchQuery(q, file, option, params)
+                : await singleQuery(q, file, option, params);
 
         if (result === QUERY_ERROR) {
             return ERROR;
@@ -78,13 +76,22 @@ const query = async (file, params) => {
     }
 }
 
-const singleQuery = async (q, file, op, params) => {
+const singleQuery = async (
+    q: string,
+    file: string,
+    op: SqlCommand,
+    params: any[],
+) => {
     try {
         //TODO: test when DB is down
         const client = await pool.connect();
         try {
             const result = await client.query(q, params);
-            if ((op === 'insert') || (op == 'update') || (op == 'delete')) { await client.query('COMMIT') }
+            if (op === SqlCommand.INSERT
+                || op === SqlCommand.UPDATE
+                || op === SqlCommand.DELETE) {
+                await client.query('COMMIT');
+            }
             if (result) {
                 result.status = 200;
                 return result;
@@ -92,7 +99,11 @@ const singleQuery = async (q, file, op, params) => {
                 return NO_DATA;
             }
         } catch (err) {
-            if ((op === 'insert') || (op == 'update') || (op == 'delete')) { await client.query('ROLLBACK') }
+            if (op === SqlCommand.INSERT
+                || op === SqlCommand.UPDATE
+                || op === SqlCommand.DELETE) {
+                await client.query('ROLLBACK');
+            }
             logger.error(`**DB: queryHandler.js->singleQuery() \n Message: ${err} \n Query: ${file} \n Params: ${params}`);
             return ERROR;
         } finally {
@@ -102,9 +113,14 @@ const singleQuery = async (q, file, op, params) => {
         logger.error(`**DB: queryHandler.js->singleQuery() \n Message: ${err}`);
         return ERROR;
     }
-};
+}
 
-const batchQuery = async (q, file, op, params) => {
+const batchQuery = async (
+    q: string,
+    file: string,
+    op: SqlCommand,
+    params: any[],
+) => {
     try {
         const client = await pool.connect();
         try {
@@ -113,10 +129,16 @@ const batchQuery = async (q, file, op, params) => {
                 const result = await client.query(q, params[i]);
                 rows += result.rowCount;
             }
-            if ((op === 'insert') || (op == 'update')) { await client.query('COMMIT') }
+            if (op === SqlCommand.INSERT
+                || op === SqlCommand.UPDATE) {
+                await client.query('COMMIT');
+            }
             return [true, rows];
         } catch (err) {
-            if ((op === 'insert') || (op == 'update')) { await client.query('ROLLBACK') }
+            if (op === SqlCommand.INSERT
+                || op === SqlCommand.UPDATE) {
+                await client.query('ROLLBACK');
+            }
             logger.error(`**DB: queryHandler.js->batchQuery() \n Message: ${err} \n Query: ${file} \n Params: ${params}`);
             return [false, 0];
         } finally {
@@ -126,9 +148,9 @@ const batchQuery = async (q, file, op, params) => {
         logger.error(`**DB: queryHandler.js->batchQuery() \n Message: ${err}`);
         return [false, 0];
     }
-};
+}
 
 export {
     query,
     pool,
-};
+}

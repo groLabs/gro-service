@@ -4,7 +4,7 @@ import { ContractNames } from '../../registry/registry';
 import  { newSystemLatestContracts } from '../../registry/contracts'
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import { getConfig } from '../../common/configUtil';
-import { findBlockByDate } from '../common/globalUtil';
+import { findBlockByDate, getNetwork } from '../common/globalUtil';
 import { floatToBN } from '../../common/digitalUtil';
 const providerKey = 'stats_gro';
 import moment from 'moment';
@@ -12,7 +12,7 @@ import moment from 'moment';
 // const { airdrop4AddrGvtStaking: AIRDROP4_ADDRESSES } = require('../files/airdrop4AddrGvtStaking');
 const { airdrop4StakingFinal: AIRDROP4_ADDRESSES } = require('../files/airdrop4stakingFinal');
 import { loadAirdrop4, loadTempAirdrop4, truncateTempAirdrop4 } from '../loader/loadAirdrop4';
-import { getNetworkId } from '../common/personalUtil';
+import { GlobalNetwork } from '../types';
 
 // ABIs
 import UniswapRouteABI from '../../stats/abi/uniswapRoute.json';
@@ -224,7 +224,7 @@ const airdrop4Handler = async (from, to) => {
                 END_SNAPSHOT_BLOCK,                 // block
                 END_SNAPSHOT_DATE,                  // Date
                 END_SNAPSHOT_TIMESTAMP,             // Timestamp
-                getNetworkId(),                     // mainnet
+                getNetwork(GlobalNetwork.ETHEREUM).id, // mainnet
                 addr[i],                            // address
                 printUsd(staked_gro.amount),        // staked Gro
                 printUsd(staked_gro_gvt.amount),    // staked Gro/Gvt   (*)
@@ -317,7 +317,7 @@ const airdrop4HandlerV2 = async (from, to, date) => {
                 block,                                          // block
                 day,                                            // Date
                 moment.utc(day).unix(),                         // Timestamp
-                getNetworkId(),                                 // mainnet
+                getNetwork(GlobalNetwork.ETHEREUM).id,          // mainnet
                 addr[i],                                        // address
                 null,                                           // staked Gro
                 printUsd(staked_gro_gvt.amount),                // staked Gro/Gvt   [starts on 30.10.2021]

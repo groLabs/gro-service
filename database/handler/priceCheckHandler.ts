@@ -1,4 +1,3 @@
-import moment from 'moment';
 import { query } from './queryHandler';
 import { QUERY_ERROR } from '../constants';
 

@@ -125,9 +125,9 @@ const getTVL = async (targetTimestamp) => {
     }
 }
 
-const getAPY = async (targetTimestamp, productId) => {
+const getAPY = async (targetTimestamp, tokenId) => {
     try {
-        const apy = await getTimestamps(targetTimestamp, 'protocol_apy', [productId]);
+        const apy = await getTimestamps(targetTimestamp, 'protocol_apy', [tokenId]);
         if (apy.current) {
             return {
                 "current_timestamp": apy.current.current_timestamp,
