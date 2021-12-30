@@ -1,5 +1,6 @@
 import moment from 'moment';
-import { getNetworkId } from '../common/personalUtil';
+import { getNetwork } from '../common/globalUtil';
+import { GlobalNetwork } from '../types'
 
 
 const defaultData = (prices) => {
@@ -7,7 +8,7 @@ const defaultData = (prices) => {
         prices.block_number,
         prices.current_timestamp,
         moment.unix(prices.current_timestamp),
-        getNetworkId(),
+        getNetwork(GlobalNetwork.ETHEREUM).id,
     ];
 }
 

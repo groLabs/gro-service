@@ -1,60 +1,69 @@
 import moment from 'moment';
 import {
-    Network,
+    NetworkName,
     NetworkId,
-    Product,
-    ProductId
+    TokenName,
+    TokenId,
+    GlobalNetwork
 } from '../types';
-import { getNetworkId } from '../common/personalUtil';
+//import { getNetworkId } from '../common/personalUtil';
+import { getNetwork } from '../common/globalUtil';
 
+// const defaultData = (stats, network: Network) => {
 
-const defaultData = (stats, network: Network) => {
-    const networkId = (network === Network.MAINNET)
-        ? getNetworkId()
-        : (network === Network.AVALANCHE)
-            ? NetworkId.AVALANCHE
-            : -1;
+//     const networkId = (network === Network.MAINNET)
+//         ? getNetworkId()
+//         : (network === Network.AVALANCHE)
+//             ? NetworkId.AVALANCHE
+//             : -1;
+//     return [
+//         stats.current_timestamp,
+//         moment.unix(stats.current_timestamp).utc(),
+//         networkId,
+//     ];
+// };
 
+const defaultData = (stats, globalNetwork: GlobalNetwork) => {
     return [
         stats.current_timestamp,
         moment.unix(stats.current_timestamp).utc(),
-        networkId,
+        getNetwork(globalNetwork).id,
     ];
 };
 
-const getAPY = (stats, network: Network, product: Product, productId: ProductId) => {
+const getAPY = (stats, network: NetworkName, token: TokenName, tokenId: TokenId) => {
     const result = [
-        ...defaultData(stats, network),
-        productId,
+        ...defaultData(stats, GlobalNetwork.ETHEREUM),
+        tokenId,
         stats[network].apy.last24h
-            ? stats[network].apy.last24h[product]
+            ? stats[network].apy.last24h[token]
             : null,
         stats[network].apy.last7d
-            ? stats[network].apy.last7d[product]
+            ? stats[network].apy.last7d[token]
             : null,
         stats[network].apy.daily
-            ? stats[network].apy.daily[product]
+            ? stats[network].apy.daily[token]
             : null,
         stats[network].apy.weekly
-            ? stats[network].apy.weekly[product]
+            ? stats[network].apy.weekly[token]
             : null,
         stats[network].apy.monthly
-            ? stats[network].apy.monthly[product]
+            ? stats[network].apy.monthly[token]
             : null,
         stats[network].apy.all_time
-            ? stats[network].apy.all_time[product]
+            ? stats[network].apy.all_time[token]
             : null,
         stats[network].apy.current
-            ? stats[network].apy.current[product]
+            ? stats[network].apy.current[token]
             : null,
         moment().utc(),
     ];
     return result;
 }
 
-const getTVL = (stats, network: Network) => {
+const getTVL = (stats, network: NetworkName) => {
     let data = [];
-    if (network === 'mainnet') {
+    if (network === NetworkName.MAINNET) {
         data = [
             stats[network].tvl.pwrd
                 ? stats[network].tvl.pwrd
@@ -75,7 +84,7 @@ const getTVL = (stats, network: Network) => {
                 ? stats[network].tvl.util_ratio_limit_GW
                 : null,
         ];
-    } else if (network === 'avalanche') {
+    } else if (network === NetworkName.AVALANCHE) {
         data = [
             stats[network].tvl['groDAI.e_vault']
                 ? stats[network].tvl['groDAI.e_vault']
@@ -94,16 +103,20 @@ const getTVL = (stats, network: Network) => {
         return [];
     }
     const result = [
-        ...defaultData(stats, network),
+        // ...defaultData(stats, network),
+        ...defaultData(
+            stats,
+            network === NetworkName.MAINNET ? GlobalNetwork.ETHEREUM : GlobalNetwork.AVALANCHE
+        ),
         ...data,
         moment().utc(),
     ];
     return result;
 }
 
-const getSystem = (stats, network: Network) => {
+const getSystem = (stats, network: NetworkName) => {
     const result = [
-        ...defaultData(stats, network),
+        ...defaultData(stats, GlobalNetwork.ETHEREUM),
         stats[network].system.total_share
             ? stats[network].system.total_share
             : null,
@@ -121,9 +134,9 @@ const getSystem = (stats, network: Network) => {
     return result;
 }
 
-const getLifeguard = (stats, network: Network) => {
+const getLifeguard = (stats, network: NetworkName) => {
     const result = [
-        ...defaultData(stats, network),
+        ...defaultData(stats, GlobalNetwork.ETHEREUM),
         stats[network].system.lifeguard.name
             ? stats[network].system.lifeguard.name
             : null,
@@ -144,11 +157,11 @@ const getLifeguard = (stats, network: Network) => {
     return result;
 }
 
-const getLifeguardStables = (stats, network: Network) => {
+const getLifeguardStables = (stats, network: NetworkName) => {
     let result = [];
     for (const protocol of stats[network].system.lifeguard.stablecoins) {
         result.push([
-            ...defaultData(stats, network),
+            ...defaultData(stats, GlobalNetwork.ETHEREUM),
             protocol.name
                 ? protocol.name
                 : null,
@@ -164,13 +177,13 @@ const getLifeguardStables = (stats, network: Network) => {
     return result;
 }
 
-const getVaults = (stats, network: Network) => {
+const getVaults = (stats, network: NetworkName) => {
     let result = [];
 
-    if (network === 'mainnet') {
+    if (network === NetworkName.MAINNET) {
         for (const vault of stats[network].system.vault) {
             result.push([
-                ...defaultData(stats, network),
+                ...defaultData(stats, GlobalNetwork.ETHEREUM),
                 vault.name
                     ? vault.name
                     : null,
@@ -189,10 +202,10 @@ const getVaults = (stats, network: Network) => {
                 moment().utc(),
             ]);
         }
-    } else if (network === 'avalanche') {
+    } else if (network === NetworkName.AVALANCHE) {
         for (const labsVault of stats[network].labs_vault) {
             result.push([
-                ...defaultData(stats, network),
+                ...defaultData(stats, GlobalNetwork.AVALANCHE),
                 labsVault.name
                     ? labsVault.name
                     : null,
@@ -220,18 +233,21 @@ const getVaults = (stats, network: Network) => {
     return result;
 }
 
-const getReserves = (stats, network: Network) => {
+const getReserves = (stats, network: NetworkName) => {
     let result = [];
 
-    const reserves = (network === 'mainnet')
+    const reserves = (network === NetworkName.MAINNET)
         ? stats[network].system.vault
-        : (network === 'avalanche')
+        : (network === NetworkName.AVALANCHE)
             ? stats[network].labs_vault
             : [];
 
     for (const reserve of reserves) {
         result.push([
-            ...defaultData(stats, network),
+            ...defaultData(
+                stats,
+                network === NetworkName.MAINNET ? GlobalNetwork.ETHEREUM : GlobalNetwork.AVALANCHE
+            ),
             reserve.name
                 ? reserve.name
                 : null,
@@ -257,14 +273,14 @@ const getReserves = (stats, network: Network) => {
     return result;
 }
 
-const getStrategies = (stats, network: Network) => {
+const getStrategies = (stats, network: NetworkName) => {
     let result = [];
 
-    if (network === Network.MAINNET) {
+    if (network === NetworkName.MAINNET) {
         for (const vault of stats[network].system.vault) {
             for (const strategy of vault.strategies) {
                 result.push([
-                    ...defaultData(stats, network),
+                    ...defaultData(stats, GlobalNetwork.ETHEREUM),
                     vault.name
                         ? vault.name
                         : null,
@@ -290,11 +306,11 @@ const getStrategies = (stats, network: Network) => {
                 ]);
             }
         }
-    } else if (network === Network.AVALANCHE) {
+    } else if (network === NetworkName.AVALANCHE) {
         for (const vault of stats[network].labs_vault) {
             for (const strategy of vault.strategies) {
                 result.push([
-                    ...defaultData(stats, network),
+                    ...defaultData(stats, GlobalNetwork.AVALANCHE),
                     vault.name
                         ? vault.name
                         : null,
@@ -344,11 +360,11 @@ const getStrategies = (stats, network: Network) => {
     return result;
 }
 
-const getExposureStables = (stats, network: Network) => {
+const getExposureStables = (stats, network: NetworkName) => {
     let result = [];
     for (const stablecoin of stats[network].exposure.stablecoins) {
         result.push([
-            ...defaultData(stats, network),
+            ...defaultData(stats, GlobalNetwork.ETHEREUM),
             stablecoin.name
                 ? stablecoin.name
                 : null,
@@ -364,11 +380,11 @@ const getExposureStables = (stats, network: Network) => {
     return result;
 }
 
-const getExposureProtocols = (stats, network: Network) => {
+const getExposureProtocols = (stats, network: NetworkName) => {
     let result = [];
     for (const protocol of stats[network].exposure.protocols) {
         result.push([
-            ...defaultData(stats, network),
+            ...defaultData(stats, GlobalNetwork.ETHEREUM),
             protocol.name
                 ? protocol.name
                 : null,
