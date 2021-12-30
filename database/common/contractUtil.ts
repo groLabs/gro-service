@@ -85,6 +85,51 @@ const getStables = async () => {
     return info;
 }
 
+const getUSDCeVault = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault, getProviderAvax())
+        .contract;
+}
+
+const getUSDTeVault = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault, getProviderAvax())
+        .contract;
+}
+
+const getDAIeVault = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault, getProviderAvax())
+        .contract;
+}
+
+const getUSDCeVault_1_5 = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_5, getProviderAvax())
+        .contract;
+}
+
+const getUSDTeVault_1_5 = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_5, getProviderAvax())
+        .contract;
+}
+
+const getDAIeVault_1_5 = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_5, getProviderAvax())
+        .contract;
+}
+
+const getUSDCeVault_1_5_1 = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_5_1, getProviderAvax())
+        .contract;
+}
+
+const getUSDTeVault_1_5_1 = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_5_1, getProviderAvax())
+        .contract;
+}
+
+const getDAIeVault_1_5_1 = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_5_1, getProviderAvax())
+        .contract;
+}
+
 const getStableCoins = async () => {
     if (!stableCoins.length) {
         const latestController = getLatestSystemContract(
@@ -129,20 +174,6 @@ const getStableCoinsInfo = async () => {
     return stableCoinsInfo;
 }
 
-const getUSDCeVault = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault, getProviderAvax())
-        .contract;
-}
-
-const getUSDTeVault = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault, getProviderAvax())
-        .contract;
-}
-
-const getDAIeVault = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault, getProviderAvax())
-        .contract;
-}
 
 export {
     getGroVault,
@@ -153,4 +184,10 @@ export {
     getUSDCeVault,
     getUSDTeVault,
     getDAIeVault,
+    getUSDCeVault_1_5,
+    getUSDTeVault_1_5,
+    getDAIeVault_1_5,
+    getUSDCeVault_1_5_1,
+    getUSDTeVault_1_5_1,
+    getDAIeVault_1_5_1,
 };

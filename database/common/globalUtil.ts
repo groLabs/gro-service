@@ -1,13 +1,18 @@
 // default key from BOT_ENV in config file => blockchain.alchemy_api_keys.default
+import BN from 'bignumber.js';
 import moment from 'moment';
+import { div } from '../../common/digitalUtil';
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import { getConfig } from '../../common/configUtil';
 import {
-    Network,
+    NetworkName,
     NetworkId,
-    GlobalNetwork
+    GlobalNetwork,
+    Base,
 } from '../types';
+const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 // ETH config
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import BlocksScanner from './blockscanner';
@@ -16,13 +21,27 @@ const provider = getAlchemyRpcProvider(providerKey);
 const scanner = new BlocksScanner(provider);
 // AVAX config
 import { ethers } from 'ethers';
-import { getConfig } from '../../common/configUtil';
 const rpcURL: any =
     getConfig('blockchain.avalanche_rpc_url', false) ||
     'https://api.avax.network/ext/bc/C/rpc';
 const providerAVAX = new ethers.providers.JsonRpcProvider(rpcURL);
 const scannerAvax = new BlocksScanner(providerAVAX);
 
+
+const parseAmount = (
+    amount: any, //TOOD: Bignumber
+    base: Base
+) => {
+    return parseFloat(
+        div(
+            amount,
+            base === Base.D18
+                ? new BN(10).pow(18)
+                : new BN(10).pow(6),
+            amountDecimal,
+        )
+    );
+};
 
 /// @notice Calculate number of N-second intervals between start and end timestamps
 ///         (in case an historical data load is needed)
@@ -47,7 +66,7 @@ const calcRangeTimestamps = (start, end, interval) => {
         }
         return search(start, end);
     } catch (err) {
-        logger.error(`**DB: Error in globalUtil.js->calcRangeTimestamps(): ${err}`);
+        logger.error(`**DB: Error in globalUtil.ts->calcRangeTimestamps(): ${err}`);
     }
 }
 
@@ -86,23 +105,23 @@ const checkDateRange = (_fromDate, _toDate) => {
 ///         in order to ensure the block falls into date X and not X+1
 /// @return Block number for a given date
 const findBlockByDate = async (scanDate, after = true) => {
-    const blockFound = await scanner
-        .getDate(scanDate.toDate(), after)
-        .catch((err) => {
-            logger.error(`Could not get block for ${scanDate}: ${err}`);
-        });
-    return blockFound;
+    try {
+        return await scanner.getDate(scanDate.toDate(), after);
+    } catch (err) {
+        logger.error(`**DB: Error in globalUtil.ts->findBlockByDate(): could not get block for ${scanDate}: ${err}`);
+        return;
+    }
 }
 
-const findBlockByDateAvax = async (scanDate, after = true) => {
-    const blockFound = await scannerAvax
-        .getDate(scanDate.toDate(), after)
-        .catch((err) => {
-            logger.error(`Could not get block for ${scanDate}: ${err}`);
-        });
-    return blockFound;
+///@notice  Same than findBlockByDate() but for Avalanche network
+const findBlockByDateAvax = async (scanDate, after) => {
+    try {
+        return await scannerAvax.getDate(scanDate.toDate(), after);
+    } catch (err) {
+        logger.error(`**DB: Error in globalUtil.ts->findBlockByDateAvax(): could not get block for ${scanDate}: ${err}`);
+        return;
+    }
 }
-
 
 /// @notice Returns the Alchemy provider based on referring bot key
 const getProvider = () => provider;
@@ -113,30 +132,75 @@ const getProviderKey = () => providerKey;
 /// @notice Returns the Avax provider
 const getProviderAvax = () => providerAVAX;
 
-/// @notice Returns the network id
-const getNetworkId2 = (network: GlobalNetwork) => {
+/// @notice Returns the network id & name
+const getNetwork = (globalNetwork: GlobalNetwork) => {
     try {
-        if (network === GlobalNetwork.ETHEREUM) {
-            if (nodeEnv === Network.MAINNET) {
-                return NetworkId.MAINNET;
-            } else if (nodeEnv === Network.ROPSTEN) {
-                return NetworkId.ROPSTEN;
-            } else if (nodeEnv === Network.RINKEBY) {
-                return NetworkId.RINKEBY;
-            } else if (nodeEnv === Network.GOERLI) {
-                return NetworkId.GOERLI;
-            } else {
-                return NetworkId.UNKNOWN;
+        if (globalNetwork === GlobalNetwork.ETHEREUM) {
+            switch (nodeEnv) {
+                case NetworkName.MAINNET:
+                    return {
+                        id: NetworkId.MAINNET,
+                        name: NetworkName.MAINNET,
+                    }
+                case NetworkName.ROPSTEN:
+                    return {
+                        id: NetworkId.ROPSTEN,
+                        name: NetworkName.ROPSTEN,
+                    }
+                case NetworkName.RINKEBY:
+                    return {
+                        id: NetworkId.RINKEBY,
+                        name: NetworkName.RINKEBY,
+                    }
+                case NetworkName.GOERLI:
+                    return {
+                        id: NetworkId.GOERLI,
+                        name: NetworkName.GOERLI,
+                    }
+                default:
+                    return {
+                        id: NetworkId.UNKNOWN,
+                        name: NetworkName.UNKNOWN
+                    }
             }
-        } else if (network === GlobalNetwork.AVALANCHE) {
-            return NetworkId.AVALANCHE;
+        } else if (globalNetwork === GlobalNetwork.AVALANCHE) {
+            return {
+                id: NetworkId.AVALANCHE,
+                name: NetworkName.AVALANCHE
+            }
         } else {
-            return NetworkId.UNKNOWN;
+            return {
+                id: NetworkId.UNKNOWN,
+                name: NetworkName.UNKNOWN
+            }
         }
     } catch (err) {
-        logger.error(`Error in globalUtil->getNetworkId2(): ${err}`);
-        return NetworkId.UNKNOWN;
+        logger.error(`Error in globalUtil->getNetwork(): ${err}`);
+        return {
+            id: NetworkId.UNKNOWN,
+            name: NetworkName.UNKNOWN
+        }
     }
+}
+
+const getBlockData = async (blockNumber) => {
+    const block = await getProvider()
+        .getBlock(blockNumber)
+        .catch((err) => {
+            logger.error(err);
+            return 0;
+        });
+    return block;
+};
+
+const getBlockDataAvax = async (blockNumber) => {
+    const block = await getProviderAvax()
+        .getBlock(blockNumber)
+        .catch((err) => {
+            logger.error(err);
+            return 0;
+        });
+    return block;
 };
 
 export {
@@ -144,8 +208,12 @@ export {
     checkDateRange,
     findBlockByDate,
     findBlockByDateAvax,
+    parseAmount,
+    getNetwork,
     getProvider,
     getProviderKey,
     getProviderAvax,
-    getNetworkId2,
+    getBlockData,
+    getBlockDataAvax,
+
 }

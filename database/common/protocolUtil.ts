@@ -1,7 +1,8 @@
-import { query } from '../handler/queryHandler';
-import { getNetworkId } from './personalUtil';
 import moment from 'moment';
+import { query } from '../handler/queryHandler';
+import { getNetwork } from './globalUtil';
 import { QUERY_ERROR } from '../constants';
+import { GlobalNetwork } from '../types';
 
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -40,7 +41,7 @@ const updateTimeStamp = async (block_timestamp, source) => {
         const params = [
             block_timestamp,
             moment().utc(),
-            getNetworkId(),
+            getNetwork(GlobalNetwork.ETHEREUM).id,
             source,
         ];
         const res = await query('update_last_protocol_load.sql', params);

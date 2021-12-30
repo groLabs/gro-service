@@ -5,18 +5,22 @@ const {
     getPowerD: getPWRD,
     // getGroDAO: getGRO,
 } = require('../common/contractUtil');
-import { 
+import {
     checkTime,
     getBalances,
 } from './balanceUtil';
-import { checkDateRange } from './globalUtil';
-import { parseAmount } from '../parser/personalStatsParser';
-import { getProvider, findBlockByDate } from './globalUtil';
+import {
+    getProvider,
+    findBlockByDate,
+    checkDateRange,
+    parseAmount,
+} from './globalUtil';
+import { Base } from '../types';
 import { getConfig } from '../../common/configUtil';
 const statsDir = getConfig('stats_folder');
 
 // DUMPS:
-const {airdropHoldersAvax : balances} = require('../files/airdropHoldersAvax');
+const { airdropHoldersAvax: balances } = require('../files/airdropHoldersAvax');
 // const {argentHolders : balances} = require('../files/argentHolders');
 
 
@@ -46,22 +50,22 @@ const status = async (targetDate, targetTime, targetBlock) => {
         : (await findBlockByDate(date, false)).block;
 
     // GVT data
-    const priceGVT = parseAmount(await getGVT().getPricePerShare({ blockTag: block }), 'USD');
+    const priceGVT = parseAmount(await getGVT().getPricePerShare({ blockTag: block }), Base.D18);
     const totalAssetsGVT = await getGVT().totalAssets({ blockTag: block });
-    const totalAssetsGVTparsed = parseAmount(totalAssetsGVT, 'USD');
+    const totalAssetsGVTparsed = parseAmount(totalAssetsGVT, Base.D18);
     const totalSupplyGVT = await getGVT().totalSupply({ blockTag: block });
-    const totalSupplyGVTparsed = parseAmount(totalSupplyGVT, 'USD');
+    const totalSupplyGVTparsed = parseAmount(totalSupplyGVT, Base.D18);
 
     // PWRD data
-    const pricePWRD = parseAmount(await getPWRD().getPricePerShare({ blockTag: block }), 'USD');
+    const pricePWRD = parseAmount(await getPWRD().getPricePerShare({ blockTag: block }), Base.D18);
     const totalAssetsPWRD = await getPWRD().totalAssets({ blockTag: block });
-    const totalAssetsPWRDparsed = parseAmount(totalAssetsPWRD, 'USD');
+    const totalAssetsPWRDparsed = parseAmount(totalAssetsPWRD, Base.D18);
     const totalSupplyPWRD = await getPWRD().totalSupply({ blockTag: block });
-    const totalSupplyPWRDparsed = parseAmount(totalSupplyPWRD, 'USD');
+    const totalSupplyPWRDparsed = parseAmount(totalSupplyPWRD, Base.D18);
 
     // GRO data
     // const totalSupplyGRO = await getGRO().totalSupply({ blockTag: block });
-    // const totalSupplyGROparsed = parseAmount(totalSupplyGRO, 'USD');
+    // const totalSupplyGROparsed = parseAmount(totalSupplyGRO, Base.D18);
 
     console.log(`-------------------------`);
     console.log(`block : ${block}`);
@@ -101,7 +105,7 @@ const groAirdropHolders = async (targetTimestamp: number) => {
     console.log(`Balances at block ${block}:`)
     const res = await getBalances(VOTE_AGGREGATOR_ADDRESS, balances, block);
     const combinedGro = res[0].amount_unstaked;
-    for (let i=0; i<balances.length; i++) {
+    for (let i = 0; i < balances.length; i++) {
         console.log(`${balances[i]}|${combinedGro[i]}`);
     }
 }

@@ -51,6 +51,7 @@ export default class {
                     this.blockTime
             )
         );
+
         return this.returnWrapper(
             date.format(),
             await this.findBetter(date, predictedBlock, after)
@@ -78,6 +79,7 @@ export default class {
     }
 
     async findBetter(date, predictedBlock, after, blockTime = this.blockTime) {
+
         if (await this.isBetterBlock(date, predictedBlock, after)) {
             return predictedBlock.number;
         }

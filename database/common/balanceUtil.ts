@@ -1,8 +1,9 @@
-import { BigNumber } from 'ethers';
+// import { BigNumber } from 'ethers';
 import moment from 'moment';
-import { parseAmount } from '../parser/personalStatsParser';
+import { parseAmount } from '../common/globalUtil';
 import { getConfig } from '../../common/configUtil';
 import { getTokenCounter } from './contractUtil';
+import { Base } from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -15,8 +16,8 @@ const BAL_POOL_GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro
 /// @notice Check time format (if defined) and return hours, minutes & seconds
 /// @dev    If time is not defined, return 23:59:59 by default
 /// @param  time The target time to load balances [format: HH:mm:ss]
-/// @return An array with 7 fixed positions: hours, minuts & seconds
-const checkTime = (time) => {
+/// @return An array with 7 fixed positions: hours, minutes & seconds
+const checkTime = (time: string): number[] => {
     const isTimeOK = moment(time, 'HH:mm:ss', true).isValid();
     if (!time) {
         return [23, 59, 59];
@@ -26,12 +27,16 @@ const checkTime = (time) => {
         const seconds = parseInt(time.substring(6, 8));
         return [hours, minutes, seconds];
     } else {
-        logger.error(`**DB: Error in balanceUtil.js->checkTime(): invalid time format ${time}`);
+        logger.error(`**DB: Error in balanceUtil.ts->checkTime(): invalid time format ${time}`);
         return [-1, -1, -1];
     }
 }
 
-const getBalances = async (tokenAddress, userAddresses, blockNumber) => {
+const getBalances = async (
+    tokenAddress,
+    userAddresses,
+    blockNumber
+) => {
     try {
         const blockTag = { blockTag: blockNumber };
 
@@ -42,16 +47,20 @@ const getBalances = async (tokenAddress, userAddresses, blockNumber) => {
         );
 
         return [
-            { amount_unstaked: result[0].map(unstaked => parseAmount(unstaked, 'USD')) },
-            { amount_staked: result[1].map(staked => parseAmount(staked, 'USD')) }, // only for single-sided pools (gvt, gro)
+            { amount_unstaked: result[0].map(unstaked => parseAmount(unstaked, Base.D18)) },
+            { amount_staked: result[1].map(staked => parseAmount(staked, Base.D18)) }, // only for single-sided pools (gvt, gro)
         ];
     } catch (err) {
-        logger.error(`**DB: Error in balanceUtil.js->getBalances(): ${err}`);
+        logger.error(`**DB: Error in balanceUtil.ts->getBalances(): ${err}`);
         return [];
     }
 }
 
-const getBalancesUniBalLP = async (tokenAddress, userAddresses, blockNumber) => {
+const getBalancesUniBalLP = async (
+    tokenAddress,
+    userAddresses,
+    blockNumber
+) => {
     try {
         let result = [];
         const blockTag = { blockTag: blockNumber };
@@ -72,26 +81,31 @@ const getBalancesUniBalLP = async (tokenAddress, userAddresses, blockNumber) => 
                 );
                 break;
             default:
-                logger.error(`**DB: Error in balanceUtil.js->getBalancesUniBalLP(): Unrecognised token address`);
+                logger.error(`**DB: Error in balanceUtil.ts->getBalancesUniBalLP(): Unrecognised token address`);
                 return [];
         }
         return [
-            { amount_pooled_lp: result[0].map(pooled => parseAmount(pooled, 'USD')) },
-            { amount_staked_lp: result[1].map(staked => parseAmount(staked, 'USD')) },
-            { lp_position: result[2].map(
-                lp_positions => [
-                    parseAmount(lp_positions[0], 'USD'),
-                    parseAmount(lp_positions[1], (tokenAddress === UNI_POOL_GVT_USDC_ADDRESS) ? 'USDC' : 'USD'),
-                ])
+            { amount_pooled_lp: result[0].map(pooled => parseAmount(pooled, Base.D18)) },
+            { amount_staked_lp: result[1].map(staked => parseAmount(staked, Base.D18)) },
+            {
+                lp_position: result[2].map(
+                    lp_positions => [
+                        parseAmount(lp_positions[0], Base.D18),
+                        parseAmount(lp_positions[1], (tokenAddress === UNI_POOL_GVT_USDC_ADDRESS) ? Base.D6 : Base.D18),
+                    ])
             }
         ];
     } catch (err) {
-        logger.error(`**DB: Error in balanceUtil.js->getBalancesUniBalLP(): ${err}`);
+        logger.error(`**DB: Error in balanceUtil.ts->getBalancesUniBalLP(): ${err}`);
         return [];
     }
 }
 
-const getBalancesCrvLP = async (tokenAddress, userAddresses, blockNumber) => {
+const getBalancesCrvLP = async (
+    tokenAddress,
+    userAddresses,
+    blockNumber
+) => {
     try {
         const blockTag = { blockTag: blockNumber };
         const result = await getTokenCounter().getCurvePwrd(
@@ -100,12 +114,12 @@ const getBalancesCrvLP = async (tokenAddress, userAddresses, blockNumber) => {
             blockTag,
         );
         return [
-            { amount_pooled_lp: result[0].map(pooled => parseAmount(pooled, 'USD')) },
-            { amount_staked_lp: result[1].map(staked => parseAmount(staked, 'USD')) },
-            { lp_position: result[2].map(lp_position => parseAmount(lp_position, 'USD'))}
+            { amount_pooled_lp: result[0].map(pooled => parseAmount(pooled, Base.D18)) },
+            { amount_staked_lp: result[1].map(staked => parseAmount(staked, Base.D18)) },
+            { lp_position: result[2].map(lp_position => parseAmount(lp_position, Base.D18)) }
         ];
     } catch (err) {
-        logger.error(`**DB: Error in balanceUtil.js->getBalancesCrvLP(): ${err}`);
+        logger.error(`**DB: Error in balanceUtil.ts->getBalancesCrvLP(): ${err}`);
         return [];
     }
 }
