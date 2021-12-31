@@ -1,28 +1,4 @@
 require('dotenv').config();
-export const deposit_handler_history = {
-    '0x79b14d909381D79B655C0700d0fdc2C7054635b9': {
-        abi: 'old',
-        event_fragment: [
-            'event LogNewDeposit(address indexed user, address indexed referral, bool pwrd, uint256 usdAmount, uint256[] tokens)',
-        ],
-    },
-    '0x9da6ad743F4F2A247A56350703A4B501c7f2C224': {},
-    '0xB7207Ea9446DcA1dEC1c1FC93c6Fcdf8B4a44F40': {},
-};
-export const withdraw_handler_history = {
-    '0xd89512Bdf570476310DE854Ef69D715E0e85B09F': {
-        abi: 'old',
-        event_fragment: [
-            'event LogNewWithdrawal(address indexed user, address indexed referral, bool pwrd, bool balanced, bool all, uint256 deductUsd, uint256 returnUsd, uint256 lpAmount, uint256[] tokenAmounts)',
-        ],
-    },
-    '0x59B6b763509198d07cF8F13a2dc6F2df98CB0a1d': {},
-    '0x641bEFA4dB601578A64F0Fc1f4E89E9869268Fe7': {},
-};
-export const old_pnl = [
-    '0x4C4A81298CC85c5BBF8092bd241fCc5dD6Ec3f74',
-    '0xc94dDeACff69bd206CEDdFe2b601a277225D23D6',
-];
 export const airdrop = {
     address: '0x6b1bFf72F00cC147b5Dc7A5b156Fe7A6Fd206ddA',
     start_block: 13417433,
@@ -47,12 +23,6 @@ export const blockchain = {
     avax_start_block: 7726890,
     start_timestamp: 1622204347,
     avax_launch_timestamp: 1638483222,
-    default_api_keys: {
-        alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
-        infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
-        etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
-        pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
-    },
     alchemy_api_keys: {
         default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
         stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
@@ -81,24 +51,14 @@ export const blockchain = {
             private_key: process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`],
         },
         regular: {
-            low_file_path: process.env.KEY_STORE_REGULAR_LOW_GAS,
-            low_password: process.env.KEY_PASSWORD_REGULAR_LOW_GAS,
-            low_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_LOW_GAS,
-            standard_file_path: process.env.KEY_STORE_REGULAR_STANDARD_GAS,
-            standard_password: process.env.KEY_PASSWORD_REGULAR_STANDARD_GAS,
-            standard_private_key:
-                process.env.BOT_PRIVATE_KEY_REGULAR_STANDARD_GAS,
             fast_file_path: process.env.KEY_STORE_REGULAR_FAST_GAS,
             fast_password: process.env.KEY_PASSWORD_REGULAR_FAST_GAS,
             fast_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_FAST_GAS,
-            rapid_file_path: process.env.KEY_STORE_REGULAR_RAPID_GAS,
-            rapid_password: process.env.KEY_PASSWORD_REGULAR_RAPID_GAS,
-            rapid_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_RAPID_GAS,
         },
         critical: {
-            rapid_file_path: process.env.KEY_STORE_CRITICAL_RAPID_GAS,
-            rapid_password: process.env.KEY_PASSWORD_CRITICAL_RAPID_GAS,
-            rapid_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_CRITICAL_GAS,
+            fast_file_path: process.env.KEY_STORE_CRITICAL_FAST_GAS,
+            fast_password: process.env.KEY_PASSWORD_CRITICAL_FAST_GAS,
+            fast_private_key: process.env.BOT_PRIVATE_KEY_CRITICAL_FAST_GAS,
         },
     },
 };
