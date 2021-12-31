@@ -12,7 +12,6 @@ import {
 import { botBalanceMessage } from '../discordMessage/botBalanceMessage';
 import { sendAlertMessage } from './alertMessageSender';
 import { getConfig } from './configUtil';
-import { PrivateProvider } from './privateProvider';
 import { AvaxPrcProvider } from './avaxRpcProvider';
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
