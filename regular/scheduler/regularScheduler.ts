@@ -1,12 +1,31 @@
 import schedule from 'node-schedule';
-import { syncManagerNonce, checkAccountsBalance, getCurrentBlockNumber } from '../../common/chainUtil';
+import {
+    syncManagerNonce,
+    checkAccountsBalance,
+    getCurrentBlockNumber,
+} from '../../common/chainUtil';
 import { checkServerHealth } from '../../common/checkBotHealth';
-import { checkPendingTransactions, syncPendingTransactions } from '../../common/pendingTransaction';
+import {
+    checkPendingTransactions,
+    syncPendingTransactions,
+} from '../../common/pendingTransaction';
 import { pendingTransactions } from '../../common/storage';
 import { sendErrorMessageToLogChannel } from '../../common/discord/discordService';
 import { pendingTransactionResend } from '../../gasPrice/transaction';
-import { investTrigger, rebalanceTrigger, harvestOneTrigger, distributeCurveVaultTrigger } from '../handler/triggerHandler';
-import { invest, rebalance, harvest, curveInvest, priceSafetyCheck, distributeCurveVault } from '../handler/actionHandler';
+import {
+    investTrigger,
+    rebalanceTrigger,
+    harvestOneTrigger,
+    distributeCurveVaultTrigger,
+} from '../handler/triggerHandler';
+import {
+    invest,
+    rebalance,
+    harvest,
+    curveInvest,
+    priceSafetyCheck,
+    distributeCurveVault,
+} from '../handler/actionHandler';
 import { getVaults, getStrategyLength } from '../../contract/allContracts';
 import { getConfig } from '../../common/configUtil';
 import { investTransactionMessage } from '../../discordMessage/investMessage';
@@ -152,7 +171,7 @@ function longPendingTransactionsScheduler() {
 
 function investTriggerScheduler() {
     const providerKey = 'default';
-    const walletKey = 'low';
+    const walletKey = 'default';
     schedule.scheduleJob(investTriggerSchedulerSetting, async () => {
         try {
             const vaults = getVaults(providerKey, walletKey);
@@ -297,7 +316,7 @@ function curveExposureMaintenanceScheduler() {
 
 function harvestTriggerScheduler() {
     const providerKey = 'default';
-    const walletKey = 'standard';
+    const walletKey = 'default';
     schedule.scheduleJob(harvestTriggerSchedulerSetting, async () => {
         try {
             const vaults = getVaults(providerKey, walletKey);

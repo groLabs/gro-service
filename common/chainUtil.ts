@@ -12,7 +12,6 @@ import {
 import { botBalanceMessage } from '../discordMessage/botBalanceMessage';
 import { sendAlertMessage } from './alertMessageSender';
 import { getConfig } from './configUtil';
-import { PrivateProvider } from './privateProvider';
 import { AvaxPrcProvider } from './avaxRpcProvider';
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
@@ -21,17 +20,6 @@ const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 const DEFAULT_PROVIDER_KEY = 'default';
 const DEFAULT_WALLET_KEY = 'default';
-
-if (
-    !process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`] &&
-    process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`] === 'NO_PASSWORD'
-) {
-    const err = new SettingError(
-        `Environment variable ${`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`} are not set.`
-    );
-    logger.error(err);
-    throw err;
-}
 
 let defaultProvider;
 let socketProvider;
@@ -181,14 +169,15 @@ function getDefaultProvider() {
     if (defaultProvider) {
         return defaultProvider;
     }
-    const options = getConfig('blockchain.default_api_keys', false) || {};
     logger.info('Create a new default provider.');
     if (process.env.NODE_ENV === 'develop') {
-        defaultProvider = ethers.providers.getDefaultProvider(network);
+        defaultProvider = new ethers.providers.JsonRpcProvider(
+            'http://127.0.0.1:8545'
+        );
     } else {
-        defaultProvider = ethers.providers.getDefaultProvider(network, options);
+        defaultProvider = ethers.providers.getDefaultProvider(network);
     }
-    defaultProvider = ethers.providers.getDefaultProvider(network, options);
+    defaultProvider = ethers.providers.getDefaultProvider(network);
     return defaultProvider;
 }
 
@@ -211,7 +200,9 @@ function getAlchemyRpcProvider(providerKey?: any) {
             const key = `blockchain.alchemy_api_keys.${providerKey}`;
             const apiKeyValue = getConfig(key);
             if (process.env.NODE_ENV === 'develop') {
-                result = ethers.providers.getDefaultProvider(network);
+                result = new ethers.providers.JsonRpcProvider(
+                    'http://127.0.0.1:8545'
+                );
             } else {
                 const alchemyProvider = new ethers.providers.AlchemyProvider(
                     network,
@@ -246,7 +237,9 @@ function getInfruraRpcProvider(providerKey) {
             const key = `blockchain.infura_api_keys.${providerKey}`;
             const apiKeyValue = getConfig(key);
             if (process.env.NODE_ENV === 'develop') {
-                result = ethers.providers.getDefaultProvider(network);
+                result = new ethers.providers.JsonRpcProvider(
+                    'http://127.0.0.1:8545'
+                );
             } else {
                 const tempProvider = new ethers.providers.InfuraProvider(
                     network,

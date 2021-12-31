@@ -1,7 +1,13 @@
-import { MESSAGE_TYPES, MESSAGE_EMOJI, DISCORD_CHANNELS, sendMessage, sendMessageToChannel } from '../common/discord/discordService';
+import {
+    MESSAGE_TYPES,
+    MESSAGE_EMOJI,
+    DISCORD_CHANNELS,
+    sendMessage,
+    sendMessageToChannel,
+} from '../common/discord/discordService';
 import { shortAccount, formatNumber } from '../common/digitalUtil';
 import { sendAlertMessage } from '../common/alertMessageSender';
-import { IDiscordMessage } from './discordMessageTypes'
+import { IDiscordMessage } from './discordMessageTypes';
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -9,7 +15,7 @@ const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 function rebalanceTriggerMessage(content) {
     const discordMessage: IDiscordMessage = {
-        type: MESSAGE_TYPES.pnlTrigger,
+        type: MESSAGE_TYPES.rebalanceTrigger,
     };
     if (content.isRebalance) {
         discordMessage.message =

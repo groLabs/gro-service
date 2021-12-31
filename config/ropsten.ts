@@ -1,14 +1,5 @@
 require('dotenv').config();
 export const registry_address = '0x5dF979799065F9c10860Ce3E2ac3e62627c6A3A5';
-export const deposit_handler_history = {
-    '0x4246529D7168FE98F0530d99d93d346092bf50F1': {},
-    '0xB2a9B574cD0ABD2E24E7F2B412B21d49B87a3CD1': {},
-};
-export const withdraw_handler_history = {
-    '0x50B325c2d97CfC88c79E051d2d2A9E3D9C0ac3A8': {},
-    '0xb8082aAeE3fC604FB5E09d895297B138973fA981': {},
-};
-export const old_pnl = ['0x6E50c4d3b3917a4aa4196F4F90C2533C2d2e1634'];
 export const staker = {
     address: '0x53C1F46b1584Fc4D0b51a6B19D45151e974B3f7B',
     start_block: 11091289,
@@ -40,12 +31,6 @@ export const blockchain = {
     avax_start_block: 7726890,
     start_timestamp: 1624827717,
     avax_launch_timestamp: 1638483222,
-    default_api_keys: {
-        alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
-        infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
-        etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
-        pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
-    },
     alchemy_api_keys: {
         default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
         stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
