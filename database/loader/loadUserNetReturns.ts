@@ -13,18 +13,18 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 /// @param  toDdate End date to load net returns
 /// @param  account User address for cache loading; null for daily loads
 const loadUserNetReturns = async (
-    fromDate,
-    toDate,
+    fromDate: string,
+    toDate: string,
     account: string,
-) => {
+): Promise<boolean> => {
     try {
         const dates = generateDateRange(fromDate, toDate);
         logger.info(`**DB${account ? ' CACHE' : ''}: Processing user net returns...`);
         for (const date of dates) {
             /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
             const q = (account)
-                ? 'insert_user_cache_fact_net_returns.sql'
-                : 'insert_user_std_fact_net_returns.sql';
+                ? 'insert_user_net_returns_cache.sql'
+                : 'insert_user_net_returns.sql';
             const params = (account)
                 ? [account]
                 : [moment(date)
@@ -34,19 +34,13 @@ const loadUserNetReturns = async (
                 return false;
             const numResults = result.rowCount;
             let msg = `**DB${account ? ' CACHE' : ''}: ${numResults} record${isPlural(numResults)} added into `;
-            msg += `USER_STD_FACT_NET_RETURNS for date ${moment(date).format('DD/MM/YYYY')}`;
+            msg += `USER_NET_RETURNS_CACHE for date ${moment(date).format('DD/MM/YYYY')}`;
             logger.info(msg);
         }
-
-        // Update table SYS_USER_LOADS with the last loads
-        if (!account) {
-            return await loadTableUpdates('USER_STD_FACT_NET_RETURNS', fromDate, toDate);
-        } else {
-            return true;
-        }
-
+        return true;
     } catch (err) {
         handleErr(`loadUserNetReturns.ts->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}]`, err);
+        return false;
     }
 }
 

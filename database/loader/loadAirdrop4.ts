@@ -7,7 +7,7 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 
-const truncateTempAirdrop4 = async () => {
+const truncateTempAirdrop4 = async (): Promise<boolean> => {
     try {
         const q = 'truncate_airdrop4_temp.sql';
         const result = await query(q, []);
@@ -18,7 +18,10 @@ const truncateTempAirdrop4 = async () => {
     }
 }
 
-const loadTempAirdrop4 = async (item, payload) => {
+const loadTempAirdrop4 = async (
+    item,
+    payload
+): Promise<boolean> => {
     try {
         const q = 'insert_airdrop4_temp.sql';
         const result = await query(q, payload);
@@ -34,12 +37,12 @@ const loadTempAirdrop4 = async (item, payload) => {
     }
 }
 
-const loadAirdrop4 = async() => {
+const loadAirdrop4 = async () => {
     try {
         const q = 'insert_airdrop4_final.sql';
         const result = await query(q, []);
         if (result.status === QUERY_ERROR)
-        // @ts-ignore
+            // @ts-ignore
             handleErr(`loadAirdrop4->loadAirdrop4(): error/s during the load into AIRDROP4_FINAL`);
         else {
             logger.info(`${result.rowCount} items loaded into AIRDROP4_FINAL`);

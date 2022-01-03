@@ -35,6 +35,7 @@ import { BALANCES_BATCH as BATCH } from '../constants';
 import { getConfig } from '../../common/configUtil';
 import {
     ReturnType,
+    NetworkName,
     GlobalNetwork as GN,
     Base,
 } from '../types';
@@ -53,6 +54,24 @@ const VOTE_AGGREGATOR_ADDRESS = '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D';
 
 let rowCount = 0;
 
+let gvt = [];
+let pwrd = [];
+let gro = [];
+let groTotal = [];
+let lpGroGvt = [];
+let lpGroUsdc = [];
+let lpCrvPwrd = [];
+let lpGroWeth = [];
+let usdce_1_0 = [];
+let usdte_1_0 = [];
+let daie_1_0 = [];
+let usdce_1_5 = [];
+let usdte_1_5 = [];
+let daie_1_5 = [];
+let usdce_1_5_1 = [];
+let usdte_1_5_1 = [];
+let daie_1_5_1 = [];
+
 /// @notice Retrieve user balances in a recursive way by batches
 /// @dev    - The amount of users per batch is defined in constant <BATCH>
 ///         - The offset & batch will define the amount of users to be processed on
@@ -69,23 +88,7 @@ const getBalancesSC = async (
     offset: number
 ) => {
     try {
-        let gvt = [];
-        let pwrd = [];
-        let gro = [];
-        let groTotal = [];
-        let lpGroGvt = [];
-        let lpGroUsdc = [];
-        let lpCrvPwrd = [];
-        let lpGroWeth = [];
-        let usdce_1_0 = [];
-        let usdte_1_0 = [];
-        let daie_1_0 = [];
-        let usdce_1_5 = [];
-        let usdte_1_5 = [];
-        let daie_1_5 = [];
-        let usdce_1_5_1 = [];
-        let usdte_1_5_1 = [];
-        let daie_1_5_1 = [];
+
 
         const newOffset = (offset + BATCH >= users.length)
             ? users.length
@@ -117,13 +120,15 @@ const getBalancesSC = async (
             getBalances(getGroVault().address, userBatch, block),
             getBalances(getPowerD().address, userBatch, block),
             getBalances(GRO_ADDRESS, userBatch, block),
-            (nodeEnv === 'mainnet')
+            (nodeEnv === NetworkName.MAINNET)
                 ? getBalances(VOTE_AGGREGATOR_ADDRESS, userBatch, block)
                 : [],
             getBalancesUniBalLP(GRO_GVT_ADDRESS, userBatch, block),
             getBalancesUniBalLP(GRO_USDC_ADDRESS, userBatch, block),
-            getBalancesCrvLP(CRV_PWRD_ADDRESS, userBatch, block),
-            (nodeEnv === 'mainnet')
+            (nodeEnv === NetworkName.MAINNET)
+                ? getBalancesCrvLP(CRV_PWRD_ADDRESS, userBatch, block)
+                : [],
+            (nodeEnv === NetworkName.MAINNET)
                 ? getBalancesUniBalLP(GRO_WETH_ADDRESS, userBatch, block)
                 : [],
             multiCall(GN.AVALANCHE, getUSDCeVault().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
@@ -163,7 +168,7 @@ const getBalancesSC = async (
             pwrd[1].amount_staked.push(...pwrdUpdate[1].amount_staked);
             gro[0].amount_unstaked.push(...groUpdate[0].amount_unstaked);
             gro[1].amount_staked.push(...groUpdate[1].amount_staked);
-            (nodeEnv === 'mainnet')
+            (nodeEnv === NetworkName.MAINNET)
                 ? groTotal[0].amount_unstaked.push(...groTotalUpdate[0].amount_unstaked)
                 : [];
             lpGroGvt[0].amount_pooled_lp.push(...lpGroGvtUpdate[0].amount_pooled_lp);
@@ -172,16 +177,22 @@ const getBalancesSC = async (
             lpGroUsdc[0].amount_pooled_lp.push(...lpGroUsdcUpdate[0].amount_pooled_lp);
             lpGroUsdc[1].amount_staked_lp.push(...lpGroUsdcUpdate[1].amount_staked_lp);
             lpGroUsdc[2].lp_position.push(...lpGroUsdcUpdate[2].lp_position);
-            lpCrvPwrd[0].amount_pooled_lp.push(...lpCrvPwrdUpdate[0].amount_pooled_lp);
-            lpCrvPwrd[1].amount_staked_lp.push(...lpCrvPwrdUpdate[1].amount_staked_lp);
-            lpCrvPwrd[2].lp_position.push(...lpCrvPwrdUpdate[2].lp_position);
-            (nodeEnv === 'mainnet')
+            (nodeEnv === NetworkName.MAINNET)
+                ? lpCrvPwrd[0].amount_pooled_lp.push(...lpCrvPwrdUpdate[0].amount_pooled_lp)
+                : [];
+            (nodeEnv === NetworkName.MAINNET)
+                ? lpCrvPwrd[1].amount_staked_lp.push(...lpCrvPwrdUpdate[1].amount_staked_lp)
+                : [];
+            (nodeEnv === NetworkName.MAINNET)
+                ? lpCrvPwrd[2].lp_position.push(...lpCrvPwrdUpdate[2].lp_position)
+                : [];
+            (nodeEnv === NetworkName.MAINNET)
                 ? lpGroWeth[0].amount_pooled_lp.push(...lpGroWethUpdate[0].amount_pooled_lp)
                 : [];
-            (nodeEnv === 'mainnet')
+            (nodeEnv === NetworkName.MAINNET)
                 ? lpGroWeth[1].amount_staked_lp.push(...lpGroWethUpdate[1].amount_staked_lp)
                 : [];
-            (nodeEnv === 'mainnet')
+            (nodeEnv === NetworkName.MAINNET)
                 ? lpGroWeth[2].lp_position.push(...lpGroWethUpdate[2].lp_position)
                 : [];
             usdce_1_0.push(...usdceUpdate_1_0);
@@ -219,7 +230,7 @@ const getBalancesSC = async (
 
     } catch (err) {
         handleErr(`loadUserBalances->getBalancesSC()`, err);
-        return {};
+        return null;
     }
 }
 
@@ -239,7 +250,7 @@ const insertBalances = async (
                 res.gvt[0].amount_unstaked[i],          // unstaked gvt
                 res.pwrd[0].amount_unstaked[i],         // unstaked pwrd
                 res.gro[0].amount_unstaked[i],          // unstaked gro
-                (nodeEnv === 'mainnet')
+                (nodeEnv === NetworkName.MAINNET)
                     ? res.groTotal[0].amount_unstaked[i]    // total gro
                     : null,
                 res.gro[1].amount_staked[i],            // pool0 - staked lp
@@ -252,9 +263,15 @@ const insertBalances = async (
                 res.lpGroUsdc[2].lp_position[i][0],     // pool2 - staked gro
                 res.lpGroUsdc[2].lp_position[i][1],     // pool2 - staked usdc
                 res.gvt[1].amount_staked[i],            // pool3 - staked lp
-                res.lpCrvPwrd[0].amount_pooled_lp[i],   // pool4 - pooled lp
-                res.lpCrvPwrd[1].amount_staked_lp[i],   // pool4 - staked lp
-                res.lpCrvPwrd[2].lp_position[i],        // pool4 - staked pwrd
+                (nodeEnv === NetworkName.MAINNET)
+                    ? res.lpCrvPwrd[0].amount_pooled_lp[i]   // pool4 - pooled lp
+                    : null,
+                (nodeEnv === NetworkName.MAINNET)
+                    ? res.lpCrvPwrd[1].amount_staked_lp[i]   // pool4 - staked lp
+                    : null,
+                (nodeEnv === NetworkName.MAINNET)
+                    ? res.lpCrvPwrd[2].lp_position[i]        // pool4 - staked pwrd
+                    : null,
                 res.lpGroWeth[0].amount_pooled_lp[i],   // pool5 - pooled lp
                 res.lpGroWeth[1].amount_staked_lp[i],   // pool5 - staked lp
                 res.lpGroWeth[2].lp_position[i][0],     // pool5 - staked gro
@@ -326,6 +343,28 @@ const checkTokenCounterDate = (day: moment.Moment) => {
     }
 }
 
+/// @notice Initialise global vars to 0 or empty
+const cleanseVars = () => {
+    gvt = [];
+    pwrd = [];
+    gro = [];
+    groTotal = [];
+    lpGroGvt = [];
+    lpGroUsdc = [];
+    lpCrvPwrd = [];
+    lpGroWeth = [];
+    usdce_1_0 = [];
+    usdte_1_0 = [];
+    daie_1_0 = [];
+    usdce_1_5 = [];
+    usdte_1_5 = [];
+    daie_1_5 = [];
+    usdce_1_5_1 = [];
+    usdte_1_5_1 = [];
+    daie_1_5_1 = [];
+    rowCount = 0;
+}
+
 /// @notice Show message logs after successful loads
 const showMsg = (
     account: string,
@@ -355,7 +394,7 @@ const loadUserBalances = async (
     toDate: string,
     account: string,
     time: string,
-) => {
+): Promise<boolean> => {
     try {
         // Retrieve target time to load balances (23:59:59 by default)
         const [hours, minutes, seconds] = checkTime(time);
@@ -397,7 +436,8 @@ const loadUserBalances = async (
 
             // Retrieve balances from the SC
             const result = await getBalancesSC(users, block, 0);
-            // TODO: check if response failed
+            if (!result)
+                handleErr(`loadUserBalances->loadUserBalances(): Error when retrieving balances in batch mode`, null);
 
             // Insert balances into the DB
             for (let i = 0; i < users.length; i++) {
@@ -414,7 +454,9 @@ const loadUserBalances = async (
             showMsg(account, date, table);
             rowCount = 0;
         }
-        rowCount = 0;
+        
+        cleanseVars();
+
         return true;
 
     } catch (err) {

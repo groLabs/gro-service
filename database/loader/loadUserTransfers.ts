@@ -33,8 +33,8 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 /// @param  account User address for cache loading; null for daily loads
 /// @return True if no exceptions found, false otherwise
 const loadUserTransfers = async (
-    fromDate: number | string,
-    toDate: number | string,
+    fromDate: string,
+    toDate: string,
     account: string
 ): Promise<boolean> => {
     try {
@@ -184,7 +184,7 @@ const isContractDeployed = (
     contractVersion: ContractVersion,
     side: Transfer,
     block: number
-) => {
+) =>  {
     const networkId = getNetwork(network).id;
 
     if (network === GlobalNetwork.ETHEREUM && networkId === NetworkId.MAINNET) {

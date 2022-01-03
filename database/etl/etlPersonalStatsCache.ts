@@ -1,7 +1,5 @@
 import moment from 'moment';
 import { query } from '../handler/queryHandler';
-import { getConfig } from '../../common/configUtil';
-import { getTimestampByBlockNumber } from '../../common/chainUtil';
 import {
     findBlockByDate,
     findBlockByDateAvax,
@@ -98,7 +96,7 @@ const preloadCache = async (account: string) => {
     }
 }
 
-const loadCache = async (account: string) => {
+const loadCache = async (account: string): Promise<boolean> => {
     try {
         const [
             fromBlock,
@@ -157,7 +155,6 @@ const loadCache = async (account: string) => {
                 loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
             ]);
 
-            //console.log('resssss:', res);
             //TODO: when errors retrieving deposits, withdrawals or transfers in personalUtil->getTransferEvents2()
             // (eg: Message: TypeError: Cannot read property 'PowerDollar' of undefined), it returns true!! (should be false)
 
@@ -168,7 +165,8 @@ const loadCache = async (account: string) => {
                 if (await loadUserTransfers(null, null, account))
                     //if (await loadUserApprovals(null, null, account))
                     if (await loadUserBalances(now, now, account, ''))
-                        return true;
+                        if (await loadUserNetReturns(now, now, account))
+                            return true;
             } else {
                 logger.warn(`**DB: Error/s found in etlPersonalStatsCache.js->loadCache()`);
             }

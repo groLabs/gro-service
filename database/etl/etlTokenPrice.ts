@@ -29,7 +29,7 @@ const getPriceFromCoingecko = async (
             // Call API
             const options = {
                 hostname: `api.coingecko.com`,
-                port: 443,
+                port: 443, //TODO: not working in msb-kovan
                 path: `/api/v3/coins/${coin}/history?date=${coingeckoDateFormat}`,
                 method: 'GET',
             };

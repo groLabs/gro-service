@@ -17,9 +17,9 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 /// @notice Adds new blocks into table ETH_BLOCKS
 /// @return True if no exceptions found, false otherwise
 const loadEthBlocks = async (
-    func,
-    account,
-) => {
+    func: string,
+    account: string,
+): Promise<boolean> => {
     try {
         // Get block numbers to be processed from temporary tables on transfers (deposits & withdrawals) or approvals
         const q = (func === 'loadUserTransfers')

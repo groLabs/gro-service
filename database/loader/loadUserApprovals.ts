@@ -1,5 +1,5 @@
 import { query } from '../handler/queryHandler';
-import { loadEthBlocks } from './old_loadEthBlocks';
+import { loadEthBlocks } from './loadEthBlocks';
 import { loadTableUpdates } from './loadTableUpdates';
 import { handleErr, isPlural } from '../common/personalUtil';
 import { getApprovalEvents } from '../listener/getApprovalEvents';
@@ -18,7 +18,11 @@ const logger = require(`../../${botEnv}/${botEnv}Logger`);
 /// @param toDate
 /// @param account
 /// @return True if no exceptions found, false otherwise
-const loadUserApprovals = async (fromDate, toDate, account) => {
+const loadUserApprovals = async (
+    fromDate: string,
+    toDate: string,
+    account: string
+): Promise<boolean> => {
     try {
         // Add new blocks into ETH_BLOCKS (incl. block timestamp)
         if (await loadEthBlocks('loadUserApprovals', account)) {
@@ -54,16 +58,15 @@ const loadUserApprovals = async (fromDate, toDate, account) => {
 // @DEV: Table TMP_USER_DEPOSITS must be loaded before
 // TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
 const loadTmpUserApprovals = async (
-    fromBlock,
-    toBlock,
-    account,
-) => {
+    fromBlock: number,
+    toBlock: number,
+    account: string,
+): Promise<boolean> => {
     try {
         // Get all approval events for a given block range
         const logs = await getApprovalEvents(account, fromBlock, toBlock);
         if (!logs || logs.length < 1)
             return false;
-
 
         for (let i = 0; i < logs.length; i++) {
             if (logs[i]) {
