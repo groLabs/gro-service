@@ -7,7 +7,7 @@ import { getAllStats } from '../handler/groStatsHandler';
 import { getAllStatsMC } from '../handler/groStatsHandlerMC';
 import { getPriceCheck } from '../handler/priceCheckHandler';
 import { getHistoricalAPY } from '../handler/historicalAPY';
-import { getPersonalStats } from '../handler/personalStatsHandler';
+import { getPersonalStatsMC } from '../handler/personalStatsHandlerMC';
 import { dumpTable } from '../common/pgUtil';
 import { validate } from '../../common/validate';
 import { personalStatsMessage } from '../../discordMessage/statsMessage';
@@ -80,7 +80,7 @@ router.get(
             throw new ParameterError(`Parameter network failed in database: ${network.toLowerCase()} vs. ${process.env.NODE_ENV.toLowerCase()}`);
         }
         console.log('OKI:', network, address);
-        const personalStats = await getPersonalStats(address);
+        const personalStats = await getPersonalStatsMC(address);
         res.json(personalStats);
     })
 );

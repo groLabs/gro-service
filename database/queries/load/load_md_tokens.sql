@@ -6,7 +6,7 @@ INSERT INTO gro."MD_TOKENS" (
     )
 VALUES (
         0,
-        'UNKNOWN',
+        'unknown',
         'Unknown token',
         CURRENT_TIMESTAMP
     );
@@ -18,7 +18,7 @@ INSERT INTO gro."MD_TOKENS" (
     )
 VALUES (
         1,
-        'PWRD',
+        'pwrd',
         'Rebasing stablecoin, native token of Gro protocol',
         CURRENT_TIMESTAMP
     );
@@ -30,7 +30,7 @@ INSERT INTO gro."MD_TOKENS" (
     )
 VALUES (
         2,
-        'GVT',
+        'gvt',
         'Non-rebasing token, native token of Gro protocol',
         CURRENT_TIMESTAMP
     );
@@ -42,7 +42,7 @@ INSERT INTO gro."MD_TOKENS" (
     )
 VALUES (
         3,
-        'GRO',
+        'gro',
         'Gro DAO Token',
         CURRENT_TIMESTAMP
     );
@@ -54,7 +54,7 @@ INSERT INTO gro."MD_TOKENS" (
     )
 VALUES (
         4,
-        'groUSDC.e',
+        'groUSDC.e_vault',
         'USDC.e Leveraged Yield',
         CURRENT_TIMESTAMP
     );
@@ -66,7 +66,7 @@ INSERT INTO gro."MD_TOKENS" (
     )
 VALUES (
         5,
-        'groUSDT.e',
+        'groUSDT.e_vault',
         'USDT.e Leveraged Yield',
         CURRENT_TIMESTAMP
     );
@@ -78,7 +78,7 @@ INSERT INTO gro."MD_TOKENS" (
     )
 VALUES (
         6,
-        'groDAI.e',
+        'groDAI.e_vault',
         'DAI.e Leveraged Yield',
         CURRENT_TIMESTAMP
     );
