@@ -7,11 +7,8 @@ import logger from 'morgan';
 import cors from 'cors';
 import { SettingError, ParameterError, ContractCallError } from '../common/error';
 import { sendMessage, DISCORD_CHANNELS } from '../common/discord/discordService';
-
 import statsRouter from './routes/database';
 import { startDbStatsJobs } from './scheduler/dbStatsScheduler';
-import { initAllContracts } from '../contract/allContracts';
-
 const customLogger = require('./databaseLogger');
 
 const app = express();
@@ -73,8 +70,7 @@ app.use((error, req, res, next) => {
 });
 
 // start the schedule task
-// initAllContracts().then(() => {
 startDbStatsJobs();
-// });
+
 
 module.exports = app;

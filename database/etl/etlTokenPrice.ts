@@ -23,14 +23,15 @@ const getPriceFromCoingecko = async (
     return new Promise(async (resolve) => {
         try {
             // Transform date 'DD/MM/YYYY' to 'DD-MM-YYYY'
-            const re = new RegExp('/', 'g');
-            const coingeckoDateFormat = date.replace(re, '-');
+            //const re = new RegExp('/', 'g');
+            //const coingeckoDateFormat = date.replace(re, '-');
 
             // Call API
             const options = {
                 hostname: `api.coingecko.com`,
-                port: 443, //TODO: not working in msb-kovan
-                path: `/api/v3/coins/${coin}/history?date=${coingeckoDateFormat}`,
+                port: 443,
+                // path: `/api/v3/coins/${coin}/history?date=${coingeckoDateFormat}`,
+                path: `/api/v3/simple/price?ids=${coin}&vs_currencies=usd`,
                 method: 'GET',
             };
 
@@ -39,13 +40,13 @@ const getPriceFromCoingecko = async (
 
             if (call.status === QUERY_SUCCESS) {
                 const data = JSON.parse(call.data);
-                if (data.market_data) {
+                if (data[coin]) {
                     resolve({
-                        data: data.market_data.current_price.usd,
+                        data: data[coin].usd,
                         status: QUERY_SUCCESS,
                     });
                 } else {
-                    logger.warn(`**DB: No ${coin} token price available from Coingecko for date ${date}`);
+                    logger.error(`**DB: No ${coin} token price available from Coingecko for date ${date}`);
                     resolve({
                         data: 0,
                         status: QUERY_SUCCESS,

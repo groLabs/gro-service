@@ -5,9 +5,9 @@ import { getPriceFromCoingecko } from '../etl/etlTokenPrice';
 import {
     getGroVault,
     getPowerD,
-    getUSDCeVault_1_5_1,
-    getUSDTeVault_1_5_1,
-    getDAIeVault_1_5_1,
+    getUSDCeVault_1_5,
+    getUSDTeVault_1_5,
+    getDAIeVault_1_5,
 } from '../common/contractUtil';
 import { QUERY_ERROR } from '../constants';
 import { Base } from '../types';
@@ -39,9 +39,9 @@ const loadTokenPrice = async () => {
             getPriceFromCoingecko(dateString, 'weth'),
             getPriceFromCoingecko(dateString, 'balancer'),
             getPriceFromCoingecko(dateString, 'avalanche-2'),
-            getUSDCeVault_1_5_1().getPricePerShare(),
-            getUSDTeVault_1_5_1().getPricePerShare(),
-            getDAIeVault_1_5_1().getPricePerShare(),
+            getUSDCeVault_1_5().getPricePerShare(),
+            getUSDTeVault_1_5().getPricePerShare(),
+            getDAIeVault_1_5().getPricePerShare(),
         ]);
 
         if (priceGRO.status === QUERY_ERROR
@@ -53,18 +53,25 @@ const loadTokenPrice = async () => {
             return false;
         }
 
+        // Store parsed amounts for reuse
+        const priceGvtParsed = parseAmount(priceGVT, Base.D18);
+        const pricePwrdParsed = parseAmount(pricePWRD, Base.D18);
+        const priceUSDCeParsed = parseAmount(priceUSDCe, Base.D6);
+        const priceUSDTeParsed = parseAmount(priceUSDTe, Base.D6);
+        const priceDAIeParsed = parseAmount(priceDAIe, Base.D18);
+
         // Set params for the insert
         const params = [
             now,
-            parseAmount(priceGVT, Base.D18),
-            parseAmount(pricePWRD, Base.D18),
+            priceGvtParsed,
+            pricePwrdParsed,
             priceGRO.data,
             priceWETH.data,
             priceBAL.data,
             priceAVAX.data,
-            parseAmount(priceUSDCe, Base.D6),
-            parseAmount(priceUSDTe, Base.D6),
-            parseAmount(priceDAIe, Base.D18),
+            priceUSDCeParsed,
+            priceUSDTeParsed,
+            priceDAIeParsed,
             now,
         ];
 
@@ -82,8 +89,9 @@ const loadTokenPrice = async () => {
 
         // Show log
         if (result.status !== QUERY_ERROR) {
-            let msg = `GVT: ${parseAmount(priceGVT, Base.D18)}, PWRD: ${parseAmount(pricePWRD, Base.D18)}`;
+            let msg = `GVT: ${priceGvtParsed}, PWRD: ${pricePwrdParsed}`;
             msg += `, GRO: ${priceGRO.data}, WETH: ${priceWETH.data}, BAL: ${priceBAL.data}, AVAX: ${priceAVAX.data}`;
+            msg += `, USDCe: ${priceUSDCeParsed}, USDTe: ${priceUSDTeParsed}, DAIe: ${priceDAIeParsed}`;
             const action = (isToken.rowCount > 0) ? 'Updated' : 'Added';
             logger.info(`**DB: ${action} token prices for ${now.format('DD/MM/YYYY HH:mm:ss')} => ${msg}`);
         } else {
@@ -93,6 +101,7 @@ const loadTokenPrice = async () => {
 
     } catch (err) {
         logger.error(`**DB: Error in loadTokenPrice.js->loadTokenPrice(): ${err}`);
+        return false;
     }
 }
 
