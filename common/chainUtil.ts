@@ -462,7 +462,7 @@ async function checkAccountsBalance(botBalanceWarnVault) {
     await Promise.all(checkPromise);
 }
 
-async function getCurrentBlockNumber(providerKey) {
+async function getCurrentBlockNumber(providerKey?) {
     const block = await getAlchemyRpcProvider(providerKey)
         .getBlockNumber()
         .catch((error) => {
