@@ -2,7 +2,7 @@ const logger = require('../statsLogger');
 const {
     getDefaultProvider,
     getWalletNonceManager,
-} = require('../../dist/common/chainUtil');
+} = require('../../common/chainUtil');
 const { pendingTransactions } = require('../../common/storage');
 const { execActions } = require('../../regular/handler/actionHandler');
 const { callTriggers } = require('../../regular/handler/triggerHandler');

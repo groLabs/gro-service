@@ -3,7 +3,7 @@ import mapObject from 'map-obj';
 import { ethers, BigNumber } from 'ethers';
 import config from 'config';
 import { getLatestSystemContract } from '../common/contractStorage';
-import { ContractNames } from '../../dist/registry/registry';
+import { ContractNames } from '../../registry/registry';
 import Curve3PoolABI from '../../abi/ICurve3Pool.json';
 
 const logger = require('../statsLogger');

@@ -1,3 +1,4 @@
+//@ts-nocheck
 import BN from 'bignumber.js';
 import { ethers, BigNumber } from 'ethers';
 import { ContractNames } from '../../registry/registry';

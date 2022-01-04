@@ -12,8 +12,8 @@ import { getSystemApy, getHistoricalSystemApy } from './apyHandler';
 import { getGtokenApy, getHodlBonusApy } from './currentApyHandler';
 import { getTvlStats, getSystemStats, getExposureStats } from './systemHandler';
 import { getPools } from './groTokenHandler';
-import { ParameterError } from '../../dist/common/error';
-import { apyStatsMessage } from '../../dist/discordMessage/statsMessage';
+import { ParameterError } from '../../common/error';
+import { apyStatsMessage } from '../../discordMessage/statsMessage';
 
 const logger = require('../statsLogger');
 

@@ -3,7 +3,7 @@ import mapObject from 'map-obj';
 import fs from 'fs';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { getConfig } from '../../dist/common/configUtil';
+import { getConfig } from '../../common/configUtil';
 
 dayjs.extend(utc);
 

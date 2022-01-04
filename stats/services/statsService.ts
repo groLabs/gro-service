@@ -1,6 +1,6 @@
 import fs from 'fs';
 import config from 'config';
-import { loadContractInfoFromRegistry } from '../../dist/registry/registryLoader';
+import { loadContractInfoFromRegistry } from '../../registry/registryLoader';
 import { reloadData } from '../common/contractStorage';
 
 const statsLatest = config.get('stats_latest') as string;

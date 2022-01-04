@@ -12,7 +12,7 @@ import { getGroPrice, isValidBlockNumber, getBuoyStartBlock } from '../handler/p
 import { generateHistoricalStats } from '../handler/statsHandler';
 import { validate } from '../common/validate';
 import { postDegenScore } from '../services/degenscoreService';
-import { personalStatsMessage } from '../../dist/discordMessage/statsMessage';
+import { personalStatsMessage } from '../../discordMessage/statsMessage';
 import { contractCallFailedCount } from '../common/contractStorage';
 import { updateOGAirdropFile } from '../services/airdropService';
 
