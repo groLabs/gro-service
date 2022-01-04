@@ -4,7 +4,6 @@ import {
     findBlockByDate,
     findBlockByDateAvax,
 } from '../common/globalUtil';
-import { handleErr } from '../common/personalUtil';
 import {
     loadUserTransfers,
     loadTmpUserTransfers
@@ -18,9 +17,10 @@ import {
     GlobalNetwork as GN,
     ContractVersion as Ver,
 } from '../types';
-
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 
 
 /// @notice - Deletes all data in cache tables for a given user address
@@ -60,8 +60,8 @@ const preloadCache = async (account: string) => {
             || netReturns.status === QUERY_ERROR
             || transfers.status === QUERY_ERROR
             || maxTransferDate.status === QUERY_ERROR) {
-            handleErr(
-                `etlPersonalStatsCache->preloadCache()`,
+            showError(
+                `etlPersonalStatsCache.ts->preloadCache()`,
                 'Error while deleting cache tables',
             );
             return [-1, -1];
@@ -91,7 +91,9 @@ const preloadCache = async (account: string) => {
         ];
 
     } catch (err) {
-        handleErr(`etlPersonalStatsCache->preloadCache() [account: ${account}]`, err);
+        showError(
+            'etlPersonalStatsCache.ts->preloadCache()',
+            `[account: ${account}]: ${err}`);
         return [-1, -1];
     }
 }
@@ -168,16 +170,21 @@ const loadCache = async (account: string): Promise<boolean> => {
                         if (await loadUserNetReturns(now, now, account))
                             return true;
             } else {
-                logger.warn(`**DB: Error/s found in etlPersonalStatsCache.js->loadCache()`);
+                showError(
+                    'etlPersonalStatsCache.ts->loadCache()',
+                    'Error/s found during the loads'
+                );
             }
 
         } else {
             const params = `user: ${account} fromBlock ${fromBlock}`;
-            handleErr(`etlPersonalStatsCache->loadCache() Error with parameters: ${params}`, null);
+            showError(
+                'etlPersonalStatsCache.ts->loadCache()',
+                `Error with parameters: ${params}`);
         }
         return false;
     } catch (err) {
-        handleErr(`etlPersonalStatsCache->loadCache()`, err);
+        showError(`etlPersonalStatsCache.ts->loadCache()`, err);
         return false;
     }
 }
@@ -186,12 +193,15 @@ const etlPersonalStatsCache = async (account: string) => {
     try {
         const res = await loadCache(account);
         if (res) {
-            logger.info(`**DB: Personal stats for account ${account} is completed ;)`);
+            showInfo(`Personal stats for account ${account} is completed ;)`);
         } else {
-            logger.error(`**DB: Personal stats load for account ${account} is NOT completed :/`);
+            showError(
+                'etlPersonalStatsCache.ts->etlPersonalStatsCache()',
+                `Personal stats load for account ${account} is NOT completed :/`
+            );
         }
     } catch (err) {
-        handleErr(`etlPersonalStatsCache->etlPersonalStatsCache()`, err);
+        showError(`etlPersonalStatsCache.ts->etlPersonalStatsCache()`, err);
     }
 }
 

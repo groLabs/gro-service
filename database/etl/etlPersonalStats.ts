@@ -5,9 +5,8 @@ import {
     findBlockByDateAvax
 } from '../common/globalUtil';
 import {
+    isPlural,
     generateDateRange,
-    handleErr,
-    isPlural
 } from '../common/personalUtil';
 import {
     loadUserTransfers,
@@ -24,8 +23,10 @@ import {
     GlobalNetwork as GN,
     ContractVersion as Ver,
 } from '../types';
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 
 
 /// @notice Truncate temporary tables & calculate blocks and dates to be processed
@@ -86,7 +87,10 @@ const preload = async (
 
         return [fromBlock, toBlock, dates, fromBlockAvax, toBlockAvax];
     } catch (err) {
-        handleErr(`etlPersonalStats->preload() [from: ${_fromDate}, to: ${_toDate}]`, err);
+        showError(
+            'etlPersonalStats.ts->preload()',
+            `[from: ${_fromDate}, to: ${_toDate}]: ${err}`
+        );
         return [];
     }
 };
@@ -99,7 +103,7 @@ const preload = async (
 const remove = async (
     fromDate: string,
     toDate: string,
-) => {
+): Promise<boolean> => {
     try {
         const fromDateParsed = moment(fromDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
         const toDateParsed = moment(toDate, 'DD/MM/YYYY').format('MM/DD/YYYY');
@@ -122,33 +126,36 @@ const remove = async (
             && approvals.status === QUERY_SUCCESS
             && loads.status === QUERY_SUCCESS
         ) {
-            logger.info(
-                `**DB: ${transfers.rowCount} record${isPlural(
+            showInfo(
+                `${transfers.rowCount} record${isPlural(
                     transfers.rowCount
                 )} deleted from USER_TRANSFERS`
             );
-            logger.info(
-                `**DB: ${approvals.rowCount} record${isPlural(
+            showInfo(
+                `${approvals.rowCount} record${isPlural(
                     approvals.rowCount
                 )} deleted from USER_APPROVALS`
             );
-            logger.info(
-                `**DB: ${loads.rowCount} record${isPlural(
+            showInfo(
+                `${loads.rowCount} record${isPlural(
                     loads.rowCount
                 )} deleted from SYS_USER_LOADS`
             );
         } else {
             const params = `Dates [${fromDate} - ${toDate}]`;
-            handleErr(
-                `etlPersonalStats.ts->remove() Delete query didn't return data. Params: ${params}`,
-                null
+            showError(
+                'etlPersonalStats.ts->remove()',
+                `Delete query didn't return data. Params: ${params}`
             );
             return false;
         }
 
         return true;
     } catch (err) {
-        handleErr(`etlPersonalStats.ts->remove() [from: ${fromDate}, to: ${toDate}]`, err);
+        showError(
+            'etlPersonalStats.ts->remove()',
+            `[from: ${fromDate}, to: ${toDate}]: ${err}`
+        );
         return false;
     }
 };
@@ -259,7 +266,10 @@ const loadTransfers = async (
                     ]);
                     break;
                 default:
-                    handleErr(`etlPersonalStats->loadTransfers() Unrecognized global network`, gn);
+                    showError(
+                        'etlPersonalStats.ts->loadTransfers()',
+                        `Unrecognized global network: ${gn}`
+                    );
                     return false;
             }
 
@@ -270,15 +280,23 @@ const loadTransfers = async (
                         // if (await loadUserApprovals(fromDate, toDate, null))
                         return true;
             } else {
-                logger.warn(`**DB: Error/s found in etlPersonalStats.js->loadTransfers()`);
+                showError(
+                    'etlPersonalStats.ts->loadTransfers()',
+                    `Error/s found during loads`
+                );
             }
         } else {
             const params = `Blocks [${fromBlock} - ${toBlock}], Dates [${fromDate} - ${toDate}]`;
-            handleErr(`etlPersonalStats->loadTransfers() Error with parameters: ${params}`, null);
+            showError(
+                'etlPersonalStats.ts->loadTransfers()',
+                `Error with parameters: ${params}`);
         }
         return false;
     } catch (err) {
-        handleErr(`etlPersonalStats->loadTransfers() [from: ${fromDate}, to: ${toDate}]`, err);
+        showError(
+            'etlPersonalStats.ts->loadTransfers()',
+            `[from: ${fromDate}, to: ${toDate}]: ${err}`
+        );
         return false;
     }
 }
@@ -292,15 +310,21 @@ const etlPersonalStats = async (
         if (checkDateRange(fromDate, toDate)) {
             let res = await loadTransfers(fromDate, toDate, gn);
             if (res) {
-                logger.info(`**DB: Personal stats load from ${fromDate} to ${toDate} is completed ;)`);
+                showInfo(`Personal stats load from ${fromDate} to ${toDate} is completed ;)`);
             } else {
-                logger.error(`**DB: Personal stats load from ${fromDate} to ${toDate} is NOT completed :/`);
+                showError(
+                    'etlPersonalStats.ts->etlPersonalStats()',
+                    `Personal stats load from ${fromDate} to ${toDate} is NOT completed :/`
+                );
             }
         } else {
-            logger.error(`**DB: Error in data ranges`);
+            showError(
+                'etlPersonalStats.ts->etlPersonalStats()',
+                'Error in data ranges'
+            );
         }
     } catch (err) {
-        handleErr(`etlPersonalStats.ts->etlPersonalStats()`, err);
+        showError('etlPersonalStats.ts->etlPersonalStats()', err);
     }
 };
 

@@ -6,11 +6,12 @@ import { calcRangeTimestamps } from '../common/globalUtil';
 import { findBlockByDate } from '../common/globalUtil';
 import { QUERY_SUCCESS } from '../constants';
 import { IApiReturn } from '../interfaces';
-
 const route: any = getConfig('route');
-const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 
 let options = {
     hostname: route.gro_stats.hostname,
@@ -36,26 +37,43 @@ const etlGroStatsMC = async () => {
                         if (currentTimestamp > lastTimestamp)
                             await loadAllTables(stats.gro_stats_mc);
                     } else {
-                        logger.error('**DB: No timestamp found in JSON API call');
+                        showError(
+                            'etlGroStatsMC.ts->etlGroStatsMC()',
+                            'No timestamp found in JSON API call'
+                        );
                     }
                 } else {
-                    logger.error(`**DB: Error with API call: \n Error code ${call.status} \n Error description: ${call.data}`);
+                    showError(
+                        'etlGroStatsMC.ts->etlGroStatsMC()',
+                        `Error with API call: \n Error code ${call.status} \n Error description: ${call.data}`
+                    );
                 }
             } else {
-                logger.error('**DB: No timestamp found in table SYS_PROTOCOL_LOADS');
+                showError(
+                    'etlGroStatsMC.ts->etlGroStatsMC()',
+                    'No timestamp found in table SYS_PROTOCOL_LOADS'
+                );
             }
         }
     } catch (err) {
-        logger.error(`**DB: Error in etlGroStats.js->etlGroStats(): ${err}`);
+        showError(
+            'etlGroStatsMC.ts->etlGroStatsMC()',
+            `Error in etlGroStats.js->etlGroStats(): ${err}`
+        );
     }
 }
 
 // TODO: CHANGE TO MULTI-CHAIN
 // This will be called on-demand, not by a cron
-const etlGroStatsHDL = async (start, end, kpi, interval) => {
+const etlGroStatsHDL = async (
+    start,
+    end,
+    kpi,
+    interval
+) => {
     try {
         const intervals = calcRangeTimestamps(start, end, interval);
-        logger.info(`**DB: Starting HDL for ${kpi} on timestamps ${start} to ${end}`);
+        showInfo(`Starting HDL for ${kpi} on timestamps ${start} to ${end}`);
         for (const currentTimestamp of intervals) {
             // @ts-ignore
             const block = (await findBlockByDate(currentTimestamp, true)).block;
@@ -68,15 +86,21 @@ const etlGroStatsHDL = async (start, end, kpi, interval) => {
                     if (!res)
                         return;
                 } else {
-                    logger.error('**DB: No data found in JSON API call');
+                    showError(
+                        'etlGroStatsMC.ts->etlGroStatsHDL()',
+                        'No data found in JSON API call'
+                    );
                 }
             } else {
-                logger.error(`**DB: Error with API call: \n Error code ${call.status} \n Error description: ${call.data}`);
+                showError(
+                    'etlGroStatsMC.ts->etlGroStatsHDL()',
+                    `API call error code ${call.status} \n Error description: ${call.data}`
+                );
             }
         }
-        logger.info(`**DB: Finished HDL for ${kpi} on timestamps ${start} to ${end}`);
+        showInfo(`Finished HDL for ${kpi} on timestamps ${start} to ${end}`);
     } catch (err) {
-        logger.error(`**DB: Error in etlGroStats.js->etlGroStatsHDL(): ${err}`);
+        showError('etlGroStatsMC.ts->etlGroStatsHDL()', err);
     }
 }
 

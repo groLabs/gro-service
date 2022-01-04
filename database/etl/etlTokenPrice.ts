@@ -5,8 +5,7 @@ import {
     QUERY_ERROR,
     QUERY_SUCCESS,
 } from '../constants';
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import { showError } from '../handler/logHandler';
 
 const ERROR: IApiReturn = {
     status: QUERY_ERROR,
@@ -41,23 +40,32 @@ const getPriceFromCoingecko = async (
                 const data = JSON.parse(call.data);
                 if (data[coin]) {
                     resolve({
-                        data: data[coin].usd,
                         status: QUERY_SUCCESS,
+                        data: data[coin].usd,
                     });
                 } else {
-                    logger.error(`**DB: No ${coin} token price available from Coingecko for date ${date}`);
+                    showError(
+                        'etlTokenPrice.ts->getPriceFromCoingecko()',
+                        `No ${coin} token price available from Coingecko for date ${date}`
+                    );
                     resolve({
-                        data: 0,
                         status: QUERY_SUCCESS,
+                        data: 0,
                     });
                 }
             } else {
-                logger.error(`**DB: API call to Coingecko for ${coin} token price failed: ${call.data}`);
+                showError(
+                    'etlTokenPrice.ts->getPriceFromCoingecko()',
+                    `API call to Coingecko for ${coin} token price failed: ${call.data}`
+                );
                 resolve(ERROR);
             }
 
         } catch (err) {
-            logger.error(`**DB: Error in etlTokenPrice.ts->getPriceFromCoingecko(): ${err}`);
+            showError(
+                'etlTokenPrice.ts->getPriceFromCoingecko()',
+                `Error in etlTokenPrice.ts->getPriceFromCoingecko(): ${err}`
+            );
             resolve(ERROR);
         }
     });
