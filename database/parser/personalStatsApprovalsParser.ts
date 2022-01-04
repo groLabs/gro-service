@@ -11,17 +11,19 @@ import {
     getNetwork,
     parseAmount
 } from '../common/globalUtil';
-import {
-    handleErr,
-    getStableCoinIndex,
-} from '../common/personalUtil';
+import { getStableCoinIndex } from '../common/personalUtil';
 import {
     Base,
     GlobalNetwork
 } from '../types';
+import {
+    showInfo,
+    showError,
+    showWarning,
+} from '../handler/logHandler';
 
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+// const botEnv = process.env.BOT_ENV.toLowerCase();
+// const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
     try {
@@ -29,13 +31,14 @@ const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
         if (getGroVault().address === tokenAddress) {
             usdAmount = await getGroVault()
                 .getShareAssets(amount)
-                .catch((error) => {
-                    logger.error(error);
+                .catch((err) => {
+                    showError('personalStatsApprovalsParser.ts->getApprovalValue(): getGroVault:', err);
                 });
         } else if (getPowerD().address === tokenAddress) {
-            usdAmount = await getPowerD().getShareAssets(amount).catch((error) => {
-                logger.error(error);
-            });
+            usdAmount = await getPowerD().getShareAssets(amount)
+                .catch((err) => {
+                    showError('personalStatsApprovalsParser.ts->getApprovalValue(): getPowerD', err);
+                });
         } else {
             usdAmount = await getBuoy().singleStableToUsd(
                 amount,
@@ -44,14 +47,15 @@ const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
         }
         return parseAmount(usdAmount, Base.D18);
     } catch (err) {
-        handleErr(
-            `personalStatsParser->getApprovalValue() [tokenAddress: ${tokenAddress}, amount: ${amount}, tokenSymbol: ${tokenSymbol}]`,
-            err
+        showError(
+            'personalStatsApprovalsParser.ts->getApprovalValue()',
+            `[tokenAddress: ${tokenAddress}, amount: ${amount}, tokenSymbol: ${tokenSymbol}]: ${err}`,
         );
         return 0;
     }
 };
 
+//TODO: can't return false or approvals (not TS rulez)
 const parseApprovalEvents = async (
     globalNetwork: GlobalNetwork,
     logs
@@ -81,16 +85,16 @@ const parseApprovalEvents = async (
                     creation_date: moment.utc(),
                 });
             } else {
-                handleErr(
-                    `personalStatsParser->parseApprovalEvents(): Wrong decimal in coin amount`,
-                    null
+                showError(
+                    'personalStatsApprovalsParser.ts->parseApprovalEvents()',
+                    'Wrong decimal in coin amount'
                 );
                 return false;
             }
         }
         return approvals;
     } catch (err) {
-        handleErr(`personalStatsParser->parseApprovalEvents()`, err);
+        showError('personalStatsApprovalsParser.ts->parseApprovalEvents()', err);
         return false;
     }
 };

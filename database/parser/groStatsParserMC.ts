@@ -88,7 +88,6 @@ const getTVL = (stats, network: NetworkName) => {
         return [];
     }
     const result = [
-        // ...defaultData(stats, network),
         ...defaultData(
             stats,
             network === NetworkName.MAINNET ? GlobalNetwork.ETHEREUM : GlobalNetwork.AVALANCHE
@@ -231,7 +230,9 @@ const getReserves = (stats, network: NetworkName) => {
         result.push([
             ...defaultData(
                 stats,
-                network === NetworkName.MAINNET ? GlobalNetwork.ETHEREUM : GlobalNetwork.AVALANCHE
+                network === NetworkName.MAINNET
+                    ? GlobalNetwork.ETHEREUM
+                    : GlobalNetwork.AVALANCHE
             ),
             reserve.name
                 ? reserve.name

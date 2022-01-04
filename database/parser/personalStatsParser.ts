@@ -7,7 +7,6 @@ import {
 } from '../common/globalUtil';
 import {
     getStableCoinIndex,
-    handleErr,
     isInflow,
     isOutflow,
     isDepositOrWithdrawal,
@@ -24,10 +23,7 @@ import {
     Transfer,
     GlobalNetwork,
 } from '../types';
-
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
-
+import { showError } from '../handler/logHandler';
 
 const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
     try {
@@ -35,13 +31,14 @@ const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
         if (getGroVault().address === tokenAddress) {
             usdAmount = await getGroVault()
                 .getShareAssets(amount)
-                .catch((error) => {
-                    logger.error(error);
+                .catch((err) => {
+                    showError('personalStatsParser.ts->getApprovalValue(): getGroVault: ', err);
                 });
         } else if (getPowerD().address === tokenAddress) {
-            usdAmount = await getPowerD().getShareAssets(amount).catch((error) => {
-                logger.error(error);
-            });
+            usdAmount = await getPowerD().getShareAssets(amount)
+                .catch((err) => {
+                    showError('personalStatsParser.ts->getApprovalValue(): getPowerD', err);
+                });
         } else {
             usdAmount = await getBuoy().singleStableToUsd(
                 amount,
@@ -50,9 +47,9 @@ const getApprovalValue = async (tokenAddress, amount, tokenSymbol) => {
         }
         return parseAmount(usdAmount, Base.D18);
     } catch (err) {
-        handleErr(
-            `personalStatsParser->getApprovalValue() [tokenAddress: ${tokenAddress}, amount: ${amount}, tokenSymbol: ${tokenSymbol}]`,
-            err
+        showError(
+            'personalStatsParser.ts->getApprovalValue()',
+            `[tokenAddress: ${tokenAddress}, amount: ${amount}, tokenSymbol: ${tokenSymbol}]: ${err}`,
         );
         return 0;
     }
@@ -220,17 +217,18 @@ const parseTransferEvents = async (
         });
         return result;
     } catch (err) {
-        handleErr(
-            `personalStatsParser->parseTransferEvents() [side: ${side}]`,
-            err
+        showError(
+            'personalStatsParser.ts->parseTransferEvents()',
+            `[side: ${side}]: ${err}`
         );
     }
 };
 
+//TODO: can't return boolean or approvals (not TS-rulez)
 const parseApprovalEvents = async (
     network: GlobalNetwork,
     logs
-    ) => {
+) => {
     try {
         const stableCoinInfo = await getStables();
         const approvals = [];
@@ -256,16 +254,16 @@ const parseApprovalEvents = async (
                     creation_date: moment.utc(),
                 });
             } else {
-                handleErr(
-                    `personalStatsParser->parseApprovalEvents(): Wrong decimal in coin amount`,
-                    null
+                showError(
+                    'personalStatsParser.ts->parseApprovalEvents()',
+                    'Wrong decimal in coin amount'
                 );
                 return false;
             }
         }
         return approvals;
     } catch (err) {
-        handleErr(`personalStatsParser->parseApprovalEvents()`, err);
+        showError(`personalStatsParser.ts->parseApprovalEvents()`, err);
         return false;
     }
 };

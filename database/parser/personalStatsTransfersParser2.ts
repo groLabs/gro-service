@@ -4,7 +4,6 @@ import {
     getNetwork,
 } from '../common/globalUtil';
 import {
-    handleErr,
     isInflow,
     isOutflow,
     isDepositOrWithdrawal,
@@ -30,9 +29,7 @@ import {
     GlobalNetwork,
     ContractVersion,
 } from '../types';
-
-// const botEnv = process.env.BOT_ENV.toLowerCase();
-// const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import { showError } from '../handler/logHandler';
 
 
 const getTokenIds = (
@@ -113,7 +110,7 @@ const getGroups = (side: Transfer): boolean[] => {
             isGRO,
         ];
     } catch (err) {
-        handleErr(`personalStatsParser->getGroups()`, err);
+        showError('personalStatsTransfersParser2.ts->getGroups()', err);
         return [];
     }
 }
@@ -292,9 +289,9 @@ const parseTransferEvents2 = async (
         return result;
 
     } catch (err) {
-        handleErr(
-            `personalStatsParser->parseTransferEvents() [side: ${side}]`,
-            err
+        showError(
+            'personalStatsTransfersParser2.ts->parseTransferEvents2()',
+            `[side: ${side}]: ${err}`,
         );
     }
 };
