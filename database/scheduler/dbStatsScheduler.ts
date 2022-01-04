@@ -18,74 +18,77 @@ const personalStatsJobSetting =
 const tokenPriceSetting =
     //getConfig('trigger_scheduler.db_token_price', false) || '*/30 * * * * *';  // 30 seconds [TESTING]
     getConfig('trigger_scheduler.db_token_price', false) || '*/5 * * * *'; // 5 mins [PRODUCTION]
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 
 
 const groStatsJob = async () => {
-    logger.info('**DB: groStatsJob initialised');
+    showInfo('groStatsJob initialised');
     schedule.scheduleJob(groStatsJobSetting, async () => {
         try {
-            logger.info('**DB: groStatsJob started');
+            showInfo('groStatsJob started');
             await etlGroStatsMC();
-            logger.info('**DB: groStatsJob finished');
+            showInfo('groStatsJob finished');
         } catch (err) {
-            logger.error(`**DB: Error in dbStatsScheduler.js->groStatsJob(): ${err}`);
+            showError('dbStatsScheduler.ts->groStatsJob()', err);
         }
     });
 }
 
 const priceCheckJob = async () => {
-    logger.info('**DB: priceCheckJob initialised');
+    showInfo('priceCheckJob initialised');
     schedule.scheduleJob(priceCheckJobSetting, async () => {
         try {
-            logger.info('**DB: priceCheck started');
+            showInfo('priceCheck started');
             await etlPriceCheck();
-            logger.info('**DB: priceCheck finished');
+            showInfo('priceCheck finished');
         } catch (err) {
-            logger.error(`**DB: Error in dbStatsScheduler.js->priceCheckJob(): ${err}`);
+            showError('dbStatsScheduler.ts->priceCheckJob()', err);
         }
     });
 }
 
 const personalStatsJob = async () => {
     // await loadContractInfoFromRegistry();
-    logger.info('**DB: personalStatsJob initialised');
+    showInfo('personalStatsJob initialised');
     schedule.scheduleJob(personalStatsJobSetting, async () => {
         try {
-            logger.info('**DB: personalStatsJob started');
+            showInfo('personalStatsJob started');
             const res = await calcLoadingDateRange();
             if (res.length > 0) {
-                logger.info(`**DB: Starting personal stats load (from: ${res[0]}, to: ${res[1]})`);
+                showInfo(`Starting personal stats load (from: ${res[0]}, to: ${res[1]})`);
                 await etlPersonalStats(
                     res[0], // start date 'DD/MM/YYYY'
                     res[1], // end date 'DD/MM/YYYY'
-                    100,
+                    100,    // load ETH & AVAX data
                 );
             } else {
-                logger.info(`**DB: No personal stats load required`);
+                showInfo(`No personal stats load required`);
             }
-            logger.info('**DB: personalStatsJob finished');
+            showInfo('personalStatsJob finished');
         } catch (err) {
-            logger.error(`**DB: Error in dbStatsScheduler.js->personalStatsJob(): ${err}`);
+            showError('dbStatsScheduler.ts->personalStatsJob()', err);
         }
     });
 }
 
 const tokenPriceJob = async () => {
-    logger.info('**DB: tokenPriceJob initialised');
+    showInfo('tokenPriceJob initialised');
     schedule.scheduleJob(tokenPriceSetting, async () => {
         try {
-            logger.info('**DB: tokenPrice started');
+            showInfo('tokenPrice started');
             await etlTokenPrice();
-            logger.info('**DB: tokenPrice finished');
+            showInfo('tokenPrice finished');
         } catch (err) {
-            logger.error(`**DB: Error in dbStatsScheduler.js->tokenPriceJob(): ${err}`);
+            showError('dbStatsScheduler.ts->tokenPriceJob()', err);
         }
     });
 }
 
 const startDbStatsJobs = async () => {
+    //TODO: capture exception in contract load fails
     await loadContractInfoFromRegistry();
     groStatsJob();
     priceCheckJob();
