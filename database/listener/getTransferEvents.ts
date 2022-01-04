@@ -14,12 +14,11 @@ import {
     getContractHistoryEventFilters,
 } from '../../common/filterGenerateTool';
 import {
-    handleErr,
     isTransfer,
     isDepositOrWithdrawal,
 } from '../common/personalUtil';
 import { ContractNames } from '../../registry/registry';
-
+import { showError } from '../handler/logHandler';
 
 const getTransferEvents = async (
     contractVersion: ContractVersion,
@@ -230,7 +229,10 @@ const getTransferEvents = async (
                 receiver = null;
                 break;
             default:
-                handleErr(`getTransferEvents.ts->getTransferEvents()->switch: Invalid event:`, side);
+                showError(
+                    'getTransferEvents.ts->getTransferEvents()',
+                    `switch: Invalid event: ${side}`
+                );
                 return false;
         }
 
@@ -327,10 +329,13 @@ const getTransferEvents = async (
             return logResults;
         }
     } catch (err) {
-        handleErr(`personalUtil->getTransferEvents2() [side: ${side}]`, err);
+        showError(
+            'getTransferEvents.ts->getTransferEvents()',
+            `[side: ${side}]: ${err}`
+        );
         return [];
     }
-};
+}
 
 export {
     getTransferEvents,
