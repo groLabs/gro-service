@@ -1,11 +1,10 @@
-import { ethers, BigNumber } from 'ethers';
+import { ethers } from 'ethers';
 import { BigNumber as BN } from 'bignumber.js';
 import { ContractNames } from '../../registry/registry';
-import  { newSystemLatestContracts } from '../../registry/contracts'
+import { newSystemLatestContracts } from '../../registry/contracts'
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import { getConfig } from '../../common/configUtil';
 import { findBlockByDate, getNetwork } from '../common/globalUtil';
-import { floatToBN } from '../../common/digitalUtil';
 const providerKey = 'stats_gro';
 import moment from 'moment';
 // const { airdrop4Addr: AIRDROP4_ADDRESSES } = require('../files/airdrop4Addr');
@@ -13,6 +12,10 @@ import moment from 'moment';
 const { airdrop4StakingFinal: AIRDROP4_ADDRESSES } = require('../files/airdrop4stakingFinal');
 import { loadAirdrop4, loadTempAirdrop4, truncateTempAirdrop4 } from '../loader/loadAirdrop4';
 import { GlobalNetwork } from '../types';
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 
 // ABIs
 import UniswapRouteABI from '../../stats/abi/uniswapRoute.json';
@@ -22,9 +25,6 @@ import LpTokenStakerABI from '../../stats/abi/LPTokenStaker.json';
 import LpTokenABI from '../../stats/abi/LpToken.json';
 import CurvePoolABI from '../../stats/abi/SwapPool.json';
 import GroWethABI from '../../abi/fa8e260/BalancerWeightedPool.json';
-
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 // Contracts
 let lpTokenStaker;
@@ -40,7 +40,7 @@ let curve3Pool;
 let curve3CrvLpToken;
 let groWethLpToken;
 
-
+// Genesis
 const END_SNAPSHOT_TIMESTAMP = 1633651191; // Oct-07-2021 11:59:51 PM +UTC
 const END_SNAPSHOT_DATE = moment.unix(END_SNAPSHOT_TIMESTAMP).utc();
 const END_SNAPSHOT_BLOCK = 13374853;
@@ -64,7 +64,7 @@ function printUsd(value) {
 }
 
 const initContracts = async () => {
-    logger.info('init contracts');
+    showInfo('init contracts');
     const provider = getAlchemyRpcProvider(providerKey);
 
     const groAddress = getConfig('staker_pools.contracts.gro_address') as string;
@@ -136,22 +136,22 @@ const checkPosition = async (addr, date) => {
             groWethLpToken.balanceOf(addr, blockTag),    //  Unstaked Gro/Weth
         ]);
 
-        logger.info(`staked_gro: ${staked_gro}`);
-        logger.info(`staked_gro_gvt: ${staked_gro_gvt}`);
-        logger.info(`staked_gro_usdc: ${staked_gro_usdc}`);
-        logger.info(`staked_gvt: ${staked_gvt}`);
-        logger.info(`staked_pwrd: ${staked_pwrd}`);
-        logger.info(`staked_gro_weth: ${staked_gro_weth}`);
-        logger.info(`unstaked_gro: ${unstaked_gro}`);
-        logger.info(`unstaked_gro_gvt: ${unstaked_gro_gvt}`);
-        logger.info(`unstaked_gro_usdc: ${unstaked_gro_usdc}`);
-        logger.info(`unstaked_gvt: ${unstaked_gvt}`);
-        logger.info(`unstaked_pwrd: ${unstaked_pwrd}`);
-        logger.info(`unstaked_pwrd_pool: ${unstaked_pwrd_pool}`);
-        logger.info(`unstaked_gro_weth: ${unstaked_gro_weth}`);
+        showInfo(`staked_gro: ${staked_gro}`);
+        showInfo(`staked_gro_gvt: ${staked_gro_gvt}`);
+        showInfo(`staked_gro_usdc: ${staked_gro_usdc}`);
+        showInfo(`staked_gvt: ${staked_gvt}`);
+        showInfo(`staked_pwrd: ${staked_pwrd}`);
+        showInfo(`staked_gro_weth: ${staked_gro_weth}`);
+        showInfo(`unstaked_gro: ${unstaked_gro}`);
+        showInfo(`unstaked_gro_gvt: ${unstaked_gro_gvt}`);
+        showInfo(`unstaked_gro_usdc: ${unstaked_gro_usdc}`);
+        showInfo(`unstaked_gvt: ${unstaked_gvt}`);
+        showInfo(`unstaked_pwrd: ${unstaked_pwrd}`);
+        showInfo(`unstaked_pwrd_pool: ${unstaked_pwrd_pool}`);
+        showInfo(`unstaked_gro_weth: ${unstaked_gro_weth}`);
 
     } catch (err) {
-        logger.error(`**DB: Error in airdrop4Handler.js->checkPosition(): ${err}`);
+       showError('airdrop4Handler.ts->checkPosition()', err);
     }
 }
 
@@ -165,13 +165,13 @@ const airdrop4Handler = async (from, to) => {
         const addr = AIRDROP4_ADDRESSES;
 
         if (to < from) {
-            logger.info(`to (${to}) must be greater than from (${from})`);
+            showInfo(`to (${to}) must be greater than from (${from})`);
             return;
         } else if (to > addr.length - 1) {
-            logger.info(`to (${to}) is greater than addresses count (${addr.length - 1})`);
+            showInfo(`to (${to}) is greater than addresses count (${addr.length - 1})`);
             return;
         } else if (from > addr.length - 1) {
-            logger.info(`from (${from}) is greater than addresses count (${addr.length - 1})`);
+            showInfo(`from (${from}) is greater than addresses count (${addr.length - 1})`);
             return;
         }
 
@@ -183,7 +183,7 @@ const airdrop4Handler = async (from, to) => {
 
         const res = await truncateTempAirdrop4();
         if (!res) {
-            logger.info(`Error truncating table AIRDROP4_TEMP`);
+            showInfo(`Error truncating table AIRDROP4_TEMP`);
             return;
         }
 
@@ -250,7 +250,7 @@ const airdrop4Handler = async (from, to) => {
         await loadAirdrop4();
 
     } catch (err) {
-        logger.error(`**DB: Error in airdrop4Handler.js->airdrop4Handler(): ${err}`);
+        showError('airdrop4Handler.ts->airdrop4Handler()', err);
     }
 }
 
@@ -267,20 +267,20 @@ const airdrop4HandlerV2 = async (from, to, date) => {
             .add(59, 'minutes')
             .add(59, 'seconds');
 
-        logger.info(`using date: ${day}`);
+        showInfo(`using date: ${day}`);
         // @ts-ignore
         const block = (await findBlockByDate(day, false)).block;
-        logger.info(`using block ${block}`);
+        showInfo(`using block ${block}`);
         const addr = AIRDROP4_ADDRESSES;
 
         if (to < from) {
-            logger.info(`to (${to}) must be greater than from (${from})`);
+            showInfo(`to (${to}) must be greater than from (${from})`);
             return;
         } else if (to > addr.length - 1) {
-            logger.info(`to (${to}) is greater than addresses count (${addr.length - 1})`);
+            showInfo(`to (${to}) is greater than addresses count (${addr.length - 1})`);
             return;
         } else if (from > addr.length - 1) {
-            logger.info(`from (${from}) is greater than addresses count (${addr.length - 1})`);
+            showInfo(`from (${from}) is greater than addresses count (${addr.length - 1})`);
             return;
         }
 
@@ -292,7 +292,7 @@ const airdrop4HandlerV2 = async (from, to, date) => {
 
         const res = await truncateTempAirdrop4();
         if (!res) {
-            logger.info(`Error truncating table AIRDROP4_TEMP`);
+            showInfo(`Error truncating table AIRDROP4_TEMP`);
             return;
         }
 
@@ -343,7 +343,7 @@ const airdrop4HandlerV2 = async (from, to, date) => {
         await loadAirdrop4();
 
     } catch (err) {
-        logger.error(`**DB: Error in airdrop4Handler.js->airdrop4HandlerV2(): ${err}`);
+        showError('airdrop4Handler.js->airdrop4HandlerV2()', err);
     }
 }
 

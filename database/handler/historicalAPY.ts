@@ -2,13 +2,12 @@ import moment from 'moment';
 import { query } from './queryHandler';
 import { QUERY_ERROR } from '../constants';
 import { getConfig } from '../../common/configUtil';
-
 const launch_timestamp = getConfig('blockchain.start_timestamp');
-const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import { showError } from '../handler/logHandler';
 
 
+// TODO global: add types in func parameters
 const parseData = async (kpi, frequency, startDate, endDate) => {
     try {
         let q;
@@ -57,11 +56,11 @@ const parseData = async (kpi, frequency, startDate, endDate) => {
             return {}
         }
     } catch (err) {
-        logger.error(`**DB: Error in historicalAPY.js->getDailyAPY(): ${err}`);
+        showError('historicalAPY.ts->parseData()', err);
     }
 }
 
-const isArray = (attr, freq, start, end) => {
+const isArray = (attr, freq, start, end): boolean => {
     if (
         attr.includes(',') &&
         freq.includes(',') &&
@@ -71,7 +70,7 @@ const isArray = (attr, freq, start, end) => {
     return false;
 }
 
-const isAttr = (_attr) => {
+const isAttr = (_attr): boolean => {
     for (const attr of _attr) {
         if (
             attr !== 'apy_last24h' &&
@@ -86,7 +85,7 @@ const isAttr = (_attr) => {
     return true;
 }
 
-const isFreq = (_freq) => {
+const isFreq = (_freq): boolean => {
     for (const freq of _freq) {
         if (
             freq !== 'twice_daily' &&
@@ -97,7 +96,7 @@ const isFreq = (_freq) => {
     return true;
 }
 
-const isTimestamp = (_ts) => {
+const isTimestamp = (_ts): boolean => {
     const regexp = /^\d{10}$/;
     for (const ts of _ts) {
         if (!regexp.test(ts)) {
@@ -107,7 +106,7 @@ const isTimestamp = (_ts) => {
     return true;
 }
 
-const isLength = (attr, freq, start, end) => {
+const isLength = (attr, freq, start, end): boolean => {
     if (
         attr.length !== freq.length ||
         attr.length !== start.length ||
@@ -196,10 +195,10 @@ const checkData = (attr, freq, start, end) => {
             }
         }
     } catch (err) {
-        logger.error(`**DB: Error in historicalAPY.js->checkData(): ${err}`);
+        showError('historicalAPY.ts->checkData()', err);
         return {
             status: 'KO',
-            msg: `Unrecognised error in historicalAPY->checkData():${err}`,
+            msg: `Unrecognised error in historicalAPY.ts->checkData():${err}`,
             data: [],
         }
     }
@@ -246,7 +245,7 @@ const getHistoricalAPY = async (_attr, _freq, _start, _end) => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in historicalAPY.js->getHistoricalAPY(): ${err}`);
+        showError('historicalAPY.ts->getHistoricalAPY()', err);
     }
 }
 

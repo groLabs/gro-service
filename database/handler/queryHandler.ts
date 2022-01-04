@@ -5,11 +5,9 @@ import path from 'path';
 import { SqlCommand } from '../types';
 const { getConfig } = require('../../common/configUtil');
 import { QUERY_ERROR } from '../constants';
-
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
-
+import { showError } from '../handler/logHandler';
 const db = getConfig('database');
+
 const dbConnection = {
     host: db.host,
     port: db.port,
@@ -19,13 +17,13 @@ const dbConnection = {
 }
 const pool = new pg.Pool(dbConnection);
 
-
 const ERROR = {
     status: 400,
 };
 const NO_DATA = {
     status: 204,
 }
+
 
 const query = async (
     file: string,
@@ -70,7 +68,7 @@ const query = async (
             return result;
         }
     } catch (err) {
-        logger.error(`**DB: queryHandler.js->query(): ${err}`);
+        showError('queryHandler.ts->query()', err);
         return ERROR;
     }
 }
@@ -103,13 +101,16 @@ const singleQuery = async (
                 || op === SqlCommand.DELETE) {
                 await client.query('ROLLBACK');
             }
-            logger.error(`**DB: queryHandler.js->singleQuery() \n Message: ${err} \n Query: ${file} \n Params: ${params}`);
+            showError(
+                'queryHandler.ts->singleQuery()',
+                `\n Message: ${err} \n Query: ${file} \n Params: ${params}`
+            );
             return ERROR;
         } finally {
             client.release();
         }
     } catch (err) {
-        logger.error(`**DB: queryHandler.js->singleQuery() \n Message: ${err}`);
+        showError('queryHandler.ts->singleQuery()', err);
         return ERROR;
     }
 }
@@ -138,13 +139,19 @@ const batchQuery = async (
                 || op === SqlCommand.UPDATE) {
                 await client.query('ROLLBACK');
             }
-            logger.error(`**DB: queryHandler.js->batchQuery() \n Message: ${err} \n Query: ${file} \n Params: ${params}`);
+            showError(
+                'queryHandler.ts->batchQuery()',
+                `\n Message: ${err} \n Query: ${file} \n Params: ${params}`
+            );
             return [false, 0];
         } finally {
             client.release();
         }
     } catch (err) {
-        logger.error(`**DB: queryHandler.js->batchQuery() \n Message: ${err}`);
+        showError(
+            'queryHandler.ts->batchQuery()',
+            `\n Message: ${err}`
+        );
         return [false, 0];
     }
 }

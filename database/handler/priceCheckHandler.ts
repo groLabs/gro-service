@@ -1,8 +1,7 @@
 import { query } from './queryHandler';
 import { QUERY_ERROR } from '../constants';
+import { showError } from '../handler/logHandler';
 
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 const getPriceCheckGlobal = async () => {
     try {
@@ -22,7 +21,7 @@ const getPriceCheckGlobal = async () => {
             return {};
         }
     } catch (err) {
-        logger.error(`**DB: Error in priceCheckHandler.js->getPriceCheckGlobal(): ${err}`);
+        showError('priceCheckHandler.ts->getPriceCheckGlobal()', err);
     }
 }
 
@@ -51,7 +50,7 @@ const getPriceCheckDetail = async () => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in priceCheckHandler.js->getPriceCheckGlobal(): ${err}`);
+        showError('priceCheckHandler.ts->getPriceCheckDetail()', err);
     }
 }
 
@@ -62,7 +61,7 @@ const getPriceCheck = async () => {
             "detail": await getPriceCheckDetail(),
         }
     } catch (err) {
-        logger.error(`**DB: Error in groStatsHandler.js->getAllStats(): ${err}`);
+        showError('priceCheckHandler.ts->getPriceCheck()', err);
     }
 }
 

@@ -10,11 +10,9 @@ import {
 } from '../types';
 import { getNetwork } from '../common/globalUtil';
 import { getConfig } from '../../common/configUtil';
-
+import { showError } from '../handler/logHandler';
 const launchTimeEth = getConfig('blockchain.start_block');
 const launchTimeAvax = getConfig('blockchain.avax_launch_timestamp');
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 const ERROR_TRANSFERS = {
     "status": QUERY_ERROR,
@@ -173,8 +171,10 @@ const getTransfers = async (account: string) => {
                         amount_removed_dai_e_avax += parseFloat(item.usd_amount);
                         break;
                     default:
-                        const msg = `Unrecognized transfer_id (${item.transfer_id})`;
-                        logger.error(`**DB: Error in personalStatsHandlerMC.ts->getTransfers(): ${msg}`);
+                        showError(
+                            'personalStatsHandlerMC.ts->getTransfers()',
+                            `Unrecognized transfer_id (${item.transfer_id})`
+                        );
                         return ERROR_TRANSFERS;
                 }
             }
@@ -255,7 +255,7 @@ const getTransfers = async (account: string) => {
             return ERROR_TRANSFERS;
 
     } catch (err) {
-        logger.error(`**DB: Error in personalStatsHandlerMC.ts->getTransfers(): ${err}`);
+        showError('personalStatsHandlerMC.ts->getTransfers()', err);
         return ERROR_TRANSFERS;
     }
 }
@@ -301,7 +301,7 @@ const getNetBalances = async (account: string) => {
         } else
             return ERROR_BALANCES
     } catch (err) {
-        logger.error(`**DB: Error in personalStatsHandlerMC.ts->getNetBalances(): ${err}`);
+        showError('personalStatsHandlerMC.ts->getNetBalances()', err);
         return ERROR_BALANCES;
     }
 }
@@ -346,7 +346,7 @@ const getNetReturns = async (account: string) => {
         } else
             return ERROR_RETURNS;
     } catch (err) {
-        logger.error(`**DB: Error in personalStatsHandlerMC.ts->getNetReturns(): ${err}`);
+        showError('personalStatsHandlerMC.ts->getNetReturns()', err);
         return ERROR_RETURNS;
     }
 }
@@ -391,14 +391,13 @@ const getMcTotals = (transfers, balances, returns) => {
         }
         return result;
     } catch (err) {
-        logger.error(`**DB: Error in personalStatsHandlerMC.ts->getMcTotals(): ${err}`);
+        showError('personalStatsHandlerMC.ts->getMcTotals()', err);
         return ERROR_MC_AMOUNTS
     }
 }
 
 const getPersonalStatsMC = async (account: string) => {
     try {
-
         const [
             transfers,
             balances,
@@ -449,8 +448,9 @@ const getPersonalStatsMC = async (account: string) => {
                 }
             }
 
-            console.log('here global', result.gro_personal_position_mc);
-            console.log('here mc_totals', result.gro_personal_position_mc.mc_totals);
+            // Testing logs
+            // console.log('here global', result.gro_personal_position_mc);
+            // console.log('here mc_totals', result.gro_personal_position_mc.mc_totals);
             // console.log('** eth transactions **', result.gro_personal_position_mc.ethereum.transaction);
             // console.log('** eth amounts **', result.gro_personal_position_mc.ethereum);
             // console.log('** avax amounts **', result.gro_personal_position_mc.avalanche);
@@ -459,7 +459,7 @@ const getPersonalStatsMC = async (account: string) => {
         }
 
     } catch (err) {
-        logger.error(`**DB: Error in personalStatsHandlerMC.ts->getPersonalStatsMC(): ${err}`);
+        showError('personalStatsHandlerMC.ts->getPersonalStatsMC()', err);
         return ERROR_GLOBAL;
     }
 }
