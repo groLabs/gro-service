@@ -1,21 +1,21 @@
 import http from 'http';
 import https from 'https';
-import { getConfig } from '../../common/configUtil';
-
-const route = getConfig('route');
+import { QUERY_ERROR } from '../constants';
+import { IApiCall, IApiReturn } from '../interfaces';
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 
-const apiCaller = (options) => {
+const apiCaller = (options: IApiCall): Promise<IApiReturn> => {
     return new Promise(async (resolve) => {
         try {
-            let payload = "";
-            let result;
+            let payload = '';
 
-            if (!options.hostname || !options.port || !options.path) {
+            if (!options.hostname
+                || !options.port
+                || !options.path) {
                 resolve({
-                    status: 400,
+                    status: QUERY_ERROR,
                     data: `Connection details not found: [hostname: ${options.hostname}]`
                 });
             } else {
@@ -28,18 +28,17 @@ const apiCaller = (options) => {
                     res.on('data', (d) => {
                         payload += d;
                     }).on('end', () => {
-                        result = {
+                        resolve({
                             status: res.statusCode,
                             data: payload,
-                        };
-                        resolve(result);
+                        })
                     });
                 });
 
                 req.on('error', (err) => {
                     logger.error('**DB: Error in apiCaller.js:', err);
                     resolve({
-                        status: 400,
+                        status: QUERY_ERROR,
                         data: err,
                     });
                 });
@@ -48,6 +47,10 @@ const apiCaller = (options) => {
             }
         } catch (err) {
             logger.error('**DB: Error in apiCaller.js:', err);
+            resolve({
+                status: QUERY_ERROR,
+                data: err,
+            })
         }
     });
 }

@@ -77,10 +77,10 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
                     if (params.length === 5 && checkDateRange(params[1], params[2])) {
                         await loadContractInfoFromRegistry();
                         await loadUserBalances(
-                            params[1],              // start date
-                            params[2],              // end date
-                            params[3],              // account
-                            params[4]);              // time
+                            params[1],  // start date
+                            params[2],  // end date
+                            params[3],  // account
+                            params[4]); // time
                     } else {
                         console.log(`Wrong parameters for loadBalances - e.g.: loadBalances 16/11/2021 16/11/2021 "" 15:00:00`);
                     }

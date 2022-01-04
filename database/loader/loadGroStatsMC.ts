@@ -49,7 +49,7 @@ const loadTVL = async (stats) => {
     try {
         const [
             tvl,
-            tvlAvax
+            tvlAvax,
         ] = await Promise.all([
             query(
                 'insert_protocol_tvl.sql',
@@ -59,7 +59,7 @@ const loadTVL = async (stats) => {
                 parser.getTVL(stats, NetworkName.AVALANCHE)),
         ]);
         return (checkQueryResult(tvl, 'PROTOCOL_TVL'))
-            && (checkQueryResult(tvl, 'PROTOCOL_AVAX_TVL'))
+            && (checkQueryResult(tvlAvax, 'PROTOCOL_AVAX_TVL'))
             ? true : false;
     } catch (err) {
         logger.error(`**DB: Error in loadGroStatsMC.js->loadTVL(): ${err}`);

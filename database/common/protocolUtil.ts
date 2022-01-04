@@ -4,14 +4,17 @@ import { getNetwork } from './globalUtil';
 import { QUERY_ERROR } from '../constants';
 import { GlobalNetwork } from '../types';
 
-
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
+
 
 const checkLastTimestamp = async (source) => {
     return await query('select_last_protocol_load.sql', [source]);
 }
-const checkQueryResult = (result, table) => {
+const checkQueryResult = (
+    result,
+    table,
+) => {
     try {
         if (result.status === QUERY_ERROR) {
             return false;
@@ -36,7 +39,10 @@ const checkQueryResult = (result, table) => {
     }
 }
 
-const updateTimeStamp = async (block_timestamp, source) => {
+const updateTimeStamp = async (
+    block_timestamp,
+    source
+) => {
     try {
         const params = [
             block_timestamp,

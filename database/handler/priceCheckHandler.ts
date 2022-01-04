@@ -19,7 +19,7 @@ const getPriceCheckGlobal = async () => {
                 "curve_check_tolerance": parseFloat(global.curve_check_tolerance),
             }
         } else {
-            return {}
+            return {};
         }
     } catch (err) {
         logger.error(`**DB: Error in priceCheckHandler.js->getPriceCheckGlobal(): ${err}`);
@@ -47,7 +47,7 @@ const getPriceCheckDetail = async () => {
                 });
             }
         } else {
-            return {}
+            return {};
         }
         return result;
     } catch (err) {

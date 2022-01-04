@@ -41,7 +41,7 @@ const getTimeTransformations = (target: number) => {
 const getTimestamps = async (
     targetTimestamp: number,
     table: string,
-    filter: string[] | number[]
+    filter: string[] | number[],
 ) => {
     try {
         const delta = getTimeTransformations(targetTimestamp);
@@ -93,7 +93,7 @@ const getMaxTimestamp = async () => {
 /// @notice Get distinct names for vaults, reserves, strategies
 const getDistincts = async (
     targetTimestamp: number,
-    table: string
+    table: string,
 ) => {
     try {
         const res = await query(`select_distinct_${table}.sql`, [targetTimestamp]);
@@ -112,7 +112,8 @@ const getDistincts = async (
 /// @return An object with all KPIs at different points of time
 const calcKPI = (
     root: any, //TODO (dynamic)
-    kpi: string) => {
+    kpi: string
+) => {
     try {
         const current = (root.current) ? parseFloat(root.current[kpi]) : null;
         const dif5m = (root.diff_5m) ? parseFloat(root.diff_5m[kpi]) : null;

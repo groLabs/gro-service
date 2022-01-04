@@ -1,27 +1,12 @@
 import moment from 'moment';
 import {
     NetworkName,
-    NetworkId,
     TokenName,
     TokenId,
     GlobalNetwork
 } from '../types';
-//import { getNetworkId } from '../common/personalUtil';
 import { getNetwork } from '../common/globalUtil';
 
-// const defaultData = (stats, network: Network) => {
-
-//     const networkId = (network === Network.MAINNET)
-//         ? getNetworkId()
-//         : (network === Network.AVALANCHE)
-//             ? NetworkId.AVALANCHE
-//             : -1;
-//     return [
-//         stats.current_timestamp,
-//         moment.unix(stats.current_timestamp).utc(),
-//         networkId,
-//     ];
-// };
 
 const defaultData = (stats, globalNetwork: GlobalNetwork) => {
     return [

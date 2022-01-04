@@ -1,13 +1,12 @@
-import { query } from '../handler/queryHandler';
+import moment from 'moment';
 import { apiCaller } from '../caller/apiCaller';
 import { getConfig } from '../../common/configUtil';
-import moment from 'moment';
 import { loadAllTables } from '../loader/loadPriceCheck';
 import { checkLastTimestamp } from '../common/protocolUtil';
 import { calcRangeTimestamps } from '../common/globalUtil';
 import { findBlockByDate } from '../common/globalUtil';
 import { QUERY_SUCCESS } from '../constants';
-import { ICall } from '../common/commonTypes'
+import { IApiReturn } from '../interfaces';
 
 const route: any = getConfig('route');
 const botEnv = process.env.BOT_ENV.toLowerCase();
@@ -21,7 +20,7 @@ const HALF_AN_HOUR_EXACT = 1800;
 
 //TODO: if calculation is in process, do not launch again this process!
 
-const isTimestamp = (_ts) => {
+const isTimestamp = (_ts) : boolean => {
     const regexp = /^\d{10}$/;
     for (const ts of _ts) {
         if (!regexp.test(ts)) {
@@ -57,7 +56,6 @@ const calcLastTimestamps = (lastTimestamp) => {
 const loadPriceCheck = async (intervals, isHDL) => {
     try {
         for (const currentTimestamp of intervals) {
-            // @ts-ignore
             const block = (await findBlockByDate(currentTimestamp, true)).block;
             let options = {
                 hostname: route.gro_stats.hostname,
@@ -65,7 +63,7 @@ const loadPriceCheck = async (intervals, isHDL) => {
                 path: `/stats/gro_price_check?network=${nodeEnv}&block=${block}`,
                 method: 'GET',
             };
-            const call: ICall = await apiCaller(options);
+            const call: IApiReturn = await apiCaller(options);
             if (call.status === QUERY_SUCCESS) {
                 const prices = JSON.parse(call.data);
                 if (prices.pricing && 'block_number' in prices.pricing) {

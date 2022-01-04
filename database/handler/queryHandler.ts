@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { SqlCommand } from '../types';
 const { getConfig } = require('../../common/configUtil');
+import { QUERY_ERROR } from '../constants';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
@@ -17,8 +18,6 @@ const dbConnection = {
     database: db.database,
 }
 const pool = new pg.Pool(dbConnection);
-
-const { QUERY_ERROR } = require('../constants');
 
 
 const ERROR = {

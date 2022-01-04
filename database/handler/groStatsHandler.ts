@@ -11,7 +11,7 @@ const DIFF_1w = 604800;
 const MARGIN = 200;
 const NA = 'NA';
 
-const getTimeTransformations = (target) => {
+const getTimeTransformations = (target: number) => {
     return {
         "MIN_5m": target - (DIFF_5m - MARGIN),
         "MAX_5m": target - (DIFF_5m + MARGIN),
@@ -24,7 +24,11 @@ const getTimeTransformations = (target) => {
     }
 }
 
-const getTimestamps = async (targetTimestamp, table, filter) => {
+const getTimestamps = async (
+    targetTimestamp: number,
+    table: string,
+    filter: string[] | number[],
+) => {
     try {
         const delta = getTimeTransformations(targetTimestamp);
         const [
@@ -68,7 +72,10 @@ const getMaxTimestamp = async () => {
     }
 }
 
-const getDistincts = async (targetTimestamp, table) => {
+const getDistincts = async (
+    targetTimestamp: number,
+    table: string,
+) => {
     try {
         const res = await query(`select_distinct_${table}.sql`, [targetTimestamp, targetTimestamp]);
         if (res.status === QUERY_ERROR)
@@ -79,7 +86,10 @@ const getDistincts = async (targetTimestamp, table) => {
     }
 }
 
-const calcKPI = (root, kpi) => {
+const calcKPI = (
+    root: any, //TODO (dynamic)
+    kpi: string
+) => {
     try {
         const current = (root.current) ? parseFloat(root.current[kpi]) : null;
         const dif5m = (root.diff_5m) ? parseFloat(root.diff_5m[kpi]) : null;
@@ -102,7 +112,7 @@ const calcKPI = (root, kpi) => {
     }
 }
 
-const getTVL = async (targetTimestamp) => {
+const getTVL = async (targetTimestamp: number) => {
     try {
         const tvl = await getTimestamps(targetTimestamp, 'protocol_tvl', []);
         if (tvl.current) {
@@ -125,7 +135,10 @@ const getTVL = async (targetTimestamp) => {
     }
 }
 
-const getAPY = async (targetTimestamp, tokenId) => {
+const getAPY = async (
+    targetTimestamp: number,
+    tokenId: number,
+    ) => {
     try {
         const apy = await getTimestamps(targetTimestamp, 'protocol_apy', [tokenId]);
         if (apy.current) {
@@ -148,7 +161,7 @@ const getAPY = async (targetTimestamp, tokenId) => {
     }
 }
 
-const getLifeguard = async (targetTimestamp) => {
+const getLifeguard = async (targetTimestamp: number) => {
     try {
         const lifeguard = await getTimestamps(targetTimestamp, 'protocol_lifeguard', []);
         if (lifeguard.current) {
@@ -169,7 +182,7 @@ const getLifeguard = async (targetTimestamp) => {
     }
 }
 
-const getSystem = async (targetTimestamp) => {
+const getSystem = async (targetTimestamp: number) => {
     try {
         const system = await getTimestamps(targetTimestamp, 'protocol_system', []);
         if (system.current) {
@@ -189,7 +202,7 @@ const getSystem = async (targetTimestamp) => {
     }
 }
 
-const getSystemLifeguardStables = async (targetTimestamp) => {
+const getSystemLifeguardStables = async (targetTimestamp: number) => {
     try {
         let result = [];
         const stables = await getDistincts(targetTimestamp, 'protocol_system_lifeguard_stables');
@@ -216,7 +229,7 @@ const getSystemLifeguardStables = async (targetTimestamp) => {
     }
 }
 
-const getVaults = async (targetTimestamp) => {
+const getVaults = async (targetTimestamp: number) => {
     try {
         let result = [];
         const vaults = await getDistincts(targetTimestamp, 'protocol_vaults');
@@ -246,7 +259,7 @@ const getVaults = async (targetTimestamp) => {
     }
 }
 
-const getReserves = async (targetTimestamp) => {
+const getReserves = async (targetTimestamp: number) => {
     try {
         let result = [];
         const reserves = await getDistincts(targetTimestamp, 'protocol_reserves');
@@ -281,7 +294,7 @@ const getReserves = async (targetTimestamp) => {
     }
 }
 
-const getStrategies = async (targetTimestamp) => {
+const getStrategies = async (targetTimestamp: number) => {
     try {
         let result = [];
         const strategies = await getDistincts(targetTimestamp, 'protocol_strategies');
@@ -316,7 +329,7 @@ const getStrategies = async (targetTimestamp) => {
     }
 }
 
-const getExposureStables = async (targetTimestamp) => {
+const getExposureStables = async (targetTimestamp: number) => {
     try {
         let result = [];
         const stables = await getDistincts(targetTimestamp, 'protocol_exposure_stables');
@@ -348,7 +361,7 @@ const getExposureStables = async (targetTimestamp) => {
     }
 }
 
-const getExposureProtocols = async (targetTimestamp) => {
+const getExposureProtocols = async (targetTimestamp: number) => {
     try {
         let result = [];
         const protocols = await getDistincts(targetTimestamp, 'protocol_exposure_protocols');

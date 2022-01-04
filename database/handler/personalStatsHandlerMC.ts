@@ -9,6 +9,10 @@ import {
     GlobalNetwork as GN
 } from '../types';
 import { getNetwork } from '../common/globalUtil';
+import { getConfig } from '../../common/configUtil';
+
+const launchTimeEth = getConfig('blockchain.start_block');
+const launchTimeAvax = getConfig('blockchain.avax_launch_timestamp');
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
@@ -171,7 +175,7 @@ const getTransfers = async (account: string) => {
                     default:
                         const msg = `Unrecognized transfer_id (${item.transfer_id})`;
                         logger.error(`**DB: Error in personalStatsHandlerMC.ts->getTransfers(): ${msg}`);
-                        break;
+                        return ERROR_TRANSFERS;
                 }
             }
 
@@ -427,12 +431,16 @@ const getPersonalStatsMC = async (account: string) => {
                     "network": getNetwork(GN.ETHEREUM).name,
                     "mc_totals": mcTotals,
                     "ethereum": {
+                        "launch_timestamp": launchTimeEth.toString(),
+                        "network_id": getNetwork(GN.ETHEREUM).id.toString(),
                         "transaction": transfers.data.ethereum,
                         ...transfers.data.ethereum_amounts,
                         ...balances.data.ethereum,
                         ...returns.data.ethereum,
                     },
                     "avalanche": {
+                        "launch_timestamp": launchTimeAvax.toString(),
+                        "network_id": getNetwork(GN.AVALANCHE).id.toString(),
                         "transaction": transfers.data.avalanche,
                         ...transfers.data.avalanche_amounts,
                         ...balances.data.avalanche,

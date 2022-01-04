@@ -1,17 +1,16 @@
 import { apiCaller } from '../caller/apiCaller';
 import { loadTokenPrice } from '../loader/loadTokenPrice';
-import { ICall } from '../common/commonTypes';
+import { IApiReturn } from '../interfaces';
 import {
     QUERY_ERROR,
     QUERY_SUCCESS,
 } from '../constants';
-
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
-const ERROR: ICall = {
-    data: null,
+const ERROR: IApiReturn = {
     status: QUERY_ERROR,
+    data: null,
 }
 
 
@@ -19,7 +18,7 @@ const ERROR: ICall = {
 const getPriceFromCoingecko = async (
     date: string,
     coin: string,
-): Promise<ICall> => {
+): Promise<IApiReturn> => {
     return new Promise(async (resolve) => {
         try {
             // Transform date 'DD/MM/YYYY' to 'DD-MM-YYYY'
@@ -36,7 +35,7 @@ const getPriceFromCoingecko = async (
             };
 
             // Resolve result
-            const call: ICall = await apiCaller(options);
+            const call: IApiReturn = await apiCaller(options);
 
             if (call.status === QUERY_SUCCESS) {
                 const data = JSON.parse(call.data);

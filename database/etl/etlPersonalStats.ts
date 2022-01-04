@@ -14,10 +14,11 @@ import {
     loadTmpUserTransfers
 } from '../loader/loadUserTransfers';
 //import { loadUserApprovals, loadTmpUserApprovals } from '../loader/loadUserApprovals';
-import { loadUserBalances } from '../loader/loadUserBalances';
-import { loadUserNetReturns } from '../loader/loadUserNetReturns';
 import { checkDateRange } from '../common/globalUtil';
-import { QUERY_ERROR, QUERY_SUCCESS } from '../constants';
+import {
+    QUERY_ERROR,
+    QUERY_SUCCESS
+} from '../constants';
 import {
     Transfer,
     GlobalNetwork as GN,
@@ -77,10 +78,7 @@ const preload = async (
         const toBlockAvax = _toBlockAvax.block;
 
         // TBC
-        // CAREFUL: if this is done with Promise.all, it will give a 
         // [RangeError: Maximum call stack size exceeded]
-        // because the blockscanner class will handle multiple blocks in the same process
-        // and findBetter() will enter into an infinity loop
         // const fromBlock = (await findBlockByDate(fromDate, true)).block;
         // const toBlock = (await findBlockByDate(toDate, false)).block;
         // const fromBlockAvax = (await findBlockByDateAvax(fromDate, true)).block;

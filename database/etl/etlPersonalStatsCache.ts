@@ -17,7 +17,7 @@ import {
     Transfer,
     GlobalNetwork as GN,
     ContractVersion as Ver,
-} from '../types'
+} from '../types';
 
 const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../../${botEnv}/${botEnv}Logger`);
