@@ -11,8 +11,10 @@ import {
 } from '../../registry/registry';
 import { newSystemLatestContracts } from '../../registry/contracts';
 import { getLatestContractsAddress } from '../../registry/registryLoader';
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 
 
 const stableCoins = [];
@@ -35,7 +37,10 @@ function newContract(contractName, contractInfo, providerOrWallet) {
     const contractAddress = contractInfo.address;
     let contract;
     if (contractAddress === '0x0000000000000000000000000000000000000000') {
-        logger.error(`Not find address for contract: ${contractName}`);
+        showError(
+            'contractUtil.ts->newContract()',
+            `Address not found for contract: ${contractName}`
+        );
         return contract;
     }
     const abiVersion = contractInfo.abiVersion.replace(/\./g, '-');
@@ -43,7 +48,7 @@ function newContract(contractName, contractInfo, providerOrWallet) {
     // eslint-disable-next-line global-require
     const abi = require(`../../abi/${abiVersion}/${contractABIFileName}.json`);
     contract = new ethers.Contract(contractAddress, abi, providerOrWallet);
-    logger.info(`Created new ${contractName} contract.`);
+    showInfo(`Created new ${contractName} contract.`);
     return { contract, contractInfo };
 }
 
@@ -138,8 +143,8 @@ const getStableCoins = async () => {
         ).contract;
         const stableCoinAddresses = await latestController
             .stablecoins()
-            .catch((error) => {
-                logger.error(error);
+            .catch((err) => {
+                showError('contractUtil.ts->getStableCoins()', err);
                 return [];
             });
         for (let i = 0; i < stableCoinAddresses.length; i += 1) {

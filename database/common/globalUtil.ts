@@ -2,15 +2,14 @@
 import BN from 'bignumber.js';
 import moment from 'moment';
 import { div } from '../../common/digitalUtil';
-const botEnv = process.env.BOT_ENV.toLowerCase();
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import { showError } from '../handler/logHandler';
 import { getConfig } from '../../common/configUtil';
 import {
-    NetworkName,
-    NetworkId,
-    GlobalNetwork,
     Base,
+    NetworkId,
+    NetworkName,
+    GlobalNetwork,
 } from '../types';
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 // ETH config
@@ -66,7 +65,7 @@ const calcRangeTimestamps = (start, end, interval) => {
         }
         return search(start, end);
     } catch (err) {
-        logger.error(`**DB: Error in globalUtil.ts->calcRangeTimestamps(): ${err}`);
+        showError('globalUtil.ts->calcRangeTimestamps()', err);
     }
 }
 
@@ -85,15 +84,24 @@ const checkDateRange = (_fromDate, _toDate) => {
             if (toDate.isSameOrAfter(fromDate)) {
                 return true;
             } else {
-                logger.error(`fromDate ${_fromDate} is after toDate ${_toDate}`);
+                showError(
+                    'globalUtil.ts->checkDateRange()',
+                    `fromDate ${_fromDate} is after toDate ${_toDate}`
+                );
                 return false;
             }
         } else {
-            logger.error(`Incorrect date format (fromDate: ${_fromDate} toDate: ${_toDate})`);
+            showError(
+                'globalUtil.ts->checkDateRange()',
+                `Incorrect date format (fromDate: ${_fromDate} toDate: ${_toDate})`
+            );
             return false;
         }
     } catch (err) {
-        logger.error(`Error in globalUtil->checkDateRange(): [fromDate ${_fromDate} toDate ${_toDate}]: ${err}`);
+        showError(
+            'globalUtil.ts->checkDateRange()',
+            `[fromDate ${_fromDate} toDate ${_toDate}]: ${err}`
+        );
         return false;
     }
 }
@@ -108,7 +116,10 @@ const findBlockByDate = async (scanDate, after = true) => {
     try {
         return await scanner.getDate(scanDate.toDate(), after);
     } catch (err) {
-        logger.error(`**DB: Error in globalUtil.ts->findBlockByDate(): could not get block for ${scanDate}: ${err}`);
+        showError(
+            'globalUtil.ts->findBlockByDate()',
+            `Could not get block for ${scanDate}: ${err}`
+        );
         return;
     }
 }
@@ -118,7 +129,10 @@ const findBlockByDateAvax = async (scanDate, after) => {
     try {
         return await scannerAvax.getDate(scanDate.toDate(), after);
     } catch (err) {
-        logger.error(`**DB: Error in globalUtil.ts->findBlockByDateAvax(): could not get block for ${scanDate}: ${err}`);
+        showError(
+            'globalUtil.ts->findBlockByDateAvax()',
+            `Could not get block for ${scanDate}: ${err}`
+        );
         return;
     }
 }
@@ -175,7 +189,7 @@ const getNetwork = (globalNetwork: GlobalNetwork) => {
             }
         }
     } catch (err) {
-        logger.error(`Error in globalUtil->getNetwork(): ${err}`);
+        showError('globalUtil.ts->getNetwork()', err);
         return {
             id: NetworkId.UNKNOWN,
             name: NetworkName.UNKNOWN
@@ -187,7 +201,7 @@ const getBlockData = async (blockNumber) => {
     const block = await getProvider()
         .getBlock(blockNumber)
         .catch((err) => {
-            logger.error(err);
+            showError('globalUtil.ts->getBlockData()', err);
             return 0;
         });
     return block;
@@ -197,7 +211,7 @@ const getBlockDataAvax = async (blockNumber) => {
     const block = await getProviderAvax()
         .getBlock(blockNumber)
         .catch((err) => {
-            logger.error(err);
+            showError('globalUtil.ts->getBlockDataAvax()', err);
             return 0;
         });
     return block;

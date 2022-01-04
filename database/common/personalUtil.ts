@@ -7,17 +7,15 @@ import {
     ERC20_TRANSFER_SIGNATURE
 } from '../constants';
 import { Transfer } from '../types';
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
-
+import {
+    showInfo,
+    showError,
+    showWarning,
+} from '../handler/logHandler';
 
 const ZERO_ADDRESS =
     '0x0000000000000000000000000000000000000000000000000000000000000000';
 const isPlural = (count: number) => (count > 1 ? 's' : '');
-
-const handleErr = async (func, err) => {
-    logger.error(`**DB: ${func} \n Message: ${err}`);
-};
 
 
 const transferType = (side: Transfer) => {
@@ -162,8 +160,9 @@ const generateDateRange = (
     try {
         // Check format date
         if (_fromDate.length !== 10 || _toDate.length !== 10) {
-            logger.info(
-                '**DB: Date format is incorrect: should be "DD/MM/YYYY'
+            showWarning(
+                'personalUtils.ts->generateDateRange()',
+                'Date format is incorrect: should be "DD/MM/YYYY"'
             );
             return;
         }
@@ -181,7 +180,10 @@ const generateDateRange = (
         }
         return dates;
     } catch (err) {
-        handleErr(`personalUtil.ts->generateDateRange() [from: ${_fromDate}, to: ${_toDate}]`, err);
+        showError(
+            'personalUtil.ts->generateDateRange()',
+            `[from: ${_fromDate}, to: ${_toDate}]: ${err}`
+        );
         return [];
     }
 };
@@ -198,7 +200,10 @@ const calcLoadingDateRange = async () => {
         const res = await query('select_last_user_load.sql', []);
         if (res.status === QUERY_ERROR || res.rows.length === 0 || !res.rows[0].max_user_date) {
             if (res.rows.length === 0 || !res.rows[0].max_user_date)
-                logger.error('**DB: No dates found in DB to load personal stats');
+                showError(
+                    'personalUtils.ts->calcLoadingDateRange()',
+                    'No dates found in DB to load personal stats'
+                );
             return [];
         } else {
             const lastLoad = moment
@@ -217,7 +222,7 @@ const calcLoadingDateRange = async () => {
                 : [];
         }
     } catch (err) {
-        handleErr(`personalUtil.ts->calcLoadingDateRange()`, err);
+        showError(`personalUtil.ts->calcLoadingDateRange()`, err);
         return [];
     }
 }
@@ -226,8 +231,8 @@ const calcLoadingDateRange = async () => {
 const getGTokenFromTx = async (result, side, account) => {
     try {
         const numTx = result.length;
-        logger.info(
-            `**DB${account ? ' CACHE' : ''}: Processing ${numTx} ${side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
+        showInfo(
+            `${account ? ' CACHE' : ''}: Processing ${numTx} ${side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
             } transaction${isPlural(numTx)}...`
         );
 
@@ -281,12 +286,10 @@ const getGTokenFromTx = async (result, side, account) => {
             }
         }
         const sided = (side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'
-        logger.info(
-            `**DB${account ? ' CACHE' : ''}: ${result.length} ${sided} transaction${isPlural(numTx)} processed`
-        );
+        showInfo(`${account ? ' CACHE' : ''}: ${result.length} ${sided} transaction${isPlural(numTx)} processed`);
         return result;
     } catch (err) {
-        handleErr(`personalUtil.ts->getGTokenFromTx() [transfer: ${side}]`, err);
+        showError('personalUtil.ts->getGTokenFromTx()', `[transfer: ${side}]: ${err}`);
         return [];
     }
 };
@@ -295,8 +298,7 @@ const getGTokenFromTx = async (result, side, account) => {
 const getAmountFromEvent = async (result, side, account) => {
     try {
         const numTx = result.length;
-        logger.info(
-            `**DB${account ? ' CACHE' : ''}: Processing ${numTx} ${side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
+        showInfo(`${account ? ' CACHE' : ''}: Processing ${numTx} ${side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
             } transaction${isPlural(numTx)}...`
         );
 
@@ -338,17 +340,13 @@ const getAmountFromEvent = async (result, side, account) => {
             }
         }
         const sided = (side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'
-        logger.info(
-            `**DB${account ? ' CACHE' : ''}: ${result.length} ${sided} transaction${isPlural(numTx)} processed`
-        );
+        showInfo(`${account ? ' CACHE' : ''}: ${result.length} ${sided} transaction${isPlural(numTx)} processed`);
         return result;
     } catch (err) {
-        handleErr(`personalUtil.ts->getAmountFromEvent() [transfer: ${side}]`, err);
+        showError('personalUtil.ts->getAmountFromEvent()', `[transfer: ${side}]: ${err}`);
         return [];
     }
 };
-
-
 
 export {
     getStableCoinIndex,
@@ -356,7 +354,6 @@ export {
     calcLoadingDateRange,
     getAmountFromEvent,
     getGTokenFromTx,
-    handleErr,
     isInflow,
     isOutflow,
     isDepositOrWithdrawal,

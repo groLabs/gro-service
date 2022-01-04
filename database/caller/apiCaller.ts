@@ -2,9 +2,7 @@ import http from 'http';
 import https from 'https';
 import { QUERY_ERROR } from '../constants';
 import { IApiCall, IApiReturn } from '../interfaces';
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
-
+import { showError } from '../handler/logHandler';
 
 const apiCaller = (options: IApiCall): Promise<IApiReturn> => {
     return new Promise(async (resolve) => {
@@ -36,7 +34,7 @@ const apiCaller = (options: IApiCall): Promise<IApiReturn> => {
                 });
 
                 req.on('error', (err) => {
-                    logger.error('**DB: Error in apiCaller.js:', err);
+                    showError('apiCaller.ts->apiCaller()', err);
                     resolve({
                         status: QUERY_ERROR,
                         data: err,
@@ -46,7 +44,7 @@ const apiCaller = (options: IApiCall): Promise<IApiReturn> => {
                 req.end();
             }
         } catch (err) {
-            logger.error('**DB: Error in apiCaller.js:', err);
+            showError('apiCaller.ts->apiCaller()', err);
             resolve({
                 status: QUERY_ERROR,
                 data: err,

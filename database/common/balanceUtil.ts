@@ -4,9 +4,7 @@ import { parseAmount } from '../common/globalUtil';
 import { getConfig } from '../../common/configUtil';
 import { getTokenCounter } from './contractUtil';
 import { Base } from '../types';
-
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import { showError } from '../handler/logHandler';
 
 const UNI_POOL_GVT_GRO_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_gvt_pool_address');
 const UNI_POOL_GVT_USDC_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_usdc_pool_address');
@@ -27,7 +25,7 @@ const checkTime = (time: string): number[] => {
         const seconds = parseInt(time.substring(6, 8));
         return [hours, minutes, seconds];
     } else {
-        logger.error(`**DB: Error in balanceUtil.ts->checkTime(): invalid time format ${time}`);
+       showError('balanceUtil.ts->checkTime()', `invalid time format ${time}`);
         return [-1, -1, -1];
     }
 }
@@ -51,7 +49,7 @@ const getBalances = async (
             { amount_staked: result[1].map(staked => parseAmount(staked, Base.D18)) }, // only for single-sided pools (gvt, gro)
         ];
     } catch (err) {
-        logger.error(`**DB: Error in balanceUtil.ts->getBalances(): ${err}`);
+        showError('balanceUtil.ts->getBalances()', err);
         return [];
     }
 }
@@ -81,7 +79,7 @@ const getBalancesUniBalLP = async (
                 );
                 break;
             default:
-                logger.error(`**DB: Error in balanceUtil.ts->getBalancesUniBalLP(): Unrecognised token address`);
+                showError('balanceUtil.ts->getBalancesUniBalLP()', 'Unrecognised token address');
                 return [];
         }
         return [
@@ -96,7 +94,7 @@ const getBalancesUniBalLP = async (
             }
         ];
     } catch (err) {
-        logger.error(`**DB: Error in balanceUtil.ts->getBalancesUniBalLP(): ${err}`);
+        showError('balanceUtil.ts->getBalancesUniBalLP()', err);
         return [];
     }
 }
@@ -119,7 +117,7 @@ const getBalancesCrvLP = async (
             { lp_position: result[2].map(lp_position => parseAmount(lp_position, Base.D18)) }
         ];
     } catch (err) {
-        logger.error(`**DB: Error in balanceUtil.ts->getBalancesCrvLP(): ${err}`);
+        showError('balanceUtil.ts->getBalancesCrvLP()', err);
         return [];
     }
 }
@@ -131,14 +129,11 @@ export {
     getBalancesCrvLP,
 }
 
-
-
-
-            // case GVT_ADDRESS:
-            //     const pricePerShareGVT = await getGroVault().getPricePerShare(blockTag);
-            //     for (const balance of balances) {
-            //         const value_unstaked = BigNumber.from(balance[0]).mul(BigNumber.from(pricePerShareGVT)).div(ONE);
-            //         const value_staked = BigNumber.from(balance[1]).mul(BigNumber.from(pricePerShareGVT)).div(ONE);
-            //         result.push([value_unstaked, value_staked]);
-            //     }
-            //     break;
+    // case GVT_ADDRESS:
+    //     const pricePerShareGVT = await getGroVault().getPricePerShare(blockTag);
+    //     for (const balance of balances) {
+    //         const value_unstaked = BigNumber.from(balance[0]).mul(BigNumber.from(pricePerShareGVT)).div(ONE);
+    //         const value_staked = BigNumber.from(balance[1]).mul(BigNumber.from(pricePerShareGVT)).div(ONE);
+    //         result.push([value_unstaked, value_staked]);
+    //     }
+    //     break;

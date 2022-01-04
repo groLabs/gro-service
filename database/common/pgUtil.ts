@@ -4,11 +4,12 @@ import { pool } from '../handler/queryHandler';
 import { getConfig } from '../../common/configUtil';
 import { TABLE_WHITELIST } from '../constants';
 import { Bool } from '../types';
-
 const copyTo = require('pg-copy-streams').to
 const statsDir = getConfig('stats_folder');
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 
 
 /// @notice Generate CSV file in '/stats' folder
@@ -22,7 +23,7 @@ const createCSV = (
         const currentFile = `${statsDir}/dump_${tableName}_${moment().unix()}.csv`;
         fs.writeFileSync(currentFile, data);
     } catch (err) {
-        logger.error(`**DB: Error in pgUtil.js->createCSV(): ${err}`);
+        showError('pgUtil.ts->createCSV()', err);
     }
 }
 
@@ -44,30 +45,28 @@ const dumpTable = async (
                 let data: string = '';
                 const client = await pool.connect();
                 let stream = client.query(copyTo(`COPY gro."${tableName}" TO STDOUT with CSV HEADER DELIMITER '|'`));
-                logger.info(`**DB: Dumping table <${tableName}> ...`);
+                showInfo(`Dumping table <${tableName}> ...`);
 
                 stream.on('data', (chunk: string) => {
                     data += chunk;
                 });
                 stream.on('end', () => {
-                    logger.info(`**DB: Table <${tableName}> dumped successfully`);
+                    showInfo(`Table <${tableName}> dumped successfully`);
                     if (isAdmin)
                         createCSV(tableName, data);
                     resolve(data);
                 });
                 stream.on('error', err => {
-                    logger.error(`**DB: Error in pgUtil.js->dumpTable(): ${err}`);
+                    showError('pgUtil.ts->dumpTable()', err);
                     resolve(`Error found during table dump: ${err}`);
                 });
             } else {
-                const msg: string = `**DB: Table <${tableName}> not eligible for data dump`;
-                logger.error(msg);
-                resolve(msg)
+                const msg: string = `Table <${tableName}> not eligible for data dump`;
+                showError('pgUtil.ts->dumpTable()', msg);
+                resolve(msg);
             }
-
-
         } catch (err) {
-            logger.error(`**DB: Error in pgUtil.js->dumpTable(): ${err}`);
+            showError('pgUtil.ts->dumpTable()', err);
         }
     });
 }
