@@ -5,9 +5,8 @@ import {
     findBlockByDate,
 } from '../common/globalUtil';
 import {
+    isPlural,
     generateDateRange,
-    handleErr,
-    isPlural
 } from '../common/personalUtil';
 import {
     getGroVault,
@@ -39,10 +38,11 @@ import {
     GlobalNetwork as GN,
     Base,
 } from '../types';
-
-const botEnv = process.env.BOT_ENV.toLowerCase();
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 
 const GRO_ADDRESS = getConfig('staker_pools.contracts.gro_address');
@@ -88,15 +88,14 @@ const getBalancesSC = async (
     offset: number
 ) => {
     try {
-
-
         const newOffset = (offset + BATCH >= users.length)
             ? users.length
             : offset + BATCH;
 
         const userBatch = users.slice(offset, newOffset);
 
-        logger.info(`**DB: Reading balances from TokenCounter() in block ${block} for users ${offset} to ${newOffset}...`);
+        const desc = `block ${block} for users ${offset} to ${newOffset}...`;
+        showInfo(`Reading balances from TokenCounter() in ${desc}`);
 
         const [
             gvtUpdate,
@@ -229,7 +228,7 @@ const getBalancesSC = async (
             : getBalancesSC(users, block, newOffset);
 
     } catch (err) {
-        handleErr(`loadUserBalances->getBalancesSC()`, err);
+        showError('loadUserBalances.ts->getBalancesSC()', err);
         return null;
     }
 }
@@ -240,7 +239,7 @@ const insertBalances = async (
     day: moment.Moment,
     addr: string,
     res: any,
-) => {
+): Promise<boolean> => {
     return new Promise(async (resolve) => {
         try {
             const params = [
@@ -295,7 +294,7 @@ const insertBalances = async (
             resolve(true);
 
         } catch (err) {
-            handleErr(`loadUserBalances->insertBalances()`, err);
+            showError('loadUserBalances.ts->insertBalances()', err);
             resolve(false);
         }
     });
@@ -335,8 +334,10 @@ const checkTokenCounterDate = (day: moment.Moment) => {
         .add(42, 'seconds');
 
     if (!day.isSameOrAfter(tokenCounterStartDate)) {
-        const msg = `target date [${day}] before TokenCounter date [${tokenCounterStartDate}]`;
-        logger.error(`loadUserBalances->checkTokenCounterDate(): ${msg}`);
+        showError(
+            'loadUserBalances.ts->checkTokenCounterDate()',
+            `target date [${day}] before TokenCounter date [${tokenCounterStartDate}]`
+        );
         return false;
     } else {
         return true;
@@ -371,10 +372,10 @@ const showMsg = (
     date: string,
     table: string
 ) => {
-    let msg3 = `**DB${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} `;
+    let msg3 = `${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} `;
     msg3 += `added into ${table} `;
     msg3 += `for date ${moment(date).format('DD/MM/YYYY')}`;
-    logger.info(msg3);
+    showInfo(msg3);
 }
 
 /// @notice Load user balances into USER_STD_FACT_BALANCES* tables
@@ -413,12 +414,12 @@ const loadUserBalances = async (
             if (result.status === QUERY_ERROR) {
                 return false;
             } else {
-                logger.info(`**DB: Table USER_BALANCES_SNAPSHOT truncated`);
+                showInfo(`Table USER_BALANCES_SNAPSHOT truncated`);
             }
 
         }
 
-        logger.info(`**DB${account ? ' CACHE' : ''}: Processing ${users.length} user balance${isPlural(users.length)}...`);
+        showInfo(`${account ? ' CACHE' : ''}: Processing ${users.length} user balance${isPlural(users.length)}...`);
 
         for (const date of dates) {
 
@@ -437,7 +438,10 @@ const loadUserBalances = async (
             // Retrieve balances from the SC
             const result = await getBalancesSC(users, block, 0);
             if (!result)
-                handleErr(`loadUserBalances->loadUserBalances(): Error when retrieving balances in batch mode`, null);
+                showError(
+                    'loadUserBalances.ts->loadUserBalances()',
+                    'Error when retrieving balances in batch mode'
+                );
 
             // Insert balances into the DB
             for (let i = 0; i < users.length; i++) {
@@ -454,13 +458,15 @@ const loadUserBalances = async (
             showMsg(account, date, table);
             rowCount = 0;
         }
-        
+
         cleanseVars();
 
         return true;
 
     } catch (err) {
-        handleErr(`loadUserBalances->loadUserBalances() [from: ${fromDate}, to: ${toDate}]`, err);
+        showError(
+            'loadUserBalances->loadUserBalances()',
+            `[from: ${fromDate}, to: ${toDate}]: ${err}`);
         return false;
     }
 }

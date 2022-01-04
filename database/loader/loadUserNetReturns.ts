@@ -1,11 +1,15 @@
 import moment from 'moment';
 import { query } from '../handler/queryHandler';
-import { loadTableUpdates } from './loadTableUpdates';
-import { generateDateRange, handleErr, isPlural } from '../common/personalUtil';
+import {
+    isPlural,
+    generateDateRange
+} from '../common/personalUtil';
 import { QUERY_ERROR } from '../constants';
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 /// @notice Load net returns into USER_STD_FACT_NET_RETURNS
 /// @dev    Data sourced from USER_STD_FACT_TRANSFERS, USER_STD_FACT_BALANCES & TOKEN_PRICE (full load w/o filters)
@@ -19,7 +23,7 @@ const loadUserNetReturns = async (
 ): Promise<boolean> => {
     try {
         const dates = generateDateRange(fromDate, toDate);
-        logger.info(`**DB${account ? ' CACHE' : ''}: Processing user net returns...`);
+        showInfo(`${account ? ' CACHE' : ''}: Processing user net returns...`);
         for (const date of dates) {
             /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
             const q = (account)
@@ -33,13 +37,16 @@ const loadUserNetReturns = async (
             if (result.status === QUERY_ERROR)
                 return false;
             const numResults = result.rowCount;
-            let msg = `**DB${account ? ' CACHE' : ''}: ${numResults} record${isPlural(numResults)} added into `;
+            let msg = `${account ? ' CACHE' : ''}: ${numResults} record${isPlural(numResults)} added into `;
             msg += `USER_NET_RETURNS_CACHE for date ${moment(date).format('DD/MM/YYYY')}`;
-            logger.info(msg);
+            showInfo(msg);
         }
         return true;
     } catch (err) {
-        handleErr(`loadUserNetReturns.ts->loadUserNetReturns() [from: ${fromDate}, to: ${toDate}]`, err);
+        showError(
+            'loadUserNetReturns.ts->loadUserNetReturns()',
+            `[from: ${fromDate}, to: ${toDate}]: ${err}`
+        );
         return false;
     }
 }

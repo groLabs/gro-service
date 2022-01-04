@@ -1,11 +1,15 @@
 import moment from 'moment';
 import { query } from '../handler/queryHandler';
-import { handleErr } from '../common/personalUtil';
-import { generateDateRange, isPlural } from '../common/personalUtil';
+import {
+    isPlural,
+    generateDateRange
+} from '../common/personalUtil';
 import { QUERY_ERROR } from '../constants';
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 /// @notice Store the last load time and amount of records loaded into SYS_USER_LOADS
 ///         for each day of a given time range
@@ -17,7 +21,7 @@ const loadTableUpdates = async (
     tableName: string,
     _fromDate: string,
     _toDate: string,
-) => {
+): Promise<boolean> => {
     try {
         const dates = generateDateRange(_fromDate, _toDate);
 
@@ -53,13 +57,16 @@ const loadTableUpdates = async (
                         if (result.status === QUERY_ERROR)
                             return false;
                     }
-                    logger.info(`**DB: ${result.rowCount} record${isPlural(result.rowCount)} added into SYS_USER_LOADS`);
+                    showInfo(`${result.rowCount} record${isPlural(result.rowCount)} added into SYS_USER_LOADS`);
                     break;
                 // case 'USER_APPROVALS':
                 //     q = 'insert_sys_load_user_approvals.sql';
                 //     break;
                 default:
-                    handleErr(`loadTableUpdates.ts->loadTableUpdates(): table name '${tableName}' not found`, null);
+                    showError(
+                        'loadTableUpdates.ts->loadTableUpdates()',
+                        `Table name '${tableName}' not found`
+                    );
                     return false;
             }
         }
@@ -68,7 +75,7 @@ const loadTableUpdates = async (
 
     } catch (err) {
         const params = `table: ${tableName}, fromDate: ${_fromDate}, toDate: ${_toDate}`;
-        handleErr(`loadTableUpdates->loadTableUpdates() ${params}`, err);
+        showError(`loadTableUpdates.ts->loadTableUpdates() with params ${params}`, err);
         return false;
     }
 }

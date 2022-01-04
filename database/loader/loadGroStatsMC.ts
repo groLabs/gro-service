@@ -10,20 +10,22 @@ import { query } from '../handler/queryHandler';
 import * as parser from '../parser/groStatsParserMC';
 import { checkQueryResult, updateTimeStamp } from '../common/protocolUtil';
 import {
-    NetworkName,
+    TokenId,
     TokenName,
-    TokenId
+    NetworkName,
 } from '../types';
-
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import {
+    showInfo,
+    showError,
+    showWarning,
+} from '../handler/logHandler';
 
 
 const checkLastTimestamp = async () => {
     return await query('select_last_protocol_load.sql', ['GRO_STATS']);
 }
 
-const loadAPY = async (stats) => {
+const loadAPY = async (stats): Promise<boolean> => {
     try {
         const [
             pwrd,
@@ -40,12 +42,12 @@ const loadAPY = async (stats) => {
             && checkQueryResult(gvt, 'PROTOCOL_APY'))
             ? true : false;
     } catch (err) {
-        logger.error(`**DB: Error in loadGroStatsMC.js->loadAPY(): ${err}`);
+        showError('loadGroStatsMC.ts->loadAPY()', err);
         return false;
     }
 }
 
-const loadTVL = async (stats) => {
+const loadTVL = async (stats): Promise<boolean> => {
     try {
         const [
             tvl,
@@ -62,24 +64,24 @@ const loadTVL = async (stats) => {
             && (checkQueryResult(tvlAvax, 'PROTOCOL_AVAX_TVL'))
             ? true : false;
     } catch (err) {
-        logger.error(`**DB: Error in loadGroStatsMC.js->loadTVL(): ${err}`);
+        showError('loadGroStatsMC.ts->loadTVL()', err);
         return false;
     }
 }
 
-const loadLifeguard = async (stats) => {
+const loadLifeguard = async (stats): Promise<boolean> => {
     try {
         const lifeguard = await query(
             'insert_protocol_lifeguard.sql',
             parser.getLifeguard(stats, NetworkName.MAINNET));
         return (checkQueryResult(lifeguard, 'PROTOCOL_LIFEGUARD')) ? true : false;
     } catch (err) {
-        logger.error(`**DB: Error in loadGroStatsMC.js->loadLifeguard(): ${err}`);
+        showError('loadGroStatsMC.ts->loadLifeguard()', err);
         return false;
     }
 }
 
-const loadLifeguardStables = async (stats) => {
+const loadLifeguardStables = async (stats): Promise<boolean> => {
     try {
         let rows = 0;
         for (const stable of parser.getLifeguardStables(stats, NetworkName.MAINNET)) {
@@ -90,25 +92,25 @@ const loadLifeguardStables = async (stats) => {
                 return false;
             }
         }
-        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_SYSTEM_LIFEGUARD_STABLES'}`);
+        showInfo(`${rows} records added into ${'PROTOCOL_SYSTEM_LIFEGUARD_STABLES'}`);
         return true;
     } catch (err) {
-        logger.error(`**DB: Error in loadGroStatsMC.js->loadLifeguardStables(): ${err}`);
+        showError('loadGroStatsMC.ts->loadLifeguardStables()', err);
         return false;
     }
 }
 
-const loadSystem = async (stats) => {
+const loadSystem = async (stats): Promise<boolean> => {
     try {
         const system = await query('insert_protocol_system.sql', parser.getSystem(stats, NetworkName.MAINNET));
         return (checkQueryResult(system, 'PROTOCOL_SYSTEM')) ? true : false;
     } catch (err) {
-        logger.error(`**DB: Error in loadGroStatsMC.js->loadSystem(): ${err}`);
+        showError('loadGroStatsMC.ts->loadSystem()', err);
         return false;
     }
 }
 
-const loadVaults = async (stats) => {
+const loadVaults = async (stats): Promise<boolean> => {
     try {
         // Ethereum
         let rows = 0;
@@ -120,7 +122,7 @@ const loadVaults = async (stats) => {
                 return false;
             }
         }
-        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_VAULTS'}`);
+        showInfo(`${rows} records added into ${'PROTOCOL_VAULTS'}`);
         // Avalanche
         rows = 0;
         for (const vault of parser.getVaults(stats, NetworkName.AVALANCHE)) {
@@ -131,15 +133,15 @@ const loadVaults = async (stats) => {
                 return false;
             }
         }
-        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_AVAX_VAULTS'}`);
+        showInfo(`${rows} records added into ${'PROTOCOL_AVAX_VAULTS'}`);
         return true;
     } catch (err) {
-        logger.error(`**DB: Error in loadGroStatsMC.js->loadVaults(): ${err}`);
+        showError('loadGroStatsMC.ts->loadVaults()', err);
         return false;
     }
 }
 
-const loadReserves = async (stats) => {
+const loadReserves = async (stats): Promise<boolean> => {
     try {
         // Ethereum
         let rows = 0;
@@ -151,7 +153,7 @@ const loadReserves = async (stats) => {
                 return false;
             }
         }
-        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_RESERVES'}`);
+        showInfo(`${rows} records added into ${'PROTOCOL_RESERVES'}`);
 
         //Avalanche
         rows = 0;
@@ -163,16 +165,16 @@ const loadReserves = async (stats) => {
                 return false;
             }
         }
-        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_AVAX_RESERVES'}`);
+        showInfo(`${rows} records added into ${'PROTOCOL_AVAX_RESERVES'}`);
 
         return true;
     } catch (err) {
-        logger.error(`**DB: Error in loadGroStatsMC.js->loadReserves(): ${err}`);
+        showError('loadGroStatsMC.ts->loadReserves()', err);
         return false;
     }
 }
 
-const loadStrategies = async (stats) => {
+const loadStrategies = async (stats): Promise<boolean> => {
     try {
         // Ethereum
         let rows = 0;
@@ -184,7 +186,7 @@ const loadStrategies = async (stats) => {
                 return false;
             }
         }
-        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_STRATEGIES'}`);
+        showInfo(`${rows} records added into ${'PROTOCOL_STRATEGIES'}`);
 
         // Avalanche
         rows = 0;
@@ -196,16 +198,16 @@ const loadStrategies = async (stats) => {
                 return false;
             }
         }
-        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_AVAX_STRATEGIES'}`);
+        showInfo(`${rows} records added into ${'PROTOCOL_AVAX_STRATEGIES'}`);
 
         return true;
     } catch (err) {
-        logger.error(`**DB: Error in loadGroStatsMC.js->loadStrategies(): ${err}`);
+        showError('loadGroStatsMC.ts->loadStrategies()', err);
         return false;
     }
 }
 
-const loadExposureStables = async (stats) => {
+const loadExposureStables = async (stats): Promise<boolean> => {
     try {
         let rows = 0;
         for (const stable of parser.getExposureStables(stats, NetworkName.MAINNET)) {
@@ -216,15 +218,15 @@ const loadExposureStables = async (stats) => {
                 return false;
             }
         }
-        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_EXPOSURE_STABLES'}`);
+        showInfo(`${rows} records added into ${'PROTOCOL_EXPOSURE_STABLES'}`);
         return true;
     } catch (err) {
-        logger.error(`**DB: Error in loadGroStatsMC.js->loadExposureStables(): ${err}`);
+        showError('loadGroStatsMC.ts->loadExposureStables()', err);
         return false;
     }
 }
 
-const loadExposureProtocols = async (stats) => {
+const loadExposureProtocols = async (stats): Promise<boolean> => {
     try {
         let rows = 0;
         for (const stable of parser.getExposureProtocols(stats, NetworkName.MAINNET)) {
@@ -235,10 +237,10 @@ const loadExposureProtocols = async (stats) => {
                 return false;
             }
         }
-        logger.info(`**DB: ${rows} records added into ${'PROTOCOL_EXPOSURE_PROTOCOLS'}`);
+        showInfo(`${rows} records added into ${'PROTOCOL_EXPOSURE_PROTOCOLS'}`);
         return true;
     } catch (err) {
-        logger.error(`**DB: Error in loadGroStatsMC.js->loadExposureProtocols(): ${err}`);
+        showError('loadGroStatsMC.ts->loadExposureProtocols()', err);
         return false;
     }
 }
@@ -261,18 +263,24 @@ const loadAllTables = async (stats) => {
             if (res.every(Boolean)) {
                 await updateTimeStamp(stats.current_timestamp, 'GRO_STATS');
             } else {
-                logger.warn(`**DB: Error/s found in loadGroStatsMC.js->loadAllTables(): Table SYS_PROTOCOL_LOADS not updated.`);
+                showWarning(
+                    'loadGroStatsMC.ts->loadAllTables()',
+                    'Table SYS_PROTOCOL_LOADS not updated'
+                );
             }
         } else {
-            logger.error(`**DB: Error in loadGroStatsMC.js->loadAllTables(): stats JSON structure is not correct.`);
+            showError(
+                'loadGroStatsMC.ts->loadAllTables()',
+                'stats JSON structure is not correct'
+            );
         }
     } catch (err) {
-        logger.error(`**DB: Error in loadGroStatsMC.js->loadAllTables(): ${err}`);
+        showError('loadGroStatsMC.ts->loadAllTables()', err);
     }
 }
 
 export {
-    loadAllTables,
     loadAPY,
+    loadAllTables,
     checkLastTimestamp,
 }

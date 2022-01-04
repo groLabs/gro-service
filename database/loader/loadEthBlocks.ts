@@ -1,18 +1,17 @@
 import moment from 'moment';
 import { query } from '../handler/queryHandler';
-import {
-    handleErr,
-    isPlural
-} from '../common/personalUtil';
+import { isPlural } from '../common/personalUtil';
 import {
     getBlockData,
     getBlockDataAvax,
 } from '../common/globalUtil';
 import { QUERY_ERROR } from '../constants';
 import { NetworkId } from '../types';
+import {
+    showInfo,
+    showError
+} from '../handler/logHandler';
 
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 /// @notice Adds new blocks into table ETH_BLOCKS
 /// @return True if no exceptions found, false otherwise
@@ -36,7 +35,7 @@ const loadEthBlocks = async (
         // Insert new blocks into ETH_BLOCKS
         const numBlocks = blocks.rowCount;
         if (numBlocks > 0) {
-            logger.info(`**DB${account ? ' CACHE' : ''}: Processing ${numBlocks} block${isPlural(numBlocks)} from ${(func === 'loadUserTransfers')
+            showInfo(`${account ? ' CACHE' : ''}: Processing ${numBlocks} block${isPlural(numBlocks)} from ${(func === 'loadUserTransfers')
                 ? 'transfers'
                 : 'approvals'
                 }...`);
@@ -57,16 +56,16 @@ const loadEthBlocks = async (
                 if (result.status === QUERY_ERROR)
                     return false;
             }
-            logger.info(`**DB${account ? ' CACHE' : ''}: ${numBlocks} block${isPlural(numBlocks)} added into ETH_BLOCKS`);
+            showInfo(`${account ? ' CACHE' : ''}: ${numBlocks} block${isPlural(numBlocks)} added into ETH_BLOCKS`);
         } else {
-            logger.info(`**DB${account ? ' CACHE' : ''}: No blocks to be added from ${(func === 'loadUserTransfers')
+            showInfo(`${account ? ' CACHE' : ''}: No blocks to be added from ${(func === 'loadUserTransfers')
                 ? 'transfers'
                 : 'approvals'
                 }`);
         }
         return true;
     } catch (err) {
-        handleErr('loadEthBlocks->loadEthBlocks()', err);
+        showError('loadEthBlocks.ts->loadEthBlocks()', err);
         return false;
     }
 }

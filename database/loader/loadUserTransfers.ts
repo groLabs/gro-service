@@ -2,7 +2,6 @@ import { query } from '../handler/queryHandler';
 import { loadEthBlocks } from './loadEthBlocks';
 import { loadTableUpdates } from './loadTableUpdates';
 import {
-    handleErr,
     isInflow,
     isPlural,
     transferType,
@@ -20,8 +19,11 @@ import {
     GlobalNetwork,
     ContractVersion,
 } from '../types';
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
+import {
+    showInfo,
+    showError,
+    showWarning,
+} from '../handler/logHandler';
 
 
 /// @notice - Loads deposits/withdrawals into USER_STD_FACT_TRANSFERS
@@ -52,7 +54,7 @@ const loadUserTransfers = async (
                 return false;
             const numTransfers = res.rowCount;
             const table = `added into ${account ? 'USER_TRANSFERS_CACHE' : 'USER_TRANSFERS'}`;
-            logger.info(`**DB${account ? ' CACHE' : ''}: ${numTransfers} record${isPlural(numTransfers)} ${table}`);
+            showInfo(`${account ? ' CACHE' : ''}: ${numTransfers} record${isPlural(numTransfers)} ${table}`);
         } else {
             return false;
         }
@@ -64,7 +66,7 @@ const loadUserTransfers = async (
             return (res) ? true : false;
         }
     } catch (err) {
-        handleErr('loadUserTransfers.ts->loadUserTransfers()', err);
+        showError('loadUserTransfers.ts->loadUserTransfers()', err);
         return false;
     }
 }
@@ -126,7 +128,7 @@ const loadTmpUserTransfers = async (
                         if (!res)
                             return false;
 
-                        logger.info(`**DB${(account) ? ' CACHE' : ''}: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isInflow(side))
+                        showInfo(`${(account) ? ' CACHE' : ''}: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isInflow(side))
                             ? (account)
                                 ? 'USER_DEPOSITS_CACHE'
                                 : 'USER_DEPOSITS_TMP'
@@ -138,20 +140,23 @@ const loadTmpUserTransfers = async (
                 }
             }
         } else {
-            let msg = `**DB: Block ${_fromBlock} is older than SC deployment for transfer type ${side} (${transferType(side)}) `;
-            logger.warn(`${msg} ${contractVersion === ContractVersion.VAULT_1_0
-                ? 'Vault 1.0'
-                : contractVersion === ContractVersion.VAULT_1_5
-                    ? 'Vault 1.5'
-                    : contractVersion === ContractVersion.VAULT_1_5_1
-                        ? 'Vault 1.5.1'
-                        : ''} -> No data load required`);
+            let msg = `Block ${_fromBlock} is older than SC deployment for transfer type ${side} (${transferType(side)}) `;
+            showWarning('loadUserTransfers.ts->loadTmpUserTransfers',
+                `${msg} ${contractVersion === ContractVersion.VAULT_1_0
+                    ? 'Vault 1.0'
+                    : contractVersion === ContractVersion.VAULT_1_5
+                        ? 'Vault 1.5'
+                        : contractVersion === ContractVersion.VAULT_1_5_1
+                            ? 'Vault 1.5.1'
+                            : ''} -> No data load required`);
         }
         return true;
 
     } catch (err) {
         const params = `[blocks from: ${_fromBlock} to ${toBlock}, side: ${side}, account: ${account}]`;
-        handleErr(`loadUserTransfers->loadTmpUserTransfers(): ${params} `, err);
+        showError(
+            'loadUserTransfers.ts->loadTmpUserTransfers()',
+            `${params}: ${err}`);
         return false;
     }
 }
@@ -184,7 +189,7 @@ const isContractDeployed = (
     contractVersion: ContractVersion,
     side: Transfer,
     block: number
-) =>  {
+) => {
     const networkId = getNetwork(network).id;
 
     if (network === GlobalNetwork.ETHEREUM && networkId === NetworkId.MAINNET) {
@@ -209,7 +214,10 @@ const isContractDeployed = (
                     GENESIS.ETHEREUM.GRO_DEPLOYMENT_BLOCK,
                 );
             default:
-                logger.error(`**DB: Error in loadUserTransfers.ts->isContractDeployed(): Unknown transfer type ${side} for Ethereum`);
+                showError(
+                    'loadUserTransfers.ts->isContractDeployed()',
+                    `Unknown transfer type ${side} for Ethereum`
+                );
                 return [false, block];
         }
 
@@ -234,7 +242,10 @@ const isContractDeployed = (
                 GENESIS.AVALANCHE.VAULT_USDT_1_5_1_DEPLOYMENT_BLOCK,
             );
         else {
-            logger.error(`**DB: Error in loadUserTransfers.ts->isContractDeployed(): Unknown transfer type ${side} for Avalanche`);
+            showError(
+                'loadUserTransfers.ts->isContractDeployed()',
+                `Unknown transfer type ${side} for Avalanche`
+            );
             return [false, block];
         }
 
@@ -245,6 +256,6 @@ const isContractDeployed = (
 }
 
 export {
-    loadTmpUserTransfers,
     loadUserTransfers,
+    loadTmpUserTransfers,
 };

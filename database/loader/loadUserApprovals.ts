@@ -1,14 +1,16 @@
 import { query } from '../handler/queryHandler';
 import { loadEthBlocks } from './loadEthBlocks';
 import { loadTableUpdates } from './loadTableUpdates';
-import { handleErr, isPlural } from '../common/personalUtil';
+import { isPlural } from '../common/personalUtil';
 import { getApprovalEvents } from '../listener/getApprovalEvents';
 import { parseApprovalEvents } from '../parser/personalStatsParser';
 import { QUERY_ERROR } from '../constants';
 import { GlobalNetwork } from '../types';
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
 /// @notice Loads approvals into USER_STD_FACT_APPROVALS
 ///         Data is sourced from USER_STD_TMP_APPROVALS (full load w/o filters)
@@ -37,7 +39,7 @@ const loadUserApprovals = async (
             if (res.status === QUERY_ERROR)
                 return false;
             const numTransfers = res.rowCount;
-            logger.info(`**DB${account ? ' CACHE' : ''}: ${numTransfers} record${isPlural(numTransfers)} added into USER_APPROVALS`);
+            showInfo(`${account ? ' CACHE' : ''}: ${numTransfers} record${isPlural(numTransfers)} added into USER_APPROVALS`);
         } else {
             return false;
         }
@@ -49,7 +51,7 @@ const loadUserApprovals = async (
             return (res) ? true : false;
         }
     } catch (err) {
-        handleErr('loadUserApprovals->loadUserApprovals()', err);
+        showError('loadUserApprovals.ts->loadUserApprovals()', err);
         return false;
     }
 }
@@ -71,7 +73,7 @@ const loadTmpUserApprovals = async (
         for (let i = 0; i < logs.length; i++) {
             if (logs[i]) {
                 // Parse approval events
-                logger.info(`**DB${account ? ' CACHE' : ''}: Processing ${logs[i].length} approval event${isPlural(logs.length)}...`);
+                showInfo(`${account ? ' CACHE' : ''}: Processing ${logs[i].length} approval event${isPlural(logs.length)}...`);
                 const approvals = await parseApprovalEvents(GlobalNetwork.ETHEREUM, logs[i]);
 
                 // Insert approvals into USER_APPROVALS
@@ -91,12 +93,14 @@ const loadTmpUserApprovals = async (
         // TODO: missing N records added into table X
         return true;
     } catch (err) {
-        handleErr(`loadUserApprovals->loadTmpUserApprovals() [blocks: ${fromBlock} to: ${toBlock}]`, err);
+        showError(
+            'loadUserApprovals.ts->loadTmpUserApprovals()',
+            `[blocks: ${fromBlock} to: ${toBlock}]`);
         return false;
     }
 }
 
 export {
-    loadTmpUserApprovals,
     loadUserApprovals,
+    loadTmpUserApprovals,
 };

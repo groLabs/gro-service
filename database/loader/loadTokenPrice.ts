@@ -11,12 +11,13 @@ import {
 } from '../common/contractUtil';
 import { QUERY_ERROR } from '../constants';
 import { Base } from '../types';
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 
-const botEnv = process.env.BOT_ENV.toLowerCase();
-const logger = require(`../../${botEnv}/${botEnv}Logger`);
 
-
-const loadTokenPrice = async () => {
+const loadTokenPrice = async (): Promise<boolean> => {
     try {
         const now = moment.utc();
         const dateString = moment(now).format('DD/MM/YYYY');
@@ -49,7 +50,10 @@ const loadTokenPrice = async () => {
             || priceBAL.status === QUERY_ERROR
             || priceAVAX.status === QUERY_ERROR
         ) {
-            logger.error(`**DB: Error in loadTokenPrice.ts->loadTokenPrice() while retrieving prices from CoinGecko`);
+            showError(
+                'loadTokenPrice.ts->loadTokenPrice()',
+                'while retrieving prices from CoinGecko'
+            );
             return false;
         }
 
@@ -79,7 +83,10 @@ const loadTokenPrice = async () => {
         let result;
         const isToken = await query('select_token_price.sql', []);
         if (isToken.status === QUERY_ERROR) {
-            logger.error(`**DB: Error in loadTokenPrice.ts->loadTokenPrice() while retrieving token data`)
+            showError(
+                'loadTokenPrice.ts->loadTokenPrice()',
+                'Error while retrieving token data'
+            );
             return false;
         } else if (isToken.rowCount > 0) {
             result = await query('update_token_price.sql', params);
@@ -90,17 +97,21 @@ const loadTokenPrice = async () => {
         // Show log
         if (result.status !== QUERY_ERROR) {
             let msg = `GVT: ${priceGvtParsed}, PWRD: ${pricePwrdParsed}`;
-            msg += `, GRO: ${priceGRO.data}, WETH: ${priceWETH.data}, BAL: ${priceBAL.data}, AVAX: ${priceAVAX.data}`;
-            msg += `, USDCe: ${priceUSDCeParsed}, USDTe: ${priceUSDTeParsed}, DAIe: ${priceDAIeParsed}`;
+            msg += `, GRO: ${priceGRO.data}, WETH: ${priceWETH.data}`;
+            msg += `, BAL: ${priceBAL.data}, AVAX: ${priceAVAX.data}`;
+            msg += `, USDCe: ${priceUSDCeParsed}, USDTe: ${priceUSDTeParsed}`;
+            msg += `, DAIe: ${priceDAIeParsed}`;
             const action = (isToken.rowCount > 0) ? 'Updated' : 'Added';
-            logger.info(`**DB: ${action} token prices for ${now.format('DD/MM/YYYY HH:mm:ss')} => ${msg}`);
+            showInfo(`${action} token prices for ${now.format('DD/MM/YYYY HH:mm:ss')} => ${msg}`);
         } else {
-            const msg = ` while insterting token prices into DB with params: ${params}`;
-            logger.error(`**DB: Error in loadTokenPrice.ts->loadTokenPrice() ${msg}`);
+            showError(
+                'loadTokenPrice.ts->loadTokenPrice()',
+                `Error while insterting token prices into DB with params: ${params}`
+            );
         }
 
     } catch (err) {
-        logger.error(`**DB: Error in loadTokenPrice.js->loadTokenPrice(): ${err}`);
+        showError('loadTokenPrice.ts->loadTokenPrice()', err);
         return false;
     }
 }
