@@ -27,6 +27,8 @@ const providerAVAX = new ethers.providers.JsonRpcProvider(rpcURL);
 const scannerAvax = new BlocksScanner(providerAVAX);
 
 
+const isPlural = (count: number) => (count > 1 ? 's' : '');
+
 const parseAmount = (
     amount: any, //TOOD: Bignumber
     base: Base
@@ -218,6 +220,7 @@ const getBlockDataAvax = async (blockNumber) => {
 };
 
 export {
+    isPlural,
     calcRangeTimestamps,
     checkDateRange,
     findBlockByDate,

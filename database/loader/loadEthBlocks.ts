@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { query } from '../handler/queryHandler';
-import { isPlural } from '../common/personalUtil';
 import {
+    isPlural,
     getBlockData,
     getBlockDataAvax,
 } from '../common/globalUtil';

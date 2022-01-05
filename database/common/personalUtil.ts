@@ -1,7 +1,10 @@
-import { ethers } from 'ethers';
 import moment from 'moment';
-import { getProvider } from './globalUtil';
+import { ethers } from 'ethers';
 import { query } from '../handler/queryHandler';
+import {
+    isPlural,
+    getProvider
+} from './globalUtil';
 import {
     QUERY_ERROR,
     ERC20_TRANSFER_SIGNATURE
@@ -15,7 +18,6 @@ import {
 
 const ZERO_ADDRESS =
     '0x0000000000000000000000000000000000000000000000000000000000000000';
-const isPlural = (count: number) => (count > 1 ? 's' : '');
 
 
 const transferType = (side: Transfer) => {
@@ -357,7 +359,6 @@ export {
     isInflow,
     isOutflow,
     isDepositOrWithdrawal,
-    isPlural,
     isTransfer,
     transferType,
 };

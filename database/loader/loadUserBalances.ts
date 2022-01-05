@@ -1,13 +1,11 @@
 import moment from 'moment';
 import { query } from '../handler/queryHandler';
 import {
+    isPlural,
     getNetwork,
     findBlockByDate,
 } from '../common/globalUtil';
-import {
-    isPlural,
-    generateDateRange,
-} from '../common/personalUtil';
+import { generateDateRange, } from '../common/personalUtil';
 import {
     getGroVault,
     getPowerD,

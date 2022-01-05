@@ -5,8 +5,8 @@ import { newSystemLatestContracts } from '../../registry/contracts'
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import { getConfig } from '../../common/configUtil';
 import { findBlockByDate, getNetwork } from '../common/globalUtil';
-const providerKey = 'stats_gro';
 import moment from 'moment';
+const providerKey = 'stats_gro';
 // const { airdrop4Addr: AIRDROP4_ADDRESSES } = require('../files/airdrop4Addr');
 // const { airdrop4AddrGvtStaking: AIRDROP4_ADDRESSES } = require('../files/airdrop4AddrGvtStaking');
 const { airdrop4StakingFinal: AIRDROP4_ADDRESSES } = require('../files/airdrop4stakingFinal');

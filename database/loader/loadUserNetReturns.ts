@@ -1,9 +1,7 @@
 import moment from 'moment';
 import { query } from '../handler/queryHandler';
-import {
-    isPlural,
-    generateDateRange
-} from '../common/personalUtil';
+import { isPlural } from '../common/globalUtil';
+import { generateDateRange } from '../common/personalUtil';
 import { QUERY_ERROR } from '../constants';
 import {
     showInfo,

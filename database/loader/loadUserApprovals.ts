@@ -1,7 +1,7 @@
 import { query } from '../handler/queryHandler';
 import { loadEthBlocks } from './loadEthBlocks';
 import { loadTableUpdates } from './loadTableUpdates';
-import { isPlural } from '../common/personalUtil';
+import { isPlural } from '../common/globalUtil';
 import { getApprovalEvents } from '../listener/getApprovalEvents';
 import { parseApprovalEvents } from '../parser/personalStatsParser';
 import { QUERY_ERROR } from '../constants';

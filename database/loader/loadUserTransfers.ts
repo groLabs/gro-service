@@ -3,11 +3,13 @@ import { loadEthBlocks } from './loadEthBlocks';
 import { loadTableUpdates } from './loadTableUpdates';
 import {
     isInflow,
-    isPlural,
     transferType,
 } from '../common/personalUtil';
 import { getTransferEvents } from '../listener/getTransferEvents';
-import { getNetwork } from '../common/globalUtil'
+import {
+    isPlural,
+    getNetwork
+} from '../common/globalUtil'
 import { parseTransferEvents2 } from '../parser/personalStatsTransfersParser2';
 import {
     GENESIS,
