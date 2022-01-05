@@ -7,7 +7,7 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 
-const callSubgraph = async (payload: { query: any; id: any; block: any; addr: any; url: string; }): Promise<null | any> => {
+const callSubgraph = async (payload: { query: any; id: any; block?: any; addr?: any; url: string; }): Promise<null | any> => {
     let q: string;
 
     switch (payload.query) {
