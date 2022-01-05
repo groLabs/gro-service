@@ -11,7 +11,7 @@ import {
 import { getNetwork } from '../common/globalUtil';
 import { getConfig } from '../../common/configUtil';
 import { showError } from '../handler/logHandler';
-const launchTimeEth = getConfig('blockchain.start_block');
+const launchTimeEth = getConfig('blockchain.start_timestamp');
 const launchTimeAvax = getConfig('blockchain.avax_launch_timestamp');
 
 const ERROR_TRANSFERS = {
@@ -30,6 +30,7 @@ const ERROR_BALANCES = {
     "data": {
         "ethereum": {},
         "avalanche": {},
+        "gro_balance_combined": null,
     }
 }
 const ERROR_RETURNS = {
@@ -284,7 +285,6 @@ const getNetBalances = async (account: string) => {
                             "total": (parseFloat(res.pwrd)
                                 + parseFloat(res.gvt)).toString(),
                         },
-                        "gro_balance_combined": res.gro_balance_combined,
                     },
                     "avalanche": {
                         "current_balance": {
@@ -295,7 +295,8 @@ const getNetBalances = async (account: string) => {
                                 + parseFloat(res.usdt_e)
                                 + parseFloat(res.dai_e)).toString(),
                         },
-                    }
+                    },
+                    "gro_balance_combined": res.gro_balance_combined,
                 }
             }
         } else
@@ -386,7 +387,6 @@ const getMcTotals = (transfers, balances, returns) => {
                     "total": (parseFloat(returns.data.ethereum.net_returns.total)
                         + parseFloat(returns.data.avalanche.net_returns.total)).toString()
                 },
-                "gro_balance_combined": balances.data.ethereum.gro_balance_combined,
             }
         }
         return result;
@@ -424,11 +424,11 @@ const getPersonalStatsMC = async (account: string) => {
             const mcTotals = getMcTotals(transfers, balances, returns);
             const result = {
                 "gro_personal_position_mc": {
-                    "status": QUERY_SUCCESS,
-                    "current_timestamp": moment().unix(),
+                    "status": QUERY_SUCCESS.toString(),
+                    "current_timestamp": moment().unix().toString(),
                     "address": account,
                     "network": getNetwork(GN.ETHEREUM).name,
-                    "mc_totals": mcTotals,
+                    "mc_totals": mcTotals.data,
                     "ethereum": {
                         "launch_timestamp": launchTimeEth.toString(),
                         "network_id": getNetwork(GN.ETHEREUM).id.toString(),
@@ -436,6 +436,7 @@ const getPersonalStatsMC = async (account: string) => {
                         ...transfers.data.ethereum_amounts,
                         ...balances.data.ethereum,
                         ...returns.data.ethereum,
+                        "gro_balance_combined": balances.data.gro_balance_combined,
                     },
                     "avalanche": {
                         "launch_timestamp": launchTimeAvax.toString(),
