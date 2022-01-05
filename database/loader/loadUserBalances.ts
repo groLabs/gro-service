@@ -370,7 +370,7 @@ const showMsg = (
     date: string,
     table: string
 ) => {
-    let msg3 = `${account ? ' CACHE' : ''}: ${rowCount} record${isPlural(rowCount)} `;
+    let msg3 = `${account ? 'CACHE: ' : ''}${rowCount} record${isPlural(rowCount)} `;
     msg3 += `added into ${table} `;
     msg3 += `for date ${moment(date).format('DD/MM/YYYY')}`;
     showInfo(msg3);
@@ -417,7 +417,7 @@ const loadUserBalances = async (
 
         }
 
-        showInfo(`${account ? ' CACHE' : ''}: Processing ${users.length} user balance${isPlural(users.length)}...`);
+        showInfo(`${account ? 'CACHE: ' : ''}Processing ${users.length} user balance${isPlural(users.length)}...`);
 
         for (const date of dates) {
 

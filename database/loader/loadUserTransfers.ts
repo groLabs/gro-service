@@ -56,7 +56,7 @@ const loadUserTransfers = async (
                 return false;
             const numTransfers = res.rowCount;
             const table = `added into ${account ? 'USER_TRANSFERS_CACHE' : 'USER_TRANSFERS'}`;
-            showInfo(`${account ? ' CACHE' : ''}: ${numTransfers} record${isPlural(numTransfers)} ${table}`);
+            showInfo(`${account ? 'CACHE: ' : ''}${numTransfers} record${isPlural(numTransfers)} ${table}`);
         } else {
             return false;
         }
@@ -130,7 +130,7 @@ const loadTmpUserTransfers = async (
                         if (!res)
                             return false;
 
-                        showInfo(`${(account) ? ' CACHE' : ''}: ${rows} ${transferType(side)}${isPlural(rows)} added into ${(isInflow(side))
+                        showInfo(`${(account) ? 'CACHE: ' : ''}${rows} ${transferType(side)}${isPlural(rows)} added into ${(isInflow(side))
                             ? (account)
                                 ? 'USER_DEPOSITS_CACHE'
                                 : 'USER_DEPOSITS_TMP'

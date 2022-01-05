@@ -39,7 +39,7 @@ const loadUserApprovals = async (
             if (res.status === QUERY_ERROR)
                 return false;
             const numTransfers = res.rowCount;
-            showInfo(`${account ? ' CACHE' : ''}: ${numTransfers} record${isPlural(numTransfers)} added into USER_APPROVALS`);
+            showInfo(`${account ? 'CACHE: ' : ''}${numTransfers} record${isPlural(numTransfers)} added into USER_APPROVALS`);
         } else {
             return false;
         }
@@ -73,7 +73,7 @@ const loadTmpUserApprovals = async (
         for (let i = 0; i < logs.length; i++) {
             if (logs[i]) {
                 // Parse approval events
-                showInfo(`${account ? ' CACHE' : ''}: Processing ${logs[i].length} approval event${isPlural(logs.length)}...`);
+                showInfo(`${account ? 'CACHE: ' : ''}Processing ${logs[i].length} approval event${isPlural(logs.length)}...`);
                 const approvals = await parseApprovalEvents(GlobalNetwork.ETHEREUM, logs[i]);
 
                 // Insert approvals into USER_APPROVALS

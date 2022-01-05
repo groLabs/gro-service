@@ -21,7 +21,7 @@ const loadUserNetReturns = async (
 ): Promise<boolean> => {
     try {
         const dates = generateDateRange(fromDate, toDate);
-        showInfo(`${account ? ' CACHE' : ''}: Processing user net returns...`);
+        showInfo(`${account ? 'CACHE: ' : ''}Processing user net returns...`);
         for (const date of dates) {
             /// @dev: Note that format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
             const q = (account)
@@ -35,7 +35,7 @@ const loadUserNetReturns = async (
             if (result.status === QUERY_ERROR)
                 return false;
             const numResults = result.rowCount;
-            let msg = `${account ? ' CACHE' : ''}: ${numResults} record${isPlural(numResults)} added into `;
+            let msg = `${account ? 'CACHE: ' : ''}${numResults} record${isPlural(numResults)} added into `;
             msg += `USER_NET_RETURNS_CACHE for date ${moment(date).format('DD/MM/YYYY')}`;
             showInfo(msg);
         }

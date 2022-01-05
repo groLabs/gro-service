@@ -35,7 +35,7 @@ const loadEthBlocks = async (
         // Insert new blocks into ETH_BLOCKS
         const numBlocks = blocks.rowCount;
         if (numBlocks > 0) {
-            showInfo(`${account ? ' CACHE' : ''}: Processing ${numBlocks} block${isPlural(numBlocks)} from ${(func === 'loadUserTransfers')
+            showInfo(`${account ? 'CACHE' : ''}: Processing ${numBlocks} block${isPlural(numBlocks)} from ${(func === 'loadUserTransfers')
                 ? 'transfers'
                 : 'approvals'
                 }...`);
@@ -56,9 +56,9 @@ const loadEthBlocks = async (
                 if (result.status === QUERY_ERROR)
                     return false;
             }
-            showInfo(`${account ? ' CACHE' : ''}: ${numBlocks} block${isPlural(numBlocks)} added into ETH_BLOCKS`);
+            showInfo(`${account ? 'CACHE: ' : ''}${numBlocks} block${isPlural(numBlocks)} added into ETH_BLOCKS`);
         } else {
-            showInfo(`${account ? ' CACHE' : ''}: No blocks to be added from ${(func === 'loadUserTransfers')
+            showInfo(`${account ? 'CACHE: ' : ''}No blocks to be added from ${(func === 'loadUserTransfers')
                 ? 'transfers'
                 : 'approvals'
                 }`);
