@@ -23,7 +23,23 @@ export const pagerduty = {
     token: process.env.PAGERDUTY_TOKEN,
     from: process.env.PAGERDUTY_TRIGGER_FROM,
     service: 'P22YTVG',
-    policy: 'PD1HPMI',
+    policies: {
+        emerg: {
+            id: 'PD1HPMI',
+            type: 'escalation_policy_reference',
+            summary: 'test policy',
+        },
+        crit: {
+            id: 'PD1HPMI',
+            type: 'escalation_policy_reference',
+            summary: 'test policy',
+        },
+        warn: {
+            id: 'PD1HPMI',
+            type: 'escalation_policy_reference',
+            summary: 'test policy',
+        },
+    },
     urgency: {
         high: 'high',
         low: 'low',
