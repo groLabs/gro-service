@@ -4,8 +4,8 @@ export interface EventInfo {
     transactionHash?: string;
     name?: string | undefined;
     signature?: string | undefined;
-    topic?: string| undefined;
-    args?: any| undefined;
+    topic?: string | undefined;
+    args?: any | undefined;
 }
 
 export interface IError {
@@ -13,4 +13,10 @@ export interface IError {
     messageTag?: string;
     embedMessage?: string;
     transactionHash?: string;
+}
+
+export interface EventResult {
+    status: string;
+    message?: string;
+    data: any | undefined;
 }

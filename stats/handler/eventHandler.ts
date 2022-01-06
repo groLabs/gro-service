@@ -9,7 +9,11 @@ import { getConfig } from '../../common/configUtil';
 import { formatNumber } from '../../common/digitalUtil';
 import { sendAlertMessage } from '../../common/alertMessageSender';
 import { calculateDelta } from '../../common/digitalUtil';
-import { depositEventMessage, withdrawEventMessage, summaryMessage } from '../../discordMessage/eventMessage';
+import {
+    depositEventMessage,
+    withdrawEventMessage,
+    summaryMessage,
+} from '../../discordMessage/eventMessage';
 import { AppendGTokenMintOrBurnAmountToLog } from '../common/tool';
 import { getLatestSystemContract } from '../common/contractStorage';
 import { ContractNames } from '../../registry/registry';
@@ -89,7 +93,7 @@ async function checkTvlChange(
         });
 
         let totalHarvest = BigNumber.from(0);
-        pnlLogs.forEach((log) => {
+        pnlLogs.data.forEach((log) => {
             const investPnL = log.args[2];
             totalHarvest = totalHarvest.add(investPnL);
             logger.info(
@@ -171,7 +175,7 @@ async function generateDepositReport(fromBlock, toBlock) {
     const depositFilter = latestDepositHandler.filters.LogNewDeposit();
     depositFilter.fromBlock = fromBlock;
     depositFilter.toBlock = toBlock;
-    const logs = await getFilterEvents(
+    const logsObject = await getFilterEvents(
         depositFilter,
         latestDepositHandler.interface,
         providerKey
@@ -182,7 +186,7 @@ async function generateDepositReport(fromBlock, toBlock) {
             MESSAGE_TYPES.depositEvent
         );
     });
-
+    const logs = logsObject.data;
     // handle gtoken mint amount
     await AppendGTokenMintOrBurnAmountToLog(logs);
 
@@ -253,7 +257,7 @@ async function generateWithdrawReport(fromBlock, toBlock) {
     const withdrawFilter = latestWithdrawHandler.filters.LogNewWithdrawal();
     withdrawFilter.fromBlock = fromBlock;
     withdrawFilter.toBlock = toBlock;
-    const logs = await getFilterEvents(
+    const logsObject = await getFilterEvents(
         withdrawFilter,
         latestWithdrawHandler.interface,
         providerKey
@@ -264,7 +268,7 @@ async function generateWithdrawReport(fromBlock, toBlock) {
             MESSAGE_TYPES.withdrawEvent
         );
     });
-
+    const logs = logsObject.data;
     // parse burn gtoken amount
     await AppendGTokenMintOrBurnAmountToLog(logs);
 
@@ -397,7 +401,7 @@ async function generateSummaryReport(fromBlock, toBlock) {
     const currentMillis = Date.now();
     const endTime = dayjs(currentMillis);
     const endTimeDisplay = endTime.format('H');
-    const startTimeDisplay = endTimeDisplay as any - 1;
+    const startTimeDisplay = (endTimeDisplay as any) - 1;
 
     const depositEventResult = await generateDepositReport(fromBlock, toBlock);
     const withdrawEventResult = await generateWithdrawReport(

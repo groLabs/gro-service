@@ -9,7 +9,6 @@ import { BlockChainCallError } from '../../common/error';
 import { getConfig } from '../../common/configUtil';
 import { getLatestSystemContract } from '../common/contractStorage';
 import { ContractNames } from '../../registry/registry';
-import { getGvt, getPwrd } from '../../contract/allContracts';
 
 const logger = require('../statsLogger');
 
@@ -332,8 +331,8 @@ async function getSystemApy(latestBlock, provider) {
 async function getHistoricalSystemApy(block, provider) {
     updateBlocksScanner(provider);
     logger.info('HistoricalSystemApy');
-    const gvt = getGvt(providerKey);
-    const pwrd = getPwrd(providerKey);
+    const gvt = getLatestGroVault();
+    const pwrd = getLatestPowerD();
 
     const launchTimestamp = await getTimestampByBlockNumber(
         launchBlock,
@@ -372,7 +371,4 @@ async function getHistoricalSystemApy(block, provider) {
     return apy;
 }
 
-export {
-    getSystemApy,
-    getHistoricalSystemApy,
-};
+export { getSystemApy, getHistoricalSystemApy };

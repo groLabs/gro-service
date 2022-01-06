@@ -5,10 +5,19 @@ import { BigNumber } from 'ethers';
 
 dayjs.extend(utc);
 import BlocksScanner from '../common/blockscanner';
-import { getAlchemyRpcProvider, getTimestampByBlockNumber } from '../../common/chainUtil';
-import { getSimpleFilterEvents, getFilterEvents } from '../../common/logFilter-new';
+import {
+    getAlchemyRpcProvider,
+    getTimestampByBlockNumber,
+} from '../../common/chainUtil';
+import {
+    getSimpleFilterEvents,
+    getFilterEvents,
+} from '../../common/logFilter-new';
 import { getConfig } from '../../common/configUtil';
-import { getContractsHistory, getLatestContractsAddressByAddress } from '../../registry/registryLoader';
+import {
+    getContractsHistory,
+    getLatestContractsAddressByAddress,
+} from '../../registry/registryLoader';
 import { ContractNames } from '../../registry/registry';
 import { newContract } from '../../registry/contracts';
 import { getLatestVaultsAndStrategies } from '../common/contractStorage';
@@ -66,12 +75,12 @@ async function getStrategies() {
 }
 
 async function findBlockByDate(scanDate, after = true) {
-    const blockFound = await scanner
+    const blockFound = (await scanner
         .getDate(scanDate.toDate(), after)
         .catch((error) => {
             logger.error(error);
             logger.error(`Could not get block ${scanDate}`);
-        }) as any;
+        })) as any;
     logger.info(`scanDate ${scanDate} block ${blockFound.block}`);
     return blockFound;
 }
@@ -345,7 +354,7 @@ async function getHodlBonusApy() {
     const pnlFilterPromiseResult = await Promise.all(pnlFilterPromise);
     const pnlLogs = [];
     for (let i = 0; i < pnlFilterPromiseResult.length; i += 1) {
-        pnlLogs.push(...pnlFilterPromiseResult[i]);
+        pnlLogs.push(...pnlFilterPromiseResult[i].data);
     }
     let withdrawalBonus = BigNumber.from(0);
     let priceChanged = BigNumber.from(0);
@@ -379,7 +388,10 @@ async function getCurrentApy() {
     const blockStart = await searchBlockDaysAgo(latestBlock.timestamp, 10);
     if (blockStart.block < launchBlock) {
         blockStart.number = launchBlock;
-        blockStart.timestamp = await getTimestampByBlockNumber(launchBlock, provider);
+        blockStart.timestamp = await getTimestampByBlockNumber(
+            launchBlock,
+            provider
+        );
     }
     logger.info(`blockStart ${blockStart.block}`);
     // last 3d
@@ -396,8 +408,4 @@ async function getCurrentApy() {
     return currentApy;
 }
 
-export {
-    getCurrentApy,
-    getGtokenApy,
-    getHodlBonusApy,
-};
+export { getCurrentApy, getGtokenApy, getHodlBonusApy };

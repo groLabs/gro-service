@@ -119,29 +119,29 @@ function getAVAXDAIVaultContracts(provider, vaultType, accountOwnHistory) {
 }
 
 function getAVAXUSDCVaultContracts(provider, vaultType, accountOwnHistory) {
-    if (!avaxDAIVaultContracts[vaultType]) {
-        avaxDAIVaultContracts[vaultType] = getContracts(
+    if (!avaxUSDCVaultContracts[vaultType]) {
+        avaxUSDCVaultContracts[vaultType] = getContracts(
             provider,
             ContractNames[vaultType]
         );
     }
     const AVAXUSDCVaults = getDistContracts(
         accountOwnHistory,
-        avaxDAIVaultContracts[vaultType]
+        avaxUSDCVaultContracts[vaultType]
     );
     return AVAXUSDCVaults;
 }
 
 function getAVAXUSDTVaultContracts(provider, vaultType, accountOwnHistory) {
-    if (!avaxDAIVaultContracts[vaultType]) {
-        avaxDAIVaultContracts[vaultType] = getContracts(
+    if (!avaxUSDTVaultContracts[vaultType]) {
+        avaxUSDTVaultContracts[vaultType] = getContracts(
             provider,
             ContractNames[vaultType]
         );
     }
     const AVAXUSDTVaults = getDistContracts(
         accountOwnHistory,
-        avaxDAIVaultContracts[vaultType]
+        avaxUSDTVaultContracts[vaultType]
     );
     return AVAXUSDTVaults;
 }
@@ -318,7 +318,7 @@ async function getHandlerEvents(
 
     const resultLogs = [];
     for (let i = 0; i < logs.length; i += 1) {
-        resultLogs.push(...logs[i]);
+        resultLogs.push(...logs[i].data);
     }
     return resultLogs;
 }
@@ -341,9 +341,17 @@ async function getTransferHistories(
     }
     const inLogs = await Promise.all(inLogPromise);
     const outLogs = await Promise.all(outLogPromise);
+    const distInLogs = [];
+    const distOutLogs = [];
+    inLogs.forEach((logObject) => {
+        distInLogs.push(...logObject.data);
+    });
+    outLogs.forEach((logObject) => {
+        distOutLogs.push(...logObject.data);
+    });
     return {
-        inLogs: inLogs.flat(),
-        outLogs: outLogs.flat(),
+        inLogs: distInLogs,
+        outLogs: distOutLogs,
     };
 }
 async function getAvaxApprovalEvents(account, contractName, provider) {
@@ -359,7 +367,7 @@ async function getAvaxApprovalEvents(account, contractName, provider) {
     const logs = await Promise.all(eventPromise);
     const resultLogs = [];
     for (let i = 0; i < logs.length; i += 1) {
-        resultLogs.push(...logs[i]);
+        resultLogs.push(...logs[i].data);
     }
 
     return resultLogs;

@@ -14,7 +14,10 @@ import { getAccountFailTransactions } from '../handler/failedTransactionHandler'
 import { ContractNames } from '../../registry/registry';
 import { newContract } from '../../registry/contracts';
 
-import { getContractsHistory, getLatestContractsAddress } from '../../registry/registryLoader';
+import {
+    getContractsHistory,
+    getLatestContractsAddress,
+} from '../../registry/registryLoader';
 
 import { getLatestSystemContract } from '../common/contractStorage';
 import { getAllAirdropResults } from './airdropService';
@@ -42,7 +45,7 @@ let powerDContracts;
 let depositHandlerContracts;
 let withdrawHandlerContracts;
 const stableCoins = [];
-const stableCoinsInfo = {decimals: undefined, symbols: undefined};
+const stableCoinsInfo = { decimals: undefined, symbols: undefined };
 
 function getFailedEmbedMessage(account) {
     const label = shortAccount(account);
@@ -257,7 +260,7 @@ async function getHandlerEvents(
 
     const resultLogs = [];
     for (let i = 0; i < logs.length; i += 1) {
-        resultLogs.push(...logs[i]);
+        resultLogs.push(...logs[i].data);
     }
     return resultLogs;
 }
@@ -383,8 +386,8 @@ async function getTransferHistories(
     const depositLogs = [];
     const withdrawLogs = [];
     for (let i = 0; i < inLogs.length; i += 1) {
-        depositLogs.push(...inLogs[i]);
-        withdrawLogs.push(...outLogs[i]);
+        depositLogs.push(...inLogs[i].data);
+        withdrawLogs.push(...outLogs[i].data);
     }
     return {
         deposit: depositLogs,
@@ -465,7 +468,7 @@ async function getPowerDTransferHistories(account) {
 
     const transferIn = [];
     const transferOut = [];
-    const { deposit, withdraw } = (logs as any);
+    const { deposit, withdraw } = logs as any;
     deposit.forEach((log) => {
         if (log.args[0] === ZERO_ADDRESS) return;
         log.amount = new BN(log.args[2].toString());
@@ -564,7 +567,7 @@ async function getApprovalEvents(account) {
     const logs = await Promise.all(eventPromise);
     const resultLogs = [];
     for (let i = 0; i < logs.length; i += 1) {
-        resultLogs.push(...logs[i]);
+        resultLogs.push(...logs[i].data);
     }
 
     return resultLogs;
@@ -577,11 +580,12 @@ async function gvtApprovalToAccount(account, withdrawEventHashs) {
     const groVaultApprovalFilter = groVault.filters.Approval(null, account);
     groVaultApprovalFilter.fromBlock = groVaultContractInfo.startBlock;
     groVaultContractInfo.toBlock = 'latest';
-    const logs = await getFilterEvents(
+    const logsObject = await getFilterEvents(
         groVaultApprovalFilter,
         groVault.interface,
         providerKey
     );
+    const logs = logsObject.data;
     const distHash = [];
     logs.forEach((log) => {
         if (!withdrawEventHashs.includes(log.transactionHash)) {
@@ -629,9 +633,7 @@ async function getApprovalHistoryies(account, depositEventHashs) {
                 block_number: blockNumber,
             });
             if (isGTokenFlag) {
-                usdAmoutPromise.push(
-                    getGTokenUSDAmount(address, args[2])
-                );
+                usdAmoutPromise.push(getGTokenUSDAmount(address, args[2]));
             } else {
                 console.log(
                     ` ----- ${address} ${transactionHash} ${blockNumber} ${args[2]}`
@@ -989,7 +991,4 @@ async function ethereumPersonalStats(account) {
     return result;
 }
 
-export {
-    ethereumPersonalStats,
-    getNetwork,
-};
+export { ethereumPersonalStats, getNetwork };

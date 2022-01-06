@@ -29,7 +29,12 @@ async function getAirdropClaimEvents(
     const filter = airdrop.filters.LogClaim(account) as IFilter;
     filter.fromBlock = startBlock;
     filter.toBlock = endBlock;
-    const logs = await getFilterEvents(filter, airdrop.interface, providerKey);
+    const logsObject = await getFilterEvents(
+        filter,
+        airdrop.interface,
+        providerKey
+    );
+    const logs = logsObject.data;
     await appendEventTimestamp(logs, provider);
     const transactions = {};
     logs.forEach((item) => {
@@ -44,7 +49,4 @@ async function getAirdropClaimed(merkleId, account) {
     return claimed;
 }
 
-export {
-    getAirdropClaimEvents,
-    getAirdropClaimed,
-};
+export { getAirdropClaimEvents, getAirdropClaimed };

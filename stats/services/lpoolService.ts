@@ -53,8 +53,8 @@ async function fetchStakeAndUnstakeTransactions(account, endBlock) {
     );
     const events = [];
     const logs = await Promise.all(eventPromise);
-    events.push(...logs[0]);
-    events.push(...logs[1]);
+    events.push(...logs[0].data);
+    events.push(...logs[1].data);
 
     events.forEach((log) => {
         log.lp_token_amount = log.args[2].toString();
@@ -85,16 +85,16 @@ async function fetchClaimAndExitEvents(account, endBlock) {
     );
     const events = [];
     const logs = await Promise.all(eventPromise);
-    logs[0].forEach((log) => {
+    logs[0].data.forEach((log) => {
         log.tx_type = 'entry';
     });
-    logs[0].forEach((log) => {
+    logs[0].data.forEach((log) => {
         log.tx_type = 'exit';
         log.coin_amount = log.args[3].toString();
     });
 
-    events.push(...logs[0]);
-    events.push(...logs[1]);
+    events.push(...logs[0].data);
+    events.push(...logs[1].data);
 
     events.forEach((log) => {
         log.lp_token_amount = log.args[2].toString();
@@ -145,6 +145,4 @@ async function getPoolTransactions(account, endBlock = 'latest') {
     return result;
 }
 
-export {
-    getPoolTransactions,
-};
+export { getPoolTransactions };

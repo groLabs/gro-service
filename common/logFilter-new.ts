@@ -1,14 +1,19 @@
+import { stream } from '../lbp/lbpLogger';
 import { getInfruraRpcProvider } from './chainUtil';
-import { EventInfo } from './commonTypes';
+import { EventInfo, EventResult } from './commonTypes';
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
 async function getFilterEvents(filter, contractInterface, providerKey) {
+    let status: string = '200';
+    let message: string = undefined;
     const provider = getInfruraRpcProvider(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
+        status = '400';
+        message = error.message;
         return [];
     });
 
@@ -26,13 +31,21 @@ async function getFilterEvents(filter, contractInterface, providerKey) {
         eventInfo.args = parseResult.args;
         logs.push(eventInfo);
     });
-
-    return logs;
+    const events: EventResult = {
+        status,
+        message,
+        data: logs,
+    };
+    return events;
 }
 
 async function getEvents(filter, contractInterface, provider) {
+    let status: string = '200';
+    let message: string = undefined;
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
+        status = '400';
+        message = error.message;
         return [];
     });
 
@@ -51,7 +64,12 @@ async function getEvents(filter, contractInterface, provider) {
         logs.push(eventInfo);
     });
 
-    return logs;
+    const events: EventResult = {
+        status,
+        message,
+        data: logs,
+    };
+    return events;
 }
 
 async function getSimpleFilterEvents(filter, providerKey) {
@@ -74,8 +92,4 @@ async function getSimpleFilterEvents(filter, providerKey) {
     return logs;
 }
 
-export {
-    getFilterEvents,
-    getEvents,
-    getSimpleFilterEvents,
-};
+export { getFilterEvents, getEvents, getSimpleFilterEvents };

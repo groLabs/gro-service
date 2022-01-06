@@ -1,7 +1,11 @@
 /* eslint-disable no-await-in-loop */
 import { BigNumber, ethers } from 'ethers';
 import { BigNumber as BN } from 'bignumber.js';
-import { MESSAGE_TYPES, DISCORD_CHANNELS, sendMessageToChannel } from '../../common/discord/discordService';
+import {
+    MESSAGE_TYPES,
+    DISCORD_CHANNELS,
+    sendMessageToChannel,
+} from '../../common/discord/discordService';
 import { getCurrentApy } from './currentApyHandler';
 import { ContractNames } from '../../registry/registry';
 import { sendAlertMessage } from '../../common/alertMessageSender';
@@ -131,7 +135,8 @@ async function getPositionOpenEvents(ahStrategy, startBlock, endBlock) {
     filter.fromBlock = startBlock;
     filter.toBlock = endBlock;
     console.log(`start ${startBlock} end ${endBlock}`);
-    const logs = await getEvents(filter, ahStrategy.interface, provider);
+    const logsObject = await getEvents(filter, ahStrategy.interface, provider);
+    const logs = logsObject.data;
     console.log(`logs.length ${logs.length}`);
     await appendEventTimestamp(logs);
     const positionsOpened = {};
@@ -157,8 +162,8 @@ async function getLogPositionClosedEvents(ahStrategy, startBlock, endBlock) {
     const filter = ahStrategy.filters.LogPositionClosed();
     filter.fromBlock = startBlock;
     filter.toBlock = endBlock;
-    const logs = await getEvents(filter, ahStrategy.interface, provider);
-
+    const logsObject = await getEvents(filter, ahStrategy.interface, provider);
+    const logs = logsObject.data;
     await appendEventTimestamp(logs);
     const positionsClosed = {};
     logs.forEach((item) => {
@@ -940,7 +945,4 @@ async function getAvaxSystemStats() {
     return systemStats;
 }
 
-export {
-    getTvlStats,
-    getAvaxSystemStats,
-};
+export { getTvlStats, getAvaxSystemStats };
