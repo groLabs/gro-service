@@ -1,5 +1,8 @@
 import moment from 'moment';
 import { query } from './queryHandler';
+import { getNetwork } from '../common/globalUtil';
+import { getConfig } from '../../common/configUtil';
+import { showError } from '../handler/logHandler';
 import {
     QUERY_ERROR,
     QUERY_SUCCESS
@@ -8,57 +11,25 @@ import {
     Transfer,
     GlobalNetwork as GN
 } from '../types';
-import { getNetwork } from '../common/globalUtil';
-import { getConfig } from '../../common/configUtil';
-import { showError } from '../handler/logHandler';
 const launchTimeEth = getConfig('blockchain.start_timestamp');
 const launchTimeAvax = getConfig('blockchain.avax_launch_timestamp');
 
-const ERROR_TRANSFERS = {
-    "status": QUERY_ERROR,
-    "message": "error from DB in personalStatsHandlerMC.ts->getTransfers()",
-    "data": {
-        "ethereum": {},
-        "ethereum_amounts": {},
-        "avalanche": {},
-        "avalanche_amounts": {},
-    }
-}
-const ERROR_BALANCES = {
-    "status": QUERY_ERROR,
-    "message": "error from DB in personalStatsHandlerMC.ts->getNetBalances()",
-    "data": {
-        "ethereum": {},
-        "avalanche": {},
-        "gro_balance_combined": null,
-    }
-}
-const ERROR_RETURNS = {
-    "status": QUERY_ERROR,
-    "message": "error from DB in personalStatsHandlerMC.ts->getNetReturns()",
-    "data": {
-        "ethereum": {},
-        "avalanche": {},
-    }
-}
-const ERROR_MC_AMOUNTS = {
-    "status": QUERY_ERROR,
-    "message": "error from DB in personalStatsHandlerMC.ts->getMcTotals()",
-    "data": {},
+interface IResult {
+    status: number;
+    message: any;
+    data: any;
 }
 
-const ERROR_GLOBAL = {
-    "gro_personal_position_mc": {
-        "status": QUERY_ERROR,
-        "message": "error from DB in personalStatsHandlerMC.ts->getPersonalStatsMC()",
-        "data": {},
-    }
-}
+const ERROR = (msg: string) => ({
+    "status": QUERY_ERROR,
+    "message": msg,
+    "data": null,
+});
 
+const showErrDesc = (err: any) => JSON.stringify(err, Object.getOwnPropertyNames(err));
 
-const getTransfers = async (account: string) => {
+const getTransfers = async (account: string): Promise<IResult> => {
     try {
-        const q = 'select_fe_user_transactions.sql';
         const deposits_eth = [];
         const withdrawals_eth = [];
         const transfers_in_eth = [];
@@ -67,6 +38,7 @@ const getTransfers = async (account: string) => {
         let amount_added_pwrd_eth = 0;
         let amount_removed_gvt_eth = 0;
         let amount_removed_pwrd_eth = 0;
+
         const deposits_avax = [];
         const withdrawals_avax = [];
         const transfers_in_avax = [];
@@ -78,6 +50,7 @@ const getTransfers = async (account: string) => {
         let amount_removed_usdt_e_avax = 0;
         let amount_removed_dai_e_avax = 0;
 
+        const q = 'select_fe_user_transactions.sql';
         const transfers = await query(q, [account]);
 
         if (transfers.status !== QUERY_ERROR) {
@@ -86,7 +59,7 @@ const getTransfers = async (account: string) => {
                 if (!item.token_id
                     || !item.transfer_id
                     || !item.usd_amount)
-                    return ERROR_TRANSFERS;
+                    return ERROR(`Missing data in DB [transfers] for user ${account}`);
 
                 switch (item.transfer_id) {
                     case Transfer.DEPOSIT:
@@ -172,16 +145,15 @@ const getTransfers = async (account: string) => {
                         amount_removed_dai_e_avax += parseFloat(item.usd_amount);
                         break;
                     default:
-                        showError(
-                            'personalStatsHandlerMC.ts->getTransfers()',
-                            `Unrecognized transfer_id (${item.transfer_id})`
-                        );
-                        return ERROR_TRANSFERS;
+                        const msg = `Unrecognized transfer_id (${item.transfer_id})`;
+                        showError('personalStatsHandlerMC.ts->getTransfers()', msg);
+                        return ERROR(msg);
                 }
             }
 
             const result = {
                 "status": QUERY_SUCCESS,
+                "message": 'OK',
                 "data": {
                     "ethereum": {
                         "deposits": deposits_eth,
@@ -249,34 +221,43 @@ const getTransfers = async (account: string) => {
                                 - amount_removed_dai_e_avax).toString(),
                         },
                     },
-                }
-            }
+                },
+            };
             return result;
         } else
-            return ERROR_TRANSFERS;
+            return ERROR('TBC');
 
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getTransfers()', err);
-        return ERROR_TRANSFERS;
+        return ERROR(`Error from DB when querying transfers -> ${showErrDesc(err)}`);
     }
 }
 
-const getNetBalances = async (account: string) => {
+const getNetBalances = async (account: string): Promise<IResult> => {
     try {
         const q = 'select_fe_user_net_balances.sql';
         const result = await query(q, [account]);
-        if (result.status !== QUERY_ERROR) {
-            const res = result.rows[0];
+        let res = {
+            pwrd: '0',
+            gvt: '0',
+            usdc_e: '0',
+            usdt_e: '0',
+            dai_e: '0',
+            gro_balance_combined: '0',
+        };
 
-            if (!res.pwrd
-                || !res.gvt
-                || !res.usdc_e
-                || !res.usdt_e
-                || !res.dai_e)
-                return ERROR_BALANCES;
+        if (result.status !== QUERY_ERROR) {
+
+            if (result.rows.length > 0)
+                res = result.rows[0];
+
+            // Check if any of the keys is missing
+            if (!Object.values(res).some(x => x !== null && x !== ''))
+                return ERROR(`Missing data in DB [balances] for user ${account}`);
 
             return {
                 "status": QUERY_SUCCESS,
+                "message": 'OK',
                 "data": {
                     "ethereum": {
                         "current_balance": {
@@ -297,32 +278,40 @@ const getNetBalances = async (account: string) => {
                         },
                     },
                     "gro_balance_combined": res.gro_balance_combined,
-                }
-            }
+                },
+            };
         } else
-            return ERROR_BALANCES
+            return ERROR('Error from DB when querying balances');
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getNetBalances()', err);
-        return ERROR_BALANCES;
+        return ERROR(showErrDesc(err));
     }
 }
 
-const getNetReturns = async (account: string) => {
+const getNetReturns = async (account: string): Promise<IResult> => {
     try {
         const qBalance = 'select_fe_user_net_returns.sql';
         const result = await query(qBalance, [account]);
-        if (result.status !== QUERY_ERROR) {
-            const res = result.rows[0];
+        let res = {
+            pwrd: '0',
+            gvt: '0',
+            usdc_e: '0',
+            usdt_e: '0',
+            dai_e: '0',
+        };
 
-            if (!res.pwrd
-                || !res.gvt
-                || !res.usdc_e
-                || !res.usdt_e
-                || !res.dai_e)
-                return ERROR_RETURNS;
+        if (result.status !== QUERY_ERROR) {
+
+            if (result.rows.length > 0)
+                res = result.rows[0];
+
+            // Check if any of the keys is missing
+            if (!Object.values(res).some(x => x !== null && x !== ''))
+                return ERROR(`Missing data in DB [returns] for user ${account}`);
 
             return {
                 "status": QUERY_SUCCESS,
+                "message": 'OK',
                 "data": {
                     "ethereum": {
                         "net_returns": {
@@ -341,14 +330,15 @@ const getNetReturns = async (account: string) => {
                                 + parseFloat(res.usdt_e)
                                 + parseFloat(res.dai_e)).toString(),
                         },
-                    }
-                }
-            }
+                    },
+                },
+            };
         } else
-            return ERROR_RETURNS;
+            return ERROR('Error from DB when querying net returns');
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getNetReturns()', err);
-        return ERROR_RETURNS;
+        return ERROR(showErrDesc(err));
+
     }
 }
 
@@ -356,43 +346,44 @@ const getMcTotals = (transfers, balances, returns) => {
     try {
         const result = {
             "status": QUERY_SUCCESS,
+            "message": 'OK',
             "data": {
                 "amount_added": {
                     "ethereum": transfers.data.ethereum_amounts.amount_added.total,
                     "avalanche": transfers.data.avalanche_amounts.amount_added.total,
                     "total": (parseFloat(transfers.data.ethereum_amounts.amount_added.total)
-                        + parseFloat(transfers.data.avalanche_amounts.amount_added.total)).toString()
+                        + parseFloat(transfers.data.avalanche_amounts.amount_added.total)).toString(),
                 },
                 "amount_removed": {
                     "ethereum": transfers.data.ethereum_amounts.amount_removed.total,
                     "avalanche": transfers.data.avalanche_amounts.amount_removed.total,
                     "total": (parseFloat(transfers.data.ethereum_amounts.amount_removed.total)
-                        + parseFloat(transfers.data.avalanche_amounts.amount_removed.total)).toString()
+                        + parseFloat(transfers.data.avalanche_amounts.amount_removed.total)).toString(),
                 },
                 "net_amount_added": {
                     "ethereum": transfers.data.ethereum_amounts.net_amount_added.total,
                     "avalanche": transfers.data.avalanche_amounts.net_amount_added.total,
                     "total": (parseFloat(transfers.data.ethereum_amounts.net_amount_added.total)
-                        + parseFloat(transfers.data.avalanche_amounts.net_amount_added.total)).toString()
+                        + parseFloat(transfers.data.avalanche_amounts.net_amount_added.total)).toString(),
                 },
                 "current_balance": {
                     "ethereum": balances.data.ethereum.current_balance.total,
                     "avalanche": balances.data.avalanche.current_balance.total,
                     "total": (parseFloat(balances.data.ethereum.current_balance.total)
-                        + parseFloat(balances.data.avalanche.current_balance.total)).toString()
+                        + parseFloat(balances.data.avalanche.current_balance.total)).toString(),
                 },
                 "net_returns": {
                     "ethereum": returns.data.ethereum.net_returns.total,
                     "avalanche": returns.data.avalanche.net_returns.total,
                     "total": (parseFloat(returns.data.ethereum.net_returns.total)
-                        + parseFloat(returns.data.avalanche.net_returns.total)).toString()
+                        + parseFloat(returns.data.avalanche.net_returns.total)).toString(),
                 },
-            }
+            },
         }
         return result;
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getMcTotals()', err);
-        return ERROR_MC_AMOUNTS
+        return ERROR(`Error when parsing MC Totals -> ${showErrDesc(err)}`);
     }
 }
 
@@ -405,20 +396,26 @@ const getPersonalStatsMC = async (account: string) => {
         ] = await Promise.all([
             getTransfers(account),
             getNetBalances(account),
-            getNetReturns(account)
+            getNetReturns(account),
         ]);
 
         if (transfers.status === QUERY_ERROR) {
             return {
-                "gro_personal_position_mc": ERROR_TRANSFERS,
+                "gro_personal_position_mc": {
+                    ...ERROR(transfers.message),
+                },
             };
         } else if (balances.status === QUERY_ERROR) {
             return {
-                "gro_personal_position_mc": ERROR_BALANCES,
+                "gro_personal_position_mc": {
+                    ...ERROR(balances.message),
+                },
             };
         } else if (returns.status === QUERY_ERROR) {
             return {
-                "gro_personal_position_mc": ERROR_RETURNS,
+                "gro_personal_position_mc": {
+                    ...ERROR(returns.message),
+                },
             };
         } else {
             const mcTotals = getMcTotals(transfers, balances, returns);
@@ -445,23 +442,15 @@ const getPersonalStatsMC = async (account: string) => {
                         ...transfers.data.avalanche_amounts,
                         ...balances.data.avalanche,
                         ...returns.data.avalanche,
-                    }
-                }
-            }
-
-            // Testing logs
-            // console.log('here global', result.gro_personal_position_mc);
-            // console.log('here mc_totals', result.gro_personal_position_mc.mc_totals);
-            // console.log('** eth transactions **', result.gro_personal_position_mc.ethereum.transaction);
-            // console.log('** eth amounts **', result.gro_personal_position_mc.ethereum);
-            // console.log('** avax amounts **', result.gro_personal_position_mc.avalanche);
-
+                    },
+                },
+            };
             return result;
         }
 
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getPersonalStatsMC()', err);
-        return ERROR_GLOBAL;
+        return ERROR(`Error when parsing the final JSON output -> ${showErrDesc(err)}`);
     }
 }
 
