@@ -268,24 +268,24 @@ async function getHandlerEvents(
                 accountOwnHistory
             );
             break;
-        case ContractNames.AVAXDAIVault_v1_5_1:
+        case ContractNames.AVAXDAIVault_v1_6:
             contracts = getAVAXDAIVaultContracts(
                 provider,
-                'AVAXDAIVault_v1_5_1',
+                'AVAXDAIVault_v1_6',
                 accountOwnHistory
             );
             break;
-        case ContractNames.AVAXUSDCVault_v1_5_1:
+        case ContractNames.AVAXUSDCVault_v1_6:
             contracts = getAVAXUSDCVaultContracts(
                 provider,
-                'AVAXUSDCVault_v1_5_1',
+                'AVAXUSDCVault_v1_6',
                 accountOwnHistory
             );
             break;
-        case ContractNames.AVAXUSDTVault_v1_5_1:
+        case ContractNames.AVAXUSDTVault_v1_6:
             contracts = getAVAXUSDTVaultContracts(
                 provider,
-                'AVAXUSDTVault_v1_5_1',
+                'AVAXUSDTVault_v1_6',
                 accountOwnHistory
             );
             break;

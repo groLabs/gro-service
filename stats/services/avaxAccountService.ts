@@ -552,19 +552,19 @@ async function avaxPersonalStats(account) {
             ),
             singleVaultEvents(
                 account,
-                ContractNames.AVAXDAIVault_v1_5_1,
+                ContractNames.AVAXDAIVault_v1_6,
                 'DAI.e',
                 18
             ),
             singleVaultEvents(
                 account,
-                ContractNames.AVAXUSDCVault_v1_5_1,
+                ContractNames.AVAXUSDCVault_v1_6,
                 'USDC.e',
                 6
             ),
             singleVaultEvents(
                 account,
-                ContractNames.AVAXUSDTVault_v1_5_1,
+                ContractNames.AVAXUSDTVault_v1_6,
                 'USDT.e',
                 6
             ),
@@ -587,9 +587,9 @@ async function avaxPersonalStats(account) {
         fullData(result, daiVaultEvents1, 'groDAI.e_vault_v1_5');
         fullData(result, usdcVaultEvents1, 'groUSDC.e_vault_v1_5');
         fullData(result, usdtVaultEvents1, 'groUSDT.e_vault_v1_5');
-        fullData(result, daiVaultEvents2, 'groDAI.e_vault_v1_5_1');
-        fullData(result, usdcVaultEvents2, 'groUSDC.e_vault_v1_5_1');
-        fullData(result, usdtVaultEvents2, 'groUSDT.e_vault_v1_5_1');
+        fullData(result, daiVaultEvents2, 'groDAI.e_vault_v1_6');
+        fullData(result, usdcVaultEvents2, 'groUSDC.e_vault_v1_6');
+        fullData(result, usdtVaultEvents2, 'groUSDT.e_vault_v1_6');
 
         calculateTotal(result, [
             'amount_added',
