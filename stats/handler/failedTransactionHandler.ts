@@ -70,11 +70,9 @@ function getDistAddressesOnAVAX() {
     const daiVault_v1_5 = latestContracts[ContractNames.AVAXDAIVault_v1_5];
     const usdcVault_v1_5 = latestContracts[ContractNames.AVAXUSDCVault_v1_5];
     const usdtVault_v1_5 = latestContracts[ContractNames.AVAXUSDTVault_v1_5];
-    const daiVault_v1_5_1 = latestContracts[ContractNames.AVAXDAIVault_v1_5_1];
-    const usdcVault_v1_5_1 =
-        latestContracts[ContractNames.AVAXUSDCVault_v1_5_1];
-    const usdtVault_v1_5_1 =
-        latestContracts[ContractNames.AVAXUSDTVault_v1_5_1];
+    const daiVault_v1_6 = latestContracts[ContractNames.AVAXDAIVault_v1_6];
+    const usdcVault_v1_6 = latestContracts[ContractNames.AVAXUSDCVault_v1_6];
+    const usdtVault_v1_6 = latestContracts[ContractNames.AVAXUSDTVault_v1_6];
 
     return {
         daiVaultAddresses: daiVault.address.toLowerCase(),
@@ -83,9 +81,9 @@ function getDistAddressesOnAVAX() {
         daiVaultAddresses_v1_5: daiVault_v1_5.address.toLowerCase(),
         usdcVaultAddresses_v1_5: usdcVault_v1_5.address.toLowerCase(),
         usdtVaultAddresses_v1_5: usdtVault_v1_5.address.toLowerCase(),
-        daiVaultAddresses_v1_5_1: daiVault_v1_5_1.address.toLowerCase(),
-        usdcVaultAddresses_v1_5_1: usdcVault_v1_5_1.address.toLowerCase(),
-        usdtVaultAddresses_v1_5_1: usdtVault_v1_5_1.address.toLowerCase(),
+        daiVaultAddresses_v1_6: daiVault_v1_6.address.toLowerCase(),
+        usdcVaultAddresses_v1_6: usdcVault_v1_6.address.toLowerCase(),
+        usdtVaultAddresses_v1_6: usdtVault_v1_6.address.toLowerCase(),
     };
 }
 
@@ -151,9 +149,9 @@ async function getAccountFailTransactionsOnAVAX(accountAddress) {
         daiVaultAddresses_v1_5,
         usdcVaultAddresses_v1_5,
         usdtVaultAddresses_v1_5,
-        daiVaultAddresses_v1_5_1,
-        usdcVaultAddresses_v1_5_1,
-        usdtVaultAddresses_v1_5_1,
+        daiVaultAddresses_v1_6,
+        usdcVaultAddresses_v1_6,
+        usdtVaultAddresses_v1_6,
     } = getDistAddressesOnAVAX();
     const failedTransactions = [];
     for (let i = 0; i < transactions.length; i += 1) {
@@ -177,14 +175,14 @@ async function getAccountFailTransactionsOnAVAX(accountAddress) {
             } else if (usdtVaultAddresses_v1_5.includes(to)) {
                 transactions[i].contractName = 'USDTVaultMK2_v1_5';
                 failedTransactions.push(transactions[i]);
-            } else if (daiVaultAddresses_v1_5_1.includes(to)) {
-                transactions[i].contractName = 'DAIVaultMK2_v1_5_1';
+            } else if (daiVaultAddresses_v1_6.includes(to)) {
+                transactions[i].contractName = 'DAIVaultMK2_v1_6';
                 failedTransactions.push(transactions[i]);
-            } else if (usdcVaultAddresses_v1_5_1.includes(to)) {
-                transactions[i].contractName = 'USDCVaultMK2_v1_5_1';
+            } else if (usdcVaultAddresses_v1_6.includes(to)) {
+                transactions[i].contractName = 'USDCVaultMK2_v1_6';
                 failedTransactions.push(transactions[i]);
-            } else if (usdtVaultAddresses_v1_5_1.includes(to)) {
-                transactions[i].contractName = 'USDTVaultMK2_v1_5_1';
+            } else if (usdtVaultAddresses_v1_6.includes(to)) {
+                transactions[i].contractName = 'USDTVaultMK2_v1_6';
                 failedTransactions.push(transactions[i]);
             }
         }
