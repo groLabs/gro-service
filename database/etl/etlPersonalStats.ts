@@ -223,21 +223,21 @@ const loadTransfers = async (
                     ]
                     : null;
 
-            const avaxVault_1_5_1 =
+            const avaxVault_1_6 =
                 gn === GN.ALL || gn === GN.AVALANCHE
                     ? [
-                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_USDCe, null),
-                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_USDCe, null),
-                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDCe_IN, null),
-                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDCe_OUT, null),
-                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_USDTe, null),
-                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_USDTe, null),
-                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDTe_IN, null),
-                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDTe_OUT, null),
-                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_DAIe, null),
-                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_DAIe, null),
-                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_DAIe_IN, null),
-                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_DAIe_OUT, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_USDCe, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_USDCe, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDCe_IN, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDCe_OUT, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_USDTe, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_USDTe, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDTe_IN, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDTe_OUT, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_DAIe, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_DAIe, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_DAIe_IN, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_DAIe_OUT, null),
                     ]
                     : null;
 
@@ -252,7 +252,7 @@ const loadTransfers = async (
                     res = await Promise.all([
                         ...avaxVault_1_0,
                         ...avaxVault_1_5,
-                        ...avaxVault_1_5_1
+                        ...avaxVault_1_6
                     ]);
                     break;
                 case GN.ALL:
@@ -260,7 +260,7 @@ const loadTransfers = async (
                         ...eth,
                         ...avaxVault_1_0,
                         ...avaxVault_1_5,
-                        ...avaxVault_1_5_1
+                        ...avaxVault_1_6
                     ]);
                     break;
                 default:

@@ -120,18 +120,18 @@ const getDAIeVault_1_5 = () => {
         .contract;
 }
 
-const getUSDCeVault_1_5_1 = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_5_1, getProviderAvax())
+const getUSDCeVault_1_6 = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_6, getProviderAvax())
         .contract;
 }
 
-const getUSDTeVault_1_5_1 = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_5_1, getProviderAvax())
+const getUSDTeVault_1_6 = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_6, getProviderAvax())
         .contract;
 }
 
-const getDAIeVault_1_5_1 = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_5_1, getProviderAvax())
+const getDAIeVault_1_6 = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_6, getProviderAvax())
         .contract;
 }
 
@@ -192,7 +192,7 @@ export {
     getUSDCeVault_1_5,
     getUSDTeVault_1_5,
     getDAIeVault_1_5,
-    getUSDCeVault_1_5_1,
-    getUSDTeVault_1_5_1,
-    getDAIeVault_1_5_1,
+    getUSDCeVault_1_6,
+    getUSDTeVault_1_6,
+    getDAIeVault_1_6,
 };

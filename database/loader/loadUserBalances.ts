@@ -11,13 +11,13 @@ import {
     getPowerD,
     getUSDCeVault,
     getUSDCeVault_1_5,
-    getUSDCeVault_1_5_1,
+    getUSDCeVault_1_6,
     getUSDTeVault,
     getUSDTeVault_1_5,
-    getUSDTeVault_1_5_1,
+    getUSDTeVault_1_6,
     getDAIeVault,
     getDAIeVault_1_5,
-    getDAIeVault_1_5_1,
+    getDAIeVault_1_6,
 } from '../common/contractUtil';
 import { QUERY_ERROR } from '../constants';
 import {
@@ -66,9 +66,9 @@ let daie_1_0 = [];
 let usdce_1_5 = [];
 let usdte_1_5 = [];
 let daie_1_5 = [];
-let usdce_1_5_1 = [];
-let usdte_1_5_1 = [];
-let daie_1_5_1 = [];
+let usdce_1_6 = [];
+let usdte_1_6 = [];
+let daie_1_6 = [];
 
 /// @notice Retrieve user balances in a recursive way by batches
 /// @dev    - The amount of users per batch is defined in constant <BATCH>
@@ -110,9 +110,9 @@ const getBalancesSC = async (
             usdceUpdate_1_5,
             usdteUpdate_1_5,
             daieUpdate_1_5,
-            usdceUpdate_1_5_1,
-            usdteUpdate_1_5_1,
-            daieUpdate_1_5_1,
+            usdceUpdate_1_6,
+            usdteUpdate_1_6,
+            daieUpdate_1_6,
         ] = await Promise.all([
             getBalances(getGroVault().address, userBatch, block),
             getBalances(getPowerD().address, userBatch, block),
@@ -134,9 +134,9 @@ const getBalancesSC = async (
             multiCall(GN.AVALANCHE, getUSDCeVault_1_5().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
             multiCall(GN.AVALANCHE, getUSDTeVault_1_5().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
             multiCall(GN.AVALANCHE, getDAIeVault_1_5().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
-            multiCall(GN.AVALANCHE, getUSDCeVault_1_5_1().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
-            multiCall(GN.AVALANCHE, getUSDTeVault_1_5_1().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
-            multiCall(GN.AVALANCHE, getDAIeVault_1_5_1().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
+            multiCall(GN.AVALANCHE, getUSDCeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
+            multiCall(GN.AVALANCHE, getUSDTeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
+            multiCall(GN.AVALANCHE, getDAIeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
         ]);
 
         //TODO: careful. Only GVT? what about AVAX?
@@ -155,9 +155,9 @@ const getBalancesSC = async (
             usdce_1_5 = usdceUpdate_1_5;
             usdte_1_5 = usdteUpdate_1_5;
             daie_1_5 = daieUpdate_1_5;
-            usdce_1_5_1 = usdceUpdate_1_5_1;
-            usdte_1_5_1 = usdteUpdate_1_5_1;
-            daie_1_5_1 = daieUpdate_1_5_1;
+            usdce_1_6 = usdceUpdate_1_6;
+            usdte_1_6 = usdteUpdate_1_6;
+            daie_1_6 = daieUpdate_1_6;
         } else {
             gvt[0].amount_unstaked.push(...gvtUpdate[0].amount_unstaked);
             gvt[1].amount_staked.push(...gvtUpdate[1].amount_staked);
@@ -198,9 +198,9 @@ const getBalancesSC = async (
             usdce_1_5.push(...usdceUpdate_1_5);
             usdte_1_5.push(...usdteUpdate_1_5);
             daie_1_5.push(...daieUpdate_1_5);
-            usdce_1_5_1.push(...usdceUpdate_1_5_1);
-            usdte_1_5_1.push(...usdteUpdate_1_5_1);
-            daie_1_5_1.push(...daieUpdate_1_5_1);
+            usdce_1_6.push(...usdceUpdate_1_6);
+            usdte_1_6.push(...usdteUpdate_1_6);
+            daie_1_6.push(...daieUpdate_1_6);
         }
 
         return (newOffset >= users.length)
@@ -219,9 +219,9 @@ const getBalancesSC = async (
                 usdce_1_5: usdce_1_5,
                 usdte_1_5: usdte_1_5,
                 daie_1_5: daie_1_5,
-                usdce_1_5_1: usdce_1_5_1,
-                usdte_1_5_1: usdte_1_5_1,
-                daie_1_5_1: daie_1_5_1,
+                usdce_1_6: usdce_1_6,
+                usdte_1_6: usdte_1_6,
+                daie_1_6: daie_1_6,
             }
             : getBalancesSC(users, block, newOffset);
 
@@ -273,9 +273,9 @@ const insertBalances = async (
                 res.lpGroWeth[1].amount_staked_lp[i],   // pool5 - staked lp
                 res.lpGroWeth[2].lp_position[i][0],     // pool5 - staked gro
                 res.lpGroWeth[2].lp_position[i][1],     // pool5 - staked weth
-                res.usdce_1_0[i] + res.usdce_1_5[i] + res.usdce_1_5_1[i],
-                res.usdte_1_0[i] + res.usdte_1_5[i] + res.usdte_1_5_1[i],
-                res.daie_1_0[i] + res.daie_1_5[i] + res.daie_1_5_1[i],
+                res.usdce_1_0[i] + res.usdce_1_5[i] + res.usdce_1_6[i],
+                res.usdte_1_0[i] + res.usdte_1_5[i] + res.usdte_1_6[i],
+                res.daie_1_0[i] + res.daie_1_5[i] + res.daie_1_6[i],
                 moment.utc(),
             ];
 
@@ -358,9 +358,9 @@ const cleanseVars = () => {
     usdce_1_5 = [];
     usdte_1_5 = [];
     daie_1_5 = [];
-    usdce_1_5_1 = [];
-    usdte_1_5_1 = [];
-    daie_1_5_1 = [];
+    usdce_1_6 = [];
+    usdte_1_6 = [];
+    daie_1_6 = [];
     rowCount = 0;
 }
 

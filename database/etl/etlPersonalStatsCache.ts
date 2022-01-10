@@ -142,22 +142,22 @@ const loadCache = async (account: string): Promise<boolean> => {
                 loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_DAIe, account),
                 loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_IN, account),
                 loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
-                // AVAX vaults v1.5.1
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDCe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDCe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_OUT, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDTe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDTe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_OUT, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.DEPOSIT_DAIe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_DAIe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
+                // AVAX vaults v1.6
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDCe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDCe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_IN, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_OUT, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDTe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDTe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_IN, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_OUT, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.DEPOSIT_DAIe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_DAIe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_IN, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
             ]);
 
-            //TODO: when errors retrieving deposits, withdrawals or transfers in personalUtil->getTransferEvents2()
+            //TODO: when errors retrieving deposits, withdrawals or transfers in personalUtil->getTransferEvents()
             // (eg: Message: TypeError: Cannot read property 'PowerDollar' of undefined), it returns true!! (should be false)
 
             const now = moment.utc().format('DD/MM/YYYY').toString();
