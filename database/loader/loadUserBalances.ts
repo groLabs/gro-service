@@ -364,18 +364,6 @@ const cleanseVars = () => {
     rowCount = 0;
 }
 
-/// @notice Show message logs after successful loads
-const showMsg = (
-    account: string,
-    date: string,
-    table: string
-) => {
-    let msg3 = `${account ? 'CACHE: ' : ''}${rowCount} record${isPlural(rowCount)} `;
-    msg3 += `added into ${table} `;
-    msg3 += `for date ${moment(date).format('DD/MM/YYYY')}`;
-    showInfo(msg3);
-}
-
 /// @notice Load user balances into USER_STD_FACT_BALANCES* tables
 /// @dev    - Data is sourced from SC calls to users' balances at a certain block number
 ///         according to the dates provided
@@ -417,7 +405,8 @@ const loadUserBalances = async (
 
         }
 
-        showInfo(`${account ? 'CACHE: ' : ''}Processing ${users.length} user balance${isPlural(users.length)}...`);
+        if (!account)
+            showInfo(`Processing ${users.length} user balance${isPlural(users.length)}...`);
 
         for (const date of dates) {
 
@@ -450,11 +439,13 @@ const loadUserBalances = async (
             }
 
             // Show amount of inserted records
-            const table = (account)
-                ? 'USER_BALANCES_CACHE'
-                : 'USER_BALANCES_SNAPSHOT';
-            showMsg(account, date, table);
-            rowCount = 0;
+            if (!account) {
+                let msg3 = `${rowCount} record${isPlural(rowCount)} `;
+                msg3 += `added into USER_BALANCES_SNAPSHOT `;
+                msg3 += `for date ${moment(date).format('DD/MM/YYYY')}`;
+                showInfo(msg3);
+                rowCount = 0;
+            }
         }
 
         cleanseVars();

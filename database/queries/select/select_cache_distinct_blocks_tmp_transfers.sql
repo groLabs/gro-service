@@ -5,10 +5,12 @@ FROM (
         SELECT DISTINCT d."block_number" as "block_number",
             d."network_id" as "network_id"
         FROM gro."USER_DEPOSITS_CACHE" d
+        WHERE d."user_address" = $1
         UNION
         SELECT DISTINCT w."block_number" as "block_number",
             w."network_id" as "network_id"
         FROM gro."USER_WITHDRAWALS_CACHE" w
+        WHERE w."user_address" = $1
     ) dw
     LEFT OUTER JOIN (
         SELECT b."block_number" as "block_number",

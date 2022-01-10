@@ -55,9 +55,12 @@ const loadUserTransfers = async (
             const res = await query(q, params);
             if (res.status === QUERY_ERROR)
                 return false;
-            const numTransfers = res.rowCount;
-            const table = `added into ${account ? 'USER_TRANSFERS_CACHE' : 'USER_TRANSFERS'}`;
-            showInfo(`${account ? 'CACHE: ' : ''}${numTransfers} record${isPlural(numTransfers)} ${table}`);
+
+            if (!account) {
+                const numTransfers = res.rowCount;
+                const table = `added into ${account ? 'USER_TRANSFERS_CACHE' : 'USER_TRANSFERS'}`;
+                showInfo(`${numTransfers} record${isPlural(numTransfers)} ${table}`);
+            }
         } else {
             return false;
         }
@@ -133,14 +136,11 @@ const loadTmpUserTransfers = async (
                         if (!res)
                             return false;
 
-                        showInfo(`${(account) ? 'CACHE: ' : ''}${rows} ${transferType(side)}${isPlural(rows)} added into ${(isInflow(side))
-                            ? (account)
-                                ? 'USER_DEPOSITS_CACHE'
-                                : 'USER_DEPOSITS_TMP'
-                            : (account)
-                                ? 'USER_WITHDRAWALS_CACHE'
+                        if (!account)
+                            showInfo(`${rows} ${transferType(side)}${isPlural(rows)} added into ${(isInflow(side))
+                                ? 'USER_DEPOSITS_TMP'
                                 : 'USER_WITHDRAWALS_TMP'
-                            }`);
+                                }`);
                     }
                 }
             }

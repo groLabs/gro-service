@@ -1,10 +1,6 @@
 import { query } from '../handler/queryHandler';
-import { isPlural } from '../common/globalUtil';
 import { QUERY_ERROR } from '../constants';
-import {
-    showInfo,
-    showError,
-} from '../handler/logHandler';
+import { showError } from '../handler/logHandler';
 
 
 /// @notice Load net returns into USER_NET_RETURNS_CACHE
@@ -16,17 +12,10 @@ const loadUserNetReturns = async (
     account: string,
 ): Promise<boolean> => {
     try {
-        showInfo(`${account ? 'CACHE: ' : ''}Processing user net returns...`);
         const q = 'insert_user_net_returns_cache.sql';
         const params = [account];
         const result = await query(q, params);
-        if (result.status === QUERY_ERROR)
-            return false;
-        const numResults = result.rowCount;
-        let msg = `CACHE: ${numResults} record${isPlural(numResults)} added into `;
-        msg += `USER_NET_RETURNS_CACHE for account ${account}`;
-        showInfo(msg);
-        return true;
+        return (result.status === QUERY_ERROR) ? false : true;
     } catch (err) {
         showError('loadUserNetReturns.ts->loadUserNetReturns()', err);
         return false;
