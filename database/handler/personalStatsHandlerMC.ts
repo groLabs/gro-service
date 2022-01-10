@@ -1,6 +1,9 @@
 import moment from 'moment';
 import { query } from './queryHandler';
-import { getNetwork } from '../common/globalUtil';
+import {
+    errorObj,
+    getNetwork,
+} from '../common/globalUtil';
 import { getConfig } from '../../common/configUtil';
 import { showError } from '../handler/logHandler';
 import {
@@ -11,24 +14,14 @@ import {
     Transfer,
     GlobalNetwork as GN
 } from '../types';
+import { ICall } from '../interfaces/ICall';
 const launchTimeEth = getConfig('blockchain.start_timestamp');
 const launchTimeAvax = getConfig('blockchain.avax_launch_timestamp');
 
-interface IResult {
-    status: number;
-    message: any;
-    data: any;
-}
 
-const ERROR = (msg: string) => ({
-    "status": QUERY_ERROR,
-    "message": msg,
-    "data": null,
-});
+const showErrDesc = (err: any): string => JSON.stringify(err, Object.getOwnPropertyNames(err));
 
-const showErrDesc = (err: any) => JSON.stringify(err, Object.getOwnPropertyNames(err));
-
-const getTransfers = async (account: string): Promise<IResult> => {
+const getTransfers = async (account: string): Promise<ICall> => {
     try {
         const deposits_eth = [];
         const withdrawals_eth = [];
@@ -54,12 +47,13 @@ const getTransfers = async (account: string): Promise<IResult> => {
         const transfers = await query(q, [account]);
 
         if (transfers.status !== QUERY_ERROR) {
+            
             for (const item of transfers.rows) {
 
                 if (!item.token_id
                     || !item.transfer_id
                     || !item.usd_amount)
-                    return ERROR(`Missing data in DB [transfers] for user ${account}`);
+                    return errorObj(`Missing data in DB [transfers] for user ${account}`);
 
                 switch (item.transfer_id) {
                     case Transfer.DEPOSIT:
@@ -147,13 +141,12 @@ const getTransfers = async (account: string): Promise<IResult> => {
                     default:
                         const msg = `Unrecognized transfer_id (${item.transfer_id})`;
                         showError('personalStatsHandlerMC.ts->getTransfers()', msg);
-                        return ERROR(msg);
+                        return errorObj(msg);
                 }
             }
 
             const result = {
                 "status": QUERY_SUCCESS,
-                "message": 'OK',
                 "data": {
                     "ethereum": {
                         "deposits": deposits_eth,
@@ -225,15 +218,15 @@ const getTransfers = async (account: string): Promise<IResult> => {
             };
             return result;
         } else
-            return ERROR('TBC');
+            return errorObj(`Error from DB when querying transfers for user: ${account}`);
 
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getTransfers()', err);
-        return ERROR(`Error from DB when querying transfers -> ${showErrDesc(err)}`);
+        return errorObj(`Error from DB when querying transfers -> ${showErrDesc(err)}`);
     }
 }
 
-const getNetBalances = async (account: string): Promise<IResult> => {
+const getNetBalances = async (account: string): Promise<ICall> => {
     try {
         const q = 'select_fe_user_net_balances.sql';
         const result = await query(q, [account]);
@@ -253,11 +246,10 @@ const getNetBalances = async (account: string): Promise<IResult> => {
 
             // Check if any of the keys is missing
             if (!Object.values(res).some(x => x !== null && x !== ''))
-                return ERROR(`Missing data in DB [balances] for user ${account}`);
+                return errorObj(`Missing data in DB [balances] for user ${account}`);
 
             return {
                 "status": QUERY_SUCCESS,
-                "message": 'OK',
                 "data": {
                     "ethereum": {
                         "current_balance": {
@@ -281,14 +273,14 @@ const getNetBalances = async (account: string): Promise<IResult> => {
                 },
             };
         } else
-            return ERROR('Error from DB when querying balances');
+            return errorObj(`Error from DB when querying balances for user: ${account}`);
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getNetBalances()', err);
-        return ERROR(showErrDesc(err));
+        return errorObj(showErrDesc(err));
     }
 }
 
-const getNetReturns = async (account: string): Promise<IResult> => {
+const getNetReturns = async (account: string): Promise<ICall> => {
     try {
         const qBalance = 'select_fe_user_net_returns.sql';
         const result = await query(qBalance, [account]);
@@ -307,11 +299,10 @@ const getNetReturns = async (account: string): Promise<IResult> => {
 
             // Check if any of the keys is missing
             if (!Object.values(res).some(x => x !== null && x !== ''))
-                return ERROR(`Missing data in DB [returns] for user ${account}`);
+                return errorObj(`Missing data in DB [returns] for user ${account}`);
 
             return {
                 "status": QUERY_SUCCESS,
-                "message": 'OK',
                 "data": {
                     "ethereum": {
                         "net_returns": {
@@ -334,19 +325,22 @@ const getNetReturns = async (account: string): Promise<IResult> => {
                 },
             };
         } else
-            return ERROR('Error from DB when querying net returns');
+            return errorObj(`Error from DB when querying net returns for user: ${account}`);
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getNetReturns()', err);
-        return ERROR(showErrDesc(err));
+        return errorObj(showErrDesc(err));
 
     }
 }
 
-const getMcTotals = (transfers, balances, returns) => {
+const getMcTotals = (
+    transfers: ICall,
+    balances: ICall,
+    returns: ICall,
+): ICall => {
     try {
         const result = {
             "status": QUERY_SUCCESS,
-            "message": 'OK',
             "data": {
                 "amount_added": {
                     "ethereum": transfers.data.ethereum_amounts.amount_added.total,
@@ -383,7 +377,7 @@ const getMcTotals = (transfers, balances, returns) => {
         return result;
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getMcTotals()', err);
-        return ERROR(`Error when parsing MC Totals -> ${showErrDesc(err)}`);
+        return errorObj(`Error when parsing MC Totals -> ${showErrDesc(err)}`);
     }
 }
 
@@ -398,27 +392,33 @@ const getPersonalStatsMC = async (account: string) => {
             getNetBalances(account),
             getNetReturns(account),
         ]);
+        const mcTotals = getMcTotals(transfers, balances, returns);
 
         if (transfers.status === QUERY_ERROR) {
             return {
                 "gro_personal_position_mc": {
-                    ...ERROR(transfers.message),
+                    ...errorObj(transfers.data),
                 },
             };
         } else if (balances.status === QUERY_ERROR) {
             return {
                 "gro_personal_position_mc": {
-                    ...ERROR(balances.message),
+                    ...errorObj(balances.data),
                 },
             };
         } else if (returns.status === QUERY_ERROR) {
             return {
                 "gro_personal_position_mc": {
-                    ...ERROR(returns.message),
+                    ...errorObj(returns.data),
+                },
+            };
+        } else if (mcTotals.status === QUERY_ERROR) {
+            return {
+                "gro_personal_position_mc": {
+                    ...errorObj(mcTotals.data),
                 },
             };
         } else {
-            const mcTotals = getMcTotals(transfers, balances, returns);
             const result = {
                 "gro_personal_position_mc": {
                     "status": QUERY_SUCCESS.toString(),
@@ -450,7 +450,7 @@ const getPersonalStatsMC = async (account: string) => {
 
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getPersonalStatsMC()', err);
-        return ERROR(`Error when parsing the final JSON output -> ${showErrDesc(err)}`);
+        return errorObj(`Error when parsing the final JSON output -> ${showErrDesc(err)}`);
     }
 }
 

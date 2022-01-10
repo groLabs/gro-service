@@ -1,10 +1,11 @@
 import http from 'http';
 import https from 'https';
-import { QUERY_ERROR } from '../constants';
-import { IApiCall, IApiReturn } from '../interfaces';
+import { errorObj } from '../common/globalUtil';
+import { ICall, ICallInfo } from '../interfaces/ICall';
 import { showError } from '../handler/logHandler';
+import { QUERY_SUCCESS } from '../constants';
 
-const apiCaller = (options: IApiCall): Promise<IApiReturn> => {
+const apiCaller = (options: ICallInfo): Promise<ICall> => {
     return new Promise(async (resolve) => {
         try {
             let payload = '';
@@ -12,10 +13,7 @@ const apiCaller = (options: IApiCall): Promise<IApiReturn> => {
             if (!options.hostname
                 || !options.port
                 || !options.path) {
-                resolve({
-                    status: QUERY_ERROR,
-                    data: `Connection details not found: [hostname: ${options.hostname}]`
-                });
+                resolve(errorObj(`Connection details not found: ${options}`));
             } else {
                 // Use http when bot is running inside AWS VPC and using msb* name; use https otherwise
                 const connection = (options.hostname.slice(0, 3) === 'msb')
@@ -27,7 +25,8 @@ const apiCaller = (options: IApiCall): Promise<IApiReturn> => {
                         payload += d;
                     }).on('end', () => {
                         resolve({
-                            status: res.statusCode,
+                            //status: res.statusCode,
+                            status: QUERY_SUCCESS,
                             data: payload,
                         })
                     });
@@ -35,20 +34,14 @@ const apiCaller = (options: IApiCall): Promise<IApiReturn> => {
 
                 req.on('error', (err) => {
                     showError('apiCaller.ts->apiCaller()', err);
-                    resolve({
-                        status: QUERY_ERROR,
-                        data: err,
-                    });
+                    resolve(errorObj(`Error while reading connection request: ${err}`));
                 });
 
                 req.end();
             }
         } catch (err) {
             showError('apiCaller.ts->apiCaller()', err);
-            resolve({
-                status: QUERY_ERROR,
-                data: err,
-            })
+            resolve(errorObj(`Error in apiCaller: ${err}`));
         }
     });
 }

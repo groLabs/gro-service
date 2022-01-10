@@ -35,7 +35,7 @@ const loadEthBlocks = async (
         // Insert new blocks into ETH_BLOCKS
         const numBlocks = blocks.rowCount;
         if (numBlocks > 0) {
-            showInfo(`${account ? 'CACHE' : ''}: Processing ${numBlocks} block${isPlural(numBlocks)} from ${(func === 'loadUserTransfers')
+            showInfo(`${account ? 'CACHE: ' : ''}Processing ${numBlocks} block${isPlural(numBlocks)} from ${(func === 'loadUserTransfers')
                 ? 'transfers'
                 : 'approvals'
                 }...`);
