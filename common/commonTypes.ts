@@ -16,7 +16,6 @@ export interface IError {
 }
 
 export interface EventResult {
-    status: string;
-    message?: string;
+    status: 200 | 400;
     data: any | undefined;
 }
