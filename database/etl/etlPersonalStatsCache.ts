@@ -167,7 +167,7 @@ const loadCache = async (account: string): Promise<boolean> => {
                 if (await loadUserTransfers(null, null, account))
                     //if (await loadUserApprovals(null, null, account))
                     if (await loadUserBalances(now, now, account, ''))
-                        if (await loadUserNetReturns(now, now, account))
+                        if (await loadUserNetReturns(account))
                             return true;
             } else {
                 showError(
@@ -189,16 +189,18 @@ const loadCache = async (account: string): Promise<boolean> => {
     }
 }
 
-const etlPersonalStatsCache = async (account: string) => {
+const etlPersonalStatsCache = async (account: string): Promise<boolean> => {
     try {
         const res = await loadCache(account);
         if (res) {
             showInfo(`Personal stats for account ${account} is completed ;)`);
+            return true;
         } else {
             showError(
                 'etlPersonalStatsCache.ts->etlPersonalStatsCache()',
                 `Personal stats load for account ${account} is NOT completed :/`
             );
+            return false;
         }
     } catch (err) {
         showError(`etlPersonalStatsCache.ts->etlPersonalStatsCache()`, err);

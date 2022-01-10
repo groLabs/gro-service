@@ -7,6 +7,9 @@ import { getAllStatsMC } from '../handler/groStatsHandlerMC';
 import { getPriceCheck } from '../handler/priceCheckHandler';
 import { getHistoricalAPY } from '../handler/historicalAPY';
 import { getPersonalStatsMC } from '../handler/personalStatsHandlerMC';
+import { etlPersonalStatsCache } from '../etl/etlPersonalStatsCache';
+import { QUERY_ERROR } from '../constants';
+
 // import { dumpTable } from '../common/pgUtil';
 
 
@@ -58,7 +61,7 @@ router.get(
     })
 );
 
-// E.g.: http://localhost:3010/database/personal_stats?network=mainnet&address=0x001C249c09090D79Dc350A286247479F08c7aaD7
+// E.g.: http://localhost:3010/database/gro_personal_position_mc?network=mainnet&address=0x001C249c09090D79Dc350A286247479F08c7aaD7
 router.get(
     '/gro_personal_position_mc',
     validate([
@@ -80,9 +83,20 @@ router.get(
         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
             throw new ParameterError(`Parameter network failed in database: ${network.toLowerCase()} vs. ${process.env.NODE_ENV.toLowerCase()}`);
         }
-        console.log('OKI:', network, address);
-        const personalStats = await getPersonalStatsMC(address);
-        res.json(personalStats);
+        const load = await etlPersonalStatsCache(address);
+        if (load) {
+            const personalStats = await getPersonalStatsMC(address);
+            res.json(personalStats);
+        } else {
+            res.json(
+                {
+                    "gro_personal_position_mc": {
+                        status: QUERY_ERROR.toString(),
+                        data: 'Error while processing personalStats cache from DB: see logs in host',
+                    }
+                }
+            );
+        }
     })
 );
 
@@ -162,6 +176,6 @@ router.get(
 //     })
 // );
 
-export default router ;
+export default router;
 
 
