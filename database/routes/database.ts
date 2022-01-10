@@ -2,15 +2,13 @@ import express from 'express';
 import { query } from 'express-validator';
 import { validate } from '../../common/validate';
 import { ParameterError } from '../../common/error';
-import { getAllStats } from '../handler/groStatsHandler';
+// import { dumpTable } from '../common/pgUtil';
 import { getAllStatsMC } from '../handler/groStatsHandlerMC';
 import { getPriceCheck } from '../handler/priceCheckHandler';
 import { getHistoricalAPY } from '../handler/historicalAPY';
 import { getPersonalStatsMC } from '../handler/personalStatsHandlerMC';
 import { etlPersonalStatsCache } from '../etl/etlPersonalStatsCache';
 import { QUERY_ERROR } from '../constants';
-
-// import { dumpTable } from '../common/pgUtil';
 
 
 const router = express.Router();
@@ -20,26 +18,6 @@ const wrapAsync = function wrapAsync(fn) {
         fn(req, res, next).catch(next);
     };
 };
-
-//TODO: to be disabled
-router.get(
-    '/gro_stats',
-    validate([
-        query('network')
-            .trim()
-            .notEmpty()
-            .withMessage(`network can't be empty`),
-    ]),
-    wrapAsync(async (req, res) => {
-        let { network } = req.query;
-        network = network || '';
-        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
-            throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats');
-        }
-        const groStats = await getAllStats();
-        res.json(groStats);
-    })
-);
 
 // E.g.: http://localhost:3010/gro_stats_mc?network=mainnet
 router.get(
@@ -54,7 +32,7 @@ router.get(
         let { network } = req.query;
         network = network || '';
         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
-            throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats_mc');
+            throw new ParameterError('Parameter network failed in database.ts->router.get->/gro_stats_mc');
         }
         const groStats = await getAllStatsMC();
         res.json(groStats);
@@ -152,6 +130,7 @@ router.get(
     })
 );
 
+// Disabled in order to avoid potential security issues
 // router.get(
 //     '/table_dump',
 //     validate([

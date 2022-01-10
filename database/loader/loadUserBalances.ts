@@ -78,12 +78,14 @@ let daie_1_6 = [];
 /// @param  block The block number to retrieve user balances at
 /// @param  offset The offset to track the start and end position in the users array
 ///         to be processed on each iteration
+/// @account Only used to skip showing logs for cache load
 /// @return An array with 7 fixed subarrays, each of them containing all balances per token
 ///         (gvt, pwrd, gro, gro/gvt, gro/usdc, 3crv, gro/weth)
 const getBalancesSC = async (
     users: string[],
     block: number,
-    offset: number
+    offset: number,
+    account: string,
 ) => {
     try {
         const newOffset = (offset + BATCH >= users.length)
@@ -92,8 +94,10 @@ const getBalancesSC = async (
 
         const userBatch = users.slice(offset, newOffset);
 
-        const desc = `block ${block} for users ${offset} to ${newOffset}...`;
-        showInfo(`Reading balances from TokenCounter() in ${desc}`);
+        if (!account) {
+            const desc = `block ${block} for users ${offset} to ${newOffset}...`;
+            showInfo(`Reading balances from TokenCounter() in ${desc}`);
+        }
 
         const [
             gvtUpdate,
@@ -223,7 +227,7 @@ const getBalancesSC = async (
                 usdte_1_6: usdte_1_6,
                 daie_1_6: daie_1_6,
             }
-            : getBalancesSC(users, block, newOffset);
+            : getBalancesSC(users, block, newOffset, account);
 
     } catch (err) {
         showError('loadUserBalances.ts->getBalancesSC()', err);
@@ -423,7 +427,7 @@ const loadUserBalances = async (
             const block = (await findBlockByDate(day, false)).block;
 
             // Retrieve balances from the SC
-            const result = await getBalancesSC(users, block, 0);
+            const result = await getBalancesSC(users, block, 0, account);
             if (!result)
                 showError(
                     'loadUserBalances.ts->loadUserBalances()',
