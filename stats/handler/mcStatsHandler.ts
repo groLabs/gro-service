@@ -206,7 +206,7 @@ async function generateGroStatsMcFile() {
             'groDAI.e_vault_v1_5',
             'groUSDC.e_vault_v1_5',
             'groUSDT.e_vault_v1_5',
-	    'groDAI.e_vault_v1_6',
+            'groDAI.e_vault_v1_6',
             'groUSDC.e_vault_v1_6',
             'groUSDT.e_vault_v1_6',
             'open_amount',
