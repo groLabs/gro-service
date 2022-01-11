@@ -216,8 +216,9 @@ async function parseProtocolExposure(protocols, metaData) {
     return { protocolsDisplayName, protocolsName };
 }
 
-async function parseTokenExposure(tokens) {
+async function parseTokenExposure(tag, tokens) {
     const result = [];
+
     for (let i = 0; i < tokens.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         const tokenAddress = await registry
@@ -226,20 +227,26 @@ async function parseTokenExposure(tokens) {
                 logger.error(error);
             });
         let tokenSymbol = '';
-        if (tokenAddress) {
-            const token = new ethers.Contract(
-                tokenAddress,
-                erc20ABI,
-                ethererumProvider
-            );
-            // eslint-disable-next-line no-await-in-loop
-            tokenSymbol = await token.symbol().catch((error) => {
-                logger.error(error);
-                return '';
-            });
+        if (tag === 'AVAX') {
+            tokenSymbol = tokenAddress;
+        } else {
+            if (tokenAddress) {
+                const token = new ethers.Contract(
+                    tokenAddress,
+                    erc20ABI,
+                    ethererumProvider
+                );
+                // eslint-disable-next-line no-await-in-loop
+                tokenSymbol = await token.symbol().catch((error) => {
+                    logger.error(error);
+                    return '';
+                });
+            }
         }
+
         result.push(tokenSymbol);
     }
+
     return result;
 }
 
@@ -273,7 +280,10 @@ async function getActiveContractInfoByName(contractName) {
             contractInfo.protocols,
             metaDataObject
         );
-        const tokenNames = await parseTokenExposure(contractInfo.tokens);
+        const tokenNames = await parseTokenExposure(
+            contractInfo.tag,
+            contractInfo.tokens
+        );
         result = {
             address: contractAddress,
             deployedBlock: parseInt(`${contractInfo.deployedBlock}`, 10),
@@ -316,7 +326,7 @@ async function getContractInfoByAddress(address) {
             info.protocols,
             metaDataObject
         );
-        const tokenNames = await parseTokenExposure(info.tokens);
+        const tokenNames = await parseTokenExposure(info.tag, info.tokens);
         if (info.startBlock) {
             for (let i = 0; i < info.startBlock.length; i += 1) {
                 result.push({

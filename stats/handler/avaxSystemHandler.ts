@@ -18,17 +18,10 @@ import { getLatestSystemContractOnAVAX } from '../common/contractStorage';
 import { getEvents } from '../../common/logFilter-new';
 
 const logger = require('../statsLogger');
-const { getCurrentApy } = require('./currentApyHandler');
-const { ContractNames } = require('../../dist/registry/registry');
-const { sendAlertMessage } = require('../../dist/common/alertMessageSender');
-const aggregatorABI = require('../abi/aggregator.json');
-const poolABI = require('../abi/Pool.json');
-const routerABI = require('../abi/uniswapRoute.json');
-const erc20ABI = require('../../contract/abis/ERC20.json');
-const { getConfig } = require('../../dist/common/configUtil');
-const { getLatestSystemContractOnAVAX } = require('../common/contractStorage');
-const { getEvents } = require('../../dist/common/logFilter-new');
-const rpccURL = 'https://api.avax.network/ext/bc/C/rpc';
+
+const rpccURL =
+    getConfig('avalanche.rpc_url', false) ||
+    'https://api.avax.network/ext/bc/C/rpc';
 
 const provider = new ethers.providers.JsonRpcProvider(rpccURL);
 const blockNumberTimestamp = {};
