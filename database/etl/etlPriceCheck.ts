@@ -6,7 +6,7 @@ import { checkLastTimestamp } from '../common/protocolUtil';
 import { calcRangeTimestamps } from '../common/globalUtil';
 import { findBlockByDate } from '../common/globalUtil';
 import { QUERY_SUCCESS } from '../constants';
-import { IApiReturn } from '../interfaces';
+import { ICall } from '../interfaces/ICall';
 const route: any = getConfig('route');
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 import {
@@ -64,7 +64,7 @@ const loadPriceCheck = async (intervals, isHDL) => {
                 path: `/stats/gro_price_check?network=${nodeEnv}&block=${block}`,
                 method: 'GET',
             };
-            const call: IApiReturn = await apiCaller(options);
+            const call: ICall = await apiCaller(options);
             if (call.status === QUERY_SUCCESS) {
                 const prices = JSON.parse(call.data);
                 if (prices.pricing && 'block_number' in prices.pricing) {

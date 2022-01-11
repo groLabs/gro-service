@@ -14,13 +14,13 @@ import {
     getPowerD,
     getUSDCeVault,
     getUSDCeVault_1_5,
-    getUSDCeVault_1_5_1,
+    getUSDCeVault_1_6,
     getUSDTeVault,
     getUSDTeVault_1_5,
-    getUSDTeVault_1_5_1,
+    getUSDTeVault_1_6,
     getDAIeVault,
     getDAIeVault_1_5,
-    getDAIeVault_1_5_1,
+    getDAIeVault_1_6,
 } from '../common/contractUtil';
 import {
     Base,
@@ -261,26 +261,26 @@ const parseTransferEvents2 = async (
                     item.value = item.amount * priceDAIe;
                 }
             }
-        } else if (contractVersion === ContractVersion.VAULT_1_5_1) {
-            // Calc USDCe, USDTe & DAIe value for direct transfers in Vault 1.5.1
+        } else if (contractVersion === ContractVersion.VAULT_1_6) {
+            // Calc USDCe, USDTe & DAIe value for direct transfers in Vault 1.6
             if (side === Transfer.TRANSFER_USDCe_IN
                 || side === Transfer.TRANSFER_USDCe_OUT) {
                 for (const item of result) {
-                    const priceUSDCe = parseAmount(await getUSDCeVault_1_5_1().getPricePerShare({ blockTag: item.block_number }), Base.D6);
+                    const priceUSDCe = parseAmount(await getUSDCeVault_1_6().getPricePerShare({ blockTag: item.block_number }), Base.D6);
                     item.value = item.amount * priceUSDCe;
                 }
             } else if (
                 side === Transfer.TRANSFER_USDTe_IN
                 || side === Transfer.TRANSFER_USDTe_OUT) {
                 for (const item of result) {
-                    const priceUSDTe = parseAmount(await getUSDTeVault_1_5_1().getPricePerShare({ blockTag: item.block_number }), Base.D6);
+                    const priceUSDTe = parseAmount(await getUSDTeVault_1_6().getPricePerShare({ blockTag: item.block_number }), Base.D6);
                     item.value = item.amount * priceUSDTe;
                 }
             } else if (
                 side === Transfer.TRANSFER_DAIe_IN
                 || side === Transfer.TRANSFER_DAIe_OUT) {
                 for (const item of result) {
-                    const priceDAIe = parseAmount(await getDAIeVault_1_5_1().getPricePerShare({ blockTag: item.block_number }), Base.D18);
+                    const priceDAIe = parseAmount(await getDAIeVault_1_6().getPricePerShare({ blockTag: item.block_number }), Base.D18);
                     item.value = item.amount * priceDAIe;
                 }
             }

@@ -142,22 +142,22 @@ const loadCache = async (account: string): Promise<boolean> => {
                 loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_DAIe, account),
                 loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_IN, account),
                 loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
-                // AVAX vaults v1.5.1
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDCe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDCe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_OUT, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDTe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDTe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_OUT, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.DEPOSIT_DAIe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_DAIe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5_1, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
+                // AVAX vaults v1.6
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDCe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDCe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_IN, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_OUT, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDTe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDTe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_IN, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_OUT, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.DEPOSIT_DAIe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_DAIe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_IN, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
             ]);
 
-            //TODO: when errors retrieving deposits, withdrawals or transfers in personalUtil->getTransferEvents2()
+            //TODO: when errors retrieving deposits, withdrawals or transfers in personalUtil->getTransferEvents()
             // (eg: Message: TypeError: Cannot read property 'PowerDollar' of undefined), it returns true!! (should be false)
 
             const now = moment.utc().format('DD/MM/YYYY').toString();
@@ -167,7 +167,7 @@ const loadCache = async (account: string): Promise<boolean> => {
                 if (await loadUserTransfers(null, null, account))
                     //if (await loadUserApprovals(null, null, account))
                     if (await loadUserBalances(now, now, account, ''))
-                        if (await loadUserNetReturns(now, now, account))
+                        if (await loadUserNetReturns(account))
                             return true;
             } else {
                 showError(
@@ -189,16 +189,18 @@ const loadCache = async (account: string): Promise<boolean> => {
     }
 }
 
-const etlPersonalStatsCache = async (account: string) => {
+const etlPersonalStatsCache = async (account: string): Promise<boolean> => {
     try {
         const res = await loadCache(account);
         if (res) {
             showInfo(`Personal stats for account ${account} is completed ;)`);
+            return true;
         } else {
             showError(
                 'etlPersonalStatsCache.ts->etlPersonalStatsCache()',
                 `Personal stats load for account ${account} is NOT completed :/`
             );
+            return false;
         }
     } catch (err) {
         showError(`etlPersonalStatsCache.ts->etlPersonalStatsCache()`, err);

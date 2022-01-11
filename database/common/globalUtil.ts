@@ -11,6 +11,8 @@ import {
     NetworkName,
     GlobalNetwork,
 } from '../types';
+import { ICall } from '../interfaces/ICall';
+import { QUERY_ERROR} from '../constants';
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 // ETH config
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
@@ -26,6 +28,11 @@ const rpcURL: any =
 const providerAVAX = new ethers.providers.JsonRpcProvider(rpcURL);
 const scannerAvax = new BlocksScanner(providerAVAX);
 
+
+const errorObj = (msg: string): ICall => ({
+    "status": QUERY_ERROR,
+    "data": msg,
+});
 
 const isPlural = (count: number) => (count > 1 ? 's' : '');
 
@@ -220,6 +227,7 @@ const getBlockDataAvax = async (blockNumber) => {
 };
 
 export {
+    errorObj,
     isPlural,
     calcRangeTimestamps,
     checkDateRange,

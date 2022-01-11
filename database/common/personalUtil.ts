@@ -234,7 +234,7 @@ const getGTokenFromTx = async (result, side, account) => {
     try {
         const numTx = result.length;
         showInfo(
-            `${account ? ' CACHE' : ''}: Processing ${numTx} ${side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
+            `${account ? 'CACHE: ' : ''}Processing ${numTx} ${side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
             } transaction${isPlural(numTx)}...`
         );
 
@@ -288,7 +288,7 @@ const getGTokenFromTx = async (result, side, account) => {
             }
         }
         const sided = (side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'
-        showInfo(`${account ? ' CACHE' : ''}: ${result.length} ${sided} transaction${isPlural(numTx)} processed`);
+        showInfo(`${account ? 'CACHE: ' : ''}${result.length} ${sided} transaction${isPlural(numTx)} processed`);
         return result;
     } catch (err) {
         showError('personalUtil.ts->getGTokenFromTx()', `[transfer: ${side}]: ${err}`);
@@ -300,7 +300,7 @@ const getGTokenFromTx = async (result, side, account) => {
 const getAmountFromEvent = async (result, side, account) => {
     try {
         const numTx = result.length;
-        showInfo(`${account ? ' CACHE' : ''}: Processing ${numTx} ${side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
+        showInfo(`${account ? 'CACHE: ' : ''}Processing ${numTx} ${side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
             } transaction${isPlural(numTx)}...`
         );
 
@@ -342,7 +342,7 @@ const getAmountFromEvent = async (result, side, account) => {
             }
         }
         const sided = (side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'
-        showInfo(`${account ? ' CACHE' : ''}: ${result.length} ${sided} transaction${isPlural(numTx)} processed`);
+        showInfo(`${account ? 'CACHE: ' : ''}${result.length} ${sided} transaction${isPlural(numTx)} processed`);
         return result;
     } catch (err) {
         showError('personalUtil.ts->getAmountFromEvent()', `[transfer: ${side}]: ${err}`);

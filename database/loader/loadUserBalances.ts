@@ -11,13 +11,13 @@ import {
     getPowerD,
     getUSDCeVault,
     getUSDCeVault_1_5,
-    getUSDCeVault_1_5_1,
+    getUSDCeVault_1_6,
     getUSDTeVault,
     getUSDTeVault_1_5,
-    getUSDTeVault_1_5_1,
+    getUSDTeVault_1_6,
     getDAIeVault,
     getDAIeVault_1_5,
-    getDAIeVault_1_5_1,
+    getDAIeVault_1_6,
 } from '../common/contractUtil';
 import { QUERY_ERROR } from '../constants';
 import {
@@ -66,9 +66,9 @@ let daie_1_0 = [];
 let usdce_1_5 = [];
 let usdte_1_5 = [];
 let daie_1_5 = [];
-let usdce_1_5_1 = [];
-let usdte_1_5_1 = [];
-let daie_1_5_1 = [];
+let usdce_1_6 = [];
+let usdte_1_6 = [];
+let daie_1_6 = [];
 
 /// @notice Retrieve user balances in a recursive way by batches
 /// @dev    - The amount of users per batch is defined in constant <BATCH>
@@ -78,12 +78,14 @@ let daie_1_5_1 = [];
 /// @param  block The block number to retrieve user balances at
 /// @param  offset The offset to track the start and end position in the users array
 ///         to be processed on each iteration
+/// @account Only used to skip showing logs for cache load
 /// @return An array with 7 fixed subarrays, each of them containing all balances per token
 ///         (gvt, pwrd, gro, gro/gvt, gro/usdc, 3crv, gro/weth)
 const getBalancesSC = async (
     users: string[],
     block: number,
-    offset: number
+    offset: number,
+    account: string,
 ) => {
     try {
         const newOffset = (offset + BATCH >= users.length)
@@ -92,8 +94,10 @@ const getBalancesSC = async (
 
         const userBatch = users.slice(offset, newOffset);
 
-        const desc = `block ${block} for users ${offset} to ${newOffset}...`;
-        showInfo(`Reading balances from TokenCounter() in ${desc}`);
+        if (!account) {
+            const desc = `block ${block} for users ${offset} to ${newOffset}...`;
+            showInfo(`Reading balances from TokenCounter() in ${desc}`);
+        }
 
         const [
             gvtUpdate,
@@ -110,9 +114,9 @@ const getBalancesSC = async (
             usdceUpdate_1_5,
             usdteUpdate_1_5,
             daieUpdate_1_5,
-            usdceUpdate_1_5_1,
-            usdteUpdate_1_5_1,
-            daieUpdate_1_5_1,
+            usdceUpdate_1_6,
+            usdteUpdate_1_6,
+            daieUpdate_1_6,
         ] = await Promise.all([
             getBalances(getGroVault().address, userBatch, block),
             getBalances(getPowerD().address, userBatch, block),
@@ -134,9 +138,9 @@ const getBalancesSC = async (
             multiCall(GN.AVALANCHE, getUSDCeVault_1_5().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
             multiCall(GN.AVALANCHE, getUSDTeVault_1_5().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
             multiCall(GN.AVALANCHE, getDAIeVault_1_5().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
-            multiCall(GN.AVALANCHE, getUSDCeVault_1_5_1().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
-            multiCall(GN.AVALANCHE, getUSDTeVault_1_5_1().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
-            multiCall(GN.AVALANCHE, getDAIeVault_1_5_1().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
+            multiCall(GN.AVALANCHE, getUSDCeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
+            multiCall(GN.AVALANCHE, getUSDTeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
+            multiCall(GN.AVALANCHE, getDAIeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
         ]);
 
         //TODO: careful. Only GVT? what about AVAX?
@@ -155,9 +159,9 @@ const getBalancesSC = async (
             usdce_1_5 = usdceUpdate_1_5;
             usdte_1_5 = usdteUpdate_1_5;
             daie_1_5 = daieUpdate_1_5;
-            usdce_1_5_1 = usdceUpdate_1_5_1;
-            usdte_1_5_1 = usdteUpdate_1_5_1;
-            daie_1_5_1 = daieUpdate_1_5_1;
+            usdce_1_6 = usdceUpdate_1_6;
+            usdte_1_6 = usdteUpdate_1_6;
+            daie_1_6 = daieUpdate_1_6;
         } else {
             gvt[0].amount_unstaked.push(...gvtUpdate[0].amount_unstaked);
             gvt[1].amount_staked.push(...gvtUpdate[1].amount_staked);
@@ -198,9 +202,9 @@ const getBalancesSC = async (
             usdce_1_5.push(...usdceUpdate_1_5);
             usdte_1_5.push(...usdteUpdate_1_5);
             daie_1_5.push(...daieUpdate_1_5);
-            usdce_1_5_1.push(...usdceUpdate_1_5_1);
-            usdte_1_5_1.push(...usdteUpdate_1_5_1);
-            daie_1_5_1.push(...daieUpdate_1_5_1);
+            usdce_1_6.push(...usdceUpdate_1_6);
+            usdte_1_6.push(...usdteUpdate_1_6);
+            daie_1_6.push(...daieUpdate_1_6);
         }
 
         return (newOffset >= users.length)
@@ -219,11 +223,11 @@ const getBalancesSC = async (
                 usdce_1_5: usdce_1_5,
                 usdte_1_5: usdte_1_5,
                 daie_1_5: daie_1_5,
-                usdce_1_5_1: usdce_1_5_1,
-                usdte_1_5_1: usdte_1_5_1,
-                daie_1_5_1: daie_1_5_1,
+                usdce_1_6: usdce_1_6,
+                usdte_1_6: usdte_1_6,
+                daie_1_6: daie_1_6,
             }
-            : getBalancesSC(users, block, newOffset);
+            : getBalancesSC(users, block, newOffset, account);
 
     } catch (err) {
         showError('loadUserBalances.ts->getBalancesSC()', err);
@@ -273,9 +277,9 @@ const insertBalances = async (
                 res.lpGroWeth[1].amount_staked_lp[i],   // pool5 - staked lp
                 res.lpGroWeth[2].lp_position[i][0],     // pool5 - staked gro
                 res.lpGroWeth[2].lp_position[i][1],     // pool5 - staked weth
-                res.usdce_1_0[i] + res.usdce_1_5[i] + res.usdce_1_5_1[i],
-                res.usdte_1_0[i] + res.usdte_1_5[i] + res.usdte_1_5_1[i],
-                res.daie_1_0[i] + res.daie_1_5[i] + res.daie_1_5_1[i],
+                res.usdce_1_0[i] + res.usdce_1_5[i] + res.usdce_1_6[i],
+                res.usdte_1_0[i] + res.usdte_1_5[i] + res.usdte_1_6[i],
+                res.daie_1_0[i] + res.daie_1_5[i] + res.daie_1_6[i],
                 moment.utc(),
             ];
 
@@ -358,22 +362,10 @@ const cleanseVars = () => {
     usdce_1_5 = [];
     usdte_1_5 = [];
     daie_1_5 = [];
-    usdce_1_5_1 = [];
-    usdte_1_5_1 = [];
-    daie_1_5_1 = [];
+    usdce_1_6 = [];
+    usdte_1_6 = [];
+    daie_1_6 = [];
     rowCount = 0;
-}
-
-/// @notice Show message logs after successful loads
-const showMsg = (
-    account: string,
-    date: string,
-    table: string
-) => {
-    let msg3 = `${account ? 'CACHE: ' : ''}${rowCount} record${isPlural(rowCount)} `;
-    msg3 += `added into ${table} `;
-    msg3 += `for date ${moment(date).format('DD/MM/YYYY')}`;
-    showInfo(msg3);
 }
 
 /// @notice Load user balances into USER_STD_FACT_BALANCES* tables
@@ -417,7 +409,8 @@ const loadUserBalances = async (
 
         }
 
-        showInfo(`${account ? 'CACHE: ' : ''}Processing ${users.length} user balance${isPlural(users.length)}...`);
+        if (!account)
+            showInfo(`Processing ${users.length} user balance${isPlural(users.length)}...`);
 
         for (const date of dates) {
 
@@ -434,7 +427,7 @@ const loadUserBalances = async (
             const block = (await findBlockByDate(day, false)).block;
 
             // Retrieve balances from the SC
-            const result = await getBalancesSC(users, block, 0);
+            const result = await getBalancesSC(users, block, 0, account);
             if (!result)
                 showError(
                     'loadUserBalances.ts->loadUserBalances()',
@@ -450,11 +443,13 @@ const loadUserBalances = async (
             }
 
             // Show amount of inserted records
-            const table = (account)
-                ? 'USER_BALANCES_CACHE'
-                : 'USER_BALANCES_SNAPSHOT';
-            showMsg(account, date, table);
-            rowCount = 0;
+            if (!account) {
+                let msg3 = `${rowCount} record${isPlural(rowCount)} `;
+                msg3 += `added into USER_BALANCES_SNAPSHOT `;
+                msg3 += `for date ${moment(date).format('DD/MM/YYYY')}`;
+                showInfo(msg3);
+                rowCount = 0;
+            }
         }
 
         cleanseVars();

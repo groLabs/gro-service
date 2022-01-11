@@ -2,12 +2,13 @@ import express from 'express';
 import { query } from 'express-validator';
 import { validate } from '../../common/validate';
 import { ParameterError } from '../../common/error';
-import { getAllStats } from '../handler/groStatsHandler';
+// import { dumpTable } from '../common/pgUtil';
 import { getAllStatsMC } from '../handler/groStatsHandlerMC';
 import { getPriceCheck } from '../handler/priceCheckHandler';
 import { getHistoricalAPY } from '../handler/historicalAPY';
 import { getPersonalStatsMC } from '../handler/personalStatsHandlerMC';
-// import { dumpTable } from '../common/pgUtil';
+import { etlPersonalStatsCache } from '../etl/etlPersonalStatsCache';
+import { QUERY_ERROR } from '../constants';
 
 
 const router = express.Router();
@@ -17,26 +18,6 @@ const wrapAsync = function wrapAsync(fn) {
         fn(req, res, next).catch(next);
     };
 };
-
-//TODO: to be disabled
-router.get(
-    '/gro_stats',
-    validate([
-        query('network')
-            .trim()
-            .notEmpty()
-            .withMessage(`network can't be empty`),
-    ]),
-    wrapAsync(async (req, res) => {
-        let { network } = req.query;
-        network = network || '';
-        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
-            throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats');
-        }
-        const groStats = await getAllStats();
-        res.json(groStats);
-    })
-);
 
 // E.g.: http://localhost:3010/gro_stats_mc?network=mainnet
 router.get(
@@ -51,14 +32,14 @@ router.get(
         let { network } = req.query;
         network = network || '';
         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
-            throw new ParameterError('Parameter network failed in database.js->router.get->/gro_stats_mc');
+            throw new ParameterError('Parameter network failed in database.ts->router.get->/gro_stats_mc');
         }
         const groStats = await getAllStatsMC();
         res.json(groStats);
     })
 );
 
-// E.g.: http://localhost:3010/database/personal_stats?network=mainnet&address=0x001C249c09090D79Dc350A286247479F08c7aaD7
+// E.g.: http://localhost:3010/database/gro_personal_position_mc?network=mainnet&address=0x001C249c09090D79Dc350A286247479F08c7aaD7
 router.get(
     '/gro_personal_position_mc',
     validate([
@@ -80,9 +61,20 @@ router.get(
         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
             throw new ParameterError(`Parameter network failed in database: ${network.toLowerCase()} vs. ${process.env.NODE_ENV.toLowerCase()}`);
         }
-        console.log('OKI:', network, address);
-        const personalStats = await getPersonalStatsMC(address);
-        res.json(personalStats);
+        const load = await etlPersonalStatsCache(address);
+        if (load) {
+            const personalStats = await getPersonalStatsMC(address);
+            res.json(personalStats);
+        } else {
+            res.json(
+                {
+                    "gro_personal_position_mc": {
+                        status: QUERY_ERROR.toString(),
+                        data: 'Error while processing personalStats cache from DB: see logs in host',
+                    }
+                }
+            );
+        }
     })
 );
 
@@ -138,6 +130,7 @@ router.get(
     })
 );
 
+// Disabled in order to avoid potential security issues
 // router.get(
 //     '/table_dump',
 //     validate([
@@ -162,6 +155,6 @@ router.get(
 //     })
 // );
 
-export default router ;
+export default router;
 
 

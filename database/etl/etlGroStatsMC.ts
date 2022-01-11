@@ -5,7 +5,7 @@ import { checkLastTimestamp } from '../common/protocolUtil';
 import { calcRangeTimestamps } from '../common/globalUtil';
 import { findBlockByDate } from '../common/globalUtil';
 import { QUERY_SUCCESS } from '../constants';
-import { IApiReturn } from '../interfaces';
+import { ICall } from '../interfaces/ICall';
 const route: any = getConfig('route');
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 import {
@@ -29,7 +29,7 @@ const etlGroStatsMC = async () => {
         if (res.status === QUERY_SUCCESS) {
             lastTimestamp = res.rows[0].last_timestamp;
             if (lastTimestamp) {
-                const call: IApiReturn = await apiCaller(options);
+                const call: ICall = await apiCaller(options);
                 if (call.status === QUERY_SUCCESS) {
                     const stats = JSON.parse(call.data);
                     if (stats.gro_stats_mc && 'current_timestamp' in stats.gro_stats_mc) {
@@ -78,7 +78,7 @@ const etlGroStatsHDL = async (
             // @ts-ignore
             const block = (await findBlockByDate(currentTimestamp, true)).block;
             options.path = route.historical_gro_stats.path + `?network=${nodeEnv}&block=${block}&attr=${kpi}`;
-            const call: IApiReturn = await apiCaller(options);
+            const call: ICall = await apiCaller(options);
             if (call.status === QUERY_SUCCESS) {
                 const stats = JSON.parse(call.data);
                 if (stats.historical_gro_stats) {

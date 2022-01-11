@@ -1,30 +1,23 @@
 import { apiCaller } from '../caller/apiCaller';
 import { loadTokenPrice } from '../loader/loadTokenPrice';
-import { IApiReturn } from '../interfaces';
-import {
-    QUERY_ERROR,
-    QUERY_SUCCESS,
-} from '../constants';
+import { ICall } from '../interfaces/ICall';
+import { QUERY_SUCCESS } from '../constants';
 import { showError } from '../handler/logHandler';
-
-const ERROR: IApiReturn = {
-    status: QUERY_ERROR,
-    data: null,
-}
+import { errorObj } from '../common/globalUtil';
 
 
 // Rretrieve token price for a given date via Coingecko API
 const getPriceFromCoingecko = async (
     date: string,
     coin: string,
-): Promise<IApiReturn> => {
+): Promise<ICall> => {
     return new Promise(async (resolve) => {
         try {
             // Transform date 'DD/MM/YYYY' to 'DD-MM-YYYY'
             //const re = new RegExp('/', 'g');
             //const coingeckoDateFormat = date.replace(re, '-');
 
-            // Call API
+            // API details
             const options = {
                 hostname: `api.coingecko.com`,
                 port: 443,
@@ -33,9 +26,8 @@ const getPriceFromCoingecko = async (
                 method: 'GET',
             };
 
-            // Resolve result
-            const call: IApiReturn = await apiCaller(options);
-
+            // Call API
+            const call: ICall = await apiCaller(options);
             if (call.status === QUERY_SUCCESS) {
                 const data = JSON.parse(call.data);
                 if (data[coin]) {
@@ -46,7 +38,7 @@ const getPriceFromCoingecko = async (
                 } else {
                     showError(
                         'etlTokenPrice.ts->getPriceFromCoingecko()',
-                        `No ${coin} token price available from Coingecko for date ${date}`
+                        `No ${coin} token price available from Coingecko`
                     );
                     resolve({
                         status: QUERY_SUCCESS,
@@ -54,19 +46,15 @@ const getPriceFromCoingecko = async (
                     });
                 }
             } else {
-                showError(
-                    'etlTokenPrice.ts->getPriceFromCoingecko()',
-                    `API call to Coingecko for ${coin} token price failed: ${call.data}`
-                );
-                resolve(ERROR);
+                const msg = `API call to Coingecko for ${coin} token price failed: ${call.data}`;
+                showError('etlTokenPrice.ts->getPriceFromCoingecko()', msg);
+                resolve(errorObj(msg));
             }
 
         } catch (err) {
-            showError(
-                'etlTokenPrice.ts->getPriceFromCoingecko()',
-                `Error in etlTokenPrice.ts->getPriceFromCoingecko(): ${err}`
-            );
-            resolve(ERROR);
+            const msg = `Error in etlTokenPrice.ts->getPriceFromCoingecko(): ${err}`;
+            showError('etlTokenPrice.ts->getPriceFromCoingecko()', msg);
+            resolve(errorObj(msg));
         }
     });
 }

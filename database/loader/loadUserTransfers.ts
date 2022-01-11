@@ -6,6 +6,7 @@ import {
     transferType,
 } from '../common/personalUtil';
 import { getTransferEvents } from '../listener/getTransferEvents';
+import { ICall } from '../interfaces/ICall';
 import {
     isPlural,
     getNetwork
@@ -13,7 +14,7 @@ import {
 import { parseTransferEvents2 } from '../parser/personalStatsTransfersParser2';
 import {
     GENESIS,
-    QUERY_ERROR
+    QUERY_ERROR,
 } from '../constants';
 import {
     Transfer,
@@ -54,9 +55,12 @@ const loadUserTransfers = async (
             const res = await query(q, params);
             if (res.status === QUERY_ERROR)
                 return false;
-            const numTransfers = res.rowCount;
-            const table = `added into ${account ? 'USER_TRANSFERS_CACHE' : 'USER_TRANSFERS'}`;
-            showInfo(`${account ? 'CACHE: ' : ''}${numTransfers} record${isPlural(numTransfers)} ${table}`);
+
+            if (!account) {
+                const numTransfers = res.rowCount;
+                const table = `added into ${account ? 'USER_TRANSFERS_CACHE' : 'USER_TRANSFERS'}`;
+                showInfo(`${numTransfers} record${isPlural(numTransfers)} ${table}`);
+            }
         } else {
             return false;
         }
@@ -102,13 +106,15 @@ const loadTmpUserTransfers = async (
         ] = isContractDeployed(network, contractVersion, side, _fromBlock);
 
         if (isDeployed) {
-            const logs = await getTransferEvents(contractVersion, side, fromBlock, toBlock, account);
+            const logs: ICall = await getTransferEvents(contractVersion, side, fromBlock, toBlock, account);
 
-            if (logs && logs.length > 0) {
+            if (logs.status === QUERY_ERROR) {
+                return false;
+            } else if (logs.data.length > 0) {
                 let result = [];
-                for (let i = 0; i < logs.length; i++) {
+                for (let i = 0; i < logs.data.length; i++) {
 
-                    result = await parseTransferEvents2(contractVersion, network, logs[i], side, account);
+                    result = await parseTransferEvents2(contractVersion, network, logs.data[i], side, account);
 
                     // Convert params from object to array
                     let params = [];
@@ -130,14 +136,11 @@ const loadTmpUserTransfers = async (
                         if (!res)
                             return false;
 
-                        showInfo(`${(account) ? 'CACHE: ' : ''}${rows} ${transferType(side)}${isPlural(rows)} added into ${(isInflow(side))
-                            ? (account)
-                                ? 'USER_DEPOSITS_CACHE'
-                                : 'USER_DEPOSITS_TMP'
-                            : (account)
-                                ? 'USER_WITHDRAWALS_CACHE'
+                        if (!account)
+                            showInfo(`${rows} ${transferType(side)}${isPlural(rows)} added into ${(isInflow(side))
+                                ? 'USER_DEPOSITS_TMP'
                                 : 'USER_WITHDRAWALS_TMP'
-                            }`);
+                                }`);
                     }
                 }
             }
@@ -148,7 +151,7 @@ const loadTmpUserTransfers = async (
                     ? 'Vault 1.0'
                     : contractVersion === ContractVersion.VAULT_1_5
                         ? 'Vault 1.5'
-                        : contractVersion === ContractVersion.VAULT_1_5_1
+                        : contractVersion === ContractVersion.VAULT_1_6
                             ? 'Vault 1.5.1'
                             : ''} -> No data load required`);
         }
@@ -237,11 +240,11 @@ const isContractDeployed = (
                 GENESIS.AVALANCHE.VAULTS_1_5_START_OF_DAY_BLOCK,
                 GENESIS.AVALANCHE.VAULT_USDT_1_5_DEPLOYMENT_BLOCK,
             );
-        else if (contractVersion === ContractVersion.VAULT_1_5_1)
+        else if (contractVersion === ContractVersion.VAULT_1_6)
             return checkGenesisDate(
                 block,
-                GENESIS.AVALANCHE.VAULTS_1_5_1_START_OF_DAY_BLOCK,
-                GENESIS.AVALANCHE.VAULT_USDT_1_5_1_DEPLOYMENT_BLOCK,
+                GENESIS.AVALANCHE.VAULTS_1_6_START_OF_DAY_BLOCK,
+                GENESIS.AVALANCHE.VAULT_USDT_1_6_DEPLOYMENT_BLOCK,
             );
         else {
             showError(
