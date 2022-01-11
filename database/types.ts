@@ -34,7 +34,6 @@ enum SqlCommand {
     VIEW = 'view', // TODO: To be deleted, not used
 }
 
-//TODO: TokenName
 enum TokenName {
     PWRD = 'pwrd',
     GVT = 'gvt',

@@ -3,7 +3,7 @@ import { loadEthBlocks } from './loadEthBlocks';
 import { loadTableUpdates } from './loadTableUpdates';
 import { isPlural } from '../common/globalUtil';
 import { getApprovalEvents } from '../listener/getApprovalEvents';
-import { parseApprovalEvents } from '../parser/personalStatsParser';
+import { parseApprovalEvents } from '../parser/personalStatsApprovalsParser';
 import { QUERY_ERROR } from '../constants';
 import { GlobalNetwork } from '../types';
 import {

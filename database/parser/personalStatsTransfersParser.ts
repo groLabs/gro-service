@@ -110,12 +110,12 @@ const getGroups = (side: Transfer): boolean[] => {
             isGRO,
         ];
     } catch (err) {
-        showError('personalStatsTransfersParser2.ts->getGroups()', err);
+        showError('personalStatsTransfersParser.ts->getGroups()', err);
         return [];
     }
 }
 
-const parseTransferEvents2 = async (
+const personalStatsTransfersParser = async (
     contractVersion: ContractVersion,
     globalNetwork: GlobalNetwork,
     logs,
@@ -136,17 +136,17 @@ const parseTransferEvents2 = async (
             const tokenId = getTokenIds(side, log, isUSDCe, isUSDTe, isDAIe, isGRO);
 
             // For direct transfers -> Transfer.value
-            // For deposits & withdrawals on USDCe, USDTe, DAIe -> LogDeposit._amount, LogWithdrawal._amount
             // For deposits & withdrawals on GVT & PWRD -> calculated afterwards thru func getAmountFromEvent()
+            // For deposits & withdrawals on USDCe, USDTe, DAIe -> LogDeposit.shares, LogWithdrawal.shares
             const amount =
                 side === Transfer.DEPOSIT_USDCe || side === Transfer.DEPOSIT_USDTe
-                    ? parseAmount(log.args[1], Base.D6)
+                    ? parseAmount(log.args[2], Base.D6)
                     : side === Transfer.DEPOSIT_DAIe
-                        ? parseAmount(log.args[1], Base.D18)
+                        ? parseAmount(log.args[2], Base.D18)
                         : side === Transfer.WITHDRAWAL_USDCe || side === Transfer.WITHDRAWAL_USDTe
-                            ? -parseAmount(log.args[1], Base.D6)
+                            ? -parseAmount(log.args[2], Base.D6)
                             : side === Transfer.WITHDRAWAL_DAIe
-                                ? -parseAmount(log.args[1], Base.D18)
+                                ? -parseAmount(log.args[2], Base.D18)
                                 : isInflow(side)
                                     ? parseAmount(log.args[2], Base.D18)
                                     : isOutflow(side)
@@ -155,19 +155,21 @@ const parseTransferEvents2 = async (
 
 
             // For direct transfers -> value is calculated afterwards
+            // For deposits & withdrawals on GVT & PWRD -> LogNewDeposit.usdAmount, LogNewWithdrawal.returnUsd
+            // For deposits & withdrawals on USDCe, USDTe, DAIe -> LogDeposit._amount, LogWithdrawal._amount
             const value =
                 side === Transfer.DEPOSIT
-                    ? parseAmount(log.args[3], Base.D18) // LogNewDeposit.usdAmount
+                    ? parseAmount(log.args[3], Base.D18)
                     : side === Transfer.WITHDRAWAL
-                        ? -parseAmount(log.args[6], Base.D18) // LogNewWithdrawal.returnUsd;
+                        ? -parseAmount(log.args[6], Base.D18)
                         : side === Transfer.DEPOSIT_USDCe || side === Transfer.DEPOSIT_USDTe
-                            ? parseAmount(log.args[2], Base.D6)
+                            ? parseAmount(log.args[1], Base.D6)
                             : side === Transfer.DEPOSIT_DAIe
-                                ? parseAmount(log.args[2], Base.D18)
+                                ? parseAmount(log.args[1], Base.D18)
                                 : side === Transfer.WITHDRAWAL_USDCe || side === Transfer.WITHDRAWAL_USDTe
-                                    ? -parseAmount(log.args[2], Base.D6)
+                                    ? -parseAmount(log.args[1], Base.D6)
                                     : side === Transfer.WITHDRAWAL_DAIe
-                                        ? -parseAmount(log.args[2], Base.D18)
+                                        ? -parseAmount(log.args[1], Base.D18)
                                         : 0;
 
             const userAddress = isDepositOrWithdrawal(side)
@@ -290,12 +292,12 @@ const parseTransferEvents2 = async (
 
     } catch (err) {
         showError(
-            'personalStatsTransfersParser2.ts->parseTransferEvents2()',
+            'personalStatsTransfersParser.ts->personalStatsTransfersParser()',
             `[side: ${side}]: ${err}`,
         );
     }
 };
 
 export {
-    parseTransferEvents2,
+    personalStatsTransfersParser,
 };

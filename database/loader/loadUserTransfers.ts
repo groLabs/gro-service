@@ -11,7 +11,7 @@ import {
     isPlural,
     getNetwork
 } from '../common/globalUtil'
-import { parseTransferEvents2 } from '../parser/personalStatsTransfersParser2';
+import { personalStatsTransfersParser } from '../parser/personalStatsTransfersParser';
 import {
     GENESIS,
     QUERY_ERROR,
@@ -114,7 +114,7 @@ const loadTmpUserTransfers = async (
                 let result = [];
                 for (let i = 0; i < logs.data.length; i++) {
 
-                    result = await parseTransferEvents2(contractVersion, network, logs.data[i], side, account);
+                    result = await personalStatsTransfersParser(contractVersion, network, logs.data[i], side, account);
 
                     // Convert params from object to array
                     let params = [];
@@ -152,7 +152,7 @@ const loadTmpUserTransfers = async (
                     : contractVersion === ContractVersion.VAULT_1_5
                         ? 'Vault 1.5'
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? 'Vault 1.5.1'
+                            ? 'Vault 1.6'
                             : ''} -> No data load required`);
         }
         return true;
