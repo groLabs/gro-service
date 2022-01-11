@@ -189,8 +189,7 @@ function getContractInfosByAddresses(contractName, handlerHistories) {
 }
 
 async function getStableCoinsInfo() {
-    const keys = Object.keys(stableCoinsInfo);
-    if (!keys.length) {
+    if (!stableCoinsInfo.decimals) {
         stableCoinsInfo.decimals = {};
         stableCoinsInfo.symbols = {};
         const coins = await getStableCoins();
@@ -508,7 +507,7 @@ async function getGTokenUSDAmount(tokenAddress, share) {
     if (groVault.address === tokenAddress) {
         usdAmount = await groVault.getShareAssets(share).catch((error) => {
             logger.error(error);
-            return 0;
+            return share;
         });
     } else {
         usdAmount = share;
@@ -610,6 +609,7 @@ async function getApprovalHistoryies(account, depositEventHashs) {
     const result = [];
     const gtokenAproval = [];
     const usdAmoutPromise = [];
+    const usdAmountDecimals = [];
     const buoy = getLatestSystemContract(
         ContractNames.buoy3Pool,
         providerKey
@@ -620,6 +620,7 @@ async function getApprovalHistoryies(account, depositEventHashs) {
         const decimal = stableCoinInfo.decimals[address];
         if (!depositEventHashs.includes(transactionHash)) {
             const tokenSymbio = stableCoinInfo.symbols[address];
+            usdAmountDecimals.push(decimal);
             const isGTokenFlag = isGToken(tokenSymbio);
             if (isGTokenFlag) {
                 gtokenAproval.push(transactionHash);
@@ -651,7 +652,7 @@ async function getApprovalHistoryies(account, depositEventHashs) {
                 // );
                 usdAmoutPromise.push(
                     new Promise((resolve, reject) => {
-                        resolve(BigNumber.from('1000000000000000000'));
+                        resolve(args[2]);
                     })
                 );
             }
@@ -665,7 +666,11 @@ async function getApprovalHistoryies(account, depositEventHashs) {
         );
     });
     for (let i = 0; i < result.length; i += 1) {
-        result[i].usd_amount = div(usdAmoutResult[i], new BN(10).pow(18), 2);
+        result[i].usd_amount = div(
+            usdAmoutResult[i],
+            new BN(10).pow(usdAmountDecimals[i]),
+            2
+        );
     }
     return { approvalEvents: result, gtokenApprovalTxn: gtokenAproval };
 }

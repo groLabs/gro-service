@@ -67,7 +67,7 @@
             "active": true
         },
         "PowerDollar": {
-            "address": "0xf0a93d4994b3d98fb5e3a2f90dbc2d69073cb86b",
+            "address": "0xF0a93d4994B3d98Fb5e3A2F90dBc2d69073Cb86b",
             "deployedBlock": 12522721,
             "startBlock": 12522788,
             "abiVersion": "21ac80a",
@@ -139,9 +139,9 @@
             "active": true
         },
         "Buoy3Pool": {
-            "address": "0xbF8C81B2977B10F13A4AC542e72969a6E123f5fE",
-            "deployedBlock": 13303492,
-            "startBlock": 13304056,
+            "address": "0x7D17C9b9B154B1b31ADD5115f5F519eC50A59421",
+            "deployedBlock": 13874027,
+            "startBlock": 13874051,
             "abiVersion": "fa8e260",
             "tag": "Core",
             "tokens": [],
@@ -151,9 +151,9 @@
             "active": true
         },
         "Lifeguard": {
-            "address": "0x5D3Ab53b6B66f86bbFaBC2A58c0F26Ea7dFB8126",
-            "deployedBlock": 13303495,
-            "startBlock": 12836674,
+            "address": "0xc118F2EB1291F9bc0c2a4C2d61b59f1785b047B5",
+            "deployedBlock": 13874034,
+            "startBlock": 13874051,
             "abiVersion": "ce7b149",
             "tag": "Core",
             "tokens": [],
@@ -825,7 +825,7 @@
         ],
         "PowerDollar": [
             {
-                "address": "0xf0a93d4994b3d98fb5e3a2f90dbc2d69073cb86b",
+                "address": "0xF0a93d4994B3d98Fb5e3A2F90dBc2d69073Cb86b",
                 "deployedBlock": 12522721,
                 "startBlock": 12522788,
                 "endBlock": null,
@@ -1081,12 +1081,25 @@
                 "protocols": [],
                 "protocolsDisplayName": [],
                 "metaData": {},
-                "active": true
+                "active": false
             },
             {
                 "address": "0xbF8C81B2977B10F13A4AC542e72969a6E123f5fE",
                 "deployedBlock": 13303492,
                 "startBlock": 13304056,
+                "endBlock": 13874027,
+                "abiVersion": "fa8e260",
+                "tag": "Core",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0x7D17C9b9B154B1b31ADD5115f5F519eC50A59421",
+                "deployedBlock": 13874027,
+                "startBlock": 13874051,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Core",
@@ -1135,12 +1148,27 @@
                 "protocols": [],
                 "protocolsDisplayName": [],
                 "metaData": {},
-                "active": true
+                "active": false
             },
             {
                 "address": "0x5D3Ab53b6B66f86bbFaBC2A58c0F26Ea7dFB8126",
                 "deployedBlock": 13303495,
                 "startBlock": 13303496,
+                "endBlock": 13874034,
+                "abiVersion": "ce7b149",
+                "tag": "Core",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {
+                    "N": "3CRV"
+                },
+                "active": false
+            },
+            {
+                "address": "0xc118F2EB1291F9bc0c2a4C2d61b59f1785b047B5",
+                "deployedBlock": 13874034,
+                "startBlock": 13874051,
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Core",
