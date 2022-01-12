@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import { query } from '../handler/queryHandler';
 import {
     isPlural,
+    errorObj,
     getProvider
 } from './globalUtil';
 import {
@@ -15,6 +16,8 @@ import {
     showError,
     showWarning,
 } from '../handler/logHandler';
+import { ICall } from '../interfaces/ICall';
+import { QUERY_SUCCESS } from '../../lbp/constants';
 
 const ZERO_ADDRESS =
     '0x0000000000000000000000000000000000000000000000000000000000000000';
@@ -191,24 +194,30 @@ const generateDateRange = (
 };
 
 /// @notice Calculate the start and end date to load personal stats based on the last
-///         successful load
-/// @dev    - personal stats are only loaded when a day is completed, so the latest
-///         possible day to be loaded will always D-1 (yesterday), but never the current day
-///         - Last successful load is retrieved from table SYS_USER_LOADS
-/// @return An array with the start and end date to load personal stats
-///         eg: ['21/10/2021', '24/10/2021']
-const calcLoadingDateRange = async () => {
+///         successful load from SYS_USER_LOADS
+/// @dev    personal stats are only loaded when a day is completed, so the latest
+///         possible day to load will always be D-1 (yesterday), never current day
+/// @return An array with the start and end date in format 'DD/MM/YYYY' to load personal stats
+///         eg: If today is 25/10/2021 and the last personal stats load was on 20/10/2021,
+///         the result will be ['21/10/2021', '24/10/2021']
+const calcLoadingDateRange = async (): Promise<string[]> => {
     try {
         const res = await query('select_last_user_load.sql', []);
-        if (res.status === QUERY_ERROR || res.rows.length === 0 || !res.rows[0].max_user_date) {
-            if (res.rows.length === 0 || !res.rows[0].max_user_date)
-                showError(
-                    'personalUtils.ts->calcLoadingDateRange()',
-                    'No dates found in DB to load personal stats'
-                );
+        if (res.status === QUERY_ERROR) {
+            showError(
+                'personalUtils.ts->calcLoadingDateRange()',
+                'Error when querying latest successful load'
+            );
+            return [];
+        } else if (res.rows.length === 0
+            || !res.rows[0].max_user_date) {
+            showError(
+                'personalUtils.ts->calcLoadingDateRange()',
+                'No dates found in DB to load personal stats'
+            );
             return [];
         } else {
-            const lastLoad = moment
+            const nextDayAfterLastLoad = moment
                 .utc(res.rows[0].max_user_date)
                 .add(1, 'days')
                 .set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
@@ -216,9 +225,9 @@ const calcLoadingDateRange = async () => {
                 .utc()
                 .subtract(1, 'days')
                 .set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-            return (yesterday.diff(lastLoad, 'days') >= 0)
+            return (yesterday.diff(nextDayAfterLastLoad, 'days') >= 0)
                 ? [
-                    lastLoad.format('DD/MM/YYYY'),
+                    nextDayAfterLastLoad.format('DD/MM/YYYY'),
                     yesterday.format('DD/MM/YYYY')
                 ]
                 : [];
@@ -229,75 +238,11 @@ const calcLoadingDateRange = async () => {
     }
 }
 
-//TODO: replaced by getAmountFromEvent()
-const getGTokenFromTx = async (result, side, account) => {
-    try {
-        const numTx = result.length;
-        showInfo(
-            `${account ? 'CACHE: ' : ''}Processing ${numTx} ${side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
-            } transaction${isPlural(numTx)}...`
-        );
-
-        // Interface for ERC20 token transfer
-        const iface = new ethers.utils.Interface([
-            'event Transfer(address indexed from, address indexed to, uint256 amount)',
-        ]);
-
-        // For all transactions -> for all logs -> retrieve GToken
-        for (const item of result) {
-            const txReceipt = await getProvider()
-                .getTransactionReceipt(item.tx_hash)
-                .catch((err) => {
-                    console.log(err);
-                });
-
-            for (const log of txReceipt.logs) {
-                // Only when signature is an ERC20 transfer: `Transfer(address from, address to, uint256 value)`
-                if (log.topics[0] === ERC20_TRANSFER_SIGNATURE) {
-
-                    const index = (side === Transfer.DEPOSIT)
-                        ? 1     // from is 0x0
-                        : 2;    // to is 0x0
-
-                    // Only when a token is minted (from: 0x) or burnt (to: 0x)
-                    if (log.topics[index] === ZERO_ADDRESS) {
-                        const data = log.data;
-                        const topics = log.topics;
-                        const output = iface.parseLog({ data, topics });
-
-                        // Update result array with the correct GVT or PWRD amount
-                        if (item.gvt_amount !== 0) {
-                            item.gvt_amount = parseFloat(
-                                ethers.utils.formatEther(output.args[2])
-                            );
-                            item.gvt_amount =
-                                side === Transfer.DEPOSIT
-                                    ? item.gvt_amount
-                                    : -item.gvt_amount;
-                        } else {
-                            item.pwrd_amount = parseFloat(
-                                ethers.utils.formatEther(output.args[2])
-                            );
-                            item.pwrd_amount =
-                                side === Transfer.DEPOSIT
-                                    ? item.pwrd_amount
-                                    : -item.pwrd_amount;
-                        }
-                    }
-                }
-            }
-        }
-        const sided = (side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'
-        showInfo(`${account ? 'CACHE: ' : ''}${result.length} ${sided} transaction${isPlural(numTx)} processed`);
-        return result;
-    } catch (err) {
-        showError('personalUtil.ts->getGTokenFromTx()', `[transfer: ${side}]: ${err}`);
-        return [];
-    }
-};
-
-// replacing getGTokenFromTx()
-const getAmountFromEvent = async (result, side, account) => {
+const getAmountFromEvent = async (
+    result: any,
+    side: Transfer,
+    account: string,
+): Promise<ICall> => {
     try {
         const numTx = result.length;
         showInfo(`${account ? 'CACHE: ' : ''}Processing ${numTx} ${side === Transfer.DEPOSIT ? 'deposit' : 'withdrawal'
@@ -314,7 +259,11 @@ const getAmountFromEvent = async (result, side, account) => {
             const txReceipt = await getProvider()
                 .getTransactionReceipt(item.tx_hash)
                 .catch((err) => {
-                    console.log(err);
+                    showError(
+                        'personalUtil.ts->getAmountFromEvent()->getTransactionReceipt',
+                        `[transfer: ${side}]: ${err}`
+                    );
+                    return errorObj(`[transfer: ${side}]: ${err}`);
                 });
 
             for (const log of txReceipt.logs) {
@@ -343,10 +292,13 @@ const getAmountFromEvent = async (result, side, account) => {
         }
         const sided = (side === Transfer.DEPOSIT) ? 'deposit' : 'withdrawal'
         showInfo(`${account ? 'CACHE: ' : ''}${result.length} ${sided} transaction${isPlural(numTx)} processed`);
-        return result;
+        return {
+            status: QUERY_SUCCESS,
+            data: result,
+        };
     } catch (err) {
         showError('personalUtil.ts->getAmountFromEvent()', `[transfer: ${side}]: ${err}`);
-        return [];
+        return errorObj(`[transfer: ${side}]: ${err}`);
     }
 };
 
@@ -355,7 +307,6 @@ export {
     generateDateRange,
     calcLoadingDateRange,
     getAmountFromEvent,
-    getGTokenFromTx,
     isInflow,
     isOutflow,
     isDepositOrWithdrawal,

@@ -106,19 +106,32 @@ const loadTmpUserTransfers = async (
         ] = isContractDeployed(network, contractVersion, side, _fromBlock);
 
         if (isDeployed) {
-            const logs: ICall = await getTransferEvents(contractVersion, side, fromBlock, toBlock, account);
+            const logs: ICall = await getTransferEvents(
+                contractVersion,
+                side,
+                fromBlock,
+                toBlock,
+                account
+            );
 
             if (logs.status === QUERY_ERROR) {
                 return false;
             } else if (logs.data.length > 0) {
-                let result = [];
                 for (let i = 0; i < logs.data.length; i++) {
 
-                    result = await personalStatsTransfersParser(contractVersion, network, logs.data[i], side, account);
+                    const result: ICall = await personalStatsTransfersParser(
+                        contractVersion,
+                        network,
+                        logs.data[i],
+                        side,
+                        account
+                    );
+                    if (result.status === QUERY_ERROR)
+                        return false;
 
                     // Convert params from object to array
                     let params = [];
-                    for (const item of result)
+                    for (const item of result.data)
                         params.push(Object.values(item));
 
                     if (params.length > 0) {

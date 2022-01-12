@@ -148,7 +148,7 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
         // await isContract();
 
         // Multicall
-        await runTest();
+        // await runTest();
 
         // Testing groStats
         // await etlGroStats();

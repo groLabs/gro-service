@@ -148,38 +148,3 @@ CREATE TABLE gro."USER_BALANCES_SNAPSHOT" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."USER_BALANCES_SNAPSHOT" OWNER to postgres;
-
-CREATE TABLE gro."USER_NET_RETURNS" (
-    "balance_date" TIMESTAMP (6) NOT NULL,
-    "network_id" INTEGER NULL,
-    "user_address" CHARACTER VARYING (42) NOT NULL,
-    "total_unstaked_value" NUMERIC (20, 8) NULL,
-    "pwrd_unstaked_value" NUMERIC (20, 8) NULL,
-    "gvt_unstaked_value" NUMERIC (20, 8) NULL,
-    "usdc_e_value" NUMERIC (20,8) NULL,
-    "usdt_e_value" NUMERIC (20,8) NULL,
-    "dai_e_value" NUMERIC (20,8) NULL,
-    "creation_date" TIMESTAMP (6) NULL,
-    CONSTRAINT "USER_NET_RETURNS_pkey"
-        PRIMARY KEY (balance_date, network_id, user_address) 
-        NOT DEFERRABLE INITIALLY IMMEDIATE
-) WITH (OIDS = FALSE);
-
-ALTER TABLE gro."USER_NET_RETURNS" OWNER to postgres;
-
-/*
-CREATE OR REPLACE VIEW gro."USER_STD_FACT_V_BALANCES" AS
-SELECT bal."balance_date",
-    bal."user_address",
-    bal."network_id",
-    bal."gvt_unstaked_amount" as "gvt_unstaked_amount",
-    bal."pwrd_unstaked_amount" as "pwrd_unstaked_amount",
-    bal."gro_unstaked_amount" as "gro_unstaked_amount",
-    bal."gvt_unstaked_amount" * pri."gvt_value" as "gvt_unstaked_value",
-    bal."pwrd_unstaked_amount" * pri."pwrd_value" as "pwrd_unstaked_value",
-    bal."gro_unstaked_amount" * pri."gro_value" as "gro_unstaked_value"
-FROM gro."USER_STD_FACT_BALANCES" bal
-    LEFT JOIN gro."TOKEN_PRICE" pri ON bal."balance_date" = pri."price_date";
-
-ALTER VIEW gro."USER_STD_FACT_V_BALANCES" OWNER to postgres;
-*/

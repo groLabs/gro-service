@@ -1,5 +1,6 @@
 import moment from 'moment';
 import {
+    errorObj,
     parseAmount,
     getNetwork,
 } from '../common/globalUtil';
@@ -30,6 +31,8 @@ import {
     ContractVersion,
 } from '../types';
 import { showError } from '../handler/logHandler';
+import { ICall } from '../interfaces/ICall';
+import { QUERY_ERROR, QUERY_SUCCESS } from '../constants';
 
 
 const getTokenIds = (
@@ -118,10 +121,10 @@ const getGroups = (side: Transfer): boolean[] => {
 const personalStatsTransfersParser = async (
     contractVersion: ContractVersion,
     globalNetwork: GlobalNetwork,
-    logs,
+    logs: any,
     side: Transfer,
     account: string,
-) => {
+): Promise<ICall> => {
     try {
         let result = [];
         const [
@@ -200,7 +203,12 @@ const personalStatsTransfersParser = async (
         if (side === Transfer.DEPOSIT
             || side === Transfer.WITHDRAWAL) {
             // Calc GVT or PWRD amounts from TRANSFER events for deposits or withdrawals
-            result = await getAmountFromEvent(result, side, account);
+             const amounts = await getAmountFromEvent(result, side, account);
+             if (amounts.status === QUERY_ERROR) {
+                return errorObj(amounts.data);
+             } else {
+                result = amounts.data;
+             }
         } else if (
             side === Transfer.TRANSFER_GVT_OUT
             || side === Transfer.TRANSFER_GVT_IN) {
@@ -288,13 +296,15 @@ const personalStatsTransfersParser = async (
             }
         }
 
-        return result;
+        return {
+            status: QUERY_SUCCESS,
+            data: result,
+        };
 
     } catch (err) {
-        showError(
-            'personalStatsTransfersParser.ts->personalStatsTransfersParser()',
-            `[side: ${side}]: ${err}`,
-        );
+        const msg = `[side: ${side}]: ${err}`;
+        showError('personalStatsTransfersParser.ts->personalStatsTransfersParser()', msg);
+        return errorObj(msg);
     }
 };
 
