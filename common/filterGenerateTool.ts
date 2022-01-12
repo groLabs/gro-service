@@ -1,12 +1,27 @@
 //@ts-nocheck
 import { ethers } from 'ethers';
 import { ContractNames } from '../registry/registry';
-import { getContractsHistory, getLatestContractsAddress } from '../registry/registryLoader';
+import {
+    getContractsHistory,
+    getLatestContractsAddress,
+} from '../registry/registryLoader';
 import { newLatestContract, newContract } from '../registry/contracts';
 import { getAlchemyRpcProvider } from './chainUtil';
 
 const stableCoins = [];
+const contractStorage = {};
 const erc20ABI = require('../abi/ERC20.json');
+
+function getContract(contractName, contractInfo, providerKey) {
+    const { address } = contractInfo;
+    if (!contractStorage[address]) {
+        const { contract } = newContract(contractName, contractInfo, {
+            providerKey,
+        });
+        contractStorage[address] = contract;
+    }
+    return contractStorage[address];
+}
 
 function getLatestContractEventFilter(
     providerKey = 'default',
@@ -16,7 +31,8 @@ function getLatestContractEventFilter(
     toBlock = 'latest',
     filterParams = []
 ) {
-    const { contract } = newLatestContract(contractName, { providerKey });
+    const contractInfo = getLatestContractsAddress()[contractName];
+    const contract = getContract(contractName, contractInfo, providerKey);
     const filter = contract.filters[eventName](...filterParams);
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
@@ -36,9 +52,7 @@ function getContractHistoryEventFilters(
     for (let i = 0; i < contractHistory.length; i += 1) {
         const contractInfo = contractHistory[i];
         const { startBlock } = contractInfo;
-        const { contract } = newContract(contractName, contractInfo, {
-            providerKey,
-        });
+        const contract = getContract(contractName, contractInfo, providerKey);
         fromBlock = startBlock > fromBlock ? startBlock : fromBlock;
         const filter = contract.filters[eventName](...filterParams);
         filter.fromBlock = fromBlock;
@@ -91,28 +105,33 @@ async function getCoinApprovalFilters(
     }
 
     // gtoken approve filter
-    const groVault = newLatestContract(ContractNames.groVault, {
-        providerKey,
-    }).contract;
     const groVaultContractInfo =
         getLatestContractsAddress()[ContractNames.groVault];
+    const groVault = getContract(
+        ContractNames.groVault,
+        groVaultContractInfo,
+        providerKey
+    );
     const groVaultApprovalFilter = groVault.filters.Approval(account, null);
     groVaultApprovalFilter.fromBlock = fromBlock;
-    groVaultContractInfo.toBlock = toBlock;
+    groVaultApprovalFilter.toBlock = toBlock;
     filters.push({
         filter: groVaultApprovalFilter,
-        interface: groVaultApprovalFilter.interface,
+        interface: groVault.interface,
     });
 
-    const pwrd = newLatestContract(ContractNames.powerD, {
-        providerKey,
-    }).contract;
+    const pwrdContractInfo = getLatestContractsAddress()[ContractNames.powerD];
+    const pwrd = getContract(
+        ContractNames.powerD,
+        pwrdContractInfo,
+        providerKey
+    );
     const pwrdApprovalFilter = pwrd.filters.Approval(account, null);
     pwrdApprovalFilter.fromBlock = fromBlock;
     pwrdApprovalFilter.toBlock = toBlock;
     filters.push({
         filter: pwrdApprovalFilter,
-        interface: pwrdApprovalFilter.interface,
+        interface: pwrd.interface,
     });
 
     return filters;
