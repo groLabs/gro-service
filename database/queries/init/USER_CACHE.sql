@@ -86,7 +86,6 @@ CREATE TABLE gro."USER_WITHDRAWALS_CACHE" (
 
 ALTER TABLE gro."USER_WITHDRAWALS_CACHE" OWNER to postgres;
 
---intended to do on-demand extractions at a specific date & time
 CREATE TABLE gro."USER_BALANCES_CACHE" (
     "balance_date" TIMESTAMP (6) NOT NULL,
     "network_id" INTEGER NULL,
@@ -96,9 +95,6 @@ CREATE TABLE gro."USER_BALANCES_CACHE" (
     "pwrd_unstaked_amount" NUMERIC (20, 8) NULL,
     "gro_unstaked_amount" NUMERIC (20, 8) NULL,
     "gro_total_amount" NUMERIC (20, 8) NULL,          -- GRO unstaked, staked, vesting, vested, in pools
-    "usdc_e_amount" NUMERIC (20,8) NULL,              -- USDC in AH2 on AVAX
-    "usdt_e_amount" NUMERIC (20,8) NULL,              -- USDT in AH2 on AVAX
-    "dai_e_amount" NUMERIC (20,8) NULL,               -- DAI in AH2 on AVAX
     "pool0_lp_staked_amount" NUMERIC (20, 8) NULL,    -- GRO 100% in MC
     "pool1_lp_pooled_amount" NUMERIC (20, 8) NULL,    -- LP GVT 50% / GRO 50% in pool
     "pool1_lp_staked_amount" NUMERIC (20, 8) NULL,    -- LP GVT 50% / GRO 50% in MC
@@ -116,6 +112,15 @@ CREATE TABLE gro."USER_BALANCES_CACHE" (
     "pool5_lp_staked_amount" NUMERIC (20, 8) NULL,    -- LP GRO 80% / WETH 20% in MC
     "pool5_gro_amount" NUMERIC (20, 8) NULL,          -- GRO
     "pool5_weth_amount" NUMERIC (20, 8) NULL,         -- WETH
+    "usdc_e_1_0_amount" NUMERIC (20,8) NULL,          -- USDC in AVAX Vault 1.0
+    "usdt_e_1_0_amount" NUMERIC (20,8) NULL,          -- USDT in AVAX Vault 1.0
+    "dai_e_1_0_amount" NUMERIC (20,8) NULL,           -- DAI in AVAX Vault 1.0
+    "usdc_e_1_5_amount" NUMERIC (20,8) NULL,          -- USDC in AVAX Vault 1.5
+    "usdt_e_1_5_amount" NUMERIC (20,8) NULL,          -- USDT in AVAX Vault 1.5
+    "dai_e_1_5_amount" NUMERIC (20,8) NULL,           -- DAI in AVAX Vault 1.5
+    "usdc_e_1_6_amount" NUMERIC (20,8) NULL,          -- USDC in AVAX Vault 1.6
+    "usdt_e_1_6_amount" NUMERIC (20,8) NULL,          -- USDT in AVAX Vault 1.6
+    "dai_e_1_6_amount" NUMERIC (20,8) NULL,           -- DAI in AVAX Vault 1.6
     "creation_date" TIMESTAMP (6) NULL,
    CONSTRAINT "USER_BALANCES_CACHE_pkey" 
         PRIMARY KEY (balance_date, network_id, user_address)
@@ -142,19 +147,3 @@ CREATE TABLE gro."USER_NET_RETURNS_CACHE" (
 
 ALTER TABLE gro."USER_NET_RETURNS_CACHE" OWNER to postgres;
 
-/*
-CREATE OR REPLACE VIEW gro."USER_STD_FACT_V_BALANCES" AS
-SELECT bal."balance_date",
-    bal."user_address",
-    bal."network_id",
-    bal."gvt_unstaked_amount" as "gvt_unstaked_amount",
-    bal."pwrd_unstaked_amount" as "pwrd_unstaked_amount",
-    bal."gro_unstaked_amount" as "gro_unstaked_amount",
-    bal."gvt_unstaked_amount" * pri."gvt_value" as "gvt_unstaked_value",
-    bal."pwrd_unstaked_amount" * pri."pwrd_value" as "pwrd_unstaked_value",
-    bal."gro_unstaked_amount" * pri."gro_value" as "gro_unstaked_value"
-FROM gro."USER_STD_FACT_BALANCES" bal
-    LEFT JOIN gro."TOKEN_PRICE" pri ON bal."balance_date" = pri."price_date";
-
-ALTER VIEW gro."USER_STD_FACT_V_BALANCES" OWNER to postgres;
-*/

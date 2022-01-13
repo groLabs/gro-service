@@ -47,7 +47,7 @@ const getTransfers = async (account: string): Promise<ICall> => {
         const transfers = await query(q, [account]);
 
         if (transfers.status !== QUERY_ERROR) {
-            
+
             for (const item of transfers.rows) {
 
                 if (!item.token_id
@@ -230,14 +230,7 @@ const getNetBalances = async (account: string): Promise<ICall> => {
     try {
         const q = 'select_fe_user_net_balances.sql';
         const result = await query(q, [account]);
-        let res = {
-            pwrd: '0',
-            gvt: '0',
-            usdc_e: '0',
-            usdt_e: '0',
-            dai_e: '0',
-            gro_balance_combined: '0',
-        };
+        let res;
 
         if (result.status !== QUERY_ERROR) {
 
@@ -247,6 +240,19 @@ const getNetBalances = async (account: string): Promise<ICall> => {
             // Check if any of the keys is missing
             if (!Object.values(res).some(x => x !== null && x !== ''))
                 return errorObj(`Missing data in DB [balances] for user ${account}`);
+
+            const daiValue =
+                parseFloat(res.dai_e_1_0)
+                + parseFloat(res.dai_e_1_5)
+                + parseFloat(res.dai_e_1_6);
+            const usdcValue =
+                parseFloat(res.usdc_e_1_0)
+                + parseFloat(res.usdc_e_1_5)
+                + parseFloat(res.usdc_e_1_6);
+            const usdtValue =
+                parseFloat(res.usdt_e_1_0)
+                + parseFloat(res.usdt_e_1_5)
+                + parseFloat(res.usdt_e_1_6);
 
             return {
                 "status": QUERY_SUCCESS,
@@ -261,12 +267,13 @@ const getNetBalances = async (account: string): Promise<ICall> => {
                     },
                     "avalanche": {
                         "current_balance": {
-                            "groDAI.e_vault": res.usdc_e,
-                            "groUSDC.e_vault": res.usdt_e,
-                            "groUSDT.e_vault": res.dai_e,
-                            "total": (parseFloat(res.usdc_e)
-                                + parseFloat(res.usdt_e)
-                                + parseFloat(res.dai_e)).toString(),
+                            "groDAI.e_vault": daiValue.toString(),
+                            "groUSDC.e_vault": usdcValue.toString(),
+                            "groUSDT.e_vault": usdtValue.toString(),
+
+                            "total": (usdcValue
+                                + usdtValue
+                                + daiValue).toString(),
                         },
                     },
                     "gro_balance_combined": res.gro_balance_combined,

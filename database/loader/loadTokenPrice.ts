@@ -5,9 +5,15 @@ import { getPriceFromCoingecko } from '../etl/etlTokenPrice';
 import {
     getGroVault,
     getPowerD,
+    getUSDCeVault,
+    getUSDTeVault,
+    getDAIeVault,
     getUSDCeVault_1_5,
     getUSDTeVault_1_5,
     getDAIeVault_1_5,
+    getUSDCeVault_1_6,
+    getUSDTeVault_1_6,
+    getDAIeVault_1_6,
 } from '../common/contractUtil';
 import { QUERY_ERROR } from '../constants';
 import { Base } from '../types';
@@ -30,9 +36,15 @@ const loadTokenPrice = async (): Promise<boolean> => {
             priceWETH,
             priceBAL,
             priceAVAX,
-            priceUSDCe,
-            priceUSDTe,
-            priceDAIe,
+            priceUSDCe_1_0,
+            priceUSDTe_1_0,
+            priceDAIe_1_0,
+            priceUSDCe_1_5,
+            priceUSDTe_1_5,
+            priceDAIe_1_5,
+            priceUSDCe_1_6,
+            priceUSDTe_1_6,
+            priceDAIe_1_6,
         ] = await Promise.all([
             getGroVault().getPricePerShare(),
             getPowerD().getPricePerShare(),
@@ -40,9 +52,15 @@ const loadTokenPrice = async (): Promise<boolean> => {
             getPriceFromCoingecko(dateString, 'weth'),
             getPriceFromCoingecko(dateString, 'balancer'),
             getPriceFromCoingecko(dateString, 'avalanche-2'),
+            getUSDCeVault().getPricePerShare(),
+            getUSDTeVault().getPricePerShare(),
+            getDAIeVault().getPricePerShare(),
             getUSDCeVault_1_5().getPricePerShare(),
             getUSDTeVault_1_5().getPricePerShare(),
             getDAIeVault_1_5().getPricePerShare(),
+            getUSDCeVault_1_6().getPricePerShare(),
+            getUSDTeVault_1_6().getPricePerShare(),
+            getDAIeVault_1_6().getPricePerShare(),
         ]);
 
         if (priceGRO.status === QUERY_ERROR
@@ -60,9 +78,15 @@ const loadTokenPrice = async (): Promise<boolean> => {
         // Store parsed amounts for reuse
         const priceGvtParsed = parseAmount(priceGVT, Base.D18);
         const pricePwrdParsed = parseAmount(pricePWRD, Base.D18);
-        const priceUSDCeParsed = parseAmount(priceUSDCe, Base.D6);
-        const priceUSDTeParsed = parseAmount(priceUSDTe, Base.D6);
-        const priceDAIeParsed = parseAmount(priceDAIe, Base.D18);
+        const priceUSDCe_1_0_Parsed = parseAmount(priceUSDCe_1_0, Base.D6);
+        const priceUSDTe_1_0_Parsed = parseAmount(priceUSDTe_1_0, Base.D6);
+        const priceDAIe_1_0_Parsed = parseAmount(priceDAIe_1_0, Base.D18);
+        const priceUSDCe_1_5_Parsed = parseAmount(priceUSDCe_1_5, Base.D6);
+        const priceUSDTe_1_5_Parsed = parseAmount(priceUSDTe_1_5, Base.D6);
+        const priceDAIe_1_5_Parsed = parseAmount(priceDAIe_1_5, Base.D18);
+        const priceUSDCe_1_6_Parsed = parseAmount(priceUSDCe_1_6, Base.D6);
+        const priceUSDTe_1_6_Parsed = parseAmount(priceUSDTe_1_6, Base.D6);
+        const priceDAIe_1_6_Parsed = parseAmount(priceDAIe_1_6, Base.D18);
 
         // Set params for the insert
         const params = [
@@ -73,9 +97,15 @@ const loadTokenPrice = async (): Promise<boolean> => {
             priceWETH.data,
             priceBAL.data,
             priceAVAX.data,
-            priceUSDCeParsed,
-            priceUSDTeParsed,
-            priceDAIeParsed,
+            priceUSDCe_1_0_Parsed,
+            priceUSDTe_1_0_Parsed,
+            priceDAIe_1_0_Parsed,
+            priceUSDCe_1_5_Parsed,
+            priceUSDTe_1_5_Parsed,
+            priceDAIe_1_5_Parsed,
+            priceUSDCe_1_6_Parsed,
+            priceUSDTe_1_6_Parsed,
+            priceDAIe_1_6_Parsed,
             now,
         ];
 
@@ -85,7 +115,7 @@ const loadTokenPrice = async (): Promise<boolean> => {
         if (isToken.status === QUERY_ERROR) {
             showError(
                 'loadTokenPrice.ts->loadTokenPrice()',
-                'Error while retrieving token data'
+                'Error while retrieving token price data'
             );
             return false;
         } else if (isToken.rowCount > 0) {
@@ -96,13 +126,8 @@ const loadTokenPrice = async (): Promise<boolean> => {
 
         // Show log
         if (result.status !== QUERY_ERROR) {
-            let msg = `GVT: ${priceGvtParsed}, PWRD: ${pricePwrdParsed}`;
-            msg += `, GRO: ${priceGRO.data}, WETH: ${priceWETH.data}`;
-            msg += `, BAL: ${priceBAL.data}, AVAX: ${priceAVAX.data}`;
-            msg += `, USDCe: ${priceUSDCeParsed}, USDTe: ${priceUSDTeParsed}`;
-            msg += `, DAIe: ${priceDAIeParsed}`;
             const action = (isToken.rowCount > 0) ? 'Updated' : 'Added';
-            showInfo(`${action} token prices for ${now.format('DD/MM/YYYY HH:mm:ss')} => ${msg}`);
+            showInfo(`${action} token prices for ${now.format('DD/MM/YYYY HH:mm:ss')}`);
         } else {
             showError(
                 'loadTokenPrice.ts->loadTokenPrice()',

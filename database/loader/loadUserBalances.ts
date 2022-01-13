@@ -143,7 +143,6 @@ const getBalancesSC = async (
             multiCall(GN.AVALANCHE, getDAIeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
         ]);
 
-        //TODO: careful. Only GVT? what about AVAX?
         if (gvt.length === 0) {
             gvt = gvtUpdate;
             pwrd = pwrdUpdate;
@@ -273,13 +272,27 @@ const insertBalances = async (
                 (nodeEnv === NetworkName.MAINNET)
                     ? res.lpCrvPwrd[2].lp_position[i]        // pool4 - staked pwrd
                     : null,
-                res.lpGroWeth[0].amount_pooled_lp[i],   // pool5 - pooled lp
-                res.lpGroWeth[1].amount_staked_lp[i],   // pool5 - staked lp
-                res.lpGroWeth[2].lp_position[i][0],     // pool5 - staked gro
-                res.lpGroWeth[2].lp_position[i][1],     // pool5 - staked weth
-                res.usdce_1_0[i] + res.usdce_1_5[i] + res.usdce_1_6[i],
-                res.usdte_1_0[i] + res.usdte_1_5[i] + res.usdte_1_6[i],
-                res.daie_1_0[i] + res.daie_1_5[i] + res.daie_1_6[i],
+                (nodeEnv === NetworkName.MAINNET)
+                    ? res.lpGroWeth[0].amount_pooled_lp[i]   // pool5 - pooled lp
+                    : null,
+                (nodeEnv === NetworkName.MAINNET)
+                    ? res.lpGroWeth[1].amount_staked_lp[i]   // pool5 - staked lp
+                    : null,
+                (nodeEnv === NetworkName.MAINNET)
+                    ? res.lpGroWeth[2].lp_position[i][0]     // pool5 - staked gro
+                    : null,
+                (nodeEnv === NetworkName.MAINNET)
+                    ? res.lpGroWeth[2].lp_position[i][1]     // pool5 - staked weth
+                    : null,
+                res.usdce_1_0[i],
+                res.usdte_1_0[i],
+                res.daie_1_0[i],
+                res.usdce_1_5[i],
+                res.usdte_1_5[i],
+                res.daie_1_5[i],
+                res.usdce_1_6[i],
+                res.usdte_1_6[i],
+                res.daie_1_6[i],
                 moment.utc(),
             ];
 

@@ -23,9 +23,15 @@ INSERT INTO gro."USER_BALANCES_CACHE" (
         "pool5_lp_staked_amount",
         "pool5_gro_amount",
         "pool5_weth_amount",
-        "usdc_e_amount",
-        "usdt_e_amount",
-        "dai_e_amount",
+        "usdc_e_1_0_amount",
+        "usdt_e_1_0_amount",
+        "dai_e_1_0_amount",
+        "usdc_e_1_5_amount",
+        "usdt_e_1_5_amount",
+        "dai_e_1_5_amount",
+        "usdc_e_1_6_amount",
+        "usdt_e_1_6_amount",
+        "dai_e_1_6_amount",
         "creation_date"
     )
 VALUES (
@@ -56,5 +62,11 @@ VALUES (
         $25,
         $26,
         $27,
-        $28
+        $28,
+        $29,
+        $30,
+        $31,
+        $32,
+        $33,
+        $34
     );

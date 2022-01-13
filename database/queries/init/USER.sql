@@ -121,9 +121,6 @@ CREATE TABLE gro."USER_BALANCES_SNAPSHOT" (
     "pwrd_unstaked_amount" NUMERIC (20, 8) NULL,
     "gro_unstaked_amount" NUMERIC (20, 8) NULL,
     "gro_total_amount" NUMERIC (20, 8) NULL,          -- GRO unstaked, staked, vesting, vested, in pools
-    "usdc_e_amount" NUMERIC (20,8) NULL,              -- USDC in AH2 on AVAX
-    "usdt_e_amount" NUMERIC (20,8) NULL,              -- USDT in AH2 on AVAX
-    "dai_e_amount" NUMERIC (20,8) NULL,               -- DAI in AH2 on AVAX
     "pool0_lp_staked_amount" NUMERIC (20, 8) NULL,    -- GRO 100% in MC
     "pool1_lp_pooled_amount" NUMERIC (20, 8) NULL,    -- LP GVT 50% / GRO 50% in pool
     "pool1_lp_staked_amount" NUMERIC (20, 8) NULL,    -- LP GVT 50% / GRO 50% in MC
@@ -141,6 +138,15 @@ CREATE TABLE gro."USER_BALANCES_SNAPSHOT" (
     "pool5_lp_staked_amount" NUMERIC (20, 8) NULL,    -- LP GRO 80% / WETH 20% in MC
     "pool5_gro_amount" NUMERIC (20, 8) NULL,          -- GRO
     "pool5_weth_amount" NUMERIC (20, 8) NULL,         -- WETH
+    "usdc_e_1_0_amount" NUMERIC (20,8) NULL,          -- USDC in AVAX Vault 1.0
+    "usdt_e_1_0_amount" NUMERIC (20,8) NULL,          -- USDT in AVAX Vault 1.0
+    "dai_e_1_0_amount" NUMERIC (20,8) NULL,           -- DAI in AVAX Vault 1.0
+    "usdc_e_1_5_amount" NUMERIC (20,8) NULL,          -- USDC in AVAX Vault 1.5
+    "usdt_e_1_5_amount" NUMERIC (20,8) NULL,          -- USDT in AVAX Vault 1.5
+    "dai_e_1_5_amount" NUMERIC (20,8) NULL,           -- DAI in AVAX Vault 1.5
+    "usdc_e_1_6_amount" NUMERIC (20,8) NULL,          -- USDC in AVAX Vault 1.6
+    "usdt_e_1_6_amount" NUMERIC (20,8) NULL,          -- USDT in AVAX Vault 1.6
+    "dai_e_1_6_amount" NUMERIC (20,8) NULL,           -- DAI in AVAX Vault 1.6
     "creation_date" TIMESTAMP (6) NULL,
    CONSTRAINT "USER_BALANCES_SNAPSHOT_pkey" 
         PRIMARY KEY (balance_date, network_id, user_address)

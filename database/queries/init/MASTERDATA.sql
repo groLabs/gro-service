@@ -26,9 +26,15 @@ CREATE TABLE gro."TOKEN_PRICE" (
    "weth_value" NUMERIC (20, 8) NULL,
    "avax_value" NUMERIC (20, 8) NULL,
    "bal_value" NUMERIC (20, 8) NULL,
-   "usdc_e_value" NUMERIC (20, 8) NULL,
-   "usdt_e_value" NUMERIC (20, 8) NULL,
-   "dai_e_value" NUMERIC (20, 8) NULL,
+   "usdc_e_1_0_value" NUMERIC (20, 8) NULL,
+   "usdt_e_1_0_value" NUMERIC (20, 8) NULL,
+   "dai_e_1_0_value" NUMERIC (20, 8) NULL,
+   "usdc_e_1_5_value" NUMERIC (20, 8) NULL,
+   "usdt_e_1_5_value" NUMERIC (20, 8) NULL,
+   "dai_e_1_5_value" NUMERIC (20, 8) NULL,
+   "usdc_e_1_6_value" NUMERIC (20, 8) NULL,
+   "usdt_e_1_6_value" NUMERIC (20, 8) NULL,
+   "dai_e_1_6_value" NUMERIC (20, 8) NULL,
    "creation_date" TIMESTAMP (6) NULL,
    CONSTRAINT "TOKEN_PRICE_pkey" PRIMARY KEY (price_date)
       NOT DEFERRABLE INITIALLY IMMEDIATE

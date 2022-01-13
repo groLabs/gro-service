@@ -25,7 +25,6 @@ SELECT now()::timestamp as balance_date,
         WHEN ut.gvt_unstaked_value IS NULL THEN 0
         ELSE ub.gvt_unstaked_value - ut.gvt_unstaked_value
     END as gvt_unstaked_value,
-    
     CASE
         WHEN ut.usdc_e_value IS NULL THEN 0
         ELSE ub.usdc_e_value - ut.usdc_e_value
@@ -60,11 +59,11 @@ FROM (
                     CASE
                         WHEN t."token_id" = 4 THEN t."value"
                         ELSE 0
-                    END as "usdt_e_value",
+                    END as "usdc_e_value",
                     CASE
                         WHEN t."token_id" = 5 THEN t."value"
                         ELSE 0
-                    END as "usdc_e_value",
+                    END as "usdt_e_value",
                     CASE
                         WHEN t."token_id" = 6 THEN t."value"
                         ELSE 0
@@ -86,11 +85,11 @@ FROM (
                     CASE
                         WHEN ct."token_id" = 4 THEN ct."value"
                         ELSE 0
-                    END as "usdt_e_value",
+                    END as "usdc_e_value",
                     CASE
                         WHEN ct."token_id" = 5 THEN ct."value"
                         ELSE 0
-                    END as "usdc_e_value",
+                    END as "usdt_e_value",
                     CASE
                         WHEN ct."token_id" = 6 THEN ct."value"
                         ELSE 0
@@ -106,9 +105,9 @@ FROM (
         SELECT b."pwrd_unstaked_amount" * tp."pwrd_value" + b."gvt_unstaked_amount" * tp."gvt_value" as "total_unstaked_value",
             b."pwrd_unstaked_amount" * tp."pwrd_value" as "pwrd_unstaked_value",
             b."gvt_unstaked_amount" * tp."gvt_value" as "gvt_unstaked_value",
-            b."usdc_e_amount" * tp."usdc_e_value" as "usdc_e_value",
-            b."usdt_e_amount" * tp."usdt_e_value" as "usdt_e_value",
-            b."dai_e_amount" * tp."dai_e_value" as "dai_e_value",
+            b."usdc_e_1_0_amount" * tp."usdc_e_1_0_value" + b."usdc_e_1_5_amount" * tp."usdc_e_1_5_value" + b."usdc_e_1_6_amount" * tp."usdc_e_1_6_value" as "usdc_e_value",
+            b."usdt_e_1_0_amount" * tp."usdt_e_1_0_value" + b."usdt_e_1_5_amount" * tp."usdt_e_1_5_value" + b."usdt_e_1_6_amount" * tp."usdt_e_1_6_value" as "usdt_e_value",
+            b."dai_e_1_0_amount" * tp."dai_e_1_0_value" + b."dai_e_1_5_amount" * tp."dai_e_1_5_value" + b."dai_e_1_6_amount" * tp."dai_e_1_6_value" as "dai_e_value",
             b."user_address" as "user_address",
             b."balance_date" as "balance_date",
             b."network_id" as "network_id"
@@ -116,9 +115,15 @@ FROM (
             (
                 SELECT "gvt_value",
                     "pwrd_value",
-                    "usdc_e_value",
-                    "usdt_e_value",
-                    "dai_e_value"
+                    "usdc_e_1_0_value",
+                    "usdt_e_1_0_value",
+                    "dai_e_1_0_value",
+                    "usdc_e_1_5_value",
+                    "usdt_e_1_5_value",
+                    "dai_e_1_5_value",
+                    "usdc_e_1_6_value",
+                    "usdt_e_1_6_value",
+                    "dai_e_1_6_value"
                 FROM gro."TOKEN_PRICE"
                 LIMIT 1
             ) tp
