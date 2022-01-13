@@ -21,7 +21,7 @@ export const airdrop = {
 };
 export const gro_gate = {
     folder: '../grogate',
-    files: ['bouncer-10-proofs.json'],
+    files: [process.env.AVAX_BOUNCER_PROOF_FILE],
 };
 
 export const buoy_start_block = 10633347;
