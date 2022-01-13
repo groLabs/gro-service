@@ -1,8 +1,8 @@
-import { getDefaultProvider } from '../../common/chainUtil';
+import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import { BlockWorker } from './blockWorker';
 const logger = require('../statsLogger');
 
-const provider = getDefaultProvider();
+const provider = getAlchemyRpcProvider();
 
 const blockWorker = new BlockWorker();
 
@@ -22,8 +22,4 @@ function stop() {
     logger.info('Stop listen new blocks.');
 }
 
-export {
-    blockWorker,
-    start,
-    stop,
-};
+export { blockWorker, start, stop };

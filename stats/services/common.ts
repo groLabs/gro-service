@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { ContractCallError } from '../../common/error';
 import { MESSAGE_TYPES } from '../../common/discord/discordService';
-import { getEvents } from '../../common/logFilter-new';
+import { getEvents } from '../../common/logFilter';
 import { shortAccount } from '../../common/digitalUtil';
 import { ContractNames } from '../../registry/registry';
 import { getContractsHistory } from '../../registry/registryLoader';

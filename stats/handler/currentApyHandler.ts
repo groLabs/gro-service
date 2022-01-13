@@ -9,10 +9,7 @@ import {
     getAlchemyRpcProvider,
     getTimestampByBlockNumber,
 } from '../../common/chainUtil';
-import {
-    getSimpleFilterEvents,
-    getFilterEvents,
-} from '../../common/logFilter-new';
+import { getSimpleFilterEvents, getFilterEvents } from '../../common/logFilter';
 import { getConfig } from '../../common/configUtil';
 import {
     getContractsHistory,

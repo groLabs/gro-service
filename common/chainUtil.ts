@@ -12,7 +12,6 @@ import {
 import { botBalanceMessage } from '../discordMessage/botBalanceMessage';
 import { sendAlertMessage } from './alertMessageSender';
 import { getConfig } from './configUtil';
-import { AvaxPrcProvider } from './avaxRpcProvider';
 
 const botEnv = process.env.BOT_ENV?.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
@@ -21,15 +20,10 @@ const logger = require(`../${botEnv}/${botEnv}Logger`);
 const DEFAULT_PROVIDER_KEY = 'default';
 const DEFAULT_WALLET_KEY = 'default';
 
-let defaultProvider;
-let socketProvider;
-let rpcProvider;
-let infruraRpcProvider;
 let defaultWalletManager;
 let privateProvider;
-let avaxProvider;
 const rpcProviders = {};
-const infruraRpcProviders = {};
+const infuraRpcProviders = {};
 const botWallets = {};
 const failedTimes = { accountBalance: 0 };
 const failedAlertTimes = (getConfig('call_failed_time', false) as number) || 2;
@@ -41,37 +35,6 @@ const needPrivateTransaction =
 
 const network = getConfig('blockchain.network') as string;
 logger.info(`network: ${network}`);
-
-function getSocketProvider() {
-    if (socketProvider) {
-        return socketProvider;
-    }
-    logger.info('Create new socket provider.');
-    const apiKey = getConfig('blockchain.alchemy_api_keys.default');
-    socketProvider = new ethers.providers.AlchemyWebSocketProvider(
-        network,
-        apiKey
-    );
-    return socketProvider;
-}
-
-// this function is to hack the alchemyprovider for EIP-1559
-// it call the perform in JsonPrcProvider to skip the check
-function createProxyForAlchemyRpcProvider(alchemyProvider) {
-    const handler = {
-        get(target, property) {
-            if (property === 'perform') {
-                const jsonProvider = Object.getPrototypeOf(
-                    target.constructor.prototype
-                );
-                return jsonProvider[property];
-            }
-            return target[property];
-        },
-    };
-    rpcProvider = new Proxy(alchemyProvider, handler);
-    return rpcProvider;
-}
 
 function staller(duration) {
     return new Promise((resolve) => {
@@ -121,33 +84,6 @@ function createProxyForProvider(provider, providerKeyConfig) {
     return new Proxy(provider, handler);
 }
 
-function createAlchemyRpcProvider() {
-    if (rpcProvider) {
-        return rpcProvider;
-    }
-    logger.info('Create default Alchemy Rpc provider.');
-    const defaultApiKey = 'blockchain.alchemy_api_keys.default';
-    const apiKey = getConfig(defaultApiKey);
-    const alchemyProvider = new ethers.providers.AlchemyProvider(
-        network,
-        apiKey
-    );
-    rpcProvider = createProxyForProvider(alchemyProvider, defaultApiKey);
-    return rpcProvider;
-}
-
-function createInfruraRpcProvider() {
-    if (infruraRpcProvider) {
-        return infruraRpcProvider;
-    }
-    logger.info('Create default Infrura Rpc provider.');
-    const defaultApiKey = 'blockchain.infura_api_keys.default';
-    const apiKey = getConfig(defaultApiKey);
-    const provider = new ethers.providers.InfuraProvider(network, apiKey);
-    infruraRpcProvider = createProxyForProvider(provider, defaultApiKey);
-    return infruraRpcProvider;
-}
-
 function createPrivateProvider() {
     if (!privateProvider) {
         logger.info('Create private provider.');
@@ -157,30 +93,6 @@ function createPrivateProvider() {
     return privateProvider;
 }
 
-function getAvaxRpcProvider() {
-    if (!avaxProvider) {
-        logger.info('Create Avax Rpc provider.');
-        avaxProvider = new AvaxPrcProvider(network);
-    }
-    return avaxProvider;
-}
-
-function getDefaultProvider() {
-    if (defaultProvider) {
-        return defaultProvider;
-    }
-    logger.info('Create a new default provider.');
-    if (process.env.NODE_ENV === 'develop') {
-        defaultProvider = new ethers.providers.JsonRpcProvider(
-            'http://127.0.0.1:8545'
-        );
-    } else {
-        defaultProvider = ethers.providers.getDefaultProvider(network);
-    }
-    defaultProvider = ethers.providers.getDefaultProvider(network);
-    return defaultProvider;
-}
-
 function getAlchemyRpcProvider(providerKey?: any) {
     // only for test
     const providerKeys = Object.keys(rpcProviders);
@@ -188,70 +100,56 @@ function getAlchemyRpcProvider(providerKey?: any) {
     // =====================
     let result;
     providerKey = providerKey || DEFAULT_PROVIDER_KEY;
-    if (providerKey === DEFAULT_PROVIDER_KEY) {
-        if (process.env.NODE_ENV === 'develop') {
-            result = getDefaultProvider();
-        } else {
-            result = createAlchemyRpcProvider();
-        }
-    } else {
-        result = rpcProviders[providerKey];
-        if (!result) {
-            const key = `blockchain.alchemy_api_keys.${providerKey}`;
-            const apiKeyValue = getConfig(key);
-            if (process.env.NODE_ENV === 'develop') {
-                result = new ethers.providers.JsonRpcProvider(
-                    'http://127.0.0.1:8545'
-                );
-            } else {
-                const alchemyProvider = new ethers.providers.AlchemyProvider(
-                    network,
-                    apiKeyValue
-                );
-                result = createProxyForProvider(alchemyProvider, key);
-            }
 
-            logger.info(`Create a new ${providerKey} Rpc provider.`);
-            rpcProviders[providerKey] = result;
+    result = rpcProviders[providerKey];
+    if (!result) {
+        const key = `blockchain.alchemy_api_keys.${providerKey}`;
+        const apiKeyValue = getConfig(key);
+        if (process.env.NODE_ENV === 'develop') {
+            result = new ethers.providers.JsonRpcProvider(
+                'http://127.0.0.1:8545'
+            );
+        } else {
+            const alchemyProvider = new ethers.providers.AlchemyProvider(
+                network,
+                apiKeyValue
+            );
+            result = createProxyForProvider(alchemyProvider, key);
         }
+        rpcProviders[providerKey] = result;
+        logger.info(`Create a new ${providerKey} Alchemy Rpc provider.`);
     }
     return result;
 }
 
-function getInfruraRpcProvider(providerKey) {
+function getInfuraRpcProvider(providerKey) {
     // only for test
-    const providerKeys = Object.keys(infruraRpcProviders);
-    logger.info(`infrura provider Keys: ${JSON.stringify(providerKeys)}`);
+    const providerKeys = Object.keys(infuraRpcProviders);
+    logger.info(`Infura provider Keys: ${JSON.stringify(providerKeys)}`);
     // =====================
     let result;
     providerKey = providerKey || DEFAULT_PROVIDER_KEY;
-    if (providerKey === DEFAULT_PROVIDER_KEY) {
-        if (process.env.NODE_ENV === 'develop') {
-            result = getDefaultProvider();
-        } else {
-            result = createInfruraRpcProvider();
-        }
-    } else {
-        result = infruraRpcProviders[providerKey];
-        if (!result) {
-            const key = `blockchain.infura_api_keys.${providerKey}`;
-            const apiKeyValue = getConfig(key);
-            if (process.env.NODE_ENV === 'develop') {
-                result = new ethers.providers.JsonRpcProvider(
-                    'http://127.0.0.1:8545'
-                );
-            } else {
-                const tempProvider = new ethers.providers.InfuraProvider(
-                    network,
-                    apiKeyValue
-                );
-                result = createProxyForProvider(tempProvider, key);
-            }
 
-            logger.info(`Create a new ${providerKey} Infrura Rpc provider.`);
-            infruraRpcProviders[providerKey] = result;
+    result = infuraRpcProviders[providerKey];
+    if (!result) {
+        const key = `blockchain.infura_api_keys.${providerKey}`;
+        const apiKeyValue = getConfig(key);
+        if (process.env.NODE_ENV === 'develop') {
+            result = new ethers.providers.JsonRpcProvider(
+                'http://127.0.0.1:8545'
+            );
+        } else {
+            const tempProvider = new ethers.providers.InfuraProvider(
+                network,
+                apiKeyValue
+            );
+            result = createProxyForProvider(tempProvider, key);
         }
+
+        infuraRpcProviders[providerKey] = result;
+        logger.info(`Create a new ${providerKey} Infura Rpc provider.`);
     }
+
     return result;
 }
 
@@ -486,9 +384,7 @@ async function getTimestampByBlockNumber(blockNumber, provider) {
 }
 
 export {
-    getDefaultProvider,
-    getSocketProvider,
-    getInfruraRpcProvider,
+    getInfuraRpcProvider,
     getAlchemyRpcProvider,
     getTransactionProvider,
     getWalletNonceManager,
@@ -496,5 +392,4 @@ export {
     checkAccountsBalance,
     getCurrentBlockNumber,
     getTimestampByBlockNumber,
-    getAvaxRpcProvider,
 };

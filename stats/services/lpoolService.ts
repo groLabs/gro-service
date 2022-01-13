@@ -1,6 +1,6 @@
 import BN from 'bignumber.js';
 import { ethers } from 'ethers';
-import { getFilterEvents } from '../../common/logFilter-new';
+import { getFilterEvents } from '../../common/logFilter';
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import { div } from '../../common/digitalUtil';
 import { appendEventTimestamp } from './generatePersonTransaction';
