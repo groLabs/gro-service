@@ -15,7 +15,13 @@ const configFileFolder = `${__dirname}/config`;
 const registryAddress = getConfig('registry_address', false) as
     | string
     | undefined;
-const provider = getAlchemyRpcProvider();
+
+const rpcURL =
+    getConfig('blockchain.avalanche_rpc_url', false) ||
+    'https://api.avax.network/ext/bc/C/rpc';
+
+const provider = new ethers.providers.JsonRpcProvider(rpcURL);
+const ethererumProvider = getAlchemyRpcProvider();
 
 let registry;
 if (registryAddress) {
@@ -147,18 +153,6 @@ async function getActiveContractNames() {
     return activeContractNames;
 }
 
-async function checkContractNameConfiguration() {
-    const configContractNames = Object.keys(ContractABIMapping);
-    const registryAllContractNames = await getActiveContractNames();
-    for (let i = 0; i < registryAllContractNames.length; i += 1) {
-        const name = registryAllContractNames[i];
-        if (!configContractNames.includes(name)) {
-            throw new SettingError(`Not fund contract key: ${name}`);
-        }
-    }
-    logger.info(`contract name: ${JSON.stringify(registryAllContractNames)}`);
-}
-
 async function parseProtocolExposure(protocols, metaData) {
     const protocolsDisplayName = [];
     const protocolsName = [];
@@ -181,8 +175,9 @@ async function parseProtocolExposure(protocols, metaData) {
     return { protocolsDisplayName, protocolsName };
 }
 
-async function parseTokenExposure(tokens) {
+async function parseTokenExposure(tag, tokens) {
     const result = [];
+
     for (let i = 0; i < tokens.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         const tokenAddress = await registry
@@ -191,16 +186,26 @@ async function parseTokenExposure(tokens) {
                 logger.error(error);
             });
         let tokenSymbol = '';
-        if (tokenAddress) {
-            const token = new ethers.Contract(tokenAddress, erc20ABI, provider);
-            // eslint-disable-next-line no-await-in-loop
-            tokenSymbol = await token.symbol().catch((error) => {
-                logger.error(error);
-                return '';
-            });
+        if (tag === 'AVAX') {
+            tokenSymbol = tokenAddress;
+        } else {
+            if (tokenAddress) {
+                const token = new ethers.Contract(
+                    tokenAddress,
+                    erc20ABI,
+                    ethererumProvider
+                );
+                // eslint-disable-next-line no-await-in-loop
+                tokenSymbol = await token.symbol().catch((error) => {
+                    logger.error(error);
+                    return '';
+                });
+            }
         }
+
         result.push(tokenSymbol);
     }
+
     return result;
 }
 
@@ -208,10 +213,11 @@ async function getActiveContractInfoByName(contractName) {
     const localConfig = readLocalContractConfig();
     let result = {};
     if (
-        localConfig.latestContracts &&
-        localConfig.latestContracts[contractName]
+        localConfig.contractHistories &&
+        localConfig.contractHistories[contractName]
     ) {
-        result = localConfig.latestContracts[contractName];
+        const contracts = localConfig.contractHistories[contractName];
+        result = contracts[contracts.length - 1];
     } else {
         const contractAddress = await registry
             .getActive(contractName)
@@ -234,7 +240,10 @@ async function getActiveContractInfoByName(contractName) {
             contractInfo.protocols,
             metaDataObject
         );
-        const tokenNames = await parseTokenExposure(contractInfo.tokens);
+        const tokenNames = await parseTokenExposure(
+            contractInfo.tag,
+            contractInfo.tokens
+        );
         result = {
             address: contractAddress,
             deployedBlock: parseInt(`${contractInfo.deployedBlock}`, 10),
@@ -277,7 +286,7 @@ async function getContractInfoByAddress(address) {
             info.protocols,
             metaDataObject
         );
-        const tokenNames = await parseTokenExposure(info.tokens);
+        const tokenNames = await parseTokenExposure(info.tag, info.tokens);
         if (info.startBlock) {
             for (let i = 0; i < info.startBlock.length; i += 1) {
                 result.push({
@@ -362,5 +371,4 @@ export {
     readLocalContractConfig,
     getLatestContracts,
     getContractsHistory,
-    checkContractNameConfiguration,
 };

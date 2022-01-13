@@ -393,6 +393,62 @@
             "active": true
         }
     ],
+    "3CRVVault": [
+        {
+            "address": "0xb7C44eB1045c32BBFEF3d65e8449bb42324Bb114",
+            "deployedBlock": 10524894,
+            "startBlock": 10525267,
+            "endBlock": 10633479,
+            "abiVersion": "3c80e58",
+            "tag": "Vault",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": false
+        },
+        {
+            "address": "0x3392c5b05F2De0004F3033d2D6d380E8CB56AC9A",
+            "deployedBlock": 10631080,
+            "startBlock": 10633479,
+            "endBlock": null,
+            "abiVersion": "551353c",
+            "tag": "Vault",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        }
+    ],
+    "3CRVVaultAdaptor": [
+        {
+            "address": "0x1Fb3d9E038CF42e2c62fe6d9Ca82b1b197FC62a2",
+            "deployedBlock": 10524894,
+            "startBlock": 10525267,
+            "endBlock": 10633479,
+            "abiVersion": "3c80e58",
+            "tag": "Vault",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": false
+        },
+        {
+            "address": "0xBF0fbDA0a9F7bBeBA9F5D7C14ffbDdEFF36985Dc",
+            "deployedBlock": 10631080,
+            "startBlock": 10633479,
+            "endBlock": null,
+            "abiVersion": "551353c",
+            "tag": "Vault",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": { "N": "Curve yVault", "CN": "3CRV", "DN": "3CRV" },
+            "active": true
+        }
+    ],
     "DepositHandler": [
         {
             "address": "0x4246529D7168FE98F0530d99d93d346092bf50F1",
