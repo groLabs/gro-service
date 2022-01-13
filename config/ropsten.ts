@@ -27,6 +27,8 @@ export const gro_gate = {
 export const buoy_start_block = 10633347;
 export const blockchain = {
     network: 'ropsten',
+    avalanche_rpc_url:
+        'https://eth-ropsten.alchemyapi.io/v2/kstyjc0ZezPVmz6QoyR0YqNzSjv9zXxO',
     start_block: 10525267,
     avax_start_block: 7726890,
     start_timestamp: 1624827717,
