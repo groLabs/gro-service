@@ -213,12 +213,13 @@ function fullupSingleVault(
 ) {
     let allowance = baseAllowance;
     if (userClaimed) {
-        allowance = userAllowance;
+        allowance = userAllowance;    
     }
     allowance = BigNumber.from(allowance).sub(BigNumber.from(deduceBase));
     dataSource[
-        `gro${vaultType}.e_vault${vaultsVersion[vaultType]}`
+	    `gro${vaultType}.e_vault${vaultsVersion[vaultType]}`
     ].remaining_allowance = allowance.toString();
+  
 
     const distBaseAllowance = BigNumber.from(baseAllowance).sub(
         BigNumber.from(deduceBase)
@@ -243,7 +244,7 @@ function fullupVaults(dataSource, baseAllowance, userAllowance, userClaimed) {
             baseAllowance[i],
             userAllowance[i],
             userClaimed[i],
-            5000
+            0
         );
         remainingTotal = remainingTotal.add(allowance);
     }
