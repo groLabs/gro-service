@@ -1,17 +1,28 @@
-import { Transfer, ContractVersion } from '../types';
-import { errorObj, getProviderAvax } from '../common/globalUtil';
-import { getEvents, getFilterEvents } from '../../common/logFilter';
+import { getEvents } from '../../common/logFilter';
 import {
     getLatestContractEventFilter,
     getContractHistoryEventFilters,
 } from '../../common/filterGenerateTool';
-import { isTransfer, isDepositOrWithdrawal } from '../common/personalUtil';
+import {
+    isTransfer,
+    isDepositOrWithdrawal
+} from '../common/personalUtil';
 import { ContractNames } from '../../registry/registry';
 import { showError } from '../handler/logHandler';
 import { EventResult } from '../../common/commonTypes';
 import { ICall } from '../interfaces/ICall';
 import { QUERY_ERROR } from '../constants';
 import { QUERY_SUCCESS } from '../../lbp/constants';
+import {
+    Transfer,
+    ContractVersion
+} from '../types';
+import {
+    errorObj,
+    getProvider,
+    getProviderAvax
+} from '../common/globalUtil';
+
 
 const getTransferEvents = async (
     contractVersion: ContractVersion,
@@ -83,10 +94,10 @@ const getTransferEvents = async (
                     contractVersion === ContractVersion.VAULT_1_0
                         ? ContractNames.AVAXUSDCVault
                         : contractVersion === ContractVersion.VAULT_1_5
-                        ? ContractNames.AVAXUSDCVault_v1_5
-                        : contractVersion === ContractVersion.VAULT_1_6
-                        ? ContractNames.AVAXUSDCVault_v1_6
-                        : null;
+                            ? ContractNames.AVAXUSDCVault_v1_5
+                            : contractVersion === ContractVersion.VAULT_1_6
+                                ? ContractNames.AVAXUSDCVault_v1_6
+                                : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -96,10 +107,10 @@ const getTransferEvents = async (
                     contractVersion === ContractVersion.VAULT_1_0
                         ? ContractNames.AVAXUSDCVault
                         : contractVersion === ContractVersion.VAULT_1_5
-                        ? ContractNames.AVAXUSDCVault_v1_5
-                        : contractVersion === ContractVersion.VAULT_1_6
-                        ? ContractNames.AVAXUSDCVault_v1_6
-                        : null;
+                            ? ContractNames.AVAXUSDCVault_v1_5
+                            : contractVersion === ContractVersion.VAULT_1_6
+                                ? ContractNames.AVAXUSDCVault_v1_6
+                                : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -109,10 +120,10 @@ const getTransferEvents = async (
                     contractVersion === ContractVersion.VAULT_1_0
                         ? ContractNames.AVAXUSDCVault
                         : contractVersion === ContractVersion.VAULT_1_5
-                        ? ContractNames.AVAXUSDCVault_v1_5
-                        : contractVersion === ContractVersion.VAULT_1_6
-                        ? ContractNames.AVAXUSDCVault_v1_6
-                        : null;
+                            ? ContractNames.AVAXUSDCVault_v1_5
+                            : contractVersion === ContractVersion.VAULT_1_6
+                                ? ContractNames.AVAXUSDCVault_v1_6
+                                : null;
                 sender = null;
                 receiver = account;
                 break;
@@ -122,10 +133,10 @@ const getTransferEvents = async (
                     contractVersion === ContractVersion.VAULT_1_0
                         ? ContractNames.AVAXUSDCVault
                         : contractVersion === ContractVersion.VAULT_1_5
-                        ? ContractNames.AVAXUSDCVault_v1_5
-                        : contractVersion === ContractVersion.VAULT_1_6
-                        ? ContractNames.AVAXUSDCVault_v1_6
-                        : null;
+                            ? ContractNames.AVAXUSDCVault_v1_5
+                            : contractVersion === ContractVersion.VAULT_1_6
+                                ? ContractNames.AVAXUSDCVault_v1_6
+                                : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -135,10 +146,10 @@ const getTransferEvents = async (
                     contractVersion === ContractVersion.VAULT_1_0
                         ? ContractNames.AVAXUSDTVault
                         : contractVersion === ContractVersion.VAULT_1_5
-                        ? ContractNames.AVAXUSDTVault_v1_5
-                        : contractVersion === ContractVersion.VAULT_1_6
-                        ? ContractNames.AVAXUSDTVault_v1_6
-                        : null;
+                            ? ContractNames.AVAXUSDTVault_v1_5
+                            : contractVersion === ContractVersion.VAULT_1_6
+                                ? ContractNames.AVAXUSDTVault_v1_6
+                                : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -148,10 +159,10 @@ const getTransferEvents = async (
                     contractVersion === ContractVersion.VAULT_1_0
                         ? ContractNames.AVAXUSDTVault
                         : contractVersion === ContractVersion.VAULT_1_5
-                        ? ContractNames.AVAXUSDTVault_v1_5
-                        : contractVersion === ContractVersion.VAULT_1_6
-                        ? ContractNames.AVAXUSDTVault_v1_6
-                        : null;
+                            ? ContractNames.AVAXUSDTVault_v1_5
+                            : contractVersion === ContractVersion.VAULT_1_6
+                                ? ContractNames.AVAXUSDTVault_v1_6
+                                : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -161,10 +172,10 @@ const getTransferEvents = async (
                     contractVersion === ContractVersion.VAULT_1_0
                         ? ContractNames.AVAXUSDTVault
                         : contractVersion === ContractVersion.VAULT_1_5
-                        ? ContractNames.AVAXUSDTVault_v1_5
-                        : contractVersion === ContractVersion.VAULT_1_6
-                        ? ContractNames.AVAXUSDTVault_v1_6
-                        : null;
+                            ? ContractNames.AVAXUSDTVault_v1_5
+                            : contractVersion === ContractVersion.VAULT_1_6
+                                ? ContractNames.AVAXUSDTVault_v1_6
+                                : null;
                 sender = null;
                 receiver = account;
                 break;
@@ -174,10 +185,10 @@ const getTransferEvents = async (
                     contractVersion === ContractVersion.VAULT_1_0
                         ? ContractNames.AVAXUSDTVault
                         : contractVersion === ContractVersion.VAULT_1_5
-                        ? ContractNames.AVAXUSDTVault_v1_5
-                        : contractVersion === ContractVersion.VAULT_1_6
-                        ? ContractNames.AVAXUSDTVault_v1_6
-                        : null;
+                            ? ContractNames.AVAXUSDTVault_v1_5
+                            : contractVersion === ContractVersion.VAULT_1_6
+                                ? ContractNames.AVAXUSDTVault_v1_6
+                                : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -187,10 +198,10 @@ const getTransferEvents = async (
                     contractVersion === ContractVersion.VAULT_1_0
                         ? ContractNames.AVAXDAIVault
                         : contractVersion === ContractVersion.VAULT_1_5
-                        ? ContractNames.AVAXDAIVault_v1_5
-                        : contractVersion === ContractVersion.VAULT_1_6
-                        ? ContractNames.AVAXDAIVault_v1_6
-                        : null;
+                            ? ContractNames.AVAXDAIVault_v1_5
+                            : contractVersion === ContractVersion.VAULT_1_6
+                                ? ContractNames.AVAXDAIVault_v1_6
+                                : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -200,10 +211,10 @@ const getTransferEvents = async (
                     contractVersion === ContractVersion.VAULT_1_0
                         ? ContractNames.AVAXDAIVault
                         : contractVersion === ContractVersion.VAULT_1_5
-                        ? ContractNames.AVAXDAIVault_v1_5
-                        : contractVersion === ContractVersion.VAULT_1_6
-                        ? ContractNames.AVAXDAIVault_v1_6
-                        : null;
+                            ? ContractNames.AVAXDAIVault_v1_5
+                            : contractVersion === ContractVersion.VAULT_1_6
+                                ? ContractNames.AVAXDAIVault_v1_6
+                                : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -213,10 +224,10 @@ const getTransferEvents = async (
                     contractVersion === ContractVersion.VAULT_1_0
                         ? ContractNames.AVAXDAIVault
                         : contractVersion === ContractVersion.VAULT_1_5
-                        ? ContractNames.AVAXDAIVault_v1_5
-                        : contractVersion === ContractVersion.VAULT_1_6
-                        ? ContractNames.AVAXDAIVault_v1_6
-                        : null;
+                            ? ContractNames.AVAXDAIVault_v1_5
+                            : contractVersion === ContractVersion.VAULT_1_6
+                                ? ContractNames.AVAXDAIVault_v1_6
+                                : null;
                 sender = null;
                 receiver = account;
                 break;
@@ -226,10 +237,10 @@ const getTransferEvents = async (
                     contractVersion === ContractVersion.VAULT_1_0
                         ? ContractNames.AVAXDAIVault
                         : contractVersion === ContractVersion.VAULT_1_5
-                        ? ContractNames.AVAXDAIVault_v1_5
-                        : contractVersion === ContractVersion.VAULT_1_6
-                        ? ContractNames.AVAXDAIVault_v1_6
-                        : null;
+                            ? ContractNames.AVAXDAIVault_v1_5
+                            : contractVersion === ContractVersion.VAULT_1_6
+                                ? ContractNames.AVAXDAIVault_v1_6
+                                : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -269,47 +280,24 @@ const getTransferEvents = async (
 
         const logPromises = [];
 
-        if (isAvax) {
-            for (let i = 0; i < filters.length; i += 1) {
-                const transferEventFilter = filters[i];
-                const result: EventResult = await getEvents(
-                    transferEventFilter.filter,
-                    transferEventFilter.interface,
-                    getProviderAvax()
+        for (let i = 0; i < filters.length; i += 1) {
+            const transferEventFilter = filters[i];
+            const result: EventResult = await getEvents(
+                transferEventFilter.filter,
+                transferEventFilter.interface,
+                isAvax ? getProviderAvax() : getProvider()
+            );
+            if (result.status === QUERY_ERROR) {
+                showError(
+                    'getTransferEvents.ts->getTransferEvents()',
+                    `Error while retrieving transfer events -> [side:${side}]: ${result.data}`
                 );
-                if (result.status === QUERY_ERROR) {
-                    showError(
-                        'getTransferEvents.ts->getTransferEvents()',
-                        `Error while retrieving transfer events: ${result.data}`
-                    );
-                    return errorObj(
-                        `Error in getTransferEvents->getEvents() on Avalanche: ${result.data}`
-                    );
-                }
-                if (result.data.length > 0) {
-                    logPromises.push(result.data);
-                }
+                return errorObj(
+                    `Error in getTransferEvents->getEvents(): [side:${side}]: ${result.data}`
+                );
             }
-        } else {
-            for (let i = 0; i < filters.length; i += 1) {
-                const transferEventFilter = filters[i];
-                const result: EventResult = await getFilterEvents(
-                    transferEventFilter.filter,
-                    transferEventFilter.interface,
-                    'default'
-                );
-                if (result.status === QUERY_ERROR) {
-                    showError(
-                        'getTransferEvents.ts->getTransferEvents()',
-                        `Error while retrieving transfer events: ${result.data}`
-                    );
-                    return errorObj(
-                        `Error in getTransferEvents->getFilterEvents() on Ethereum: ${result.data}`
-                    );
-                }
-                if (result.data.length > 0) {
-                    logPromises.push(result.data);
-                }
+            if (result.data.length > 0) {
+                logPromises.push(result.data);
             }
         }
 
@@ -325,22 +313,22 @@ const getTransferEvents = async (
                     const elem = logResults[i][j];
                     if (
                         elem.args[0] !==
-                            '0x0000000000000000000000000000000000000000' &&
+                        '0x0000000000000000000000000000000000000000' &&
                         elem.args[1] !==
-                            '0x0000000000000000000000000000000000000000'
+                        '0x0000000000000000000000000000000000000000'
                     ) {
                         // Add direct transfer between users
                         logTrades.push(elem);
                     } else if (
                         elem.args[0] ===
-                            '0x0000000000000000000000000000000000000000' &&
+                        '0x0000000000000000000000000000000000000000' &&
                         side === Transfer.TRANSFER_GRO_IN
                     ) {
                         // Add mint transfer for GRO
                         logTrades.push(elem);
                     } else if (
                         elem.args[1] ===
-                            '0x0000000000000000000000000000000000000000' &&
+                        '0x0000000000000000000000000000000000000000' &&
                         side === Transfer.TRANSFER_GRO_OUT
                     ) {
                         // Add burn transfer for GRO

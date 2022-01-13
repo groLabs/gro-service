@@ -4,6 +4,7 @@ const {
     getGroVault: getGVT,
     getPowerD: getPWRD,
     // getGroDAO: getGRO,
+    getUSDCeVault,
 } = require('../common/contractUtil');
 import {
     checkTime,
@@ -80,6 +81,9 @@ const status = async (targetDate, targetTime, targetBlock) => {
     console.log(`total assets: $ ${totalAssetsPWRDparsed.toLocaleString()} [ ${totalAssetsPWRDparsed} ${totalAssetsPWRD.toString()} ]`);
     console.log(`----GRO------------------`);
     // console.log(`total shares: ${totalSupplyGROparsed.toLocaleString()} [ ${totalSupplyGROparsed} ${totalSupplyGRO.toString()} ]`);
+    console.log('before')
+    const a = await getUSDCeVault().getPricePerShare();
+    console.log('after:', a);
 }
 
 // input:
