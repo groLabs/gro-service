@@ -182,18 +182,6 @@ async function getActiveContractNames() {
     return activeContractNames;
 }
 
-async function checkContractNameConfiguration() {
-    const configContractNames = Object.keys(ContractABIMapping);
-    const registryAllContractNames = await getActiveContractNames();
-    for (let i = 0; i < registryAllContractNames.length; i += 1) {
-        const name = registryAllContractNames[i];
-        if (!configContractNames.includes(name)) {
-            throw new SettingError(`Not fund contract key: ${name}`);
-        }
-    }
-    logger.info(`contract name: ${JSON.stringify(registryAllContractNames)}`);
-}
-
 async function parseProtocolExposure(protocols, metaData) {
     const protocolsDisplayName = [];
     const protocolsName = [];
@@ -254,10 +242,11 @@ async function getActiveContractInfoByName(contractName) {
     const localConfig = readLocalContractConfig();
     let result = {};
     if (
-        localConfig.latestContracts &&
-        localConfig.latestContracts[contractName]
+        localConfig.contractHistories &&
+        localConfig.contractHistories[contractName]
     ) {
-        result = localConfig.latestContracts[contractName];
+        const contracts = localConfig.contractHistories[contractName];
+        result = contracts[contracts.length - 1];
     } else {
         const contractAddress = await registry
             .getActive(contractName)
@@ -411,5 +400,4 @@ export {
     readLocalContractConfig,
     getLatestContracts,
     getContractsHistory,
-    checkContractNameConfiguration,
 };
