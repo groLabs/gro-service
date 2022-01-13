@@ -1,12 +1,8 @@
 import { query } from '../handler/queryHandler';
 import { QUERY_ERROR } from '../constants';
-import { getFilterEvents } from '../../common/logFilter-new';
+import { getFilterEvents } from '../../common/logFilter';
 import { getCoinApprovalFilters } from '../../common/filterGenerateTool';
-import {
-    showError,
-    showWarning,
-} from '../handler/logHandler';
-
+import { showError, showWarning } from '../handler/logHandler';
 
 // Get all approval events for a given block range
 // TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
@@ -52,21 +48,21 @@ const getApprovalEvents = async (account, fromBlock, toBlock) => {
         }
         let logsFiltered = [];
         for (let i = 0; i < logs.length; i++) {
-            logsFiltered.push(logs[i].filter(
-                (item) => !depositTx.includes(item.transactionHash)
-            ));
+            logsFiltered.push(
+                logs[i].filter(
+                    (item) => !depositTx.includes(item.transactionHash)
+                )
+            );
         }
 
         return logsFiltered;
     } catch (err) {
         showError(
             'getApprovalEvents.ts->getApprovalEvents()',
-            `[blocks: from ${fromBlock} to: ${toBlock}, account: ${account}]: ${err}`,
+            `[blocks: from ${fromBlock} to: ${toBlock}, account: ${account}]: ${err}`
         );
         return false;
     }
 };
 
-export {
-    getApprovalEvents,
-}
+export { getApprovalEvents };

@@ -1,6 +1,6 @@
 import BN from 'bignumber.js';
 import { ethers, BigNumber } from 'ethers';
-import { getFilterEvents } from '../../common/logFilter-new';
+import { getFilterEvents } from '../../common/logFilter';
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import { ContractCallError, ParameterError } from '../../common/error';
 import { CONTRACT_ASSET_DECIMAL, div } from '../../common/digitalUtil';

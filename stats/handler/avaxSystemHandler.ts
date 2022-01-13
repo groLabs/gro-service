@@ -15,7 +15,7 @@ import routerABI from '../abi/uniswapRoute.json';
 import erc20ABI from '../../contract/abis/ERC20.json';
 import { getConfig } from '../../common/configUtil';
 import { getLatestSystemContractOnAVAX } from '../common/contractStorage';
-import { getEvents } from '../../common/logFilter-new';
+import { getEvents } from '../../common/logFilter';
 
 const logger = require('../statsLogger');
 

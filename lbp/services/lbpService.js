@@ -1,6 +1,6 @@
 const { ethers } = require('ethers');
 const { getConfig } = require('../../common/configUtil');
-const { getFilterEvents } = require('../../common/logFilter-new');
+const { getFilterEvents } = require('../../common/logFilter');
 const {
     getAlchemyRpcProvider,
     getCurrentBlockNumber,

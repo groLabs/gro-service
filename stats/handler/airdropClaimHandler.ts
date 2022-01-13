@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { getFilterEvents } from '../../common/logFilter-new';
+import { getFilterEvents } from '../../common/logFilter';
 import { getConfig } from '../../common/configUtil';
 import { appendEventTimestamp } from '../services/generatePersonTransaction';
 import { getAlchemyRpcProvider } from '../../common/chainUtil';

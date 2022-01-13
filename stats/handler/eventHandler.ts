@@ -2,7 +2,7 @@ import fs from 'fs';
 import config from 'config';
 import dayjs from 'dayjs';
 import { BigNumber } from 'ethers';
-import { getFilterEvents } from '../../common/logFilter-new';
+import { getFilterEvents } from '../../common/logFilter';
 import { ContractCallError } from '../../common/error';
 import { MESSAGE_TYPES } from '../../common/discord/discordService';
 import { getConfig } from '../../common/configUtil';

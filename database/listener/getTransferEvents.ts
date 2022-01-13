@@ -1,23 +1,11 @@
-import {
-    Transfer,
-    ContractVersion,
-} from '../types';
-import {
-    errorObj,
-    getProviderAvax,
-} from '../common/globalUtil';
-import {
-    getEvents,
-    getFilterEvents
-} from '../../common/logFilter-new';
+import { Transfer, ContractVersion } from '../types';
+import { errorObj, getProviderAvax } from '../common/globalUtil';
+import { getEvents, getFilterEvents } from '../../common/logFilter';
 import {
     getLatestContractEventFilter,
     getContractHistoryEventFilters,
 } from '../../common/filterGenerateTool';
-import {
-    isTransfer,
-    isDepositOrWithdrawal,
-} from '../common/personalUtil';
+import { isTransfer, isDepositOrWithdrawal } from '../common/personalUtil';
 import { ContractNames } from '../../registry/registry';
 import { showError } from '../handler/logHandler';
 import { EventResult } from '../../common/commonTypes';
@@ -25,12 +13,11 @@ import { ICall } from '../interfaces/ICall';
 import { QUERY_ERROR } from '../constants';
 import { QUERY_SUCCESS } from '../../lbp/constants';
 
-
 const getTransferEvents = async (
     contractVersion: ContractVersion,
     side: Transfer,
     fromBlock,
-    toBlock,    //TODO: number or 'latest'.... so what?
+    toBlock, //TODO: number or 'latest'.... so what?
     account: string
 ): Promise<ICall> => {
     try {
@@ -92,145 +79,157 @@ const getTransferEvents = async (
             // Avalanche Vaults
             case Transfer.DEPOSIT_USDCe:
                 eventType = 'LogDeposit';
-                contractName = contractVersion === ContractVersion.VAULT_1_0
-                    ? ContractNames.AVAXUSDCVault
-                    : contractVersion === ContractVersion.VAULT_1_5
+                contractName =
+                    contractVersion === ContractVersion.VAULT_1_0
+                        ? ContractNames.AVAXUSDCVault
+                        : contractVersion === ContractVersion.VAULT_1_5
                         ? ContractNames.AVAXUSDCVault_v1_5
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? ContractNames.AVAXUSDCVault_v1_6
-                            : null;
+                        ? ContractNames.AVAXUSDCVault_v1_6
+                        : null;
                 sender = account;
                 receiver = null;
                 break;
             case Transfer.WITHDRAWAL_USDCe:
                 eventType = 'LogWithdrawal';
-                contractName = contractVersion === ContractVersion.VAULT_1_0
-                    ? ContractNames.AVAXUSDCVault
-                    : contractVersion === ContractVersion.VAULT_1_5
+                contractName =
+                    contractVersion === ContractVersion.VAULT_1_0
+                        ? ContractNames.AVAXUSDCVault
+                        : contractVersion === ContractVersion.VAULT_1_5
                         ? ContractNames.AVAXUSDCVault_v1_5
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? ContractNames.AVAXUSDCVault_v1_6
-                            : null;
+                        ? ContractNames.AVAXUSDCVault_v1_6
+                        : null;
                 sender = account;
                 receiver = null;
                 break;
             case Transfer.TRANSFER_USDCe_IN:
                 eventType = 'Transfer';
-                contractName = contractVersion === ContractVersion.VAULT_1_0
-                    ? ContractNames.AVAXUSDCVault
-                    : contractVersion === ContractVersion.VAULT_1_5
+                contractName =
+                    contractVersion === ContractVersion.VAULT_1_0
+                        ? ContractNames.AVAXUSDCVault
+                        : contractVersion === ContractVersion.VAULT_1_5
                         ? ContractNames.AVAXUSDCVault_v1_5
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? ContractNames.AVAXUSDCVault_v1_6
-                            : null;
+                        ? ContractNames.AVAXUSDCVault_v1_6
+                        : null;
                 sender = null;
                 receiver = account;
                 break;
             case Transfer.TRANSFER_USDCe_OUT:
                 eventType = 'Transfer';
-                contractName = contractVersion === ContractVersion.VAULT_1_0
-                    ? ContractNames.AVAXUSDCVault
-                    : contractVersion === ContractVersion.VAULT_1_5
+                contractName =
+                    contractVersion === ContractVersion.VAULT_1_0
+                        ? ContractNames.AVAXUSDCVault
+                        : contractVersion === ContractVersion.VAULT_1_5
                         ? ContractNames.AVAXUSDCVault_v1_5
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? ContractNames.AVAXUSDCVault_v1_6
-                            : null;
+                        ? ContractNames.AVAXUSDCVault_v1_6
+                        : null;
                 sender = account;
                 receiver = null;
                 break;
             case Transfer.DEPOSIT_USDTe:
                 eventType = 'LogDeposit';
-                contractName = contractVersion === ContractVersion.VAULT_1_0
-                    ? ContractNames.AVAXUSDTVault
-                    : contractVersion === ContractVersion.VAULT_1_5
+                contractName =
+                    contractVersion === ContractVersion.VAULT_1_0
+                        ? ContractNames.AVAXUSDTVault
+                        : contractVersion === ContractVersion.VAULT_1_5
                         ? ContractNames.AVAXUSDTVault_v1_5
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? ContractNames.AVAXUSDTVault_v1_6
-                            : null;
+                        ? ContractNames.AVAXUSDTVault_v1_6
+                        : null;
                 sender = account;
                 receiver = null;
                 break;
             case Transfer.WITHDRAWAL_USDTe:
                 eventType = 'LogWithdrawal';
-                contractName = contractVersion === ContractVersion.VAULT_1_0
-                    ? ContractNames.AVAXUSDTVault
-                    : contractVersion === ContractVersion.VAULT_1_5
+                contractName =
+                    contractVersion === ContractVersion.VAULT_1_0
+                        ? ContractNames.AVAXUSDTVault
+                        : contractVersion === ContractVersion.VAULT_1_5
                         ? ContractNames.AVAXUSDTVault_v1_5
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? ContractNames.AVAXUSDTVault_v1_6
-                            : null;
+                        ? ContractNames.AVAXUSDTVault_v1_6
+                        : null;
                 sender = account;
                 receiver = null;
                 break;
             case Transfer.TRANSFER_USDTe_IN:
                 eventType = 'Transfer';
-                contractName = contractVersion === ContractVersion.VAULT_1_0
-                    ? ContractNames.AVAXUSDTVault
-                    : contractVersion === ContractVersion.VAULT_1_5
+                contractName =
+                    contractVersion === ContractVersion.VAULT_1_0
+                        ? ContractNames.AVAXUSDTVault
+                        : contractVersion === ContractVersion.VAULT_1_5
                         ? ContractNames.AVAXUSDTVault_v1_5
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? ContractNames.AVAXUSDTVault_v1_6
-                            : null;
+                        ? ContractNames.AVAXUSDTVault_v1_6
+                        : null;
                 sender = null;
                 receiver = account;
                 break;
             case Transfer.TRANSFER_USDTe_OUT:
                 eventType = 'Transfer';
-                contractName = contractVersion === ContractVersion.VAULT_1_0
-                    ? ContractNames.AVAXUSDTVault
-                    : contractVersion === ContractVersion.VAULT_1_5
+                contractName =
+                    contractVersion === ContractVersion.VAULT_1_0
+                        ? ContractNames.AVAXUSDTVault
+                        : contractVersion === ContractVersion.VAULT_1_5
                         ? ContractNames.AVAXUSDTVault_v1_5
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? ContractNames.AVAXUSDTVault_v1_6
-                            : null;
+                        ? ContractNames.AVAXUSDTVault_v1_6
+                        : null;
                 sender = account;
                 receiver = null;
                 break;
             case Transfer.DEPOSIT_DAIe:
                 eventType = 'LogDeposit';
-                contractName = contractVersion === ContractVersion.VAULT_1_0
-                    ? ContractNames.AVAXDAIVault
-                    : contractVersion === ContractVersion.VAULT_1_5
+                contractName =
+                    contractVersion === ContractVersion.VAULT_1_0
+                        ? ContractNames.AVAXDAIVault
+                        : contractVersion === ContractVersion.VAULT_1_5
                         ? ContractNames.AVAXDAIVault_v1_5
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? ContractNames.AVAXDAIVault_v1_6
-                            : null;
+                        ? ContractNames.AVAXDAIVault_v1_6
+                        : null;
                 sender = account;
                 receiver = null;
                 break;
             case Transfer.WITHDRAWAL_DAIe:
                 eventType = 'LogWithdrawal';
-                contractName = contractVersion === ContractVersion.VAULT_1_0
-                    ? ContractNames.AVAXDAIVault
-                    : contractVersion === ContractVersion.VAULT_1_5
+                contractName =
+                    contractVersion === ContractVersion.VAULT_1_0
+                        ? ContractNames.AVAXDAIVault
+                        : contractVersion === ContractVersion.VAULT_1_5
                         ? ContractNames.AVAXDAIVault_v1_5
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? ContractNames.AVAXDAIVault_v1_6
-                            : null;
+                        ? ContractNames.AVAXDAIVault_v1_6
+                        : null;
                 sender = account;
                 receiver = null;
                 break;
             case Transfer.TRANSFER_DAIe_IN:
                 eventType = 'Transfer';
-                contractName = contractVersion === ContractVersion.VAULT_1_0
-                    ? ContractNames.AVAXDAIVault
-                    : contractVersion === ContractVersion.VAULT_1_5
+                contractName =
+                    contractVersion === ContractVersion.VAULT_1_0
+                        ? ContractNames.AVAXDAIVault
+                        : contractVersion === ContractVersion.VAULT_1_5
                         ? ContractNames.AVAXDAIVault_v1_5
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? ContractNames.AVAXDAIVault_v1_6
-                            : null;
+                        ? ContractNames.AVAXDAIVault_v1_6
+                        : null;
                 sender = null;
                 receiver = account;
                 break;
             case Transfer.TRANSFER_DAIe_OUT:
                 eventType = 'Transfer';
-                contractName = contractVersion === ContractVersion.VAULT_1_0
-                    ? ContractNames.AVAXDAIVault
-                    : contractVersion === ContractVersion.VAULT_1_5
+                contractName =
+                    contractVersion === ContractVersion.VAULT_1_0
+                        ? ContractNames.AVAXDAIVault
+                        : contractVersion === ContractVersion.VAULT_1_5
                         ? ContractNames.AVAXDAIVault_v1_5
                         : contractVersion === ContractVersion.VAULT_1_6
-                            ? ContractNames.AVAXDAIVault_v1_6
-                            : null;
+                        ? ContractNames.AVAXDAIVault_v1_6
+                        : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -242,9 +241,7 @@ const getTransferEvents = async (
                 return errorObj(`switch: Invalid event: ${side}`);
         }
 
-        const isAvax = (side >= 500 && side < 1000)
-            ? true
-            : false;
+        const isAvax = side >= 500 && side < 1000 ? true : false;
 
         let filters;
         if (isDepositOrWithdrawal(side)) {
@@ -278,14 +275,16 @@ const getTransferEvents = async (
                 const result: EventResult = await getEvents(
                     transferEventFilter.filter,
                     transferEventFilter.interface,
-                    getProviderAvax(),
+                    getProviderAvax()
                 );
                 if (result.status === QUERY_ERROR) {
                     showError(
                         'getTransferEvents.ts->getTransferEvents()',
                         `Error while retrieving transfer events: ${result.data}`
                     );
-                    return errorObj(`Error in getTransferEvents->getEvents() on Avalanche: ${result.data}`);
+                    return errorObj(
+                        `Error in getTransferEvents->getEvents() on Avalanche: ${result.data}`
+                    );
                 }
                 if (result.data.length > 0) {
                     logPromises.push(result.data);
@@ -297,14 +296,16 @@ const getTransferEvents = async (
                 const result: EventResult = await getFilterEvents(
                     transferEventFilter.filter,
                     transferEventFilter.interface,
-                    'default',
+                    'default'
                 );
                 if (result.status === QUERY_ERROR) {
                     showError(
                         'getTransferEvents.ts->getTransferEvents()',
                         `Error while retrieving transfer events: ${result.data}`
                     );
-                    return errorObj(`Error in getTransferEvents->getFilterEvents() on Ethereum: ${result.data}`);
+                    return errorObj(
+                        `Error in getTransferEvents->getFilterEvents() on Ethereum: ${result.data}`
+                    );
                 }
                 if (result.data.length > 0) {
                     logPromises.push(result.data);
@@ -323,20 +324,24 @@ const getTransferEvents = async (
                 for (let j = 0; j < logResults[i].length; j++) {
                     const elem = logResults[i][j];
                     if (
-                        elem.args[0] !== '0x0000000000000000000000000000000000000000'
-                        && elem.args[1] !== '0x0000000000000000000000000000000000000000'
+                        elem.args[0] !==
+                            '0x0000000000000000000000000000000000000000' &&
+                        elem.args[1] !==
+                            '0x0000000000000000000000000000000000000000'
                     ) {
                         // Add direct transfer between users
                         logTrades.push(elem);
                     } else if (
-                        elem.args[0] === '0x0000000000000000000000000000000000000000'
-                        && side === Transfer.TRANSFER_GRO_IN
+                        elem.args[0] ===
+                            '0x0000000000000000000000000000000000000000' &&
+                        side === Transfer.TRANSFER_GRO_IN
                     ) {
                         // Add mint transfer for GRO
                         logTrades.push(elem);
                     } else if (
-                        elem.args[1] === '0x0000000000000000000000000000000000000000'
-                        && side === Transfer.TRANSFER_GRO_OUT
+                        elem.args[1] ===
+                            '0x0000000000000000000000000000000000000000' &&
+                        side === Transfer.TRANSFER_GRO_OUT
                     ) {
                         // Add burn transfer for GRO
                         logTrades.push(elem);
@@ -344,11 +349,11 @@ const getTransferEvents = async (
                 }
             }
 
-            const res = (logTrades.length > 0) ? [logTrades] : [];
+            const res = logTrades.length > 0 ? [logTrades] : [];
             return {
                 status: QUERY_SUCCESS,
                 data: res,
-            }
+            };
         } else {
             // return all deposit & withdrawal events
             return {
@@ -363,8 +368,6 @@ const getTransferEvents = async (
         );
         return errorObj(err);
     }
-}
+};
 
-export {
-    getTransferEvents,
-}
+export { getTransferEvents };
