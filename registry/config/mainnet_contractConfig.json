@@ -1193,6 +1193,23 @@
                     "DN": "Curve - XPool",
                     "DY": 117589
                 },
+                "active": false
+            },
+            {
+                "address": "0x7309B7d24AAF008C18D2872816D4510fD3242344",
+                "deployedBlock": 13328566,
+                "startBlock": 13328566,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": ["FRAX"],
+                "protocols": ["Curve", "Yearn", "Convex"],
+                "protocolsDisplayName": ["Curve", "Yearn", "Convex"],
+                "metaData": {
+                    "N": "XPool",
+                    "DN": "Curve - XPool",
+                    "DY": 117589
+                },
                 "active": true
             }
         ],
