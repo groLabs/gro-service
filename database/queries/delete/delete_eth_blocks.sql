@@ -1,2 +1,2 @@
 DELETE FROM gro."ETH_BLOCKS"
-WHERE block_number = $1;
+WHERE "block_number" = $1;

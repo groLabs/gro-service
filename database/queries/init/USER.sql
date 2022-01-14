@@ -4,7 +4,7 @@ CREATE TABLE gro."ETH_BLOCKS" (
     "block_date" TIMESTAMP (6) NULL,
     "network_id" INTEGER NULL,
     "creation_date" TIMESTAMP (6) NULL,
-    CONSTRAINT "ETH_BLOCKS_pkey" PRIMARY KEY (block_number, network_id) 
+    CONSTRAINT "ETH_BLOCKS_pkey" PRIMARY KEY ("block_number", "network_id") 
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -33,7 +33,7 @@ CREATE TABLE gro."USER_APPROVALS" (
     "coin_value" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) NULL,
     CONSTRAINT "USER_APPROVALS_pkey" 
-        PRIMARY KEY (block_number, network_id, tx_hash, sender_address) 
+        PRIMARY KEY ("block_number", "network_id", "tx_hash", "sender_address") 
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -149,7 +149,7 @@ CREATE TABLE gro."USER_BALANCES_SNAPSHOT" (
     "dai_e_1_6_amount" NUMERIC (20,8) NULL,           -- DAI in AVAX Vault 1.6
     "creation_date" TIMESTAMP (6) NULL,
    CONSTRAINT "USER_BALANCES_SNAPSHOT_pkey" 
-        PRIMARY KEY (balance_date, network_id, user_address)
+        PRIMARY KEY ("balance_date", "network_id", "user_address")
         NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 

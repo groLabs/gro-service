@@ -12,7 +12,7 @@ import {
     GlobalNetwork,
 } from '../types';
 import { ICall } from '../interfaces/ICall';
-import { QUERY_ERROR} from '../constants';
+import { QUERY_ERROR } from '../constants';
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 // ETH config
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
@@ -22,9 +22,10 @@ const provider = getAlchemyRpcProvider(providerKey);
 const scanner = new BlocksScanner(provider);
 // AVAX config
 import { ethers } from 'ethers';
-const rpcURL: any =
-    getConfig('blockchain.avalanche_rpc_url', false) ||
-    'https://api.avax.network/ext/bc/C/rpc';
+// const rpcURL: any =
+//     getConfig('blockchain.avalanche_rpc_url', false) ||
+//     'https://api.avax.network/ext/bc/C/rpc';
+const rpcURL = 'https://api.avax.network/ext/bc/C/rpc';
 const providerAVAX = new ethers.providers.JsonRpcProvider(rpcURL);
 const scannerAvax = new BlocksScanner(providerAVAX);
 

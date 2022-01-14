@@ -1,2 +1,2 @@
 DELETE FROM gro."USER_NET_RETURNS_CACHE"
-WHERE user_address = $1;
+WHERE "user_address" = $1;

@@ -1,2 +1,2 @@
 DELETE FROM gro."USER_APPROVALS_CACHE"
-WHERE sender_address = $1;
+WHERE "sender_address" = $1;
