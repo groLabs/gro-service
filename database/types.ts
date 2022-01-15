@@ -112,16 +112,29 @@ enum Transfer {
     TRANSFER_DAIe_OUT = 511,
 };
 
+// Must be aligned with table MD_FEATURES
+enum Feature {
+    PERSONAL_STATS = 1,
+}
+
+// Must be aligned with table MD_STATUS
+enum Status {
+    ACTIVE = 1,
+    INACTIVE = 2,
+}
+
 export {
-    GlobalNetwork,
-    NetworkName,
-    NetworkId,
+    Bool,
+    Base,
+    Status,
+    TokenId,
+    Feature,
     Transfer,
     TokenName,
-    TokenId,
-    Bool,
-    ReturnType,
-    Base,
-    ContractVersion,
+    NetworkId,
     SqlCommand,
+    ReturnType,
+    NetworkName,
+    GlobalNetwork,
+    ContractVersion,
 }

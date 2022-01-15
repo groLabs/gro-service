@@ -1,3 +1,7 @@
+/****************************************************
+                    MD_TOKENS 
+ ****************************************************/
+
 CREATE TABLE gro."MD_TOKENS" (
     "token_id" SMALLINT NOT NULL,
     "name" CHARACTER VARYING (255) NOT NULL,
@@ -8,6 +12,32 @@ CREATE TABLE gro."MD_TOKENS" (
 
 ALTER TABLE gro."MD_TOKENS" OWNER to postgres;
 
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (0, 'unknown', 'Unknown token', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (1, 'pwrd', 'Rebasing stablecoin, native token of Gro protocol', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (2, 'gvt', 'Non-rebasing token, native token of Gro protocol', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (3, 'gro', 'Gro DAO Token', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (4, 'groUSDC.e_vault', 'USDC.e Leveraged Yield', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (5, 'groUSDT.e_vault', 'USDT.e Leveraged Yield', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (6, 'groDAI.e_vault', 'DAI.e Leveraged Yield', now()::timestamp);
+
+/****************************************************
+                    MD_TRANSFERS 
+ ****************************************************/
+
+--Perhaps not needed
 CREATE TABLE gro."MD_TRANSFERS" (
     "transfer_id" INTEGER NOT NULL,
     "name" CHARACTER VARYING (255) NOT NULL,
@@ -18,26 +48,37 @@ CREATE TABLE gro."MD_TRANSFERS" (
 
 ALTER TABLE gro."MD_TRANSFERS" OWNER to postgres;
 
-CREATE TABLE gro."TOKEN_PRICE" (
-   "price_date" TIMESTAMP (6) NOT NULL,
-   "gvt_value" NUMERIC (20, 8) NULL,
-   "pwrd_value" NUMERIC (20, 8) NULL,
-   "gro_value" NUMERIC (20, 8) NULL,
-   "weth_value" NUMERIC (20, 8) NULL,
-   "avax_value" NUMERIC (20, 8) NULL,
-   "bal_value" NUMERIC (20, 8) NULL,
-   "usdc_e_1_0_value" NUMERIC (20, 8) NULL,
-   "usdt_e_1_0_value" NUMERIC (20, 8) NULL,
-   "dai_e_1_0_value" NUMERIC (20, 8) NULL,
-   "usdc_e_1_5_value" NUMERIC (20, 8) NULL,
-   "usdt_e_1_5_value" NUMERIC (20, 8) NULL,
-   "dai_e_1_5_value" NUMERIC (20, 8) NULL,
-   "usdc_e_1_6_value" NUMERIC (20, 8) NULL,
-   "usdt_e_1_6_value" NUMERIC (20, 8) NULL,
-   "dai_e_1_6_value" NUMERIC (20, 8) NULL,
-   "creation_date" TIMESTAMP (6) NULL,
-   CONSTRAINT "TOKEN_PRICE_pkey" PRIMARY KEY ("price_date")
-      NOT DEFERRABLE INITIALLY IMMEDIATE
+/****************************************************
+                    MD_FEATURES 
+ ****************************************************/
+
+CREATE TABLE gro."MD_FEATURES" (
+    "feature_id" SMALLINT NOT NULL,
+    "description" CHARACTER VARYING (255) NULL,
+    "creation_date" TIMESTAMP(6) WITHOUT TIME ZONE,
+    CONSTRAINT "MD_FEATURES_pkey" PRIMARY KEY ("feature_id")
 ) TABLESPACE pg_default;
 
-ALTER TABLE gro."TOKEN_PRICE" OWNER to postgres;
+ALTER TABLE gro."MD_FEATURES" OWNER to postgres;
+
+INSERT INTO gro."MD_FEATURES"("feature_id", "description", "creation_date")
+VALUES (1, 'PERSONAL_STATS', now()::timestamp);
+
+/****************************************************
+                    MD_STATUS 
+ ****************************************************/
+
+CREATE TABLE gro."MD_STATUS" (
+    "status_id" SMALLINT NOT NULL,
+    "description" CHARACTER VARYING (255) NULL,
+    "creation_date" TIMESTAMP(6) WITHOUT TIME ZONE,
+    CONSTRAINT "MD_STATUS_pkey" PRIMARY KEY ("status_id")
+) TABLESPACE pg_default;
+
+ALTER TABLE gro."MD_STATUS" OWNER to postgres;
+
+INSERT INTO gro."MD_STATUS"("status_id", "description", "creation_date")
+VALUES (1, 'ACTIVE', now()::timestamp);
+
+INSERT INTO gro."MD_STATUS"("status_id", "description", "creation_date")
+VALUES (2, 'INACTIVE', now()::timestamp);

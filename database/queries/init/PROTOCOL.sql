@@ -158,23 +158,6 @@ CREATE TABLE IF NOT EXISTS gro."PROTOCOL_SYSTEM_LIFEGUARD_STABLES" (
 
 ALTER TABLE gro."PROTOCOL_SYSTEM_LIFEGUARD_STABLES" OWNER to postgres;
 
--- TODO: PKs
-CREATE TABLE IF NOT EXISTS gro."SYS_PROTOCOL_LOADS" (
-    "table_name" character varying(256) NULL,
-    "last_timestamp" integer NOT NULL,
-    "network_id" integer,
-    "update_date" timestamp(6) without time zone
-) TABLESPACE pg_default;
-
-ALTER TABLE gro."SYS_PROTOCOL_LOADS" OWNER to postgres;
-
--- TODO: Send network by parameter
-INSERT INTO gro."SYS_PROTOCOL_LOADS"("table_name", "last_timestamp", "network_id", "update_date")
-VALUES ('GRO_STATS', 1, 3, now()::timestamp);
-
-INSERT INTO gro."SYS_PROTOCOL_LOADS"("table_name", "last_timestamp", "network_id", "update_date")
-VALUES ('PRICE_CHECK', 1, 3, now()::timestamp);
-
 CREATE TABLE gro."PROTOCOL_PRICE_CHECK_GLOBAL" (
     "block_number" INTEGER NOT NULL,
     "block_timestamp" INTEGER NULL,
