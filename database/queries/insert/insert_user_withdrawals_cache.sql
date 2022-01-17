@@ -5,6 +5,7 @@ INSERT INTO gro."USER_WITHDRAWALS_CACHE" (
         "network_id",
         "transfer_id",
         "token_id",
+        "version_id",
         "user_address",
         "referral_address",
         "amount",
@@ -21,5 +22,6 @@ VALUES (
         $7,
         $8,
         $9,
-        $10
+        $10,
+        $11
     );

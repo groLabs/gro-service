@@ -192,6 +192,7 @@ const personalStatsTransfersParser = async (
                 network_id: getNetwork(globalNetwork).id,
                 transfer_id: side,
                 token_id: tokenId,
+                version_id: contractVersion,
                 user_address: userAddress,
                 referral_address: referralAddress,
                 amount: amount,
