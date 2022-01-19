@@ -73,6 +73,9 @@ function getDistAddressesOnAVAX() {
     const daiVault_v1_6 = latestContracts[ContractNames.AVAXDAIVault_v1_6];
     const usdcVault_v1_6 = latestContracts[ContractNames.AVAXUSDCVault_v1_6];
     const usdtVault_v1_6 = latestContracts[ContractNames.AVAXUSDTVault_v1_6];
+    const daiVault_v1_7 = latestContracts[ContractNames.AVAXDAIVault_v1_7];
+    const usdcVault_v1_7 = latestContracts[ContractNames.AVAXUSDCVault_v1_7];
+    const usdtVault_v1_7 = latestContracts[ContractNames.AVAXUSDTVault_v1_7];
 
     return {
         daiVaultAddresses: daiVault.address.toLowerCase(),
@@ -84,6 +87,9 @@ function getDistAddressesOnAVAX() {
         daiVaultAddresses_v1_6: daiVault_v1_6.address.toLowerCase(),
         usdcVaultAddresses_v1_6: usdcVault_v1_6.address.toLowerCase(),
         usdtVaultAddresses_v1_6: usdtVault_v1_6.address.toLowerCase(),
+        daiVaultAddresses_v1_7: daiVault_v1_7.address.toLowerCase(),
+        usdcVaultAddresses_v1_7: usdcVault_v1_7.address.toLowerCase(),
+        usdtVaultAddresses_v1_7: usdtVault_v1_7.address.toLowerCase(),
     };
 }
 
@@ -152,6 +158,9 @@ async function getAccountFailTransactionsOnAVAX(accountAddress) {
         daiVaultAddresses_v1_6,
         usdcVaultAddresses_v1_6,
         usdtVaultAddresses_v1_6,
+        daiVaultAddresses_v1_7,
+        usdcVaultAddresses_v1_7,
+        usdtVaultAddresses_v1_7,
     } = getDistAddressesOnAVAX();
     const failedTransactions = [];
     for (let i = 0; i < transactions.length; i += 1) {
@@ -183,6 +192,15 @@ async function getAccountFailTransactionsOnAVAX(accountAddress) {
                 failedTransactions.push(transactions[i]);
             } else if (usdtVaultAddresses_v1_6.includes(to)) {
                 transactions[i].contractName = 'USDTVaultMK2_v1_6';
+                failedTransactions.push(transactions[i]);
+            } else if (daiVaultAddresses_v1_7.includes(to)) {
+                transactions[i].contractName = 'DAIVaultMK2_v1_7';
+                failedTransactions.push(transactions[i]);
+            } else if (usdcVaultAddresses_v1_7.includes(to)) {
+                transactions[i].contractName = 'USDCVaultMK2_v1_7';
+                failedTransactions.push(transactions[i]);
+            } else if (usdtVaultAddresses_v1_7.includes(to)) {
+                transactions[i].contractName = 'USDTVaultMK2_v1_7';
                 failedTransactions.push(transactions[i]);
             }
         }

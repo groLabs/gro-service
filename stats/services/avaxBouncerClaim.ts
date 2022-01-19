@@ -20,15 +20,15 @@ const DEFAULT_GRO_STABLE = {
 };
 
 const currentLiveVaults = {
-    DAILiveVault: ContractNames.AVAXDAIVault_v1_6,
-    USDCLiveVault: ContractNames.AVAXUSDCVault_v1_6,
-    USDTLiveVault: ContractNames.AVAXUSDTVault_v1_6,
+    DAILiveVault: ContractNames.AVAXDAIVault_v1_7,
+    USDCLiveVault: ContractNames.AVAXUSDCVault_v1_7,
+    USDTLiveVault: ContractNames.AVAXUSDTVault_v1_7,
 };
 
 const vaultsVersion = {
-    DAI: '_v1_6',
-    USDC: '_v1_6',
-    USDT: '_v1_6',
+    DAI: '_v1_7',
+    USDC: '_v1_7',
+    USDT: '_v1_7',
 };
 
 const groGateFileFolder = groGateConfig.folder;

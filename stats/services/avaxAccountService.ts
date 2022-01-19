@@ -574,6 +574,24 @@ async function avaxPersonalStats(account) {
                 'USDT.e',
                 6
             ),
+            singleVaultEvents(
+                account,
+                ContractNames.AVAXDAIVault_v1_7,
+                'DAI.e',
+                18
+            ),
+            singleVaultEvents(
+                account,
+                ContractNames.AVAXUSDCVault_v1_7,
+                'USDC.e',
+                6
+            ),
+            singleVaultEvents(
+                account,
+                ContractNames.AVAXUSDTVault_v1_7,
+                'USDT.e',
+                6
+            ),
         ];
         const [
             daiVaultEvents,
@@ -585,6 +603,9 @@ async function avaxPersonalStats(account) {
             daiVaultEvents2,
             usdcVaultEvents2,
             usdtVaultEvents2,
+            daiVaultEvents3,
+            usdcVaultEvents3,
+            usdtVaultEvents3,
         ] = await Promise.all(vaultEventsPromise);
 
         fullData(result, daiVaultEvents, 'groDAI.e_vault');
@@ -596,6 +617,9 @@ async function avaxPersonalStats(account) {
         fullData(result, daiVaultEvents2, 'groDAI.e_vault_v1_6');
         fullData(result, usdcVaultEvents2, 'groUSDC.e_vault_v1_6');
         fullData(result, usdtVaultEvents2, 'groUSDT.e_vault_v1_6');
+        fullData(result, daiVaultEvents3, 'groDAI.e_vault_v1_7');
+        fullData(result, usdcVaultEvents3, 'groUSDC.e_vault_v1_7');
+        fullData(result, usdtVaultEvents3, 'groUSDT.e_vault_v1_7');
 
         calculateTotal(result, [
             'amount_added',

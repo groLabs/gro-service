@@ -75,8 +75,11 @@ const ZERO = BigNumber.from(0);
 const TWO = BigNumber.from(2);
 const E18 = BigNumber.from(10).pow(BigNumber.from(18));
 const E6 = BigNumber.from(10).pow(BigNumber.from(6));
-const DECIMALS = [E18, E6, E6, E18, E6, E6, E18, E6, E6];
+const DECIMALS = [E18, E6, E6, E18, E6, E6, E18, E6, E6, E18, E6, E6];
 const POOLS = [
+    DAI_POOL,
+    USDC_POOL,
+    USDT_POOL,
     DAI_POOL,
     USDC_POOL,
     USDT_POOL,
@@ -98,17 +101,20 @@ const STABLECOINS = [
     'DAI.e',
     'USDC.e',
     'USDT.e',
+    'DAI.e',
+    'USDC.e',
+    'USDT.e',
 ];
 const RISK_FREE_RATE = BigNumber.from(2400);
 
 const BLOCKS_OF_3DAYS = 130000;
 const START_TIME_STAMP = [
     1638707119, 1638549778, 1638549778, 1639664984, 1639664984, 1639664984,
-    1641855405, 1641855405, 1641855405,
+    1641855405, 1641855405, 1641855405, 1642551410, 1642551410, 1642551410
 ];
 const START_BLOCK = [
     7838860, 7759709, 7759709, 8317127, 8317127, 8317127, 9402752, 9402752,
-    9402752,
+    9402752, 9754574, 9754574, 9754574
 ];
 const providerKey = 'stats_gro';
 const positionCache = {};
@@ -259,6 +265,15 @@ async function getLatestVaultAdapters() {
     vaultAdaptorPromise.push(
         getLatestAVAXContract(ContractNames.AVAXUSDTVault_v1_6)
     );
+    vaultAdaptorPromise.push(
+        getLatestAVAXContract(ContractNames.AVAXDAIVault_v1_7)
+    );
+    vaultAdaptorPromise.push(
+        getLatestAVAXContract(ContractNames.AVAXUSDCVault_v1_7)
+    );
+    vaultAdaptorPromise.push(
+        getLatestAVAXContract(ContractNames.AVAXUSDTVault_v1_7)
+    );
     const vaultAdapters = await Promise.all(vaultAdaptorPromise);
     return vaultAdapters;
 }
@@ -291,6 +306,15 @@ async function getLatestStrategies() {
     );
     strategiesPromise.push(
         getLatestAVAXContract(ContractNames.AVAXUSDTStrategy_v1_6)
+    );
+    strategiesPromise.push(
+        getLatestAVAXContract(ContractNames.AVAXDAIStrategy_v1_7)
+    );
+    strategiesPromise.push(
+        getLatestAVAXContract(ContractNames.AVAXUSDCStrategy_v1_7)
+    );
+    strategiesPromise.push(
+        getLatestAVAXContract(ContractNames.AVAXUSDTStrategy_v1_7)
     );
     const strategies = await Promise.all(strategiesPromise);
     return strategies;
@@ -508,12 +532,22 @@ function getTvlStats(assets) {
         'groDAI.e_vault_v1_6': assets[6],
         'groUSDC.e_vault_v1_6': assets[7],
         'groUSDT.e_vault_v1_6': assets[8],
+        'groDAI.e_vault_v1_7': assets[9],
+        'groUSDC.e_vault_v1_7': assets[10],
+        'groUSDT.e_vault_v1_7': assets[11],
         total: assets[0]
             .add(assets[1])
             .add(assets[2])
             .add(assets[3])
             .add(assets[4])
-            .add(assets[5]),
+            .add(assets[5])
+            .add(assets[6])
+            .add(assets[7])
+            .add(assets[8])
+            .add(assets[9])
+            .add(assets[10])
+            .add(assets[11]),
+
     };
     return tvl;
 }

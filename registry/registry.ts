@@ -73,6 +73,9 @@ const ContractNames = {
     AVAXDAIVault_v1_6: 'AVAXDAIVault_v1_6',
     AVAXUSDCVault_v1_6: 'AVAXUSDCVault_v1_6',
     AVAXUSDTVault_v1_6: 'AVAXUSDTVault_v1_6',
+    AVAXDAIVault_v1_7: 'AVAXDAIVault_v1_7',
+    AVAXUSDCVault_v1_7: 'AVAXUSDCVault_v1_7',
+    AVAXUSDTVault_v1_7: 'AVAXUSDTVault_v1_7',
     AVAXDAIStrategy: 'AVAXDAIStrategy',
     AVAXUSDCStrategy: 'AVAXUSDCStrategy',
     AVAXUSDTStrategy: 'AVAXUSDTStrategy',
@@ -82,6 +85,9 @@ const ContractNames = {
     AVAXDAIStrategy_v1_6: 'AVAXDAIStrategy_v1_6',
     AVAXUSDCStrategy_v1_6: 'AVAXUSDCStrategy_v1_6',
     AVAXUSDTStrategy_v1_6: 'AVAXUSDTStrategy_v1_6',
+    AVAXDAIStrategy_v1_7: 'AVAXDAIStrategy_v1_7',
+    AVAXUSDCStrategy_v1_7: 'AVAXUSDCStrategy_v1_7',
+    AVAXUSDTStrategy_v1_7: 'AVAXUSDTStrategy_v1_7',
     AVAXBouncer: 'AVAXBouncer',
 };
 
@@ -134,12 +140,18 @@ ContractABIMapping[ContractNames.AVAXUSDTVault_v1_5] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXDAIVault_v1_6] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXUSDCVault_v1_6] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXUSDTVault_v1_6] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXDAIVault_v1_7] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXUSDCVault_v1_7] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXUSDTVault_v1_7] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXDAIStrategy_v1_5] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_5] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_5] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXDAIStrategy_v1_6] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_6] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_6] = 'AHv2Farmer';
+ContractABIMapping[ContractNames.AVAXDAIStrategy_v1_7] = 'AHv2Farmer';
+ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_7] = 'AHv2Farmer';
+ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_7] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXBouncer] = 'Bouncer';
 
 function readLocalContractConfig(isReload = false) {
