@@ -407,7 +407,7 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": {},
+            "metaData": { "N": "DAI yVault", "CN": "DAI", "DN": "DAI" },
             "active": false
         },
         {
@@ -640,7 +640,7 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": { "N": "Curve yVault", "CN": "3CRV", "DN": "3CRV" },
+            "metaData": { "N": "Curve yVault", "CN": "3CRV", "DN": "3CRVUSDx" },
             "active": true
         }
     ],
@@ -847,9 +847,14 @@
             "abiVersion": "ce7b149",
             "tag": "Strategy",
             "tokens": ["DAI"],
-            "protocols": ["Aave"],
-            "protocolsDisplayName": ["Aave"],
-            "metaData": { "N": "Aave", "DN": "Aave - DAI", "DY": 41334 },
+            "protocols": ["Cream"],
+            "protocolsDisplayName": ["CREAM"],
+            "metaData": {
+                "N": "Cream",
+                "DN": "CREAM - DAI",
+                "PDN": { "2": "CREAM" },
+                "DY": 41334
+            },
             "active": true
         }
     ],
@@ -1084,11 +1089,7 @@
             "tokens": ["FRAX"],
             "protocols": ["Curve", "Yearn", "Convex"],
             "protocolsDisplayName": ["Curve", "Yearn", "Convex"],
-            "metaData": {
-                "N": "XPool",
-                "DN": "Curve - XPool",
-                "DY": 117589
-            },
+            "metaData": { "N": "XPool", "DN": "Curve - XPool", "DY": 117589 },
             "active": true
         }
     ],
@@ -1142,6 +1143,19 @@
             "address": "0x8aed279452BF307d51cECc6ef09Fb51C02c095AF",
             "deployedBlock": 11623034,
             "startBlock": 11623034,
+            "endBlock": 13405101,
+            "abiVersion": "fa8e260",
+            "tag": "Governance",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": false
+        },
+        {
+            "address": "0xA28693bf01Dc261887b238646Bb9636cB3a3730B",
+            "deployedBlock": 13405101,
+            "startBlock": 13405101,
             "endBlock": null,
             "abiVersion": "fa8e260",
             "tag": "Governance",
@@ -1400,10 +1414,7 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": {
-                "N": "ah_DAI.e_strat_v1_5",
-                "DN": "DAI.e AH v1.5"
-            },
+            "metaData": { "N": "ah_DAI.e_strat_v1_5", "DN": "DAI.e AH v1.5" },
             "active": true
         }
     ],
@@ -1418,10 +1429,7 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": {
-                "N": "ah_USDC.e_strat_v1_5",
-                "DN": "USDC.e AH v1.5"
-            },
+            "metaData": { "N": "ah_USDC.e_strat_v1_5", "DN": "USDC.e AH v1.5" },
             "active": true
         }
     ],
@@ -1436,10 +1444,7 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": {
-                "N": "ah_USDT.e_strat_v1_5",
-                "DN": "USDT.e AH v1.5"
-            },
+            "metaData": { "N": "ah_USDT.e_strat_v1_5", "DN": "USDT.e AH v1.5" },
             "active": true
         }
     ],
@@ -1454,10 +1459,7 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": {
-                "N": "ah_DAI.e_strat_v1_6",
-                "DN": "DAI.e AH v1.6"
-            },
+            "metaData": { "N": "ah_DAI.e_strat_v1_6", "DN": "DAI.e AH v1.6" },
             "active": true
         }
     ],
@@ -1472,10 +1474,7 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": {
-                "N": "ah_USDC.e_strat_v1_6",
-                "DN": "USDC.e AH v1.6"
-            },
+            "metaData": { "N": "ah_USDC.e_strat_v1_6", "DN": "USDC.e AH v1.6" },
             "active": true
         }
     ],
@@ -1490,10 +1489,7 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": {
-                "N": "ah_USDT.e_strat_v1_6",
-                "DN": "USDT.e AH v1.6"
-            },
+            "metaData": { "N": "ah_USDT.e_strat_v1_6", "DN": "USDT.e AH v1.6" },
             "active": true
         }
     ],
