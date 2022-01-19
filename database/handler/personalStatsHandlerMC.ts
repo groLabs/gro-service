@@ -270,62 +270,72 @@ const getTransfers = async (account: string): Promise<ICall> => {
     }
 }
 
+// A FE request will always insert the target address in USER_BALANCES_CACHE (either if had any interaction or not),
+// so there will always be a query return, but checking for empty return is still added in case the query changes
 const getNetBalances = async (account: string): Promise<ICall> => {
     try {
         const q = 'select_fe_user_net_balances.sql';
         const result = await query(q, [account]);
         let res;
+        let isUser = true;
 
         if (result.status !== QUERY_ERROR) {
 
-            if (result.rows.length > 0)
+            if (result.rows.length > 0) {
                 res = result.rows[0];
+                // Check if any of the keys is missing
+                if (!Object.values(res).some(x => x !== null && x !== ''))
+                    return errorObj(`Missing data in DB [balances] for user ${account}`);
+            } else {
+                isUser = false;
+            }
 
-            // Check if any of the keys is missing
-            if (!Object.values(res).some(x => x !== null && x !== ''))
-                return errorObj(`Missing data in DB [balances] for user ${account}`);
-
-            const daiValue =
-                parseFloat(res.dai_e_1_0)
+            const daiValue = isUser
+                ? parseFloat(res.dai_e_1_0)
                 + parseFloat(res.dai_e_1_5)
-                + parseFloat(res.dai_e_1_6);
-            const usdcValue =
-                parseFloat(res.usdc_e_1_0)
+                + parseFloat(res.dai_e_1_6)
+                : 0;
+            const usdcValue = isUser
+                ? parseFloat(res.usdc_e_1_0)
                 + parseFloat(res.usdc_e_1_5)
-                + parseFloat(res.usdc_e_1_6);
-            const usdtValue =
-                parseFloat(res.usdt_e_1_0)
+                + parseFloat(res.usdc_e_1_6)
+                : 0;
+            const usdtValue = isUser
+                ? parseFloat(res.usdt_e_1_0)
                 + parseFloat(res.usdt_e_1_5)
-                + parseFloat(res.usdt_e_1_6);
+                + parseFloat(res.usdt_e_1_6)
+                : 0;
 
             return {
                 "status": QUERY_SUCCESS,
                 "data": {
                     "ethereum": {
                         "current_balance": {
-                            "pwrd": res.pwrd,
-                            "gvt": res.gvt,
-                            "total": (
-                                parseFloat(res.pwrd)
-                                + parseFloat(res.gvt)).toString(),
+                            "pwrd": isUser ? res.pwrd : '0',
+                            "gvt": isUser ? res.gvt : '0',
+                            "total": isUser
+                                ? (parseFloat(res.pwrd)
+                                    + parseFloat(res.gvt)).toString()
+                                : '0',
                         },
                     },
                     "avalanche": {
                         "current_balance": {
-                            "groDAI.e_vault": res.dai_e_1_0,
-                            "groDAI.e_vault_v1_5": res.dai_e_1_5,
-                            "groDAI.e_vault_v1_6": res.dai_e_1_6,
-                            "groUSDC.e_vault": res.usdc_e_1_0,
-                            "groUSDC.e_vault_v1_5": res.usdc_e_1_5,
-                            "groUSDC.e_vault_v1_6": res.usdc_e_1_6,
-                            "groUSDT.e_vault": res.usdt_e_1_0,
-                            "groUSDT.e_vault_v1_5": res.usdt_e_1_5,
-                            "groUSDT.e_vault_v1_6": res.usdt_e_1_6,
-                            "total": (
-                                usdcValue
-                                + usdtValue
-                                + daiValue
-                            ).toString(),
+                            "groDAI.e_vault": isUser ? res.dai_e_1_0 : '0',
+                            "groDAI.e_vault_v1_5": isUser ? res.dai_e_1_5 : '0',
+                            "groDAI.e_vault_v1_6": isUser ? res.dai_e_1_6 : '0',
+                            "groUSDC.e_vault": isUser ? res.usdc_e_1_0 : '0',
+                            "groUSDC.e_vault_v1_5": isUser ? res.usdc_e_1_5 : '0',
+                            "groUSDC.e_vault_v1_6": isUser ? res.usdc_e_1_6 : '0',
+                            "groUSDT.e_vault": isUser ? res.usdt_e_1_0 : '0',
+                            "groUSDT.e_vault_v1_5": isUser ? res.usdt_e_1_5 : '0',
+                            "groUSDT.e_vault_v1_6": isUser ? res.usdt_e_1_6 : '0',
+                            "total": isUser ?
+                                (usdcValue
+                                    + usdtValue
+                                    + daiValue
+                                ).toString()
+                                : '0',
                         },
                     },
                     "gro_balance_combined": res.gro_balance_combined,
@@ -344,39 +354,45 @@ const getNetReturns = async (account: string): Promise<ICall> => {
         const qBalance = 'select_fe_user_net_returns.sql';
         const result = await query(qBalance, [account]);
         let res;
+        let isUser = true;
 
         if (result.status !== QUERY_ERROR) {
 
-            if (result.rows.length > 0)
+            if (result.rows.length > 0) {
                 res = result.rows[0];
+                // Check if any of the keys is missing
+                if (!Object.values(res).some(x => x !== null && x !== ''))
+                    return errorObj(`Missing data in DB [returns] for user ${account}`);
+            } else {
+                isUser = false;
+            }
 
-            // Check if any of the keys is missing
-            if (!Object.values(res).some(x => x !== null && x !== ''))
-                return errorObj(`Missing data in DB [returns] for user ${account}`);
 
             return {
                 "status": QUERY_SUCCESS,
                 "data": {
                     "ethereum": {
                         "net_returns": {
-                            "pwrd": res.pwrd,
-                            "gvt": res.gvt,
-                            "total": (parseFloat(res.pwrd)
-                                + parseFloat(res.gvt)).toString(),
+                            "pwrd": isUser ? res.pwrd : '0',
+                            "gvt": isUser ? res.gvt : '0',
+                            "total": isUser
+                                ? (parseFloat(res.pwrd)
+                                    + parseFloat(res.gvt)).toString()
+                                : '0',
                         },
                     },
                     "avalanche": {
                         "net_returns": {
-                            "groUSDC.e_vault": res.usdc_e_1_0_value,
-                            "groUSDT.e_vault": res.usdt_e_1_0_value,
-                            "groDAI.e_vault": res.dai_e_1_0_value,
-                            "groUSDC.e_vault_v1_5": res.usdc_e_1_5_value,
-                            "groUSDT.e_vault_v1_5": res.usdt_e_1_5_value,
-                            "groDAI.e_vault_v1_5": res.dai_e_1_5_value,
-                            "groUSDC.e_vault_v1_6": res.usdc_e_1_6_value,
-                            "groUSDT.e_vault_v1_6": res.usdt_e_1_6_value,
-                            "groDAI.e_vault_v1_6": res.dai_e_1_6_value,
-                            "total": (
+                            "groUSDC.e_vault": isUser ? res.usdc_e_1_0_value : '0',
+                            "groUSDT.e_vault": isUser ? res.usdt_e_1_0_value : '0',
+                            "groDAI.e_vault": isUser ? res.dai_e_1_0_value : '0',
+                            "groUSDC.e_vault_v1_5": isUser ? res.usdc_e_1_5_value : '0',
+                            "groUSDT.e_vault_v1_5": isUser ? res.usdt_e_1_5_value : '0',
+                            "groDAI.e_vault_v1_5": isUser ? res.dai_e_1_5_value : '0',
+                            "groUSDC.e_vault_v1_6": isUser ? res.usdc_e_1_6_value : '0',
+                            "groUSDT.e_vault_v1_6": isUser ? res.usdt_e_1_6_value : '0',
+                            "groDAI.e_vault_v1_6": isUser ? res.dai_e_1_6_value : '0',
+                            "total": isUser ? (
                                 parseFloat(res.usdc_e_1_0_value)
                                 + parseFloat(res.usdt_e_1_0_value)
                                 + parseFloat(res.dai_e_1_0_value)
@@ -386,7 +402,8 @@ const getNetReturns = async (account: string): Promise<ICall> => {
                                 + parseFloat(res.usdc_e_1_6_value)
                                 + parseFloat(res.usdt_e_1_6_value)
                                 + parseFloat(res.dai_e_1_6_value)
-                            ).toString(),
+                            ).toString()
+                                : '0',
                         },
                     },
                 },

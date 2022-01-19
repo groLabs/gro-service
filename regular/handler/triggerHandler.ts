@@ -20,7 +20,25 @@ import { harvestTriggerMessage } from '../../discordMessage/harvestMessage';
 import { distributeCurveVaultTriggerMessage } from '../../discordMessage/distributeCurveMessage';
 
 const logger = require('../regularLogger');
-
+// - dai primary: -1500
+// - dai seecondary: 1500
+// - usdc primary: -1500
+// - usdc secondaryL 1500
+// - usdt primary: 3000
+// - usdt secondary: 1500
+// - 3crv primary: 4000
+const E18 = BigNumber.from(10).pow(BigNumber.from(18));
+const E6 = BigNumber.from(10).pow(BigNumber.from(6));
+const ZERO = BigNumber.from(0);
+const HARVEST_THRESHOLD = [
+    BigNumber.from(-1500).mul(E18),
+    BigNumber.from(1500).mul(E18),
+    BigNumber.from(-1500).mul(E6),
+    BigNumber.from(1500).mul(E6),
+    BigNumber.from(3000).mul(E6),
+    BigNumber.from(1500).mul(E6),
+    BigNumber.from(4000).mul(E18),
+];
 interface IInvestTrigger {
     needCall: Boolean;
     params?: any;
@@ -128,7 +146,7 @@ async function sortStrategyByLastHarvested(vaults, providerKey) {
             const baseCallCost = BigNumber.from(getConfig(callCostKey, false));
             const callCost = baseCallCost.mul(gasPrice);
             // eslint-disable-next-line no-await-in-loop
-            const triggerResult = await vault.strategyHarvestTrigger(
+            let triggerResult = await vault.strategyHarvestTrigger(
                 j,
                 callCost
             );
@@ -143,15 +161,21 @@ async function sortStrategyByLastHarvested(vaults, providerKey) {
                 `strategyParam ${strategyArray[j].address} ${strategyParam}`
             );
             // eslint-disable-next-line no-await-in-loop
-            const estimatedTotalAssets = await strategyArray[
-                j
-            ].strategy.estimatedTotalAssets();
+            const strategy = strategyArray[j].strategy;
+            const estimatedTotalAssets = await strategy.estimatedTotalAssets();
+            const expectedReturn = estimatedTotalAssets.sub(
+                strategyParam.totalDebt
+            );
+            if (process.env.NODE_ENV === 'mainnet' || process.env.NODE_ENV === 'develop') {
+                const threshold = HARVEST_THRESHOLD[i * 2 + j];
+                triggerResult = threshold.gt(ZERO)
+                    ? expectedReturn.gt(threshold)
+                    : expectedReturn.lt(threshold);
+                logger.info(`harvest threshold ${threshold} triggerResult ${triggerResult}`)
+
+            }
             logger.info(
-                `strategy estimated total assets ${estimatedTotalAssets} totalDebt ${
-                    strategyParam.totalDebt
-                } expectedReturn ${estimatedTotalAssets.sub(
-                    strategyParam.totalDebt
-                )} `
+                `strategy estimated total assets ${estimatedTotalAssets} totalDebt ${strategyParam.totalDebt} expectedReturn ${expectedReturn} `
             );
             strategiesStatus.push({
                 vaultIndex: i,
@@ -297,8 +321,7 @@ async function harvestOneTrigger(providerKey, walletKey) {
         logger.info(
             `harvestOneTrigger ${vaultIndex} ${strategyIndex} ${trigger}`
         );
-        // TODO: use expected return for curve
-        if (vaultIndex < 3 && trigger) {
+        if (trigger) {
             // Get harvest callCost
             const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${strategyIndex}`;
             const baseCallCost = BigNumber.from(getConfig(callCostKey, false));
@@ -312,31 +335,6 @@ async function harvestOneTrigger(providerKey, walletKey) {
                     triggerResponse: trigger,
                 },
             };
-        }
-        if (vaultIndex === 3) {
-            // Get harvest callCost
-            const callCostKey = `harvest_callcost.vault_${vaultIndex}.strategy_${strategyIndex}`;
-            const baseCallCost = BigNumber.from(getConfig(callCostKey, false));
-            const callCost = baseCallCost.mul(gasPrice);
-            const expectedReturn = estimatedTotalAssets.sub(totalDebt);
-            logger.info(`curve callCost ${callCost} ${expectedReturn}`);
-            // use 10000 here is to make expectedReturn lager than 3x real cost
-            if (callCost.mul(BigNumber.from(10000)).lte(expectedReturn)) {
-                logger.info(
-                    `curve strategy is ready to harvest ${callCost.mul(
-                        BigNumber.from(10000)
-                    )} < ${expectedReturn}`
-                );
-                return {
-                    needCall: true,
-                    params: {
-                        vault: vaults[vaultIndex],
-                        strategyIndex,
-                        callCost,
-                        triggerResponse: trigger,
-                    },
-                };
-            }
         }
     }
     harvestTriggerMessage([]);
