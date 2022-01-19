@@ -1,5 +1,6 @@
 import fs from 'fs';
 import moment from 'moment';
+import { query } from '../handler/queryHandler';
 const {
     getGroVault: getGVT,
     getPowerD: getPWRD,
@@ -11,12 +12,18 @@ import {
     getBalances,
 } from './balanceUtil';
 import {
+    errorObj,
     getProvider,
-    findBlockByDate,
-    checkDateRange,
     parseAmount,
+    checkDateRange,
+    findBlockByDate,
 } from './globalUtil';
 import { Base } from '../types';
+import {
+    QUERY_ERROR,
+    QUERY_SUCCESS,
+} from '../constants';
+import { ICall } from '../interfaces/ICall';
 import { getConfig } from '../../common/configUtil';
 const statsDir = getConfig('stats_folder');
 
@@ -114,8 +121,53 @@ const groAirdropHolders = async (targetTimestamp: number) => {
     }
 }
 
+const NO_STATUS_FOUND = '**DB: No data found (hint: see data in SYS_DB_STATUS & MD_STATUS tables)';
+
+const getDbStatus = async (featureId: number): Promise<ICall> => {
+    try {
+        const q = 'select_sys_status.sql';
+        const stat = await query(q, [featureId]);
+        if (stat.status !== QUERY_ERROR && stat.rows.length > 0) {
+            return {
+                status: QUERY_SUCCESS,
+                data: {
+                    statusId: parseInt(stat.rows[0].status_id),
+                    statusDesc: stat.rows[0].status_desc,
+                }
+            }
+        } else {
+            return errorObj(NO_STATUS_FOUND);
+        }
+    } catch (err) {
+        console.log('Error in statusUtil.ts-getDbStatus():', err);
+        return errorObj(err);
+    }
+}
+
+const setDbStatus = async (featureId: number, statusId: number) => {
+    try {
+        const q = 'update_sys_status.sql';
+        const stat = await query(q, [featureId, statusId]);
+        if (stat.status === QUERY_SUCCESS) {
+            const q = 'select_sys_status.sql';
+            const stat = await query(q, [featureId]);
+            if (stat.status !== QUERY_ERROR && stat.rows.length > 0) {
+                console.log(`**DB: Updated -> new database status: ${stat.rows[0].status_desc}`);
+            } else {
+                console.log(NO_STATUS_FOUND);
+            }
+        } else {
+            console.log(NO_STATUS_FOUND);
+        }
+    } catch (err) {
+        console.log('Error in statusUtil.ts-setDbStatus():', err);
+    }
+}
+
 export {
     status,
     isContract,
+    getDbStatus,
+    setDbStatus,
     groAirdropHolders,
 }

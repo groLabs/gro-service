@@ -2,13 +2,18 @@ import express from 'express';
 import { query } from 'express-validator';
 import { validate } from '../../common/validate';
 import { ParameterError } from '../../common/error';
+import { getDbStatus } from '../common/statusUtil';
 // import { dumpTable } from '../common/pgUtil';
 import { getAllStatsMC } from '../handler/groStatsHandlerMC';
 import { getPriceCheck } from '../handler/priceCheckHandler';
 import { getHistoricalAPY } from '../handler/historicalAPY';
 import { getPersonalStatsMC } from '../handler/personalStatsHandlerMC';
 import { etlPersonalStatsCache } from '../etl/etlPersonalStatsCache';
-import { QUERY_ERROR } from '../constants';
+import {
+    QUERY_ERROR,
+    QUERY_SUCCESS
+} from '../constants';
+import { Status } from '../types';
 
 
 const router = express.Router();
@@ -61,20 +66,40 @@ router.get(
         if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
             throw new ParameterError(`Parameter network failed in database: ${network.toLowerCase()} vs. ${process.env.NODE_ENV.toLowerCase()}`);
         }
-        const load = await etlPersonalStatsCache(address);
-        if (load) {
-            const personalStats = await getPersonalStatsMC(address);
-            res.json(personalStats);
+        // Get status for feature_id = 1 (personalStats)
+        const dbStatus = await getDbStatus(1);
+
+        if (dbStatus.status === QUERY_SUCCESS && dbStatus.data.statusId === Status.ACTIVE) {
+            // DB active -> provide personalStats from dbBot
+            const load = await etlPersonalStatsCache(address);
+            if (load) {
+                const personalStats = await getPersonalStatsMC(address);
+                res.json(personalStats);
+            } else {
+                res.json(
+                    {
+                        "gro_personal_position_mc": {
+                            status: QUERY_ERROR.toString(),
+                            data: 'Error while processing personalStats cache from DB: see logs in host',
+                        }
+                    }
+                );
+            }
         } else {
+            // DB inactive or query error -> provide personalStats from statsBot
+            const msg = dbStatus.data.statusId === Status.INACTIVE
+                ? 'DB is inactive'
+                : 'DB error when checking status';
             res.json(
                 {
                     "gro_personal_position_mc": {
                         status: QUERY_ERROR.toString(),
-                        data: 'Error while processing personalStats cache from DB: see logs in host',
+                        data: msg,
                     }
                 }
             );
         }
+
     })
 );
 

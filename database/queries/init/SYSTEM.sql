@@ -71,4 +71,4 @@ CREATE TABLE gro."SYS_DB_STATUS" (
 ALTER TABLE gro."SYS_DB_STATUS" OWNER to postgres;
 
 INSERT INTO gro."SYS_DB_STATUS"("feature_id", "status_id", "update_date")
-VALUES (1, 1, now()::timestamp);
+VALUES (1, 2, now()::timestamp);

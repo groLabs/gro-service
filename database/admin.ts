@@ -10,13 +10,18 @@ import { getHistoricalAPY } from './handler/historicalAPY';
 import { loadUserBalances } from './loader/loadUserBalances';
 import { etlTokenPrice } from './etl/etlTokenPrice';
 import { dumpTable } from './common/pgUtil';
-import { runTest } from './caller/multiCaller';
+//import { runTest } from './caller/multiCaller';
+import {
+    getDbStatus,
+    setDbStatus
+} from './common/statusUtil';
 import {
     status,
     isContract,
     groAirdropHolders,
 } from './common/statusUtil';
 import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/airdrop4handler';
+import { QUERY_SUCCESS } from './constants';
 
 
 (async () => {
@@ -133,6 +138,30 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
                             params[3]);     // block
                     } else {
                         console.log(`Wrong parameters for status - e.g.: status 15/11/2021 15:00:00 ""`);
+                    }
+                    break;
+                case 'getDbStatus':
+                    if (params.length === 2) {
+                        const stat = await getDbStatus(
+                            parseInt(params[1]),      // status id
+                        );
+                        if (stat.status === QUERY_SUCCESS) {
+                            console.log(`**DB: Database status: ${stat.data.statusDesc}`);
+                        } else {
+                            console.log(stat.data);
+                        }
+                    } else {
+                        console.log(`Wrong parameters for getDbStatus - e.g.: getDbStatus 1`);
+                    }
+                    break;
+                case 'setDbStatus':
+                    if (params.length === 3) {
+                        await setDbStatus(
+                            parseInt(params[1]),      // feature id (1: personalStats)
+                            parseInt(params[2]),      // status id (1: Active, 2: Inactive)
+                        );
+                    } else {
+                        console.log(`Wrong parameters for getDbStatus - e.g. setDbStatus 1 2`);
                     }
                     break;
                 default:
