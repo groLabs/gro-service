@@ -1,4 +1,5 @@
 require('dotenv').config();
+export const registry_address = '0x4801de71ECabF5B85D3a51c461fcE657aa93f50f';
 export const airdrop = {
     address: '0x6b1bFf72F00cC147b5Dc7A5b156Fe7A6Fd206ddA',
     start_block: 13417433,

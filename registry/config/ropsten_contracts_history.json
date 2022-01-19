@@ -445,7 +445,7 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": { "N": "Curve yVault", "CN": "3CRV", "DN": "3CRV" },
+            "metaData": { "N": "Curve yVault", "CN": "3CRV", "DN": "3CRVUSDx" },
             "active": true
         }
     ],
