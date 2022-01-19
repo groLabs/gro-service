@@ -8,7 +8,14 @@ import { getContractsHistory } from '../../registry/registryLoader';
 import { getLatestSystemContractOnAVAX } from '../common/contractStorage';
 import { getAccountAllowance } from './avaxBouncerClaim';
 import { getAccountFailTransactionsOnAVAX } from '../handler/failedTransactionHandler';
-import { ZERO_ADDRESS, handleError, getHandlerEvents, getContracts, getTransferHistories, getAvaxApprovalEvents } from './common';
+import {
+    ZERO_ADDRESS,
+    handleError,
+    getHandlerEvents,
+    getContracts,
+    getTransferHistories,
+    getAvaxApprovalEvents,
+} from './common';
 
 const logger = require('../statsLogger');
 
@@ -187,7 +194,7 @@ function calculateTotal(source, fieldNames) {
 }
 async function getBlockNumberTimestamp(blockNumber) {
     if (!blockNumberTimestamp[blockNumber]) {
-        logger.info(`AVAX: Append timestamp for blockNumber ${blockNumber}`);
+        // logger.info(`AVAX: Append timestamp for blockNumber ${blockNumber}`);
         const blockObject = await provider.getBlock(parseInt(blockNumber, 10));
         blockNumberTimestamp[blockNumber] = `${blockObject.timestamp}`;
     }
@@ -323,7 +330,7 @@ async function getVaultTokenTransferHistory(
 
     const transferIn = [];
     const transferOut = [];
-    const { inLogs, outLogs } = logs as ILogs
+    const { inLogs, outLogs } = logs as ILogs;
     await appendEventTimestamp(inLogs);
     await appendEventTimestamp(outLogs);
     inLogs.forEach((log) => {
@@ -407,7 +414,8 @@ async function singleVaultEvents(account, adpaterType, token, decimals) {
         account
     );
     let eventsPromise;
-    if (!claimed && balance.isZero()) {
+    const isVersion1 = !adpaterType.includes('_v');
+    if (isVersion1 && !claimed && balance.isZero()) {
         eventsPromise = [
             Promise.resolve([]),
             Promise.resolve([]),
@@ -699,6 +707,4 @@ async function avaxPersonalStats(account) {
     return result;
 }
 
-export {
-    avaxPersonalStats,
-};
+export { avaxPersonalStats };

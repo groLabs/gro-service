@@ -239,11 +239,11 @@ async function generateDepositReport(fromBlock, toBlock) {
         item.gtokenAmount = log.gtokenAmount;
         result.push(item);
     });
-    logger.info(
-        `Deposit events from block ${fromBlock} to ${toBlock}:\n${JSON.stringify(
-            result
-        )}`
-    );
+    // logger.info(
+    //     `Deposit events from block ${fromBlock} to ${toBlock}:\n${JSON.stringify(
+    //         result
+    //     )}`
+    // );
 
     return { total, items: result };
 }
@@ -330,11 +330,11 @@ async function generateWithdrawReport(fromBlock, toBlock) {
         item.gtokenAmount = log.gtokenAmount;
         result.push(item);
     });
-    logger.info(
-        `Withdraw events from block ${fromBlock} to ${toBlock}:\n${JSON.stringify(
-            result
-        )}`
-    );
+    // logger.info(
+    //     `Withdraw events from block ${fromBlock} to ${toBlock}:\n${JSON.stringify(
+    //         result
+    //     )}`
+    // );
 
     return { total, items: result };
 }
@@ -352,7 +352,7 @@ async function getGTokenAsset(gtoken, blockNumber) {
         originValue: asset,
         value: formatNumber(asset, 18, 2),
     };
-    logger.info(`getGTokenAsset: ${JSON.stringify(result)}`);
+    // logger.info(`getGTokenAsset: ${JSON.stringify(result)}`);
     return result;
 }
 
