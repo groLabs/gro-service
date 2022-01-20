@@ -50,12 +50,10 @@ function fulledClaimableAndAllowance(
     remainAmount
 ) {
     let allowance = baseAllowance;
-    let deduction = 5000;
     if (claimed) {
         allowance = remainAmount;
-        deduction = 0;
     }
-    allowance = BigNumber.from(allowance).sub(BigNumber.from(deduction));
+    allowance = BigNumber.from(allowance);
     orignal[type].remaining_allowance = allowance.toString();
     if (BigNumber.from(claimableAmount).gt(claimedAmount)) {
         orignal[type].claimable = true;
@@ -63,9 +61,7 @@ function fulledClaimableAndAllowance(
         orignal[type].claimable = false;
     }
 
-    const distBaseAllowance = BigNumber.from(baseAllowance).sub(
-        BigNumber.from(deduction)
-    );
+    const distBaseAllowance = BigNumber.from(baseAllowance);
     orignal[type].base_allowance = distBaseAllowance.toString();
     orignal[type].base_allowance_claimed = claimed.toString();
     return allowance;
@@ -213,20 +209,16 @@ function fullupSingleVault(
     userClaimed
 ) {
     let allowance = baseAllowance;
-    let deduced = 5000
     if (userClaimed) {
         allowance = userAllowance;
-        deduced = 0
     }
-    allowance = BigNumber.from(allowance).sub(BigNumber.from(deduced));
+    allowance = BigNumber.from(allowance);
     dataSource[
 	    `gro${vaultType}.e_vault${vaultsVersion[vaultType]}`
     ].remaining_allowance = allowance.toString();
 
 
-    const distBaseAllowance = BigNumber.from(baseAllowance).sub(
-        BigNumber.from(deduced)
-    );
+    const distBaseAllowance = BigNumber.from(baseAllowance);
     dataSource[
         `gro${vaultType}.e_vault${vaultsVersion[vaultType]}`
     ].base_allowance = distBaseAllowance.toString();
