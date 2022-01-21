@@ -14,6 +14,9 @@ import {
     getUSDCeVault_1_6,
     getUSDTeVault_1_6,
     getDAIeVault_1_6,
+    getUSDCeVault_1_7,
+    getUSDTeVault_1_7,
+    getDAIeVault_1_7,
 } from '../common/contractUtil';
 import { QUERY_ERROR } from '../constants';
 import { Base } from '../types';
@@ -45,6 +48,9 @@ const loadTokenPrice = async (): Promise<boolean> => {
             priceUSDCe_1_6,
             priceUSDTe_1_6,
             priceDAIe_1_6,
+            priceUSDCe_1_7,
+            priceUSDTe_1_7,
+            priceDAIe_1_7,
         ] = await Promise.all([
             getGroVault().getPricePerShare(),
             getPowerD().getPricePerShare(),
@@ -61,6 +67,9 @@ const loadTokenPrice = async (): Promise<boolean> => {
             getUSDCeVault_1_6().getPricePerShare(),
             getUSDTeVault_1_6().getPricePerShare(),
             getDAIeVault_1_6().getPricePerShare(),
+            getUSDCeVault_1_7().getPricePerShare(),
+            getUSDTeVault_1_7().getPricePerShare(),
+            getDAIeVault_1_7().getPricePerShare(),
         ]);
 
         if (priceGRO.status === QUERY_ERROR
@@ -87,6 +96,9 @@ const loadTokenPrice = async (): Promise<boolean> => {
         const priceUSDCe_1_6_Parsed = parseAmount(priceUSDCe_1_6, Base.D6);
         const priceUSDTe_1_6_Parsed = parseAmount(priceUSDTe_1_6, Base.D6);
         const priceDAIe_1_6_Parsed = parseAmount(priceDAIe_1_6, Base.D18);
+        const priceUSDCe_1_7_Parsed = parseAmount(priceUSDCe_1_7, Base.D6);
+        const priceUSDTe_1_7_Parsed = parseAmount(priceUSDTe_1_7, Base.D6);
+        const priceDAIe_1_7_Parsed = parseAmount(priceDAIe_1_7, Base.D18);
 
         // Set params for the insert
         const params = [
@@ -106,6 +118,9 @@ const loadTokenPrice = async (): Promise<boolean> => {
             priceUSDCe_1_6_Parsed,
             priceUSDTe_1_6_Parsed,
             priceDAIe_1_6_Parsed,
+            priceUSDCe_1_7_Parsed,
+            priceUSDTe_1_7_Parsed,
+            priceDAIe_1_7_Parsed,
             now,
         ];
 

@@ -187,6 +187,8 @@ const loadTransfers = async (
                     ]
                     : null;
 
+            // TODO: ****** Function to return an array of Avax vaults to be processed (instead of repeating code)
+
             const avaxVault_1_0 =
                 gn === GN.ALL || gn === GN.AVALANCHE
                     ? [
@@ -241,6 +243,24 @@ const loadTransfers = async (
                     ]
                     : null;
 
+            const avaxVault_1_7 =
+                gn === GN.ALL || gn === GN.AVALANCHE
+                    ? [
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_USDCe, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_USDCe, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDCe_IN, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDCe_OUT, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_USDTe, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_USDTe, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDTe_IN, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_USDTe_OUT, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, toBlockAvax, Transfer.DEPOSIT_DAIe, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, toBlockAvax, Transfer.WITHDRAWAL_DAIe, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_DAIe_IN, null),
+                        loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, toBlockAvax, Transfer.TRANSFER_DAIe_OUT, null),
+                    ]
+                    : null;
+
             let res = [];
             switch (gn) {
                 case GN.ETHEREUM:
@@ -252,7 +272,8 @@ const loadTransfers = async (
                     res = await Promise.all([
                         ...avaxVault_1_0,
                         ...avaxVault_1_5,
-                        ...avaxVault_1_6
+                        ...avaxVault_1_6,
+                        ...avaxVault_1_7,
                     ]);
                     break;
                 case GN.ALL:
@@ -260,7 +281,8 @@ const loadTransfers = async (
                         ...eth,
                         ...avaxVault_1_0,
                         ...avaxVault_1_5,
-                        ...avaxVault_1_6
+                        ...avaxVault_1_6,
+                        ...avaxVault_1_7,
                     ]);
                     break;
                 default:

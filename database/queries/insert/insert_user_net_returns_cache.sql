@@ -14,6 +14,9 @@ INSERT INTO gro."USER_NET_RETURNS_CACHE" (
         "usdc_e_1_6_value",
         "usdt_e_1_6_value",
         "dai_e_1_6_value",
+        "usdc_e_1_7_value",
+        "usdt_e_1_7_value",
+        "dai_e_1_7_value",
         "creation_date"
     )
 SELECT now()::timestamp as balance_date,
@@ -70,6 +73,19 @@ SELECT now()::timestamp as balance_date,
         WHEN ut.dai_e_1_6_value IS NULL THEN 0
         ELSE ub.dai_e_1_6_value - ut.dai_e_1_6_value
     END as dai_e_1_6_value,
+    --v1.7
+    CASE
+        WHEN ut.usdc_e_1_7_value IS NULL THEN 0
+        ELSE ub.usdc_e_1_7_value - ut.usdc_e_1_7_value
+    END as usdc_e_1_7_value,
+    CASE
+        WHEN ut.usdt_e_1_7_value IS NULL THEN 0
+        ELSE ub.usdt_e_1_7_value - ut.usdt_e_1_7_value
+    END as usdt_e_1_7_value,
+    CASE
+        WHEN ut.dai_e_1_7_value IS NULL THEN 0
+        ELSE ub.dai_e_1_7_value - ut.dai_e_1_7_value
+    END as dai_e_1_7_value,
     now()::timestamp as creation_date
 FROM (
         SELECT sum(ctt.total_unstaked_value) as total_unstaked_value,
@@ -84,6 +100,9 @@ FROM (
             sum(ctt.usdc_e_1_6_value) as usdc_e_1_6_value,
             sum(ctt.usdt_e_1_6_value) as usdt_e_1_6_value,
             sum(ctt.dai_e_1_6_value) as dai_e_1_6_value,
+            sum(ctt.usdc_e_1_7_value) as usdc_e_1_7_value,
+            sum(ctt.usdt_e_1_7_value) as usdt_e_1_7_value,
+            sum(ctt.dai_e_1_7_value) as dai_e_1_7_value,
             ctt.user_address as user_address
         FROM (
                 SELECT t.value as total_unstaked_value,
@@ -143,6 +162,22 @@ FROM (
                         AND t."version_id" = 3 THEN t."value"
                         ELSE 0
                     END as "dai_e_1_6_value",
+                    --v1.7
+                    CASE
+                        WHEN t."token_id" = 4
+                        AND t."version_id" = 4 THEN t."value"
+                        ELSE 0
+                    END as "usdc_e_1_7_value",
+                    CASE
+                        WHEN t."token_id" = 5
+                        AND t."version_id" = 4 THEN t."value"
+                        ELSE 0
+                    END as "usdt_e_1_7_value",
+                    CASE
+                        WHEN t."token_id" = 6
+                        AND t."version_id" = 4 THEN t."value"
+                        ELSE 0
+                    END as "dai_e_1_7_value",
                     t.user_address as user_address
                 FROM gro."USER_TRANSFERS" t
                 WHERE t.user_address = $1
@@ -205,6 +240,22 @@ FROM (
                         AND ct."version_id" = 3 THEN ct."value"
                         ELSE 0
                     END as "dai_e_1_6_value",
+                    --v1.7
+                    CASE
+                        WHEN ct."token_id" = 4
+                        AND ct."version_id" = 4 THEN ct."value"
+                        ELSE 0
+                    END as "usdc_e_1_7_value",
+                    CASE
+                        WHEN ct."token_id" = 5
+                        AND ct."version_id" = 4 THEN ct."value"
+                        ELSE 0
+                    END as "usdt_e_1_7_value",
+                    CASE
+                        WHEN ct."token_id" = 6
+                        AND ct."version_id" = 4 THEN ct."value"
+                        ELSE 0
+                    END as "dai_e_1_7_value",
                     ct.user_address as user_address
                 FROM gro."USER_TRANSFERS_CACHE" ct
                 WHERE ct.user_address = $1
@@ -225,6 +276,9 @@ FROM (
             b."usdc_e_1_6_amount" * tp."usdc_e_1_6_price" as "usdc_e_1_6_value",
             b."usdt_e_1_6_amount" * tp."usdt_e_1_6_price" as "usdt_e_1_6_value",
             b."dai_e_1_6_amount" * tp."dai_e_1_6_price" as "dai_e_1_6_value",
+            b."usdc_e_1_7_amount" * tp."usdc_e_1_7_price" as "usdc_e_1_7_value",
+            b."usdt_e_1_7_amount" * tp."usdt_e_1_7_price" as "usdt_e_1_7_value",
+            b."dai_e_1_7_amount" * tp."dai_e_1_7_price" as "dai_e_1_7_value",
             b."user_address" as "user_address",
             b."balance_date" as "balance_date",
             b."network_id" as "network_id"
@@ -240,7 +294,10 @@ FROM (
                     "dai_e_1_5_value" as "dai_e_1_5_price",
                     "usdc_e_1_6_value" as "usdc_e_1_6_price",
                     "usdt_e_1_6_value" as "usdt_e_1_6_price",
-                    "dai_e_1_6_value" as "dai_e_1_6_price"
+                    "dai_e_1_6_value" as "dai_e_1_6_price",
+                    "usdc_e_1_7_value" as "usdc_e_1_7_price",
+                    "usdt_e_1_7_value" as "usdt_e_1_7_price",
+                    "dai_e_1_7_value" as "dai_e_1_7_price"
                 FROM gro."TOKEN_PRICE"
                 LIMIT 1
             ) tp

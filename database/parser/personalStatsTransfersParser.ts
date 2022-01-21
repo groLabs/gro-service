@@ -16,12 +16,15 @@ import {
     getUSDCeVault,
     getUSDCeVault_1_5,
     getUSDCeVault_1_6,
+    getUSDCeVault_1_7,
     getUSDTeVault,
     getUSDTeVault_1_5,
     getUSDTeVault_1_6,
+    getUSDTeVault_1_7,
     getDAIeVault,
     getDAIeVault_1_5,
     getDAIeVault_1_6,
+    getDAIeVault_1_7,
 } from '../common/contractUtil';
 import {
     Base,
@@ -118,6 +121,7 @@ const getGroups = (side: Transfer): boolean[] => {
     }
 }
 
+//TODO: change AVAX part and use one unique if, then conditional ifs depending on the vault (to reduce code)
 const personalStatsTransfersParser = async (
     contractVersion: ContractVersion,
     globalNetwork: GlobalNetwork,
@@ -292,6 +296,29 @@ const personalStatsTransfersParser = async (
                 || side === Transfer.TRANSFER_DAIe_OUT) {
                 for (const item of result) {
                     const priceDAIe = parseAmount(await getDAIeVault_1_6().getPricePerShare({ blockTag: item.block_number }), Base.D18);
+                    item.value = item.amount * priceDAIe;
+                }
+            }
+        } else if (contractVersion === ContractVersion.VAULT_1_7) {
+            // Calc USDCe, USDTe & DAIe value for direct transfers in Vault 1.7
+            if (side === Transfer.TRANSFER_USDCe_IN
+                || side === Transfer.TRANSFER_USDCe_OUT) {
+                for (const item of result) {
+                    const priceUSDCe = parseAmount(await getUSDCeVault_1_7().getPricePerShare({ blockTag: item.block_number }), Base.D6);
+                    item.value = item.amount * priceUSDCe;
+                }
+            } else if (
+                side === Transfer.TRANSFER_USDTe_IN
+                || side === Transfer.TRANSFER_USDTe_OUT) {
+                for (const item of result) {
+                    const priceUSDTe = parseAmount(await getUSDTeVault_1_7().getPricePerShare({ blockTag: item.block_number }), Base.D6);
+                    item.value = item.amount * priceUSDTe;
+                }
+            } else if (
+                side === Transfer.TRANSFER_DAIe_IN
+                || side === Transfer.TRANSFER_DAIe_OUT) {
+                for (const item of result) {
+                    const priceDAIe = parseAmount(await getDAIeVault_1_7().getPricePerShare({ blockTag: item.block_number }), Base.D18);
                     item.value = item.amount * priceDAIe;
                 }
             }

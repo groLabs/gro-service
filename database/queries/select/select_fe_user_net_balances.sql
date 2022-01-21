@@ -9,8 +9,11 @@ SELECT b."pwrd_unstaked_amount" * tp."pwrd_value" as "pwrd",
     b."dai_e_1_5_amount" * tp."dai_e_1_5_value" as "dai_e_1_5",
     b."usdc_e_1_6_amount" * tp."usdc_e_1_6_value" as "usdc_e_1_6",
     b."usdt_e_1_6_amount" * tp."usdt_e_1_6_value" as "usdt_e_1_6",
-    b."dai_e_1_6_amount" * tp."dai_e_1_6_value" as "dai_e_1_6"
-    FROM gro."USER_BALANCES_CACHE" b,
+    b."dai_e_1_6_amount" * tp."dai_e_1_6_value" as "dai_e_1_6",
+    b."usdc_e_1_7_amount" * tp."usdc_e_1_7_value" as "usdc_e_1_7",
+    b."usdt_e_1_7_amount" * tp."usdt_e_1_7_value" as "usdt_e_1_7",
+    b."dai_e_1_7_amount" * tp."dai_e_1_7_value" as "dai_e_1_7"
+FROM gro."USER_BALANCES_CACHE" b,
     (
         SELECT "gvt_value",
             "pwrd_value",
@@ -22,7 +25,10 @@ SELECT b."pwrd_unstaked_amount" * tp."pwrd_value" as "pwrd",
             "dai_e_1_5_value",
             "usdc_e_1_6_value",
             "usdt_e_1_6_value",
-            "dai_e_1_6_value"
+            "dai_e_1_6_value",
+            "usdc_e_1_7_value",
+            "usdt_e_1_7_value",
+            "dai_e_1_7_value"
         FROM gro."TOKEN_PRICE"
         LIMIT 1
     ) tp

@@ -15,6 +15,9 @@ INSERT INTO gro."TOKEN_PRICE" (
         "usdc_e_1_6_value",
         "usdt_e_1_6_value",
         "dai_e_1_6_value",
+        "usdc_e_1_7_value",
+        "usdt_e_1_7_value",
+        "dai_e_1_7_value",
         "creation_date"
     )
 VALUES (
@@ -34,5 +37,8 @@ VALUES (
         $14,
         $15,
         $16,
-        $17
+        $17,
+        $18,
+        $19,
+        $20
     )

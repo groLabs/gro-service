@@ -32,6 +32,9 @@ INSERT INTO gro."USER_BALANCES_CACHE" (
         "usdc_e_1_6_amount",
         "usdt_e_1_6_amount",
         "dai_e_1_6_amount",
+        "usdc_e_1_7_amount",
+        "usdt_e_1_7_amount",
+        "dai_e_1_7_amount",
         "creation_date"
     )
 VALUES (
@@ -68,5 +71,8 @@ VALUES (
         $31,
         $32,
         $33,
-        $34
+        $34,
+        $35,
+        $36,
+        $37
     );

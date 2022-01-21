@@ -140,6 +140,9 @@ CREATE TABLE gro."USER_BALANCES_SNAPSHOT" (
     "usdc_e_1_6_amount" NUMERIC (20,8) NULL,          -- USDC in AVAX Vault 1.6
     "usdt_e_1_6_amount" NUMERIC (20,8) NULL,          -- USDT in AVAX Vault 1.6
     "dai_e_1_6_amount" NUMERIC (20,8) NULL,           -- DAI in AVAX Vault 1.6
+    "usdc_e_1_7_amount" NUMERIC (20,8) NULL,          -- USDC in AVAX Vault 1.7
+    "usdt_e_1_7_amount" NUMERIC (20,8) NULL,          -- USDT in AVAX Vault 1.7
+    "dai_e_1_7_amount" NUMERIC (20,8) NULL,           -- DAI in AVAX Vault 1.7
     "creation_date" TIMESTAMP (6) NULL,
    CONSTRAINT "USER_BALANCES_SNAPSHOT_pkey" 
         PRIMARY KEY ("balance_date", "network_id", "user_address")
@@ -165,6 +168,9 @@ CREATE TABLE gro."TOKEN_PRICE" (
    "usdc_e_1_6_value" NUMERIC (20, 8) NULL,
    "usdt_e_1_6_value" NUMERIC (20, 8) NULL,
    "dai_e_1_6_value" NUMERIC (20, 8) NULL,
+   "usdc_e_1_7_value" NUMERIC (20, 8) NULL,
+   "usdt_e_1_7_value" NUMERIC (20, 8) NULL,
+   "dai_e_1_7_value" NUMERIC (20, 8) NULL,
    "creation_date" TIMESTAMP (6) NULL,
    CONSTRAINT "TOKEN_PRICE_pkey" PRIMARY KEY ("price_date")
       NOT DEFERRABLE INITIALLY IMMEDIATE
