@@ -323,8 +323,8 @@
         "AVAXDAIVault_v1_7": [
             {
                 "address": "0x514c3230F0b1C93e29Ea59fe8da3cEf0d4f1e0b7",
-                "deployedBlock": 9754574,
-                "startBlock": 9754574,
+                "deployedBlock": 9754525,
+                "startBlock": 9754525,
                 "abiVersion": "6270d2c",
                 "endBlock": null,
                 "tag": "AVAX",
@@ -342,8 +342,8 @@
         "AVAXUSDCVault_v1_7": [
             {
                 "address": "0xBDEc31c3386481585afF7B38cA200cBF597Cb96D",
-                "deployedBlock": 9754574,
-                "startBlock": 9754574,
+                "deployedBlock": 9754396,
+                "startBlock": 9754396,
                 "abiVersion": "6270d2c",
                 "endBlock": null,
                 "tag": "AVAX",
@@ -361,8 +361,8 @@
         "AVAXUSDTVault_v1_7": [
             {
                 "address": "0x3e3Cb9cfD469bC9abC5b8a95e4Ffe5299B8e28cA",
-                "deployedBlock": 9754574,
-                "startBlock": 9754574,
+                "deployedBlock": 9754481,
+                "startBlock": 9754481,
                 "abiVersion": "6270d2c",
                 "endBlock": null,
                 "tag": "AVAX",
@@ -602,8 +602,8 @@
         "AVAXUSDCStrategy_v1_7": [
             {
                 "address": "0x342fc25dCa3968E1089FBC09cec4538c41B74621",
-                "deployedBlock": 9754574,
-                "startBlock": 9754574,
+                "deployedBlock": 9754431,
+                "startBlock": 9754431,
                 "abiVersion": "6270d2c",
                 "tag": "AVAX",
                 "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
@@ -620,8 +620,8 @@
         "AVAXUSDTStrategy_v1_7": [
             {
                 "address": "0x4a017eBb7C5b92b05418267CB3F917d2a7576b31",
-                "deployedBlock": 9754574,
-                "startBlock": 9754574,
+                "deployedBlock": 9754501,
+                "startBlock": 9754501,
                 "abiVersion": "6270d2c",
                 "tag": "AVAX",
                 "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
