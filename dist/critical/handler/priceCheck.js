@@ -17,8 +17,8 @@ const stableCoinDecimals = [
     ethers_1.BigNumber.from('1000000'),
 ];
 async function curveStableCoinBalanceCheck(providerKey) {
-    const provider = chainUtil_1.getAlchemyRpcProvider(providerKey);
-    const curve3PoolAddress = await allContracts_1.getBuoy().curvePool();
+    const provider = (0, chainUtil_1.getAlchemyRpcProvider)(providerKey);
+    const curve3PoolAddress = await (0, allContracts_1.getBuoy)().curvePool();
     const curve3Pool = new ethers_1.ethers.Contract(curve3PoolAddress, ICurve3Pool_json_1.default, provider);
     const coinBalances = [];
     const coinRatios = [];
@@ -78,7 +78,7 @@ async function checkCurveCoinRatio(providerKey, configCoinRatios) {
         const urgency = level === 'EMERG' ? 'high' : 'low';
         const ratioPercent = ratio.div(ethers_1.BigNumber.from(100));
         const configRatioPercent = configRatio.div(ethers_1.BigNumber.from(100));
-        alertMessageSender_1.sendAlertMessage({
+        (0, alertMessageSender_1.sendAlertMessage)({
             discord: {
                 description: `[${level}] P5 - Curve coin balance compare | Coin ${coin} is ${ratioPercent}% below ${configRatioPercent}% of tri-pool`,
             },
@@ -118,9 +118,9 @@ async function checkChainlinkPrice(price, configPrice) {
     if (ratioAbnormal.length) {
         const { key, level, value } = ratioAbnormal[0];
         const urgency = level === 'EMERG' ? 'high' : 'low';
-        const pricePairValue = digitalUtil_1.formatNumber(value, 4, 2);
+        const pricePairValue = (0, digitalUtil_1.formatNumber)(value, 4, 2);
         const pridePair = key.toUpperCase().split('TO');
-        alertMessageSender_1.sendAlertMessage({
+        (0, alertMessageSender_1.sendAlertMessage)({
             discord: {
                 description: `[${level}] P4 - Chainlink coin pair compare | Ratio between ${pridePair[0]} and ${pridePair[1]} is ${pricePairValue}, threshold 1.4`,
             },

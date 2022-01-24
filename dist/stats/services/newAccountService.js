@@ -42,8 +42,6 @@ function calculateTotal(ethereumStats, avaxStats) {
 async function generateReport(account) {
     account = account.toLowerCase();
     const currentTimestamp = Math.floor(Date.now() / 1000);
-    // const statsOnEthereum = await ethereumPersonalStats(account);
-    // const statsOnAvax = await avaxPersonalStats(account);
     const [statsOnEthereum, statsOnAvax] = await Promise.all([
         ethereumPersonalStats(account),
         avaxPersonalStats(account),

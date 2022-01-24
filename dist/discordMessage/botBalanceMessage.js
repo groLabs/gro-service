@@ -10,28 +10,39 @@ const discordService_1 = require("../common/discord/discordService");
 const alertMessageSender_1 = require("../common/alertMessageSender");
 const ETH_DECIMAL = new bignumber_js_1.default(10).pow(18);
 function botBalanceMessage(content) {
-    const accountLabel = digitalUtil_1.shortAccount(content.botAccount);
-    const balance = digitalUtil_1.div(content.balance, ETH_DECIMAL, 4);
+    const { botAccount, botType, chain, walletKey, balance, level } = content;
+    const accountLabel = (0, digitalUtil_1.shortAccount)(botAccount);
+    const distBalance = (0, digitalUtil_1.div)(balance, ETH_DECIMAL, 4);
+    let chainLabel = '[Ethereum]';
+    let tokenLabal = 'ETH';
+    if (chain && chain.toLowerCase() === 'avax') {
+        chainLabel = '[Avalanche]';
+        tokenLabal = 'AVAX';
+    }
+    let botLabel = botType;
+    if (walletKey) {
+        botLabel = `${botLabel} - ${walletKey}`;
+    }
     const discordMessage = {
-        type: discordService_1.MESSAGE_TYPES[content.botType],
-        description: `${content.level} B6 - ${content.botType} ${accountLabel} only has ${balance} ETH, add more funds`,
+        type: discordService_1.MESSAGE_TYPES[botType],
+        description: `${level}${chainLabel} B6 - ${botLabel} ${accountLabel} only has ${distBalance} ${tokenLabal}, add more funds`,
         urls: [
             {
                 label: accountLabel,
                 type: 'account',
-                value: content.botAccount,
+                value: botAccount,
             },
         ],
     };
     let pagerduty;
-    if (content.level !== '[WARN]') {
+    if (level !== '[WARN]') {
         pagerduty = {
-            title: `${content.level} B6 - Bot balance is too low`,
-            description: `${content.level} B6 - ${content.botType} ${content.botAccount} only has ${balance} ETH, add more funds`,
+            title: `${level} B6 - Bot balance is too low`,
+            description: `${level}${chainLabel} B6 - ${botLabel} ${accountLabel} only has ${distBalance} ${tokenLabal}, add more funds`,
             urgency: 'low',
         };
     }
-    alertMessageSender_1.sendAlertMessage({
+    (0, alertMessageSender_1.sendAlertMessage)({
         pagerduty,
         discord: discordMessage,
     });

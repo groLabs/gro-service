@@ -15,8 +15,8 @@ const botEnv = process.env.BOT_ENV.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 const configFileFolder = `${__dirname}/config`;
-const registryAddress = configUtil_1.getConfig('registry_address', false);
-const provider = chainUtil_1.getAlchemyRpcProvider();
+const registryAddress = (0, configUtil_1.getConfig)('registry_address', false);
+const provider = (0, chainUtil_1.getAlchemyRpcProvider)();
 let registry;
 if (registryAddress) {
     registry = new ethers_1.ethers.Contract(registryAddress, registryABI, provider);

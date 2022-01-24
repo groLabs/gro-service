@@ -4,11 +4,9 @@ const {
 } = require('../../dist/common/discord/discordService');
 const { forceClose } = require('../handler/borrowLimitHandler');
 const { harvest } = require('../handler/harvestHandler');
-const { tend } = require('../handler/tendHandler');
 const { checkAccountsBalance } = require('../common/avaxChainUtil');
 const { getVaults } = require('../contract/avaxAllContracts');
 const { getConfig } = require('../../dist/common/configUtil');
-const tendSchedulerSetting = getConfig('trigger_scheduler.tend', false);
 const harvestSchedulerSetting = getConfig('trigger_scheduler.harvest', false);
 const forceCloseSchedulerSetting = getConfig(
     'trigger_scheduler.force_close',
@@ -85,7 +83,7 @@ function forceCloseScheduler() {
 
 function startHarvestJobs() {
     checkBotAccountBalance();
-    forceCloseScheduler();
+    // forceCloseScheduler();
     harvestScheduler();
 }
 

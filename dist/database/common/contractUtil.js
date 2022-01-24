@@ -13,6 +13,10 @@ const getPowerD = () => {
     return getLatestSystemContract(ContractNames.powerD, getProviderKey())
         .contract;
 };
+// const getGroDAO = () => {
+//     return getLatestSystemContract(ContractNames.getGroDAO, getProviderKey())
+//         .contract;
+// }
 const getTokenCounter = () => {
     return getLatestSystemContract(ContractNames.TokenCounter, getProviderKey())
         .contract;
@@ -64,6 +68,7 @@ const getStableCoinsInfo = async () => {
 module.exports = {
     getGroVault,
     getPowerD,
+    // getGroDAO,
     getBuoy,
     getStables,
     getTokenCounter,

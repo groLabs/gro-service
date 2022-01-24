@@ -65,8 +65,8 @@ EVENT_FRAGMENT[EVENT_TYPE.pnl] = [
     'event LogPnLExecution(uint256 deductedAssets,int256 totalPnL,int256 investPnL,int256 pricePnL,uint256 withdrawalBonus,uint256 performanceBonus,uint256 beforeGvtAssets,uint256 beforePwrdAssets,uint256 afterGvtAssets,uint256 afterPwrdAssets)',
 ];
 async function getStableCoinApprovalFilters(account, providerKey) {
-    const stablecoins = allContracts_1.getUnderlyTokens(providerKey);
-    const spender = allContracts_1.getDepositHandler(providerKey).address;
+    const stablecoins = (0, allContracts_1.getUnderlyTokens)(providerKey);
+    const spender = (0, allContracts_1.getDepositHandler)(providerKey).address;
     const approvalFilters = [];
     for (let i = 0; i < stablecoins.length; i += 1) {
         approvalFilters.push(stablecoins[i].filters.Approval(account, spender));
@@ -74,8 +74,8 @@ async function getStableCoinApprovalFilters(account, providerKey) {
     return approvalFilters;
 }
 async function getGTokenApprovalFilters(account, providerKey) {
-    const groVault = allContracts_1.getGvt(providerKey);
-    const pwrd = allContracts_1.getPwrd(providerKey);
+    const groVault = (0, allContracts_1.getGvt)(providerKey);
+    const pwrd = (0, allContracts_1.getPwrd)(providerKey);
     const approvalFilters = [];
     approvalFilters.push(groVault.filters.Approval(account, null));
     approvalFilters.push(pwrd.filters.Approval(account, null));
@@ -88,7 +88,7 @@ function getDepositWithdrawFilter(account, type, handlerAddresses) {
     const filters = [];
     for (let i = 0; i < handlerAddresses.length; i += 1) {
         handlerAddress = handlerAddresses[i];
-        let handlerABI = configUtil_1.getConfig(`${type}_handler_history`)[handlerAddress];
+        let handlerABI = (0, configUtil_1.getConfig)(`${type}_handler_history`)[handlerAddress];
         logger.info(`handlerAddress: ${JSON.stringify(handlerAddress)}`);
         handlerABI = handlerABI.abi;
         const abiVersion = handlerABI ? `-${handlerABI}` : '';
@@ -110,12 +110,12 @@ function getDepositWithdrawFilter(account, type, handlerAddresses) {
         return filters;
     switch (type) {
         case EVENT_TYPE.deposit:
-            handlerAddress = allContracts_1.getDepositHandler().address;
+            handlerAddress = (0, allContracts_1.getDepositHandler)().address;
             handler = new ethers_1.ethers.Contract(handlerAddress, depositHandlerABI);
             filters.push(handler.filters.LogNewDeposit(account));
             break;
         case EVENT_TYPE.withdraw:
-            handlerAddress = allContracts_1.getWithdrawHandler().address;
+            handlerAddress = (0, allContracts_1.getWithdrawHandler)().address;
             handler = new ethers_1.ethers.Contract(handlerAddress, withdrawHandlerABI);
             filters.push(handler.filters.LogNewWithdrawal(account));
             break;
@@ -125,10 +125,10 @@ function getDepositWithdrawFilter(account, type, handlerAddresses) {
     return filters;
 }
 function getFilter(account, type, providerKey) {
-    const depositHandler = allContracts_1.getDepositHandler(providerKey);
-    const withdrawHandler = allContracts_1.getWithdrawHandler(providerKey);
-    const groVault = allContracts_1.getGvt(providerKey);
-    const powerD = allContracts_1.getPwrd(providerKey);
+    const depositHandler = (0, allContracts_1.getDepositHandler)(providerKey);
+    const withdrawHandler = (0, allContracts_1.getWithdrawHandler)(providerKey);
+    const groVault = (0, allContracts_1.getGvt)(providerKey);
+    const powerD = (0, allContracts_1.getPwrd)(providerKey);
     let filter;
     switch (type) {
         case EVENT_TYPE.deposit:
@@ -161,7 +161,7 @@ function getFilter(account, type, providerKey) {
     return filter;
 }
 async function getEventsByFilter(filter, eventType, providerKey, specialEventFragment) {
-    const provider = chainUtil_1.getDefaultProvider();
+    const provider = (0, chainUtil_1.getDefaultProvider)();
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new error_1.ContractCallError(`Get ${eventType} logs failed.`);
@@ -211,7 +211,7 @@ async function getDepositWithdrawEvents(eventType, fromBlock, toBlock = 'latest'
         const handlerAddress = handlerAddresses[i];
         let eventFragment;
         if (handlerAddress) {
-            eventFragment = configUtil_1.getConfig(`${eventType}_handler_history`)[handlerAddress].event_fragment;
+            eventFragment = (0, configUtil_1.getConfig)(`${eventType}_handler_history`)[handlerAddress].event_fragment;
         }
         const filter = filters[i];
         filter.fromBlock = fromBlock;
@@ -243,7 +243,7 @@ async function getTransferEvents(eventType, fromBlock, toBlock = 'latest', accou
     }
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = chainUtil_1.getDefaultProvider();
+    const provider = (0, chainUtil_1.getDefaultProvider)();
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new error_1.ContractCallError(`Get ${eventType} event logs of ${account || 'all users'} failed.`);
@@ -270,7 +270,7 @@ async function getStrategyHavestEvents(strategy, fromBlock, toBlock, providerKey
     const filter = await strategy.filters.Harvested();
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = chainUtil_1.getDefaultProvider();
+    const provider = (0, chainUtil_1.getDefaultProvider)();
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new error_1.ContractCallError(`Get StrategyHavest logs failed.`);
@@ -292,7 +292,7 @@ async function getVaultTransferEvents(vault, fromBlock, toBlock = 'latest', prov
     const filter = await vault.filters.Transfer(null, '0x0000000000000000000000000000000000000000');
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = chainUtil_1.getDefaultProvider();
+    const provider = (0, chainUtil_1.getDefaultProvider)();
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new error_1.ContractCallError(`Get VaultTransfer logs failed.`);
@@ -314,7 +314,7 @@ async function getPnLEvents(pnl, fromBlock, toBlock = 'latest', providerKey) {
     const filter = await pnl.filters.LogPnLExecution();
     filter.fromBlock = fromBlock;
     filter.toBlock = toBlock;
-    const provider = chainUtil_1.getDefaultProvider();
+    const provider = (0, chainUtil_1.getDefaultProvider)();
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         throw new error_1.ContractCallError(`Get getPnLEvents logs failed.`);

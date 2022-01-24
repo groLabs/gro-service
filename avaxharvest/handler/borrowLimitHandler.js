@@ -10,18 +10,19 @@ const { sendTransaction } = require('../common/avaxChainUtil');
 const {
     forceCloseMessage,
     updateLimitMessage,
-} = require('../../discordMessage/avaxMessage');
+} = require('../../dist/discordMessage/avaxMessage');
 
 const logger = require('../avaxharvestLogger');
 
 const E18 = BigNumber.from('1000000000000000000');
 const PERCENT_DECIMAL = BigNumber.from('1000000');
 const LIMIT_FACTOR = BigNumber.from(getConfig('limit_factor'));
-const CLOSE_THRESHOLD = BigNumber.from(getConfig('force_close_threshold'));
 const AH_CREDIT = BigNumber.from(100000).mul(E18);
-const UPPER = BigNumber.from(1050000);
-const LOWER = BigNumber.from(950000);
+const UPPER = BigNumber.from(1200000);
+const LOWER = BigNumber.from(800000);
+const updateSensitivityThreshold = BigNumber.from(470000);
 const FORCE_CLOSE_RANGE = [10 * 3600, 14 * 3600];
+const ZERO = BigNumber.from(0);
 
 async function getBorrowInfo(blockTag) {
     const crToken = getCrToken(blockTag);
@@ -43,27 +44,46 @@ async function getBorrowInfo(blockTag) {
     };
 }
 
+async function getSafeAvaxAmount(ahStrategy, blockTag) {
+    const borrowInfo = await getBorrowInfo(blockTag);
+    const openPositionId = await ahStrategy.activePosition(blockTag);
+    let borrowed = BigNumber.from(0);
+    if (openPositionId > 0) {
+        const positionData = await ahStrategy.getPosition(openPositionId,blockTag);
+        logger.info(
+            `getSafeAvaxAmount ${positionData.wantOpen[0]} ${positionData.wantOpen[1]} `
+        );
+        borrowed = positionData.wantOpen[1];
+    }
+    // total * 0.95
+    const avaxBorrowCap = borrowInfo.totalAvailable.mul(LIMIT_FACTOR).div(PERCENT_DECIMAL);
+    const diff = avaxBorrowCap.sub(borrowInfo.totalBorrows);
+    const isOverBorrowed = diff.lt(ZERO);
+    let safeAvaxAmount = borrowed.add(diff);
+    if (safeAvaxAmount.lte(ZERO)) {
+        safeAvaxAmount = ZERO
+    }
+    logger.info(
+        `avaxBorrowCap ${avaxBorrowCap} diff ${diff} borrowed ${borrowed} safeAvaxAmount ${safeAvaxAmount} `
+    );
+    return {
+        safeAvaxAmount,
+        isOverBorrowed
+    }
+}
+
 async function setBorrowLimit(vault) {
     try {
-        const { stableCoin, ahStrategy, vaultAdaptorMK2, vaultName, decimal } =
+        const { stableCoin, ahStrategy, vaultAdaptorMK2, vaultName, decimals } =
             vault;
         const currentLimit = await ahStrategy.borrowLimit();
+        const vaultAssets = await vaultAdaptorMK2.totalAssets();
         logger.info(`currentLimit ${currentLimit}`);
         const wavax = getWavax();
         const router = getRouter();
         const latestBlock = await ahStrategy.signer.provider.getBlock('latest');
         console.log(`latestBlock ${latestBlock.number}`);
-        const blockTagNow = {
-            blockTag: latestBlock.number,
-        };
-        const blockTagOneMinAgo = {
-            blockTag: latestBlock.number - 1000,
-        };
-        const borrowInfo = await getBorrowInfo(blockTagNow);
-        const borrowInfoBefore = await getBorrowInfo(blockTagOneMinAgo);
-        const availableOneMinAgo = borrowInfoBefore.totalAvailable.sub(
-            borrowInfoBefore.totalBorrows
-        );
+
         const checkResult = await router.getAmountsOut(E18, [
             wavax.address,
             stableCoin.address,
@@ -72,48 +92,132 @@ async function setBorrowLimit(vault) {
         logger.info(
             `checkResult address ${wavax.address} ${stableCoin.address}`
         );
-        const available = borrowInfo.totalAvailable.sub(
-            borrowInfo.totalBorrows
-        );
-        logger.info(`available ${available} AH_CREDIT ${AH_CREDIT}`);
-        let newBorrowLimit = AH_CREDIT.mul(LIMIT_FACTOR).div(PERCENT_DECIMAL);
-        if (available.gte(AH_CREDIT)) {
-            if (availableOneMinAgo.gte(AH_CREDIT)) {
+        const {safeAvaxAmount:safeAvax,isOverBorrowed } = await getSafeAvaxAmount(ahStrategy, {
+            blockTag: latestBlock.number,
+        });
+        let newBorrowLimit = AH_CREDIT;
+        if (safeAvax.gte(AH_CREDIT)) {
+            const {safeAvaxAmount:safeAvaxOneMinAgo} = await getSafeAvaxAmount(ahStrategy, {
+                blockTag: latestBlock.number - 30,
+            });
+            if (safeAvaxOneMinAgo.gte(AH_CREDIT)) {
                 logger.info(
                     `No need update borrowLimit. available ${available} availableOneMinAgo ${availableOneMinAgo} AH_CREDIT ${AH_CREDIT}`
                 );
                 return;
             }
         }
-        if (available.lt(AH_CREDIT)) {
+        if (safeAvax.lt(AH_CREDIT)) {
             const current = await ahStrategy.borrowLimit();
-            newBorrowLimit = available.mul(LIMIT_FACTOR).div(PERCENT_DECIMAL);
-            const want = newBorrowLimit.mul(checkResult[1]).div(E18);
-            const diff = want.mul(PERCENT_DECIMAL).div(current);
+            const want = safeAvax.mul(checkResult[1]).div(E18);
+            const diff = want.gte(current)? want.sub(current): current.sub(want);
+            newBorrowLimit = safeAvax;
             logger.info(
-                `Borrow limit change ${current} -> ${want} ratio ${diff}`
+                `Borrow limit change ${current} -> ${want} diff ${diff}`
             );
-            logger.info(`diff ${diff}`);
-            if (diff.lte(UPPER) && diff.gte(LOWER)) {
+            //(
+            // abs(current value - last on-chain update value) > updateSensitivityThreshold
+            // AND
+            // (
+            //   total borrow > total supply * (1-utilisationBuffer)
+            //   OR
+            //   Lab assets > current borrow limit
+            // )
+            //)
+            logger.info(
+                `whether need update the borrowlimit: diff ${diff.gt(updateSensitivityThreshold.mul(decimals))} and (isOverBorrowed ${isOverBorrowed} or ${vaultAssets.gt(current)})`
+            );
+            if (!(diff.gt(updateSensitivityThreshold.mul(decimals)) && (isOverBorrowed || vaultAssets.gt(current)))) {
                 logger.info(
-                    `No need update borrowLimit. No big borrow limit change ${current} -> ${newBorrowLimit} ratio ${diff}`
+                    `No need update borrowLimit. No big borrow limit change ${current} -> ${want}`
                 );
                 return;
             }
         }
-
         const newBorrowLimitWant = newBorrowLimit.mul(checkResult[1]).div(E18);
         logger.info(
             `newBorrowLimit ${newBorrowLimit} newBorrowLimitWant ${newBorrowLimitWant}`
         );
-        const tx = await sendTransaction(ahStrategy, 'setBorrowLimit', [
-            newBorrowLimitWant,
-        ]);
-        updateLimitMessage({ transactionHash: tx.transactionHash });
+         const tx = await sendTransaction(ahStrategy, 'setBorrowLimit', [
+             newBorrowLimitWant,
+         ]);
+         updateLimitMessage({ transactionHash: tx.transactionHash });
     } catch (e) {
-        logger.error(e);
+       logger.error(e);
     }
 }
+
+//async function setBorrowLimit(vault) {
+//    try {
+//        const { stableCoin, ahStrategy, vaultAdaptorMK2, vaultName, decimal } =
+//            vault;
+//        const currentLimit = await ahStrategy.borrowLimit();
+//        logger.info(`currentLimit ${currentLimit}`);
+//        const wavax = getWavax();
+//        const router = getRouter();
+//        const latestBlock = await ahStrategy.signer.provider.getBlock('latest');
+//        console.log(`latestBlock ${latestBlock.number}`);
+//        const blockTagNow = {
+//            blockTag: latestBlock.number,
+//        };
+//        const blockTagOneMinAgo = {
+//            blockTag: latestBlock.number - 30,
+//        };
+//        const borrowInfo = await getBorrowInfo(blockTagNow);
+//        const borrowInfoBefore = await getBorrowInfo(blockTagOneMinAgo);
+//        const availableOneMinAgo = borrowInfoBefore.totalAvailable.sub(
+//            borrowInfoBefore.totalBorrows
+//        );
+//        const checkResult = await router.getAmountsOut(E18, [
+//            wavax.address,
+//            stableCoin.address,
+//        ]);
+//
+//        logger.info(
+//            `checkResult address ${wavax.address} ${stableCoin.address}`
+//        );
+//        const available = borrowInfo.totalAvailable.sub(
+//            borrowInfo.totalBorrows
+//        );
+//        logger.info(`available ${available} AH_CREDIT ${AH_CREDIT}`);
+//        let newBorrowLimit = AH_CREDIT.mul(LIMIT_FACTOR).div(PERCENT_DECIMAL);
+//        if (available.gte(AH_CREDIT)) {
+//            if (availableOneMinAgo.gte(AH_CREDIT)) {
+//                logger.info(
+//                    `No need update borrowLimit. available ${available} availableOneMinAgo ${availableOneMinAgo} AH_CREDIT ${AH_CREDIT}`
+//                );
+//                return;
+//            }
+//        }
+//        if (available.lt(AH_CREDIT)) {
+//            const current = await ahStrategy.borrowLimit();
+//            newBorrowLimit = available.mul(LIMIT_FACTOR).div(PERCENT_DECIMAL);
+//            const want = newBorrowLimit.mul(checkResult[1]).div(E18);
+//            const diff = want.mul(PERCENT_DECIMAL).div(current);
+//            logger.info(
+//                `Borrow limit change ${current} -> ${want} ratio ${diff}`
+//            );
+//            logger.info(`diff ${diff}`);
+//            if (diff.lte(UPPER) && diff.gte(LOWER)) {
+//                logger.info(
+//                    `No need update borrowLimit. No big borrow limit change ${current} -> ${newBorrowLimit} ratio ${diff}`
+//                );
+//                return;
+//            }
+//        }
+//
+//        const newBorrowLimitWant = newBorrowLimit.mul(checkResult[1]).div(E18);
+//        logger.info(
+//            `newBorrowLimit ${newBorrowLimit} newBorrowLimitWant ${newBorrowLimitWant}`
+//        );
+//        const tx = await sendTransaction(ahStrategy, 'setBorrowLimit', [
+//            newBorrowLimitWant,
+//        ]);
+//        updateLimitMessage({ transactionHash: tx.transactionHash });
+//    } catch (e) {
+//        logger.error(e);
+//    }
+//}
 
 async function getEvents(filter, contractInterface, provider) {
     const filterLogs = await provider.getLogs(filter).catch((error) => {

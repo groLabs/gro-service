@@ -2,7 +2,6 @@ const { ethers } = require('ethers');
 const axios = require('axios');
 const fs = require('fs');
 const { BigNumber } = require('ethers');
-const { NonceManager } = require('@ethersproject/experimental');
 const {
     SettingError,
     BlockChainCallError,
@@ -35,8 +34,6 @@ if (
     throw err;
 }
 
-let defaultProvider;
-let defaultWalletManager;
 const rpcProviders = {};
 const botWallets = {};
 const failedTimes = { accountBalance: 0 };
@@ -48,21 +45,6 @@ const AVAXRPCURL =
 const network = getConfig('blockchain.network');
 logger.info(`network: ${network}`);
 
-function getDefaultProvider() {
-    if (defaultProvider) {
-        return defaultProvider;
-    }
-    const options = getConfig('blockchain.default_api_keys', false) || {};
-    logger.info('Create a new default provider.');
-    if (process.env.NODE_ENV === 'develop') {
-        defaultProvider = ethers.providers.getDefaultProvider(network);
-    } else {
-        defaultProvider = ethers.providers.getDefaultProvider(network, options);
-    }
-    defaultProvider = ethers.providers.getDefaultProvider(network, options);
-    return defaultProvider;
-}
-
 function getAvaxRpcProvider(providerKey) {
     // only for test
     // =====================
@@ -72,7 +54,9 @@ function getAvaxRpcProvider(providerKey) {
     result = rpcProviders[providerKey];
     if (!result) {
         if (process.env.NODE_ENV === 'develop') {
-            result = ethers.providers.getDefaultProvider(network);
+            result = new ethers.providers.JsonRpcProvider(
+                'http://127.0.0.1:8545'
+            );
         } else {
             result = new ethers.providers.JsonRpcProvider(
                 'https://api.avax.network/ext/bc/C/rpc'
@@ -86,36 +70,36 @@ function getAvaxRpcProvider(providerKey) {
     return result;
 }
 
-function getNonceManager() {
-    if (defaultWalletManager) {
-        return defaultWalletManager;
-    }
+// function getNonceManager() {
+//     if (defaultWalletManager) {
+//         return defaultWalletManager;
+//     }
 
-    const provider = getAvaxRpcProvider();
-    const keystorePassword = getConfig('blockchain.keystores.default.password');
-    let botWallet;
-    if (keystorePassword === 'NO_PASSWORD') {
-        botWallet = new ethers.Wallet(
-            getConfig('blockchain.keystores.default.private_key'),
-            provider
-        );
-    } else {
-        const data = fs.readFileSync(
-            getConfig('blockchain.keystores.default.file_path'),
-            {
-                flag: 'r',
-            }
-        );
-        botWallet = ethers.Wallet.fromEncryptedJsonSync(data, keystorePassword);
-        botWallet = botWallet.connect(provider);
-    }
+//     const provider = getAvaxRpcProvider();
+//     const keystorePassword = getConfig('blockchain.keystores.default.password');
+//     let botWallet;
+//     if (keystorePassword === 'NO_PASSWORD') {
+//         botWallet = new ethers.Wallet(
+//             getConfig('blockchain.keystores.default.private_key'),
+//             provider
+//         );
+//     } else {
+//         const data = fs.readFileSync(
+//             getConfig('blockchain.keystores.default.file_path'),
+//             {
+//                 flag: 'r',
+//             }
+//         );
+//         botWallet = ethers.Wallet.fromEncryptedJsonSync(data, keystorePassword);
+//         botWallet = botWallet.connect(provider);
+//     }
 
-    defaultWalletManager = botWallet; //new NonceManager(botWallet);
-    botWallets.default = { default: defaultWalletManager };
+//     defaultWalletManager = botWallet;
+//     botWallets.default = { default: defaultWalletManager };
 
-    logger.info(`Created default wallet manager : ${botWallet.address}`);
-    return defaultWalletManager;
-}
+//     logger.info(`Created default wallet manager : ${botWallet.address}`);
+//     return defaultWalletManager;
+// }
 
 function createWallet(providerKey, walletKey) {
     providerKey = providerKey || DEFAULT_PROVIDER_KEY;
@@ -162,12 +146,12 @@ function getWalletNonceManager(providerKey, accountKey) {
     providerKey = providerKey || DEFAULT_PROVIDER_KEY;
     accountKey = accountKey || DEFAULT_WALLET_KEY;
 
-    if (
-        providerKey === DEFAULT_PROVIDER_KEY &&
-        accountKey === DEFAULT_WALLET_KEY
-    ) {
-        return getNonceManager();
-    }
+    // if (
+    //     providerKey === DEFAULT_PROVIDER_KEY &&
+    //     accountKey === DEFAULT_WALLET_KEY
+    // ) {
+    //     return getNonceManager();
+    // }
 
     let walletNonceManager;
     if (!botWallets[providerKey]) {
@@ -177,42 +161,10 @@ function getWalletNonceManager(providerKey, accountKey) {
     walletNonceManager = providerAccounts[accountKey];
     if (!walletNonceManager) {
         const wallet = createWallet(providerKey, accountKey);
-        walletNonceManager = wallet; //new NonceManager(wallet);
+        walletNonceManager = wallet;
         providerAccounts[accountKey] = walletNonceManager;
     }
     return walletNonceManager;
-}
-
-async function syncManagerNonce(providerkey, walletKey) {
-    const walletManager = getWalletNonceManager(providerkey, walletKey);
-    // Get nonce from chain
-    const transactionCountInChain = await walletManager
-        .getTransactionCount()
-        .catch((error) => {
-            logger.error(error);
-            throw new BlockChainCallError(
-                `${providerkey} : ${walletKey} Get bot nonce from chain failed.`,
-                MESSAGE_TYPES.adjustNonce
-            );
-        });
-    // Get local nonce
-    const transactionCountInLocal = await walletManager
-        .getTransactionCount('pending')
-        .catch((error) => {
-            logger.error(error);
-            throw new BlockChainCallError(
-                `${providerkey} : ${walletKey} Get bot nonce from local failed.`,
-                MESSAGE_TYPES.adjustNonce
-            );
-        });
-    // Adjust local nonce
-    if (transactionCountInChain > transactionCountInLocal) {
-        walletManager.setTransactionCount(transactionCountInChain);
-        sendMessageToChannel(DISCORD_CHANNELS.botLogs, {
-            message: `Set bot[${providerkey} : ${walletKey}] Nonce to ${transactionCountInChain}`,
-            type: MESSAGE_TYPES.adjustNonce,
-        });
-    }
 }
 
 async function checkAccountBalance(signer, botBalanceWarnVault, walletKey) {
@@ -398,9 +350,7 @@ async function sendTransactionWithRetry(contract, methodName, params = []) {
 }
 
 module.exports = {
-    getDefaultProvider,
     getWalletNonceManager,
-    syncManagerNonce,
     checkAccountsBalance,
     getCurrentBlockNumber,
     getTimestampByBlockNumber,

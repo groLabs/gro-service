@@ -10,6 +10,7 @@ const { getHistoricalAPY } = require('./handler/historicalAPY');
 const { loadUserBalances } = require('./loader/loadUserBalances');
 const { loadTokenPrice } = require('./loader/loadTokenPrice');
 const { dumpTable } = require('./common/pgUtil');
+const { status } = require('./common/statusUtil');
 const { airdrop4Handler, airdrop4HandlerV2, checkPosition, } = require('./handler/airdrop4handler');
 (async () => {
     try {
@@ -110,6 +111,17 @@ const { airdrop4Handler, airdrop4HandlerV2, checkPosition, } = require('./handle
                         console.log('Wrong parameters for dumpTable - e.g.: dumpTable PROTOCOL_PRICE_CHECK_DETAIL true');
                     }
                     break;
+                case 'status':
+                    if (params.length === 4) {
+                        await loadContractInfoFromRegistry();
+                        await status(params[1], // date
+                        params[2], // time
+                        params[3]); // block
+                    }
+                    else {
+                        console.log(`Wrong parameters for status - e.g.: status 15/11/2021 15:00:00 ""`);
+                    }
+                    break;
                 default:
                     console.log(`Unknown parameter/s: ${params}`);
                     break;
@@ -117,7 +129,7 @@ const { airdrop4Handler, airdrop4HandlerV2, checkPosition, } = require('./handle
             process.exit(0);
         }
         // Testing groStats
-        await etlGroStats();
+        // await etlGroStats();
         // await etlGroStatsHDL(1623844800,1623844800,'apy',1800);
         // Testing priceCheck
         // await etlPriceCheck();

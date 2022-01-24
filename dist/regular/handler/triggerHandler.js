@@ -1,10 +1,10 @@
 const { BigNumber } = require('ethers');
 const { getInsurance, getExposure, getLifeguard, getVaults, getStrategyLength, getVaultAndStrategyLabels, getYearnVaults, getController, getBuoy, } = require('../../dist/contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
-const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
+const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService');
 const { getConfig } = require('../../dist/common/configUtil');
-const { PendingTransactionError, ContractCallError, } = require('../../dist/common/error').default;
-const { investTriggerMessage } = require('../../dist/discordMessage/investMessage');
+const { PendingTransactionError, ContractCallError, } = require('../../dist/common/error');
+const { investTriggerMessage, } = require('../../dist/discordMessage/investMessage');
 const { rebalanceTriggerMessage, } = require('../../dist/discordMessage/rebalanceMessage');
 const { harvestTriggerMessage, } = require('../../dist/discordMessage/harvestMessage');
 const { distributeCurveVaultTriggerMessage, } = require('../../dist/discordMessage/distributeCurveMessage');

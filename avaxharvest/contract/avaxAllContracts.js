@@ -1,11 +1,16 @@
 const { BigNumber, ethers } = require('ethers');
-const { getWalletNonceManager } = require('../common/avaxChainUtil');
+const {
+    getWalletNonceManager,
+    getAvaxRpcProvider,
+} = require('../common/avaxChainUtil');
 const { getConfig } = require('../../dist/common/configUtil');
 
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require('../avaxharvestLogger');
 const vaultAdaptorABI = require('./abi/VaultAdaptorMK2.json').abi;
 const strategyABI = require('./abi/AHv2Farmer.json').abi;
+const strategyDaiABI = require('./abi/AHv2FarmerDai.json').abi;
+
 const routerABI = require('./abi/JoeRouter02.json').abi;
 const wavaxABI = require('./abi/Wavax.json').abi;
 const chainlinkABI = require('./abi/Chainlink.json').abi;
@@ -14,7 +19,6 @@ const crTokenABI = require('./abi/CrToken.json').abi;
 
 const erc20ABI = require('../../contract/abis/ERC20.json');
 const providerKey = 'default';
-const nonceManager = getWalletNonceManager();
 
 const vaults = [];
 let router;
@@ -23,6 +27,7 @@ let avaxAggregator;
 let joeAggregator;
 let crToken;
 let joeToken;
+const provider = getAvaxRpcProvider();
 
 function initVaults() {
     const vaultsConfig = getConfig('contracts.vaults');
@@ -56,9 +61,13 @@ function initVaults() {
         );
         console.log(`stableCoin ${stableCoin.address}`);
 
+	let sABI = strategyABI;
+        if (i==0) {
+            sABI = strategyDaiABI;
+        }
         const ahStrategy = new ethers.Contract(
             strategy,
-            strategyABI,
+            sABI,
             nonceManager
         );
         console.log(`ahStrategy ${ahStrategy.address}`);
@@ -82,13 +91,13 @@ function initVaults() {
 
 function initRouter() {
     const routerConfig = getConfig('contracts.router');
-    router = new ethers.Contract(routerConfig, routerABI, nonceManager);
+    router = new ethers.Contract(routerConfig, routerABI, provider);
     logger.info('router done!');
 }
 
 function initWavax() {
     const wavaxConfig = getConfig('contracts.wavax');
-    wavax = new ethers.Contract(wavaxConfig, wavaxABI, nonceManager);
+    wavax = new ethers.Contract(wavaxConfig, wavaxABI, provider);
     logger.info('wavax done!');
 }
 
@@ -97,14 +106,14 @@ function initAvaxAggregator() {
     avaxAggregator = new ethers.Contract(
         aggregatorConfig,
         chainlinkABI,
-        nonceManager
+        provider
     );
     logger.info('avaxAggregator done!');
 }
 
 function initJoeToken() {
     const joeConfig = getConfig('contracts.joe');
-    joeToken = new ethers.Contract(joeConfig, joeABI, nonceManager);
+    joeToken = new ethers.Contract(joeConfig, joeABI, provider);
     logger.info('joeToken done!');
 }
 
@@ -116,7 +125,7 @@ function initJoeToken() {
 
 function initCrToken() {
     const crConfig = getConfig('contracts.crtoken');
-    crToken = new ethers.Contract(crConfig, crTokenABI, nonceManager);
+    crToken = new ethers.Contract(crConfig, crTokenABI, provider);
     logger.info('crtoken done!');
 }
 

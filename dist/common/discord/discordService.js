@@ -39,11 +39,15 @@ const MESSAGE_TYPES = {
     stats: 'Generate Stats',
     regularBot: 'Harvest Bot',
     statsBot: 'Stats Bot',
+    avaxBot: 'Avax Bot',
     criticalBot: 'Critical Bot',
     chainPrice: 'Update Chain Price',
     totalAssetsChange: 'Total Assets Change',
     strategyAssets: 'Strategy Assets',
     distributeCurveVault: 'Distribute Curve Vault',
+    tend: 'tend',
+    forceClose: 'Force Close',
+    updateLimit: 'Update Limit',
     other: 'Others',
 };
 exports.MESSAGE_TYPES = MESSAGE_TYPES;
@@ -55,7 +59,8 @@ MESSAGE_EMOJI.PWRD =
     (0, configUtil_1.getConfig)('emoji.pwrd', false) || '<:PWRD:834796096915767306>';
 MESSAGE_EMOJI.error = (0, configUtil_1.getConfig)('emoji.error', false) || '';
 MESSAGE_EMOJI.company =
-    (0, configUtil_1.getConfig)('emoji.company', false) || '<:GRO:834796096685211689>';
+    (0, configUtil_1.getConfig)('emoji.company', false) ||
+        '<:GRO:834796096685211689>';
 MESSAGE_EMOJI.reverted = (0, configUtil_1.getConfig)('emoji.reverted', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.miniStatsPersonal] =
     (0, configUtil_1.getConfig)('emoji.miniStatsPersonal', false) || '';
@@ -91,14 +96,21 @@ MESSAGE_EMOJI[MESSAGE_TYPES.statsBot] =
     (0, configUtil_1.getConfig)('emoji.statsBot', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.criticalBot] =
     (0, configUtil_1.getConfig)('emoji.criticalBot', false) || '';
+MESSAGE_EMOJI[MESSAGE_TYPES.avaxBot] = (0, configUtil_1.getConfig)('emoji.avaxBot', false) || '';
 MESSAGE_EMOJI[MESSAGE_TYPES.chainPrice] =
     (0, configUtil_1.getConfig)('emoji.curveCheck', false) || '';
 function generateLink(urlDetail) {
     var _a;
     const nodeEnv = (_a = process.env.NODE_ENV) === null || _a === void 0 ? void 0 : _a.toLowerCase();
-    let host = `https://${nodeEnv}.etherscan.io`;
+    let host = `https://snowtrace.io`;
     if (nodeEnv === 'mainnet') {
         host = 'https://etherscan.io';
+    }
+    if (nodeEnv === 'avax') {
+        host = 'https://snowtrace.io';
+    }
+    if (nodeEnv === 'develop') {
+        host = 'https://snowtrace.io';
     }
     let url = '';
     switch (urlDetail.type) {

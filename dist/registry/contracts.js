@@ -27,10 +27,10 @@ function newContract(contractName, contractInfo, signerInfo) {
         managerOrProvicer = provider;
     }
     else if (accountKey) {
-        managerOrProvicer = chainUtil_1.getWalletNonceManager(providerKey, accountKey);
+        managerOrProvicer = (0, chainUtil_1.getWalletNonceManager)(providerKey, accountKey);
     }
     else {
-        managerOrProvicer = chainUtil_1.getAlchemyRpcProvider(providerKey);
+        managerOrProvicer = (0, chainUtil_1.getAlchemyRpcProvider)(providerKey);
     }
     const contractAddress = contractInfo.address;
     let contract;
@@ -52,12 +52,12 @@ function newContract(contractName, contractInfo, signerInfo) {
 }
 exports.newContract = newContract;
 function newLatestContract(contractName, signerInfo) {
-    const contractInfo = registryLoader_1.getLatestContractsAddress()[contractName];
+    const contractInfo = (0, registryLoader_1.getLatestContractsAddress)()[contractName];
     return newContract(contractName, contractInfo, signerInfo);
 }
 exports.newLatestContract = newLatestContract;
 function newLatestContractByAddress(address, signerInfo) {
-    const contractInfo = registryLoader_1.getLatestContractsAddressByAddress()[address];
+    const contractInfo = (0, registryLoader_1.getLatestContractsAddressByAddress)()[address];
     let contract;
     if (!contractInfo) {
         logger.error(`Can't find contract information for address: ${address}`);

@@ -1,14 +1,14 @@
 const { getController, getInsurance, getLifeguard, getVaults, getVaultAndStrategyLabels, getCurveVault, getBuoy, } = require('../../dist/contract/allContracts');
 const { pendingTransactions } = require('../../common/storage');
-const { addPendingTransaction } = require('../../dist/common/pendingTransaction');
-const { ContractSendError, ContractCallError } = require('../../dist/common/error').default;
+const { addPendingTransaction, } = require('../../dist/common/pendingTransaction');
+const { ContractSendError, ContractCallError, } = require('../../dist/common/error');
 const { getWalletNonceManager } = require('../../dist/common/chainUtil');
-const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService').default;
+const { MESSAGE_TYPES } = require('../../dist/common/discord/discordService');
 const { investMessage } = require('../../dist/discordMessage/investMessage');
-const { rebalanceMessage } = require('../../dist/discordMessage/rebalanceMessage');
+const { rebalanceMessage, } = require('../../dist/discordMessage/rebalanceMessage');
 const { harvestMessage } = require('../../dist/discordMessage/harvestMessage');
 const { withdrawMessage, distributeMessage, } = require('../../dist/discordMessage/distributeCurveMessage');
-const { safetyCheckMessage } = require('../../dist/discordMessage/otherMessage');
+const { safetyCheckMessage, } = require('../../dist/discordMessage/otherMessage');
 const { wrapSendTransaction } = require('../../dist/gasPrice/transaction');
 const logger = require('../regularLogger');
 async function adapterInvest(blockNumber, isInvested, vault, providerKey, walletKey) {

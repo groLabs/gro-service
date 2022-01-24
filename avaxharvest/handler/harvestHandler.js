@@ -1,23 +1,113 @@
-const { BigNumber } = require('ethers');
-const {
-    getRouter,
-    getWavax,
-    getAvaxAggregator,
-    getJoeToken,
-} = require('../contract/avaxAllContracts');
-const { harvestMessage } = require('../../dist/discordMessage/harvestMessage');
+const { BigNumber, ethers } = require('ethers');
+const { harvestMessage } = require('../../dist/discordMessage/avaxMessage');
 const { setBorrowLimit } = require('./borrowLimitHandler');
 const { sendTransaction } = require('../common/avaxChainUtil');
 const logger = require('../avaxharvestLogger');
-const E18 = BigNumber.from('1000000000000000000');
-const CHAINLINK_DECIMAL = BigNumber.from('1000000000');
-const PERCENT_DECIMAL = BigNumber.from('1000000');
-const UPPER = BigNumber.from(1020000);
-const LOWER = BigNumber.from(980000);
+
+const WAVAX = '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7';
+const SWAPPOOLABI = [
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "getReserves",
+        "outputs": [
+            {
+                "internalType": "uint112",
+                "name": "_reserve0",
+                "type": "uint112"
+            },
+            {
+                "internalType": "uint112",
+                "name": "_reserve1",
+                "type": "uint112"
+            },
+            {
+                "internalType": "uint32",
+                "name": "_blockTimestampLast",
+                "type": "uint32"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "token0",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "token1",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+]
+
+const bankABI = [
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "positionId",
+                "type": "uint256"
+              }
+        ],
+        "name": "getPositionDebts",
+        "outputs": [
+          {
+            "internalType": "address[]",
+            "name": "tokens",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint[]",
+            "name": "debts",
+            "type": "uint[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+]
 
 async function harvest(vault) {
     try {
-        // await setBorrowLimit(vault);
+        await setBorrowLimit(vault);
         const {
             stableCoin,
             vaultAdaptorMK2,
@@ -27,12 +117,8 @@ async function harvest(vault) {
             strategyName,
             decimals,
         } = vault;
-        const router = getRouter();
-        const wavax = getWavax();
-        const avaxAggregator = getAvaxAggregator();
-        const joeToken = getJoeToken();
         const latestBlock = await ahStrategy.signer.provider.getBlock('latest');
-        let running = {};
+        const running = {};
         console.log(`latestBlock ${latestBlock.number}`);
         const blockTag = {
             blockTag: latestBlock.number,
@@ -46,137 +132,29 @@ async function harvest(vault) {
         const balStrategy = await stableCoin.balanceOf(ahStrategy.address);
         logger.info(`assets in ${vaultName} ${balVault} ${balStrategy}`);
 
-        // const openPositionId = await ahStrategy.activePosition();
-        // if (openPositionId > 0) {
-        //     const positionData = await ahStrategy.getPosition(openPositionId);
-        //     logger.info(
-        //         `wantOpen ${vaultName} ${positionData.wantOpen[0]} ${positionData.wantOpen[1]}`
-        //     );
-        //     logger.info(`totalClose ${vaultName} ${positionData.totalClose}`);
-        //     logger.info(`collId ${vaultName} ${positionData.collId}`);
-        //     logger.info(`collateral ${vaultName} ${positionData.collateral}`);
-
-        //     const pendingYield = await ahStrategy.pendingYieldToken(
-        //         openPositionId
-        //     );
-        //     logger.info(`pendingYield ${vaultName} ${pendingYield}`);
-        // }
-        const harvestTriggerNew = true;
-        if (harvestTriggerNew) {
-            // const openPositionId = await ahStrategy.activePosition();
-            // if (openPositionId > 0) {
-            // const volatilityCheck = await ahStrategy.volatilityCheck(
-            //     blockTag
-            // );
-            // const volatilityCheck = true;
-            // logger.info(`volatilityCheck ${volatilityCheck}`);
-            // const volatilityCheck = true;
-
-            // 2. sanity check of chainlink and uni
-            // if (volatilityCheck) {
-            //     logger.info(
-            //         `start volatilityCheck ${vaultName} ${volatilityCheck}`
-            //     );
-            //     const stableCoinDecimal = await stableCoin.decimals();
-            //     logger.info(
-            //         `stableCoinDecimal ${vaultName} ${stableCoinDecimal}`
-            //     );
-
-            //     const avaxPriceInChainlink =
-            //         await avaxAggregator.latestAnswer(blockTag);
-            //     logger.info(
-            //         `avaxPriceInChainlink  ${vaultName} ${avaxPriceInChainlink}`
-            //     );
-            //     const oneStableCoin =
-            //         BigNumber.from(10).pow(stableCoinDecimal);
-            //     const uniRatio = await router.getAmountsOut(E18, [
-            //         wavax.address,
-            //         stableCoin.address,
-            //         blockTag,
-            //     ]);
-            //     logger.info(`uniRatio ${uniRatio[0]} ${uniRatio[1]}`);
-            //     const avaxPriceInUni = uniRatio[1]
-            //         .mul(CHAINLINK_DECIMAL)
-            //         .mul(E18)
-            //         .div(uniRatio[0])
-            //         .div(oneStableCoin);
-            //     logger.info(`avaxPriceInUni ${avaxPriceInUni}`);
-
-            //     const diff = avaxPriceInChainlink
-            //         .mul(PERCENT_DECIMAL)
-            //         .div(avaxPriceInUni);
-
-            //     logger.info(`diff ${diff}`);
-
-            //     if (diff.gt(UPPER) || diff.lt(LOWER)) {
-            //         logger.info('out of range, will not run harvest');
-            //         return;
-            //     }
-            // }
+        const openPositionId = await ahStrategy.activePosition();
+	if (openPositionId > 0) {
+            const vc = await ahStrategy.volatilityCheck();
+            const positionData = await ahStrategy.getPosition(openPositionId);
+	    const current = await ahStrategy.borrowLimit();
+            logger.info(
+                `wantOpen ${vaultName} ${positionData.wantOpen[0]} ${positionData.wantOpen[1]} `
+            );
+            logger.info(`totalClose ${vaultName} ${positionData.totalClose}`);
+            logger.info(`collId ${vaultName} ${positionData.collId}`);
+            logger.info(`collateral ${vaultName} ${positionData.collateral}`);
+        }
+        if (harvestTrigger) {
             // dai:
             // [stableCoin, joe], [avaxMinAmount, avaxMinAmount]
             // usdc/usdt:
             // [avax, joe], [stableCoinMinAmount, stableCoinMinAmount]
-            const tokens = [];
-            const minAmounts = [];
-            if (vaultName === 'New DAI.e yVault') {
-                const path1 = [stableCoin.address, wavax.address];
-                const path2 = [
-                    joeToken.address,
-                    wavax.address,
-                    stableCoin.address,
-                ];
-                const stableCoinToWavax = await router.getAmountsOut(
-                    decimals,
-                    path1
-                );
-
-                const joeToStableCoin = await router.getAmountsOut(E18, path2);
-
-                minAmounts[0] = stableCoinToWavax[1]
-                    .mul(BigNumber.from(990))
-                    .div(BigNumber.from(1000));
-                tokens[0] = stableCoin.address;
-
-                minAmounts[1] = joeToStableCoin[1]
-                    .mul(BigNumber.from(990))
-                    .div(BigNumber.from(1000));
-
-                tokens[1] = joeToken.address;
-                logger.info(
-                    `amm check ${vaultName} ${stableCoinToWavax[1]} ${joeToStableCoin[1]} ${minAmounts}`
-                );
-            } else {
-                const path1 = [wavax.address, stableCoin.address];
-                const path2 = [joeToken.address, stableCoin.address];
-                const wavaxToStableCoin = await router.getAmountsOut(
-                    E18,
-                    path1
-                );
-
-                const joeToStableCoin = await router.getAmountsOut(E18, path2);
-
-                minAmounts[0] = wavaxToStableCoin[1]
-                    .mul(BigNumber.from(990))
-                    .div(BigNumber.from(1000));
-                tokens[0] = wavax.address;
-
-                minAmounts[1] = joeToStableCoin[1]
-                    .mul(BigNumber.from(990))
-                    .div(BigNumber.from(1000));
-                tokens[1] = joeToken.address;
-
-                logger.info(
-                    `amm check ${vaultName} ${wavaxToStableCoin[1]} ${joeToStableCoin[1]} - ${minAmounts}`
-                );
-            }
             if (!running[vaultName]) {
                 running[vaultName] = true;
-                // await vaultAdaptorMK2.strategyHarvest(0, tokens, minAmounts);
                 const tx = await sendTransaction(
                     vaultAdaptorMK2,
                     'strategyHarvest',
-                    [0, tokens, minAmounts]
+                    [0]
                 );
                 running[vaultName] = false;
                 harvestMessage({

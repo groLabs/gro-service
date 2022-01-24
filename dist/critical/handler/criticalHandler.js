@@ -10,15 +10,15 @@ const configUtil_1 = require("../../common/configUtil");
 const chainUtil_1 = require("../../common/chainUtil");
 const criticalMessage_1 = require("../../discordMessage/criticalMessage");
 const dependencyStrategyABI = require('../abis/DependencyStrategy.json').abi;
-const beforeBlock = configUtil_1.getConfig('before_block', false) || 30;
-const perPriceFailedPercentage = configUtil_1.getConfig('fail_percentage_pre_price', false) || 50;
-const totalFailedPercentage = configUtil_1.getConfig('fail_percentage_total', false) || 1000;
-const harvestStrategies = configUtil_1.getConfig('harvest_strategy_dependency');
-const creamStrategies = configUtil_1.getConfig('cream_strategy_dependency');
-const curvePoolStrategy = configUtil_1.getConfig('curve_strategy_dependency');
-const ratioUpperBond = ethers_1.BigNumber.from(configUtil_1.getConfig('ratioUpperBond'));
-const ratioLowerBond = ethers_1.BigNumber.from(configUtil_1.getConfig('ratioLowerBond'));
-const curveRatioLowerBond = ethers_1.BigNumber.from(configUtil_1.getConfig('curveRatioLowerBond'));
+const beforeBlock = (0, configUtil_1.getConfig)('before_block', false) || 30;
+const perPriceFailedPercentage = (0, configUtil_1.getConfig)('fail_percentage_pre_price', false) || 50;
+const totalFailedPercentage = (0, configUtil_1.getConfig)('fail_percentage_total', false) || 1000;
+const harvestStrategies = (0, configUtil_1.getConfig)('harvest_strategy_dependency');
+const creamStrategies = (0, configUtil_1.getConfig)('cream_strategy_dependency');
+const curvePoolStrategy = (0, configUtil_1.getConfig)('curve_strategy_dependency');
+const ratioUpperBond = ethers_1.BigNumber.from((0, configUtil_1.getConfig)('ratioUpperBond'));
+const ratioLowerBond = ethers_1.BigNumber.from((0, configUtil_1.getConfig)('ratioLowerBond'));
+const curveRatioLowerBond = ethers_1.BigNumber.from((0, configUtil_1.getConfig)('curveRatioLowerBond'));
 const PERCENT_DECIAML = ethers_1.BigNumber.from(10).pow(ethers_1.BigNumber.from(4));
 const logger = require('../criticalLogger');
 function getFailedEmbedMessage(messageType, criticalType) {
@@ -43,7 +43,7 @@ function handleError(error, content) {
     }
 }
 async function getStableCoins(providerKey, walletKey) {
-    const stableCoins = await allContracts_1.getController(providerKey, walletKey)
+    const stableCoins = await (0, allContracts_1.getController)(providerKey, walletKey)
         .stablecoins()
         .catch((error) => {
         handleError(error, {
@@ -110,7 +110,7 @@ function chainlinkPricePairCheck(coinPrices) {
     return { high, low };
 }
 async function curvePriceCheck(providerKey, walletKey) {
-    const buoyInstance = allContracts_1.getBuoy(providerKey, walletKey);
+    const buoyInstance = (0, allContracts_1.getBuoy)(providerKey, walletKey);
     const price0 = await buoyInstance.getPriceFeed(0);
     const price1 = await buoyInstance.getPriceFeed(1);
     const price2 = await buoyInstance.getPriceFeed(2);
@@ -142,7 +142,7 @@ async function curvePriceCheck(providerKey, walletKey) {
         //     });
         curvePrice = false;
     }
-    criticalMessage_1.chainlinkPriceMessage({
+    (0, criticalMessage_1.chainlinkPriceMessage)({
         needStop: coinIndex < 3,
         abnormalIndex: coinIndex,
     });
@@ -152,7 +152,7 @@ exports.curvePriceCheck = curvePriceCheck;
 async function buoyHealthCheck(providerKey, walletKey, currentBlockNumber, previousHealth) {
     try {
         // const stableCoins = await getStableCoins(providerKey, walletKey);
-        const buoyInstance = allContracts_1.getBuoy(providerKey, walletKey);
+        const buoyInstance = (0, allContracts_1.getBuoy)(providerKey, walletKey);
         logger.info(`buoyInstance ${buoyInstance.address}`);
         // any stable coin less than 10% in curve will return false;
         const checkResult = await buoyInstance.healthCheck(curveRatioLowerBond, {
@@ -179,7 +179,7 @@ async function buoyHealthCheck(providerKey, walletKey, currentBlockNumber, previ
                     //     });
                 }
             }
-            criticalMessage_1.curvePriceMessage({
+            (0, criticalMessage_1.curvePriceMessage)({
                 needStop: coinIndex < 3,
                 abnormalIndex: coinIndex,
             });
@@ -192,7 +192,7 @@ async function buoyHealthCheck(providerKey, walletKey, currentBlockNumber, previ
     return [false, undefined];
 }
 async function buoyHealthCheckAcrossBlocks(providerKey, walletKey) {
-    const currentBlockNumber = await chainUtil_1.getCurrentBlockNumber(providerKey).catch((error) => {
+    const currentBlockNumber = await (0, chainUtil_1.getCurrentBlockNumber)(providerKey).catch((error) => {
         handleError(error, {
             strategyCheck: {
                 message: 'Get current block number failed',
@@ -243,9 +243,9 @@ async function checkSingleStrategy(strategyAddress, method, failedPercentage, be
     return failed;
 }
 async function strategyCheck(providerKey, walletKey) {
-    const nonceManager = chainUtil_1.getWalletNonceManager(providerKey, walletKey);
+    const nonceManager = (0, chainUtil_1.getWalletNonceManager)(providerKey, walletKey);
     // Harvest strategy check
-    const currentBlockNumber = await chainUtil_1.getCurrentBlockNumber(providerKey).catch((error) => {
+    const currentBlockNumber = await (0, chainUtil_1.getCurrentBlockNumber)(providerKey).catch((error) => {
         handleError(error, {
             strategyCheck: {
                 message: 'Get current block number failed',
@@ -309,7 +309,7 @@ async function strategyCheck(providerKey, walletKey) {
         //         });
         //     });
     }
-    criticalMessage_1.strategyCheckMessage({ failedNumber: strategyFailedTotal });
+    (0, criticalMessage_1.strategyCheckMessage)({ failedNumber: strategyFailedTotal });
     return strategyFailedTotal;
 }
 exports.strategyCheck = strategyCheck;

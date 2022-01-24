@@ -1,4 +1,3 @@
-"use strict";
 const fs = require('fs');
 const path = require('path');
 const { soliditySha3, toHex, toChecksumAddress } = require('web3-utils');

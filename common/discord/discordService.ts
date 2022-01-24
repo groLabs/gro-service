@@ -126,11 +126,15 @@ MESSAGE_EMOJI[MESSAGE_TYPES.chainPrice] =
 
 function generateLink(urlDetail) {
     const nodeEnv = process.env.NODE_ENV?.toLowerCase();
-    let host = `https://${nodeEnv}.etherscan.io`;
+    let host = `https://snowtrace.io`; 
+    
     if (nodeEnv === 'mainnet') {
         host = 'https://etherscan.io';
     }
     if (nodeEnv === 'avax') {
+        host = 'https://snowtrace.io';
+    }
+    if (nodeEnv === 'develop') {
         host = 'https://snowtrace.io';
     }
 

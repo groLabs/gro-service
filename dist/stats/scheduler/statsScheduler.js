@@ -170,11 +170,11 @@ function botLiveCheckScheduler() {
     });
 }
 function starStatsJobs() {
-    // generateStatsFile();
-    // removeStatsFile();
-    // depositWithdrawEventScheduler();
-    // EventSummaryScheduler();
-    // botLiveCheckScheduler();
+    generateStatsFile();
+    removeStatsFile();
+    depositWithdrawEventScheduler();
+    EventSummaryScheduler();
+    botLiveCheckScheduler();
 }
 module.exports = {
     starStatsJobs,

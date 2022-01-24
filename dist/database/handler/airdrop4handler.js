@@ -96,7 +96,7 @@ const checkPosition = async (addr, date) => {
             groVault.balanceOf(addr, blockTag),
             groPwrd.balanceOf(addr, blockTag),
             groPwrdUsdcLpToken.balanceOf(addr, blockTag),
-            groWethLpToken.balanceOf(addr, blockTag),
+            groWethLpToken.balanceOf(addr, blockTag), //  Unstaked Gro/Weth
         ]);
         logger.info(`staked_gro: ${staked_gro}`);
         logger.info(`staked_gro_gvt: ${staked_gro_gvt}`);
@@ -160,7 +160,7 @@ const airdrop4Handler = async (from, to) => {
                 groVault.balanceOf(addr[i], blockTag),
                 groPwrd.balanceOf(addr[i], blockTag),
                 groPwrdUsdcLpToken.balanceOf(addr[i], blockTag),
-                groWethLpToken.balanceOf(addr[i], blockTag),
+                groWethLpToken.balanceOf(addr[i], blockTag), //  Unstaked Gro/Weth
             ]);
             // Store record into DB (AIRDROP4_TEMP)
             const record = [
@@ -182,7 +182,7 @@ const airdrop4Handler = async (from, to) => {
                 printUsd(unstaked_pwrd),
                 printUsd(unstaked_pwrd_pool),
                 printUsd(unstaked_gro_weth),
-                moment.utc(),
+                moment.utc(), // now
             ];
             const res = await loadTempAirdrop4(i, record);
             if (!res)
@@ -242,7 +242,7 @@ const airdrop4HandlerV2 = async (from, to, date) => {
                 lpTokenStaker.userInfo(4, addr[i], blockTag),
                 //-------------------------------------------------------
                 uniswapGroGvtPool.balanceOf(addr[i], blockTag),
-                groPwrdUsdcLpToken.balanceOf(addr[i], blockTag),
+                groPwrdUsdcLpToken.balanceOf(addr[i], blockTag), // unstaked Pwrd-3crv [Curve 3crv pool]
             ]);
             // V2: only for staked or unstaked GVT & PWRD
             const record = [
@@ -264,7 +264,7 @@ const airdrop4HandlerV2 = async (from, to, date) => {
                 null,
                 printUsd(unstaked_pwrd_pool),
                 null,
-                moment.utc(),
+                moment.utc(), // now
             ];
             const res = await loadTempAirdrop4(i, record);
             if (!res)

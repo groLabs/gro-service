@@ -5,7 +5,6 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const actuator = require('express-actuator');
-
 const { initAllAvaxContracts } = require('./contract/avaxAllContracts');
 const scheduler = require('./scheduler/avaxScheduler');
 const regularLogger = require('./avaxharvestLogger');
@@ -30,13 +29,7 @@ app.use(actuator());
 app.use((req, res, next) => {
     next(createError(404));
 });
-console.log('start');
 // start the schedule task
-
-// initAllAvaxContracts().then(() => {
-//     scheduler.startHarvestJobs();
-// });
-
 initAllAvaxContracts();
 scheduler.startHarvestJobs();
 

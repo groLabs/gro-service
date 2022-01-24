@@ -7,7 +7,7 @@ const chainUtil_1 = require("../common/chainUtil");
 const botEnv = (_a = process.env.BOT_ENV) === null || _a === void 0 ? void 0 : _a.toLowerCase();
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
-const provider = chainUtil_1.getAlchemyRpcProvider();
+const provider = (0, chainUtil_1.getAlchemyRpcProvider)();
 const controllerABI = require('./abis/Controller.json');
 const pnlABI = require('./abis/PnL.json');
 const depositHandlerABI = require('./abis/DepositHandler.json');

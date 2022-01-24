@@ -2,59 +2,7 @@ export const blockchain = {
     network: 'mainnet',
     start_block: 12522788,
     start_timestamp: 1622204347,
-    default_api_keys: {
-        alchemy: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
-        infura: 'a0c4911f680a4dd0bf3f7dfac2a4ba08',
-        etherscan: 'VZS5J2DM4XZM254GMESMWN3F49TNS7TU9H',
-        pocket: '8dbbeecc2126c14cbc48bf6b66f4a33850fa3537',
-    },
-    alchemy_api_keys: {
-        default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
-        stats_personal: process.env.ALCHEMY_KEY_STATS_PERSONAL,
-        stats_gro: process.env.ALCHEMY_KEY_STATS_GRO,
-    },
-    infura_api_keys: {
-        default: {
-            projectId:
-                process.env[`INFURA_KEY_${process.env.BOT_ENV}_PROJECT_ID`],
-            projectSecret:
-                process.env[`INFURA_KEY_${process.env.BOT_ENV}_PROJECT_SECRET`],
-        },
-        stats_personal: {
-            projectId: process.env.INFURA_KEY_STATS_PERSONAL_PROJECT_ID,
-            projectSecret: process.env.INFURA_KEY_STATS_PERSONAL_PROJECT_SECRET,
-        },
-        stats_gro: {
-            projectId: process.env.INFURA_KEY_STATS_GRO_PROJECT_ID,
-            projectSecret: process.env.INFURA_KEY_STATS_GRO_PROJECT_SECRET,
-        },
-    },
     keystores: {
-        default: {
-            file_path: process.env[`KEY_STORE_${process.env.BOT_ENV}`],
-            password: process.env[`KEY_PASSWORD_${process.env.BOT_ENV}`],
-            private_key: process.env[`BOT_PRIVATE_KEY_${process.env.BOT_ENV}`],
-        },
-        regular: {
-            low_file_path: process.env.KEY_STORE_REGULAR_LOW_GAS,
-            low_password: process.env.KEY_PASSWORD_REGULAR_LOW_GAS,
-            low_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_LOW_GAS,
-            standard_file_path: process.env.KEY_STORE_REGULAR_STANDARD_GAS,
-            standard_password: process.env.KEY_PASSWORD_REGULAR_STANDARD_GAS,
-            standard_private_key:
-                process.env.BOT_PRIVATE_KEY_REGULAR_STANDARD_GAS,
-            fast_file_path: process.env.KEY_STORE_REGULAR_FAST_GAS,
-            fast_password: process.env.KEY_PASSWORD_REGULAR_FAST_GAS,
-            fast_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_FAST_GAS,
-            rapid_file_path: process.env.KEY_STORE_REGULAR_RAPID_GAS,
-            rapid_password: process.env.KEY_PASSWORD_REGULAR_RAPID_GAS,
-            rapid_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_RAPID_GAS,
-        },
-        critical: {
-            rapid_file_path: process.env.KEY_STORE_CRITICAL_RAPID_GAS,
-            rapid_password: process.env.KEY_PASSWORD_CRITICAL_RAPID_GAS,
-            rapid_private_key: process.env.BOT_PRIVATE_KEY_REGULAR_CRITICAL_GAS,
-        },
         avaxharvest: {
             dai_file_path: process.env.KEY_STORE_AVAX_DAI,
             dai_password: process.env.KEY_PASSWORD_AVAX_DAI,
@@ -72,7 +20,7 @@ export const trigger_scheduler = {
     tend: '10 * * * * *',
     harvest: '20 * * * * *',
     force_close: '*/10 * * * * *',
-    bot_balance_check: '* * * * *',
+    bot_balance_check: '*/5 * * * *',
 };
 
 export const emoji = {
@@ -103,37 +51,37 @@ export const emoji = {
 };
 
 export const log_folder = '../logs';
-export const limit_factor = 900000;
+export const limit_factor = 950000;
 export const force_close_threshold = 990000;
 export const contracts = {
     vaults: [
         {
             stable_coin: '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
-            vault_adaptor: '0x5E57E11483A3F60A76af3045303604522059dA2a',
-            strategy: '0x4c7EA5b8032C5Ea82DdF617DAc7972c70E0c0478',
+            vault_adaptor: '0x514c3230F0b1C93e29Ea59fe8da3cEf0d4f1e0b7',
+            strategy: '0x3A6b7E8B5EF16F64569f422eA4f7794456D4CAB8',
             gas_cost: '1000000',
             wallet_key: 'dai',
-            vault_name: 'New DAI.e yVault',
+            vault_name: 'DAI.e yVault v1.7 internal',
             strategy_name: 'AH',
             decimals: 18,
         },
         {
             stable_coin: '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
-            vault_adaptor: '0x57DaED1ee021BE9991F5d30CF494b6B09B5B449E',
-            strategy: '0x247AF6E106549033d3a65354fC3A72FF3794FA99',
+            vault_adaptor: '0xBDEc31c3386481585afF7B38cA200cBF597Cb96D',
+            strategy: '0x342fc25dCa3968E1089FBC09cec4538c41B74621',
             gas_cost: '1000000',
             wallet_key: 'usdc',
-            vault_name: 'New USDC.e yVault',
+            vault_name: 'USDC.e yVault v1.7 internal',
             strategy_name: 'AH',
             decimals: 6,
         },
         {
             stable_coin: '0xc7198437980c041c805A1EDcbA50c1Ce5db95118',
-            vault_adaptor: '0x471F4B4b9A97F82C3a25b034B33A8E306eE9Beb5',
-            strategy: '0x94a7c3419504ceA9FbA06eE739717B236Ada0638',
+            vault_adaptor: '0x3e3Cb9cfD469bC9abC5b8a95e4Ffe5299B8e28cA',
+            strategy: '0x4a017eBb7C5b92b05418267CB3F917d2a7576b31',
             gas_cost: '1000000',
             wallet_key: 'usdt',
-            vault_name: 'New USDT.e yVault',
+            vault_name: 'USDT.e yVault v1.7 internal',
             strategy_name: 'AH',
             decimals: 6,
         },

@@ -6,7 +6,7 @@ const botEnv = (_a = process.env.BOT_ENV) === null || _a === void 0 ? void 0 : _
 // eslint-disable-next-line import/no-dynamic-require
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 async function getFilterEvents(filter, contractInterface, providerKey) {
-    const provider = chainUtil_1.getInfruraRpcProvider(providerKey);
+    const provider = (0, chainUtil_1.getInfruraRpcProvider)(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         return [];
@@ -49,7 +49,7 @@ async function getEvents(filter, contractInterface, provider) {
     return logs;
 }
 async function getSimpleFilterEvents(filter, providerKey) {
-    const provider = chainUtil_1.getInfruraRpcProvider(providerKey);
+    const provider = (0, chainUtil_1.getInfruraRpcProvider)(providerKey);
     const filterLogs = await provider.getLogs(filter).catch((error) => {
         logger.error(error);
         return [];

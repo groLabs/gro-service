@@ -8,7 +8,7 @@ const { findBlockByDate } = require('../common/globalUtil');
 const { generateDateRange, getNetworkId, handleErr, isPlural, } = require('../common/personalUtil');
 const { getGroVault, getPowerD, } = require('../common/contractUtil');
 const { QUERY_ERROR } = require('../constants');
-const { getBalances, getBalancesUniBalLP, getBalancesCrvLP, } = require('../common/balanceUtil');
+const { checkTime, getBalances, getBalancesUniBalLP, getBalancesCrvLP, } = require('../common/balanceUtil');
 const { BALANCES_BATCH: BATCH } = require('../constants');
 const { getConfig } = require('../../common/configUtil');
 const GRO_ADDRESS = getConfig('staker_pools.contracts.gro_address');
@@ -154,26 +154,6 @@ const cleanseVars = (scope) => {
         lpGroWeth = [];
     }
     rowCount = 0;
-};
-/// @notice Check time format (if defined) and return hours, minutes & seconds
-/// @dev    If time is not defined, return 23:59:59 by default
-/// @param  time The target time to load balances [format: HH:mm:ss]
-/// @return An array with 7 fixed positions: hours, minuts & seconds
-const checkTime = (time) => {
-    const isTimeOK = moment(time, 'HH:mm:ss', true).isValid();
-    if (!time) {
-        return [23, 59, 59];
-    }
-    else if (isTimeOK) {
-        const hours = parseInt(time.substring(0, 2));
-        const minutes = parseInt(time.substring(3, 5));
-        const seconds = parseInt(time.substring(6, 8));
-        return [hours, minutes, seconds];
-    }
-    else {
-        handleErr(`loadUserBalances->checkTime(): invalid time format`, time);
-        return [-1, -1, -1];
-    }
 };
 /// @notice Retrieve all distinct users that did any transfer (deposit, withdrawal, transer)
 ///         from the beginning of the protocol

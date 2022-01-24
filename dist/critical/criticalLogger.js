@@ -17,7 +17,7 @@ const logMsgFormat = printf(({ level, message, timestamp, stack }) => {
     }
     return `${timestamp} ${level}: ${message}`;
 });
-const criticalLogger = winston_1.createLogger({
+const criticalLogger = (0, winston_1.createLogger)({
     format: combine(errors({ stack: true }), timestamp(), logMsgFormat),
     transports: [
         new winston_1.transports.DailyRotateFile({
