@@ -572,29 +572,7 @@ async function getApprovalEvents(account) {
     return resultLogs;
 }
 
-async function gvtApprovalToAccount(account, withdrawEventHashs) {
-    const groVault = getLatestGroVault();
-    const groVaultContractInfo =
-        getLatestContractsAddress()[ContractNames.groVault];
-    const groVaultApprovalFilter = groVault.filters.Approval(null, account);
-    groVaultApprovalFilter.fromBlock = groVaultContractInfo.startBlock;
-    groVaultContractInfo.toBlock = 'latest';
-    const logsObject = await getFilterEvents(
-        groVaultApprovalFilter,
-        groVault.interface,
-        providerKey
-    );
-    const logs = logsObject.data;
-    const distHash = [];
-    logs.forEach((log) => {
-        if (!withdrawEventHashs.includes(log.transactionHash)) {
-            distHash.push(log.transactionHash);
-        }
-    });
-    return distHash;
-}
-
-async function getApprovalHistoryies(account, depositEventHashs) {
+async function getApprovalHistories(account) {
     const approvalEventResult = await getApprovalEvents(account).catch(
         (error) => {
             handleError(
@@ -610,52 +588,36 @@ async function getApprovalHistoryies(account, depositEventHashs) {
     const gtokenAproval = [];
     const usdAmoutPromise = [];
     const usdAmountDecimals = [];
-    const buoy = getLatestSystemContract(
-        ContractNames.buoy3Pool,
-        providerKey
-    ).contract;
     for (let i = 0; i < (approvalEventResult as any).length; i += 1) {
         const { address, transactionHash, blockNumber, args } =
             approvalEventResult[i];
         const decimal = stableCoinInfo.decimals[address];
-        if (!depositEventHashs.includes(transactionHash)) {
-            const tokenSymbio = stableCoinInfo.symbols[address];
-            usdAmountDecimals.push(decimal);
-            const isGTokenFlag = isGToken(tokenSymbio);
-            if (isGTokenFlag) {
-                gtokenAproval.push(transactionHash);
-            }
-            result.push({
-                transaction: 'approval',
-                token: tokenSymbio,
-                hash: transactionHash,
-                spender: args[1],
-                coin_amount: div(args[2], new BN(10).pow(decimal), 2),
-                block_number: blockNumber,
-            });
-            if (isGTokenFlag) {
-                usdAmoutPromise.push(getGTokenUSDAmount(address, args[2]));
-            } else {
-                console.log(
-                    ` ----- ${address} ${transactionHash} ${blockNumber} ${args[2]}`
-                );
-                // const aaa = await buoy.singleStableToUsd(
-                //     args[2],
-                //     getStableCoinIndex(tokenSymbio)
-                // );
-                // console.log(' ----- done');
-                // usdAmoutPromise.push(
-                //     buoy.singleStableToUsd(
-                //         args[2],
-                //         getStableCoinIndex(tokenSymbio)
-                //     )
-                // );
-                usdAmoutPromise.push(
-                    new Promise((resolve, reject) => {
-                        resolve(args[2]);
-                    })
-                );
-            }
+        const tokenSymbol = stableCoinInfo.symbols[address];
+        usdAmountDecimals.push(decimal);
+        const isGTokenFlag = isGToken(tokenSymbol);
+        if (isGTokenFlag) {
+            gtokenAproval.push(transactionHash);
+        }
+        result.push({
+            transaction: 'approval',
+            token: tokenSymbol,
+            hash: transactionHash,
+            spender: args[1],
+            coin_amount: div(args[2], new BN(10).pow(decimal), 2),
+            block_number: blockNumber,
+        });
+        if (isGTokenFlag) {
+            usdAmoutPromise.push(getGTokenUSDAmount(address, args[2]));
+        } else {
+            console.log(
+                ` ----- ${address} ${transactionHash} ${blockNumber} ${args[2]}`
+            );
+            // stabe coin's coin amount equals to usd amount
+            usdAmoutPromise.push(
+                new Promise((resolve, reject) => {
+                    resolve(args[2]);
+                })
+            );
         }
     }
 
@@ -755,34 +717,11 @@ async function getTransactionHistories(account) {
     groVault.withdraw.push(...withdrawLogs.groVault);
     powerD.withdraw.push(...withdrawLogs.powerD);
 
-    const { groVault: vaultDepositLogs, powerD: pwrdDepositLogs } = depositLogs;
-    const depositEventHashs = [];
-    for (let i = 0; i < vaultDepositLogs.length; i += 1) {
-        depositEventHashs.push(vaultDepositLogs[i].transactionHash);
-    }
-    for (let i = 0; i < pwrdDepositLogs.length; i += 1) {
-        depositEventHashs.push(pwrdDepositLogs[i].transactionHash);
-    }
-
-    const { groVault: vaultWithdrawLogs, powerD: pwrdWithdrawLogs } =
-        withdrawLogs;
-    const withdrawEventHashs = [];
-    for (let i = 0; i < vaultWithdrawLogs.length; i += 1) {
-        withdrawEventHashs.push(vaultWithdrawLogs[i].transactionHash);
-    }
-    for (let i = 0; i < pwrdWithdrawLogs.length; i += 1) {
-        withdrawEventHashs.push(pwrdWithdrawLogs[i].transactionHash);
-    }
-
-    const approval = await getApprovalHistoryies(account, depositEventHashs);
-    const gvtApprovalToUs = await gvtApprovalToAccount(
-        account,
-        withdrawEventHashs
-    );
+    const approval = await getApprovalHistories(account);
     const gtokenApprovalTxns = approval.gtokenApprovalTxn;
     const transferFromEvents = await parseVaultTransferFromLogs(
         groVaultTransferFromLogs,
-        [...gtokenApprovalTxns, ...gvtApprovalToUs]
+        [...gtokenApprovalTxns]
     );
 
     groVault.deposit.push(...transferFromEvents.deposit);
