@@ -572,7 +572,7 @@ async function getApprovalEvents(account) {
     return resultLogs;
 }
 
-async function getApprovalHistoryies(account) {
+async function getApprovalHistories(account) {
     const approvalEventResult = await getApprovalEvents(account).catch(
         (error) => {
             handleError(
@@ -588,23 +588,19 @@ async function getApprovalHistoryies(account) {
     const gtokenAproval = [];
     const usdAmoutPromise = [];
     const usdAmountDecimals = [];
-    const buoy = getLatestSystemContract(
-        ContractNames.buoy3Pool,
-        providerKey
-    ).contract;
     for (let i = 0; i < (approvalEventResult as any).length; i += 1) {
         const { address, transactionHash, blockNumber, args } =
             approvalEventResult[i];
         const decimal = stableCoinInfo.decimals[address];
-        const tokenSymbio = stableCoinInfo.symbols[address];
+        const tokenSymbol = stableCoinInfo.symbols[address];
         usdAmountDecimals.push(decimal);
-        const isGTokenFlag = isGToken(tokenSymbio);
+        const isGTokenFlag = isGToken(tokenSymbol);
         if (isGTokenFlag) {
             gtokenAproval.push(transactionHash);
         }
         result.push({
             transaction: 'approval',
-            token: tokenSymbio,
+            token: tokenSymbol,
             hash: transactionHash,
             spender: args[1],
             coin_amount: div(args[2], new BN(10).pow(decimal), 2),
@@ -616,17 +612,7 @@ async function getApprovalHistoryies(account) {
             console.log(
                 ` ----- ${address} ${transactionHash} ${blockNumber} ${args[2]}`
             );
-            // const aaa = await buoy.singleStableToUsd(
-            //     args[2],
-            //     getStableCoinIndex(tokenSymbio)
-            // );
-            // console.log(' ----- done');
-            // usdAmoutPromise.push(
-            //     buoy.singleStableToUsd(
-            //         args[2],
-            //         getStableCoinIndex(tokenSymbio)
-            //     )
-            // );
+            // stabe coin's coin amount equals to usd amount
             usdAmoutPromise.push(
                 new Promise((resolve, reject) => {
                     resolve(args[2]);
@@ -731,7 +717,7 @@ async function getTransactionHistories(account) {
     groVault.withdraw.push(...withdrawLogs.groVault);
     powerD.withdraw.push(...withdrawLogs.powerD);
 
-    const approval = await getApprovalHistoryies(account);
+    const approval = await getApprovalHistories(account);
     const gtokenApprovalTxns = approval.gtokenApprovalTxn;
     const transferFromEvents = await parseVaultTransferFromLogs(
         groVaultTransferFromLogs,
