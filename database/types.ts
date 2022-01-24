@@ -81,6 +81,7 @@ enum ContractVersion {
     VAULT_1_0 = 1,
     VAULT_1_5 = 2,
     VAULT_1_6 = 3,
+    VAULT_1_7 = 4,
 }
 
 // Must be aligned with table MD_TRANSFERS

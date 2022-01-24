@@ -97,7 +97,9 @@ const getTransferEvents = async (
                             ? ContractNames.AVAXUSDCVault_v1_5
                             : contractVersion === ContractVersion.VAULT_1_6
                                 ? ContractNames.AVAXUSDCVault_v1_6
-                                : null;
+                                : contractVersion === ContractVersion.VAULT_1_7
+                                    ? ContractNames.AVAXUSDCVault_v1_7
+                                    : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -110,7 +112,9 @@ const getTransferEvents = async (
                             ? ContractNames.AVAXUSDCVault_v1_5
                             : contractVersion === ContractVersion.VAULT_1_6
                                 ? ContractNames.AVAXUSDCVault_v1_6
-                                : null;
+                                : contractVersion === ContractVersion.VAULT_1_7
+                                    ? ContractNames.AVAXUSDCVault_v1_7
+                                    : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -123,7 +127,9 @@ const getTransferEvents = async (
                             ? ContractNames.AVAXUSDCVault_v1_5
                             : contractVersion === ContractVersion.VAULT_1_6
                                 ? ContractNames.AVAXUSDCVault_v1_6
-                                : null;
+                                : contractVersion === ContractVersion.VAULT_1_7
+                                    ? ContractNames.AVAXUSDCVault_v1_7
+                                    : null;
                 sender = null;
                 receiver = account;
                 break;
@@ -136,7 +142,9 @@ const getTransferEvents = async (
                             ? ContractNames.AVAXUSDCVault_v1_5
                             : contractVersion === ContractVersion.VAULT_1_6
                                 ? ContractNames.AVAXUSDCVault_v1_6
-                                : null;
+                                : contractVersion === ContractVersion.VAULT_1_7
+                                    ? ContractNames.AVAXUSDCVault_v1_7
+                                    : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -149,7 +157,9 @@ const getTransferEvents = async (
                             ? ContractNames.AVAXUSDTVault_v1_5
                             : contractVersion === ContractVersion.VAULT_1_6
                                 ? ContractNames.AVAXUSDTVault_v1_6
-                                : null;
+                                : contractVersion === ContractVersion.VAULT_1_7
+                                    ? ContractNames.AVAXUSDTVault_v1_7
+                                    : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -162,7 +172,9 @@ const getTransferEvents = async (
                             ? ContractNames.AVAXUSDTVault_v1_5
                             : contractVersion === ContractVersion.VAULT_1_6
                                 ? ContractNames.AVAXUSDTVault_v1_6
-                                : null;
+                                : contractVersion === ContractVersion.VAULT_1_7
+                                    ? ContractNames.AVAXUSDTVault_v1_7
+                                    : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -175,7 +187,9 @@ const getTransferEvents = async (
                             ? ContractNames.AVAXUSDTVault_v1_5
                             : contractVersion === ContractVersion.VAULT_1_6
                                 ? ContractNames.AVAXUSDTVault_v1_6
-                                : null;
+                                : contractVersion === ContractVersion.VAULT_1_7
+                                    ? ContractNames.AVAXUSDTVault_v1_7
+                                    : null;
                 sender = null;
                 receiver = account;
                 break;
@@ -188,7 +202,9 @@ const getTransferEvents = async (
                             ? ContractNames.AVAXUSDTVault_v1_5
                             : contractVersion === ContractVersion.VAULT_1_6
                                 ? ContractNames.AVAXUSDTVault_v1_6
-                                : null;
+                                : contractVersion === ContractVersion.VAULT_1_7
+                                    ? ContractNames.AVAXUSDTVault_v1_7
+                                    : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -201,7 +217,9 @@ const getTransferEvents = async (
                             ? ContractNames.AVAXDAIVault_v1_5
                             : contractVersion === ContractVersion.VAULT_1_6
                                 ? ContractNames.AVAXDAIVault_v1_6
-                                : null;
+                                : contractVersion === ContractVersion.VAULT_1_7
+                                    ? ContractNames.AVAXDAIVault_v1_7
+                                    : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -214,7 +232,9 @@ const getTransferEvents = async (
                             ? ContractNames.AVAXDAIVault_v1_5
                             : contractVersion === ContractVersion.VAULT_1_6
                                 ? ContractNames.AVAXDAIVault_v1_6
-                                : null;
+                                : contractVersion === ContractVersion.VAULT_1_7
+                                    ? ContractNames.AVAXDAIVault_v1_7
+                                    : null;
                 sender = account;
                 receiver = null;
                 break;
@@ -227,7 +247,9 @@ const getTransferEvents = async (
                             ? ContractNames.AVAXDAIVault_v1_5
                             : contractVersion === ContractVersion.VAULT_1_6
                                 ? ContractNames.AVAXDAIVault_v1_6
-                                : null;
+                                : contractVersion === ContractVersion.VAULT_1_7
+                                    ? ContractNames.AVAXDAIVault_v1_7
+                                    : null;
                 sender = null;
                 receiver = account;
                 break;
@@ -240,7 +262,9 @@ const getTransferEvents = async (
                             ? ContractNames.AVAXDAIVault_v1_5
                             : contractVersion === ContractVersion.VAULT_1_6
                                 ? ContractNames.AVAXDAIVault_v1_6
-                                : null;
+                                : contractVersion === ContractVersion.VAULT_1_7
+                                    ? ContractNames.AVAXDAIVault_v1_7
+                                    : null;
                 sender = account;
                 receiver = null;
                 break;

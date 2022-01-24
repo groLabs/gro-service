@@ -166,7 +166,9 @@ const loadTmpUserTransfers = async (
                         ? 'Vault 1.5'
                         : contractVersion === ContractVersion.VAULT_1_6
                             ? 'Vault 1.6'
-                            : ''} -> No data load required`);
+                            : contractVersion === ContractVersion.VAULT_1_7
+                                ? 'Vault 1.7'
+                                : ''} -> No data load required`);
         }
         return true;
 
@@ -201,7 +203,7 @@ const checkGenesisDate = (
     }
 }
 
-//@notice:  Determine if data needs to be loaded depending on the date of SC deployment
+//@notice:  Determine if data needs to be loaded depending on the date of SC deployments
 const isContractDeployed = (
     network: GlobalNetwork,
     contractVersion: ContractVersion,
@@ -258,6 +260,12 @@ const isContractDeployed = (
                 block,
                 GENESIS.AVALANCHE.VAULTS_1_6_START_OF_DAY_BLOCK,
                 GENESIS.AVALANCHE.VAULT_USDT_1_6_DEPLOYMENT_BLOCK,
+            );
+        else if (contractVersion === ContractVersion.VAULT_1_7)
+            return checkGenesisDate(
+                block,
+                GENESIS.AVALANCHE.VAULTS_1_7_START_OF_DAY_BLOCK,
+                GENESIS.AVALANCHE.VAULT_USDT_1_7_DEPLOYMENT_BLOCK,
             );
         else {
             showError(

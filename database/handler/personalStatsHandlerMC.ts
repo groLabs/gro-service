@@ -37,13 +37,13 @@ const getTransfers = async (account: string): Promise<ICall> => {
         const withdrawals_avax = [];
         const transfers_in_avax = [];
         const transfers_out_avax = [];
-        // Array of 4 positions for 3 Avax vault versions (incl. NO_VERSION), aligned with type <ContractVersion>
-        let amount_added_usdc_e_avax = new Array(4).fill(0);
-        let amount_added_usdt_e_avax = new Array(4).fill(0);
-        let amount_added_dai_e_avax = new Array(4).fill(0);
-        let amount_removed_usdc_e_avax = new Array(4).fill(0);
-        let amount_removed_usdt_e_avax = new Array(4).fill(0);
-        let amount_removed_dai_e_avax = new Array(4).fill(0);
+        // Array of 5 positions for 4 Avax vault versions (incl. NO_VERSION), aligned with type <ContractVersion>
+        let amount_added_usdc_e_avax = new Array(5).fill(0);
+        let amount_added_usdt_e_avax = new Array(5).fill(0);
+        let amount_added_dai_e_avax = new Array(5).fill(0);
+        let amount_removed_usdc_e_avax = new Array(5).fill(0);
+        let amount_removed_usdt_e_avax = new Array(5).fill(0);
+        let amount_removed_dai_e_avax = new Array(5).fill(0);
 
         const q = 'select_fe_user_transactions.sql';
         const transfers = await query(q, [account]);
@@ -205,24 +205,30 @@ const getTransfers = async (account: string): Promise<ICall> => {
                             "groUSDC.e_vault": amount_added_usdc_e_avax[CV.VAULT_1_0].toString(),
                             "groUSDC.e_vault_v1_5": amount_added_usdc_e_avax[CV.VAULT_1_5].toString(),
                             "groUSDC.e_vault_v1_6": amount_added_usdc_e_avax[CV.VAULT_1_6].toString(),
+                            "groUSDC.e_vault_v1_7": amount_added_usdc_e_avax[CV.VAULT_1_7].toString(),
                             "groUSDT.e_vault": amount_added_usdt_e_avax[CV.VAULT_1_0].toString(),
                             "groUSDT.e_vault_v1_5": amount_added_usdt_e_avax[CV.VAULT_1_5].toString(),
                             "groUSDT.e_vault_v1_6": amount_added_usdt_e_avax[CV.VAULT_1_6].toString(),
+                            "groUSDT.e_vault_v1_7": amount_added_usdt_e_avax[CV.VAULT_1_7].toString(),
                             "groDAI.e_vault": amount_added_dai_e_avax[CV.VAULT_1_0].toString(),
                             "groDAI.e_vault_v1_5": amount_added_dai_e_avax[CV.VAULT_1_5].toString(),
                             "groDAI.e_vault_v1_6": amount_added_dai_e_avax[CV.VAULT_1_6].toString(),
+                            "groDAI.e_vault_v1_7": amount_added_dai_e_avax[CV.VAULT_1_7].toString(),
                             "total": totalAvaxAmountAdded.toString(),
                         },
                         "amount_removed": {
                             "groUSDC.e_vault": amount_removed_usdc_e_avax[CV.VAULT_1_0].toString(),
                             "groUSDC.e_vault_v1_5": amount_removed_usdc_e_avax[CV.VAULT_1_5].toString(),
                             "groUSDC.e_vault_v1_6": amount_removed_usdc_e_avax[CV.VAULT_1_6].toString(),
+                            "groUSDC.e_vault_v1_7": amount_removed_usdc_e_avax[CV.VAULT_1_7].toString(),
                             "groUSDT.e_vault": amount_removed_usdt_e_avax[CV.VAULT_1_0].toString(),
                             "groUSDT.e_vault_v1_5": amount_removed_usdt_e_avax[CV.VAULT_1_5].toString(),
                             "groUSDT.e_vault_v1_6": amount_removed_usdt_e_avax[CV.VAULT_1_6].toString(),
+                            "groUSDT.e_vault_v1_7": amount_removed_usdt_e_avax[CV.VAULT_1_7].toString(),
                             "groDAI.e_vault": amount_removed_dai_e_avax[CV.VAULT_1_0].toString(),
                             "groDAI.e_vault_v1_5": amount_removed_dai_e_avax[CV.VAULT_1_5].toString(),
                             "groDAI.e_vault_v1_6": amount_removed_dai_e_avax[CV.VAULT_1_6].toString(),
+                            "groDAI.e_vault_v1_7": amount_removed_dai_e_avax[CV.VAULT_1_7].toString(),
                             "total": totalAvaxAmountRemoved.toString(),
                         },
                         "net_amount_added": {
@@ -235,6 +241,9 @@ const getTransfers = async (account: string): Promise<ICall> => {
                             "groUSDC.e_vault_v1_6": (
                                 amount_added_usdc_e_avax[CV.VAULT_1_6]
                                 - amount_removed_usdc_e_avax[CV.VAULT_1_6]).toString(),
+                            "groUSDC.e_vault_v1_7": (
+                                amount_added_usdc_e_avax[CV.VAULT_1_7]
+                                - amount_removed_usdc_e_avax[CV.VAULT_1_7]).toString(),
                             "groUDST.e_vault": (
                                 amount_added_usdt_e_avax[CV.VAULT_1_0]
                                 - amount_removed_usdt_e_avax[CV.VAULT_1_0]).toString(),
@@ -244,6 +253,9 @@ const getTransfers = async (account: string): Promise<ICall> => {
                             "groUDST.e_vault_v1_6": (
                                 amount_added_usdt_e_avax[CV.VAULT_1_6]
                                 - amount_removed_usdt_e_avax[CV.VAULT_1_6]).toString(),
+                            "groUDST.e_vault_v1_7": (
+                                amount_added_usdt_e_avax[CV.VAULT_1_7]
+                                - amount_removed_usdt_e_avax[CV.VAULT_1_7]).toString(),
                             "groDAI.e_vault": (
                                 amount_added_dai_e_avax[CV.VAULT_1_0]
                                 - amount_removed_dai_e_avax[CV.VAULT_1_0]).toString(),
@@ -253,6 +265,9 @@ const getTransfers = async (account: string): Promise<ICall> => {
                             "groDAI.e_vault_v1_6": (
                                 amount_added_dai_e_avax[CV.VAULT_1_6]
                                 - amount_removed_dai_e_avax[CV.VAULT_1_6]).toString(),
+                            "groDAI.e_vault_v1_7": (
+                                amount_added_dai_e_avax[CV.VAULT_1_7]
+                                - amount_removed_dai_e_avax[CV.VAULT_1_7]).toString(),
                             "total": (
                                 totalAvaxAmountAdded
                                 - totalAvaxAmountRemoved).toString(),
@@ -294,16 +309,19 @@ const getNetBalances = async (account: string): Promise<ICall> => {
                 ? parseFloat(res.dai_e_1_0)
                 + parseFloat(res.dai_e_1_5)
                 + parseFloat(res.dai_e_1_6)
+                + parseFloat(res.dai_e_1_7)
                 : 0;
             const usdcValue = isUser
                 ? parseFloat(res.usdc_e_1_0)
                 + parseFloat(res.usdc_e_1_5)
                 + parseFloat(res.usdc_e_1_6)
+                + parseFloat(res.usdc_e_1_7)
                 : 0;
             const usdtValue = isUser
                 ? parseFloat(res.usdt_e_1_0)
                 + parseFloat(res.usdt_e_1_5)
                 + parseFloat(res.usdt_e_1_6)
+                + parseFloat(res.usdt_e_1_7)
                 : 0;
 
             return {
@@ -324,12 +342,15 @@ const getNetBalances = async (account: string): Promise<ICall> => {
                             "groDAI.e_vault": isUser ? res.dai_e_1_0 : '0',
                             "groDAI.e_vault_v1_5": isUser ? res.dai_e_1_5 : '0',
                             "groDAI.e_vault_v1_6": isUser ? res.dai_e_1_6 : '0',
+                            "groDAI.e_vault_v1_7": isUser ? res.dai_e_1_7 : '0',
                             "groUSDC.e_vault": isUser ? res.usdc_e_1_0 : '0',
                             "groUSDC.e_vault_v1_5": isUser ? res.usdc_e_1_5 : '0',
                             "groUSDC.e_vault_v1_6": isUser ? res.usdc_e_1_6 : '0',
+                            "groUSDC.e_vault_v1_7": isUser ? res.usdc_e_1_7 : '0',
                             "groUSDT.e_vault": isUser ? res.usdt_e_1_0 : '0',
                             "groUSDT.e_vault_v1_5": isUser ? res.usdt_e_1_5 : '0',
                             "groUSDT.e_vault_v1_6": isUser ? res.usdt_e_1_6 : '0',
+                            "groUSDT.e_vault_v1_7": isUser ? res.usdt_e_1_7 : '0',
                             "total": isUser ?
                                 (usdcValue
                                     + usdtValue
@@ -392,6 +413,9 @@ const getNetReturns = async (account: string): Promise<ICall> => {
                             "groUSDC.e_vault_v1_6": isUser ? res.usdc_e_1_6_value : '0',
                             "groUSDT.e_vault_v1_6": isUser ? res.usdt_e_1_6_value : '0',
                             "groDAI.e_vault_v1_6": isUser ? res.dai_e_1_6_value : '0',
+                            "groUSDC.e_vault_v1_7": isUser ? res.usdc_e_1_7_value : '0',
+                            "groUSDT.e_vault_v1_7": isUser ? res.usdt_e_1_7_value : '0',
+                            "groDAI.e_vault_v1_7": isUser ? res.dai_e_1_7_value : '0',
                             "total": isUser ? (
                                 parseFloat(res.usdc_e_1_0_value)
                                 + parseFloat(res.usdt_e_1_0_value)
@@ -402,6 +426,9 @@ const getNetReturns = async (account: string): Promise<ICall> => {
                                 + parseFloat(res.usdc_e_1_6_value)
                                 + parseFloat(res.usdt_e_1_6_value)
                                 + parseFloat(res.dai_e_1_6_value)
+                                + parseFloat(res.usdc_e_1_7_value)
+                                + parseFloat(res.usdt_e_1_7_value)
+                                + parseFloat(res.dai_e_1_7_value)
                             ).toString()
                                 : '0',
                         },

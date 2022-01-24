@@ -98,6 +98,8 @@ const preloadCache = async (account: string) => {
     }
 }
 
+//TODO1: ***** Function to return the AVAX calls per version (instead of repeating code)
+//TODO2: ***** Use vault end dates, so no need to retrieve events for contracts that have been migrated
 const loadCache = async (account: string): Promise<boolean> => {
     try {
         const [
@@ -155,6 +157,19 @@ const loadCache = async (account: string): Promise<boolean> => {
                 loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_DAIe, account),
                 loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_IN, account),
                 loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
+                // AVAX vaults v1.7
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDCe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDCe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_IN, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_OUT, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDTe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDTe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_IN, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_OUT, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.DEPOSIT_DAIe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_DAIe, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_IN, account),
+                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
             ]);
 
             //TODO: when errors retrieving deposits, withdrawals or transfers in personalUtil->getTransferEvents()

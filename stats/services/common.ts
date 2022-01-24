@@ -290,10 +290,10 @@ async function getHandlerEvents(
             );
             break;
         case ContractNames.AVAXDAIVault_v1_7:
-        contracts = getAVAXDAIVaultContracts(
-            provider,
-            'AVAXDAIVault_v1_7',
-            accountOwnHistory
+            contracts = getAVAXDAIVaultContracts(
+                provider,
+                'AVAXDAIVault_v1_7',
+                accountOwnHistory
             );
             break;
         case ContractNames.AVAXUSDCVault_v1_7:
@@ -365,10 +365,18 @@ async function getTransferHistories(
     const distInLogs = [];
     const distOutLogs = [];
     inLogs.forEach((logObject) => {
-        distInLogs.push(...logObject.data);
+        if (logObject.status === 400) {
+            logger.error(`transfer in event failed: ${logObject.data}`);
+        } else {
+            distInLogs.push(...logObject.data);
+        }
     });
     outLogs.forEach((logObject) => {
-        distOutLogs.push(...logObject.data);
+        if (logObject.status === 400) {
+            logger.error(`transfer out event failed: ${logObject.data}`);
+        } else {
+            distOutLogs.push(...logObject.data);
+        }
     });
     return {
         inLogs: distInLogs,
@@ -388,7 +396,13 @@ async function getAvaxApprovalEvents(account, contractName, provider) {
     const logs = await Promise.all(eventPromise);
     const resultLogs = [];
     for (let i = 0; i < logs.length; i += 1) {
-        resultLogs.push(...logs[i].data);
+        if (logs[i].status === 400) {
+            logger.error(
+                `${contractName} approval events filter failed: ${logs[i].data}`
+            );
+        } else {
+            resultLogs.push(...logs[i].data);
+        }
     }
 
     return resultLogs;

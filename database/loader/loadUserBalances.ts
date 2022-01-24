@@ -12,12 +12,15 @@ import {
     getUSDCeVault,
     getUSDCeVault_1_5,
     getUSDCeVault_1_6,
+    getUSDCeVault_1_7,
     getUSDTeVault,
     getUSDTeVault_1_5,
     getUSDTeVault_1_6,
+    getUSDTeVault_1_7,
     getDAIeVault,
     getDAIeVault_1_5,
     getDAIeVault_1_6,
+    getDAIeVault_1_7,
 } from '../common/contractUtil';
 import { QUERY_ERROR } from '../constants';
 import {
@@ -69,6 +72,9 @@ let daie_1_5 = [];
 let usdce_1_6 = [];
 let usdte_1_6 = [];
 let daie_1_6 = [];
+let usdce_1_7 = [];
+let usdte_1_7 = [];
+let daie_1_7 = [];
 
 /// @notice Retrieve user balances in a recursive way by batches
 /// @dev    - The amount of users per batch is defined in constant <BATCH>
@@ -117,6 +123,9 @@ const getBalancesSC = async (
             usdceUpdate_1_6,
             usdteUpdate_1_6,
             daieUpdate_1_6,
+            usdceUpdate_1_7,
+            usdteUpdate_1_7,
+            daieUpdate_1_7,
         ] = await Promise.all([
             getBalances(getGroVault().address, userBatch, block),
             getBalances(getPowerD().address, userBatch, block),
@@ -141,6 +150,9 @@ const getBalancesSC = async (
             multiCall(GN.AVALANCHE, getUSDCeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
             multiCall(GN.AVALANCHE, getUSDTeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
             multiCall(GN.AVALANCHE, getDAIeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
+            multiCall(GN.AVALANCHE, getUSDCeVault_1_7().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
+            multiCall(GN.AVALANCHE, getUSDTeVault_1_7().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
+            multiCall(GN.AVALANCHE, getDAIeVault_1_7().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
         ]);
 
         if (gvt.length === 0) {
@@ -161,6 +173,9 @@ const getBalancesSC = async (
             usdce_1_6 = usdceUpdate_1_6;
             usdte_1_6 = usdteUpdate_1_6;
             daie_1_6 = daieUpdate_1_6;
+            usdce_1_7 = usdceUpdate_1_7;
+            usdte_1_7 = usdteUpdate_1_7;
+            daie_1_7 = daieUpdate_1_7;
         } else {
             gvt[0].amount_unstaked.push(...gvtUpdate[0].amount_unstaked);
             gvt[1].amount_staked.push(...gvtUpdate[1].amount_staked);
@@ -204,6 +219,9 @@ const getBalancesSC = async (
             usdce_1_6.push(...usdceUpdate_1_6);
             usdte_1_6.push(...usdteUpdate_1_6);
             daie_1_6.push(...daieUpdate_1_6);
+            usdce_1_7.push(...usdceUpdate_1_7);
+            usdte_1_7.push(...usdteUpdate_1_7);
+            daie_1_7.push(...daieUpdate_1_7);
         }
 
         return (newOffset >= users.length)
@@ -225,6 +243,9 @@ const getBalancesSC = async (
                 usdce_1_6: usdce_1_6,
                 usdte_1_6: usdte_1_6,
                 daie_1_6: daie_1_6,
+                usdce_1_7: usdce_1_7,
+                usdte_1_7: usdte_1_7,
+                daie_1_7: daie_1_7,
             }
             : getBalancesSC(users, block, newOffset, account);
 
@@ -293,6 +314,9 @@ const insertBalances = async (
                 res.usdce_1_6[i],
                 res.usdte_1_6[i],
                 res.daie_1_6[i],
+                res.usdce_1_7[i],
+                res.usdte_1_7[i],
+                res.daie_1_7[i],
                 moment.utc(),
             ];
 
@@ -378,6 +402,9 @@ const cleanseVars = () => {
     usdce_1_6 = [];
     usdte_1_6 = [];
     daie_1_6 = [];
+    usdce_1_7 = [];
+    usdte_1_7 = [];
+    daie_1_7 = [];
     rowCount = 0;
 }
 

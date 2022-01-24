@@ -135,6 +135,21 @@ const getDAIeVault_1_6 = () => {
         .contract;
 }
 
+const getUSDCeVault_1_7 = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_7, getProviderAvax())
+        .contract;
+}
+
+const getUSDTeVault_1_7 = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_7, getProviderAvax())
+        .contract;
+}
+
+const getDAIeVault_1_7 = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_7, getProviderAvax())
+        .contract;
+}
+
 const getStableCoins = async () => {
     if (!stableCoins.length) {
         const latestController = getLatestSystemContract(
@@ -179,7 +194,6 @@ const getStableCoinsInfo = async () => {
     return stableCoinsInfo;
 }
 
-
 export {
     getGroVault,
     getPowerD,
@@ -195,4 +209,7 @@ export {
     getUSDCeVault_1_6,
     getUSDTeVault_1_6,
     getDAIeVault_1_6,
+    getUSDCeVault_1_7,
+    getUSDTeVault_1_7,
+    getDAIeVault_1_7,
 };
