@@ -110,11 +110,11 @@ const RISK_FREE_RATE = BigNumber.from(2400);
 const BLOCKS_OF_3DAYS = 130000;
 const START_TIME_STAMP = [
     1638707119, 1638549778, 1638549778, 1639664984, 1639664984, 1639664984,
-    1641855405, 1641855405, 1641855405, 1642551410, 1642551410, 1642551410
+    1641855405, 1641855405, 1641855405, 1643046910, 1643046910, 1643046910,
 ];
 const START_BLOCK = [
     7838860, 7759709, 7759709, 8317127, 8317127, 8317127, 9402752, 9402752,
-    9402752, 9754574, 9754574, 9754574
+    9402752, 10002948, 10002948, 10002948,
 ];
 const providerKey = 'stats_gro';
 const positionCache = {};
@@ -547,7 +547,6 @@ function getTvlStats(assets) {
             .add(assets[9])
             .add(assets[10])
             .add(assets[11]),
-
     };
     return tvl;
 }
@@ -633,11 +632,10 @@ async function getAvaxExposure(
 ) {
     // exposure
     const positionInfo = await strategyContract.getPosition(positionId);
-    const collateralSize = positionInfo[4];
-    let debts = positionInfo[5];
+    const collateralSize = positionInfo.collateral;
+    let debts = positionInfo.wantOpen;
     let debt = debts[0];
     if (vaultIndex > 5) {
-        debts = positionInfo[2];
         debt = debts[1];
     }
     console.log(`collateralSize ${collateralSize} ${debt}`);
@@ -1031,18 +1029,20 @@ async function generateVaultData(
         labsVaultData.all_time_apy = vaultReturn;
         labsVaultData.last3d_apy = vaultReturn3Days;
     }
+    const startBlock = 9000000;
+    // const startBlock = 7408960;
 
     logger.info('openEvents');
     const openEvents = await getPositionOpenEvents(
         strategyContract,
-        7408960,
+        startBlock,
         block.number
     );
     logger.info('closeEvents');
 
     const closeEvents = await getLogPositionClosedEvents(
         strategyContract,
-        7408960,
+        startBlock,
         block.number
     );
 
@@ -1050,7 +1050,7 @@ async function generateVaultData(
 
     const adjustedEvents = await getLogPositionAdjustedEvents(
         strategyContract,
-        7408960,
+        startBlock,
         block.number
     );
 
