@@ -126,6 +126,7 @@ const loadTmpUserTransfers = async (
                         side,
                         account
                     );
+                    
                     if (result.status === QUERY_ERROR)
                         return false;
 

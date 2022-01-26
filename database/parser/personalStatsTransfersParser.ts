@@ -35,7 +35,10 @@ import {
 } from '../types';
 import { showError } from '../handler/logHandler';
 import { ICall } from '../interfaces/ICall';
-import { QUERY_ERROR, QUERY_SUCCESS } from '../constants';
+import { 
+    QUERY_ERROR, 
+    QUERY_SUCCESS 
+} from '../constants';
 
 
 const getTokenIds = (

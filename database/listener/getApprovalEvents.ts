@@ -1,67 +1,76 @@
-import { query } from '../handler/queryHandler';
-import { QUERY_ERROR } from '../constants';
+import { getEvents } from '../../common/logFilter';
+import {
+    QUERY_ERROR,
+    QUERY_SUCCESS,
+} from '../constants';
 import { getFilterEvents } from '../../common/logFilter';
-import { getCoinApprovalFilters } from '../../common/filterGenerateTool';
-import { showError, showWarning } from '../handler/logHandler';
+import {
+    getCoinApprovalFilters,
+    getContractHistoryEventFilters,
+} from '../../common/filterGenerateTool';
+import {
+    showError,
+    showWarning,
+} from '../handler/logHandler';
+import { EventResult } from '../../common/commonTypes';
+import { isDepositOrWithdrawal } from '../common/personalUtil';
+import { ContractNames } from '../../registry/registry';
+import { ICall } from '../interfaces/ICall';
+import {
+    errorObj,
+    getProvider,
+    getProviderAvax
+} from '../common/globalUtil';
+import {
+    TokenId,
+    Transfer,
+} from '../types';
+
 
 // Get all approval events for a given block range
 // TODO *** TEST IF THERE ARE NO LOGS TO PROCESS ***
-// TODO: can't return boolean or events (not TS rulez)
-const getApprovalEvents = async (account, fromBlock, toBlock) => {
+const getApprovalEvents = async (
+    filter: any,
+    side: Transfer,
+): Promise<ICall> => {
     try {
-        const logApprovals = await getCoinApprovalFilters(
-            'default',
-            fromBlock,
-            toBlock,
-            account
-        );
+
         const logPromises = [];
-        for (let i = 0; i < logApprovals.length; i += 1) {
-            const approvalEvent = logApprovals[i];
-            logPromises.push(
-                getFilterEvents(
-                    approvalEvent.filter,
-                    approvalEvent.interface,
-                    'default'
-                )
-            );
-        }
-        const logs = await Promise.all(logPromises);
+        const isAvax = side >= 500 && side < 1000 ? true : false;
 
-        // Remove approvals referring to deposits (only get stablecoin approvals)
-        const depositTx = [];
-        const q = account
-            ? 'select_cache_tmp_deposits.sql'
-            : 'select_tmp_deposits.sql';
-        const res = await query(q, []);
-        if (res.status === QUERY_ERROR) {
-            return false;
-        } else if (res.rows.length === 0) {
-            showWarning(
-                'getApprovalEvents.ts->getApprovalEvents()',
-                '0 deposit transfers before processing approval events'
+            const result: EventResult = await getEvents(
+                filter.filter,
+                filter.interface,
+                isAvax ? getProviderAvax() : getProvider()
             );
-        } else {
-            for (const tx of res.rows) {
-                depositTx.push(tx.tx_hash);
+
+            if (result.status === QUERY_ERROR) {
+                showError(
+                    'getTransferEvents.ts->getTransferEvents()',
+                    `Error while retrieving transfer events -> [side:${side}]: ${result.data}`
+                );
+                return errorObj(
+                    `Error in getTransferEvents->getEvents(): [side:${side}]: ${result.data}`
+                );
             }
-        }
-        let logsFiltered = [];
-        for (let i = 0; i < logs.length; i++) {
-            logsFiltered.push(
-                logs[i].filter(
-                    (item) => !depositTx.includes(item.transactionHash)
-                )
-            );
-        }
 
-        return logsFiltered;
+            if (result.data.length > 0) {
+                logPromises.push(result.data);
+            }
+
+        let logResults = await Promise.all(logPromises);
+
+        return {
+            status: QUERY_SUCCESS,
+            data: logResults,
+        };
+
     } catch (err) {
         showError(
             'getApprovalEvents.ts->getApprovalEvents()',
-            `[blocks: from ${fromBlock} to: ${toBlock}, account: ${account}]: ${err}`
+            `[side: ${side}]: ${err}`
         );
-        return false;
+        return errorObj(err);
     }
 };
 

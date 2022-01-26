@@ -11,8 +11,10 @@ import { ContractNames } from '../../registry/registry';
 import { showError } from '../handler/logHandler';
 import { EventResult } from '../../common/commonTypes';
 import { ICall } from '../interfaces/ICall';
-import { QUERY_ERROR } from '../constants';
-import { QUERY_SUCCESS } from '../../lbp/constants';
+import {
+    QUERY_ERROR,
+    QUERY_SUCCESS
+} from '../constants';
 import {
     Transfer,
     ContractVersion
@@ -276,8 +278,6 @@ const getTransferEvents = async (
                 return errorObj(`switch: Invalid event: ${side}`);
         }
 
-        const isAvax = side >= 500 && side < 1000 ? true : false;
-
         let filters;
         if (isDepositOrWithdrawal(side)) {
             // returns an array
@@ -303,6 +303,7 @@ const getTransferEvents = async (
         }
 
         const logPromises = [];
+        const isAvax = side >= 500 && side < 1000 ? true : false;
 
         for (let i = 0; i < filters.length; i += 1) {
             const transferEventFilter = filters[i];
