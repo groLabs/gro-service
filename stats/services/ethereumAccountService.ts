@@ -1,5 +1,5 @@
 import BN from 'bignumber.js';
-import { ethers, BigNumber } from 'ethers';
+import { ethers } from 'ethers';
 import { getFilterEvents } from '../../common/logFilter';
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import { ContractCallError, ParameterError } from '../../common/error';
@@ -10,9 +10,9 @@ import { getTransactions, getTransaction } from './generatePersonTransaction';
 import { shortAccount } from '../../common/digitalUtil';
 import { AppendGTokenMintOrBurnAmountToLog } from '../common/tool';
 import { getAccountFailTransactions } from '../handler/failedTransactionHandler';
-
 import { ContractNames } from '../../registry/registry';
 import { newContract } from '../../registry/contracts';
+import { getUserPoolsInfo } from './stakerPoolService';
 
 import {
     getContractsHistory,
@@ -818,6 +818,7 @@ async function ethereumPersonalStats(account) {
         current_balance: {},
         net_returns: {},
         net_returns_ratio: {},
+        pools: {},
         address: account,
         gro_balance_combined: '0',
     } as any;
@@ -857,6 +858,8 @@ async function ethereumPersonalStats(account) {
         result.airdrops = airdrops;
         const combinedGROBalance = await getCombinedGROBalance(account);
         result.gro_balance_combined = combinedGROBalance;
+
+        result.pools = await getUserPoolsInfo(account, latestBlock.number);
 
         // calculate groVault deposit & withdraw
         let groVaultDepositAmount = new BN(0);

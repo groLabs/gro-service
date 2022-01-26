@@ -476,7 +476,7 @@ async function singleVaultEvents(account, adpaterType, token, decimals) {
     // net return
     const netReturn = new BN(currentBalance).minus(netAmountAdded);
 
-    // handle approval event
+    // handle approval event for transferFrom function still has Approval event: https://snowtrace.io/address/0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664#code
     const distApprovalEvents = [];
     approvalEvents.forEach((log) => {
         const { transactionHash } = log;
