@@ -37,10 +37,10 @@ const loadTableUpdates = async (
             switch (tableName) {
                 case 'USER_TRANSFERS':
                     q = 'insert_sys_load_user_transfers.sql';
-                    let result = await query(q, params);
-                    if (result.status === QUERY_ERROR) {
+                    let transfers = await query(q, params);
+                    if (transfers.status === QUERY_ERROR) {
                         return false;
-                    } else if (result.rowCount === 0) {
+                    } else if (transfers.rowCount === 0) {
                         // Insert 0 records to allow personalStats cache know the latest transfers
                         // loaded even one day there weren't events.
                         const params = [
@@ -51,15 +51,21 @@ const loadTableUpdates = async (
                             moment.utc()
                         ];
                         q = 'insert_sys_load_zero_user_transfers.sql';
-                        result = await query(q, params);
-                        if (result.status === QUERY_ERROR)
+                        transfers = await query(q, params);
+                        if (transfers.status === QUERY_ERROR)
                             return false;
                     }
-                    showInfo(`${result.rowCount} record${isPlural(result.rowCount)} added into SYS_USER_LOADS`);
+                    showInfo(`${transfers.rowCount} record${isPlural(transfers.rowCount)} added into SYS_USER_LOADS for transfers`);
                     break;
-                // case 'USER_APPROVALS':
-                //     q = 'insert_sys_load_user_approvals.sql';
-                //     break;
+                case 'USER_APPROVALS':
+                    q = 'insert_sys_load_user_approvals.sql';
+                    let approvals = await query(q, params);
+                    if (approvals.status === QUERY_ERROR) {
+                        return false;
+                    } else if (approvals.rowCount > 0) {
+                        showInfo(`${approvals.rowCount} record${isPlural(approvals.rowCount)} added into SYS_USER_LOADS for approvals`);
+                    }
+                    break;
                 default:
                     showError(
                         'loadTableUpdates.ts->loadTableUpdates()',
