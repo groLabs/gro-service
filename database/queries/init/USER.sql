@@ -14,34 +14,44 @@ CREATE TABLE gro."USER_APPROVALS" (
     "block_number" INTEGER NOT NULL,
     "block_timestamp" INTEGER NULL,
     "approval_date" TIMESTAMP (6) NULL,
-    "network_id" INTEGER NULL,
-    "stablecoin_id" SMALLINT NULL,
     "tx_hash" CHARACTER VARYING (66) NOT NULL,
+    "network_id" INTEGER NULL,
+    "token_id" SMALLINT NOT NULL,
+    "version_id" SMALLINT NOT NULL,
     "sender_address" CHARACTER VARYING (42) NOT NULL,
     "spender_address" CHARACTER VARYING (42) NULL,
-    "coin_amount" NUMERIC (20, 8) NULL,
-    "coin_value" NUMERIC (20, 8) NULL,
+    "amount" NUMERIC (20, 8) NULL,
+    "value" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) NULL,
-    CONSTRAINT "USER_APPROVALS_pkey" 
-        PRIMARY KEY ("block_number", "network_id", "tx_hash", "sender_address") 
-        NOT DEFERRABLE INITIALLY IMMEDIATE
+    CONSTRAINT "USER_APPROVALS_pkey" PRIMARY KEY (
+        "block_number",
+        "network_id",
+        "tx_hash",
+        "token_id",
+        "sender_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."USER_APPROVALS" OWNER to postgres;
 
 CREATE TABLE gro."USER_APPROVALS_TMP" (
     "block_number" INTEGER NOT NULL,
-    "network_id" INTEGER NULL,
-    "stablecoin_id" SMALLINT NULL,
     "tx_hash" CHARACTER VARYING (66) NOT NULL,
+    "network_id" INTEGER NULL,
+    "token_id" SMALLINT NOT NULL,
+    "version_id" SMALLINT NOT NULL,
     "sender_address" CHARACTER VARYING (42) NOT NULL,
     "spender_address" CHARACTER VARYING (42) NULL,
-    "coin_amount" NUMERIC (20, 8) NULL,
-    "coin_value" NUMERIC (20, 8) NULL,
+    "amount" NUMERIC (20, 8) NULL,
+    "value" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) NULL,
-    CONSTRAINT "USER_PPROVALS_TMP_pkey" 
-        PRIMARY KEY ("block_number", "network_id", "tx_hash", "sender_address") 
-        NOT DEFERRABLE INITIALLY IMMEDIATE
+    CONSTRAINT "USER_APPROVALS_TMP_pkey" PRIMARY KEY (
+        "block_number",
+        "network_id",
+        "tx_hash",
+        "token_id",
+        "sender_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."USER_APPROVALS_TMP" OWNER to postgres;
