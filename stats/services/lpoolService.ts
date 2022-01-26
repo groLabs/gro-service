@@ -1,5 +1,5 @@
 import BN from 'bignumber.js';
-import { ethers } from 'ethers';
+import { ethers, BigNumber } from 'ethers';
 import { getFilterEvents } from '../../common/logFilter';
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import { div } from '../../common/digitalUtil';
@@ -31,6 +31,17 @@ const grovesting = new ethers.Contract(
 interface IFilter extends ethers.EventFilter {
     fromBlock: any;
     toBlock: any;
+}
+
+async function fetchInstantUnlockPercentange() {
+    const PERCENT_DECIMAL = BigNumber.from(10000)
+    try {
+        const instantUnlock = await grovesting.instantUnlockPercent() as BigNumber
+        return instantUnlock.div(PERCENT_DECIMAL)
+    } catch {
+        return BigNumber.from(3000).div(PERCENT_DECIMAL)
+    }
+
 }
 
 async function fetchStakeAndUnstakeTransactions(account, endBlock) {
@@ -145,4 +156,4 @@ async function getPoolTransactions(account, endBlock = 'latest') {
     return result;
 }
 
-export { getPoolTransactions };
+export { getPoolTransactions, fetchInstantUnlockPercentange };

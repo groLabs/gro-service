@@ -10,6 +10,7 @@ import moment from 'moment';
 import { findBlockByDate } from '../../database/common/globalUtil';
 import { callSubgraph } from '../../common/subgraphCaller';
 import { floatToBN } from '../../common/digitalUtil';
+import { fetchInstantUnlockPercentange } from '../services/lpoolService'
 
 const logger = require('../statsLogger');
 
@@ -1012,6 +1013,24 @@ const getBalancerGroWethStats = async (
     }
 };
 
+async function getGvtApy(currentApy, latestBlock) {
+    await initContracts();
+    const priceOracle = await getGroPriceFromUniswap(latestBlock);
+    // reward in staker per block
+    const groPerBlock = await lpTokenStaker.groPerBlock(latestBlock);
+    const totalAllocPoint = await lpTokenStaker.totalAllocPoint(latestBlock);
+    const poolSingleGvtStats = await getSingleGvtStats(
+        priceOracle,
+        groPerBlock,
+        totalAllocPoint,
+        currentApy,
+        latestBlock
+    );
+
+    return { upper: printPercent(poolSingleGvtStats.tokenApy), lower: printPercent((poolSingleGvtStats.tokenApy as BigNumber).mul(await fetchInstantUnlockPercentange()))}
+
+}
+
 async function getPools(currentApy, latestBlock) {
     await initContracts();
     const NAH = 'NA';
@@ -1288,4 +1307,5 @@ export {
     getGroPriceFromUniswap,
     getPools,
     getLpTokenAmountOfBalancerPool,
+    getGvtApy,
 };
