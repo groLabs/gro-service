@@ -10,13 +10,17 @@ import {
     loadUserTransfers,
     loadTmpUserTransfers
 } from '../loader/loadUserTransfers';
-//import { loadUserApprovals, loadTmpUserApprovals } from '../loader/loadUserApprovals';
+import {
+    loadUserApprovals,
+    loadTmpUserApprovals
+} from '../loader/loadUserApprovals';
 import { checkDateRange } from '../common/globalUtil';
 import {
     QUERY_ERROR,
     QUERY_SUCCESS
 } from '../constants';
 import {
+    TokenId,
     Transfer,
     GlobalNetwork as GN,
     ContractVersion as Ver,
@@ -184,10 +188,11 @@ const loadTransfers = async (
                         loadTmpUserTransfers(GN.ETHEREUM, Ver.NO_VERSION, fromBlock, toBlock, Transfer.TRANSFER_PWRD_IN, null),
                         loadTmpUserTransfers(GN.ETHEREUM, Ver.NO_VERSION, fromBlock, toBlock, Transfer.TRANSFER_GRO_IN, null),
                         loadTmpUserTransfers(GN.ETHEREUM, Ver.NO_VERSION, fromBlock, toBlock, Transfer.TRANSFER_GRO_OUT, null),
+                        // loadTmpUserApprovals(GN.ETHEREUM, Ver.NO_VERSION, fromBlock, toBlock, Transfer.DEPOSIT, null),
                     ]
                     : null;
 
-            // TODO: ****** Function to return an array of Avax vaults to be processed (instead of repeating code)
+            // TODO: ****** Function to return an array of Avax vaults to be processed (instead of repeating code).
 
             const avaxVault_1_0 =
                 gn === GN.ALL || gn === GN.AVALANCHE
@@ -294,10 +299,9 @@ const loadTransfers = async (
             }
 
             if (res.every(Boolean)) {
-                // if (await loadTmpUserApprovals(fromBlock, toBlock, null))
                 if (await remove(fromDate, toDate))
                     if (await loadUserTransfers(fromDate, toDate, null))
-                        // if (await loadUserApprovals(fromDate, toDate, null))
+                        //if (await loadUserApprovals(fromDate, toDate, null))
                         return true;
             } else {
                 showError(

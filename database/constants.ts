@@ -3,6 +3,9 @@ const QUERY_SUCCESS = 200;
 const ERC20_TRANSFER_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 const BALANCES_BATCH = 300;
 
+// Max number to store a float into the DB - type NUMBER(20,8)
+const MAX_NUMBER = 999999999999;
+
 // Restrict eligible tables to extract data when called from API
 const TABLE_WHITELIST = [
     'MD_STABLECOINS',
@@ -43,6 +46,7 @@ export {
     QUERY_ERROR,
     QUERY_SUCCESS,
     ERC20_TRANSFER_SIGNATURE,
+    MAX_NUMBER,
     TABLE_WHITELIST,
     BALANCES_BATCH,
     GENESIS,

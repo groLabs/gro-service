@@ -35,12 +35,16 @@ enum SqlCommand {
 }
 
 enum TokenName {
+    UNKNOWN = 'unknown',
     PWRD = 'pwrd',
     GVT = 'gvt',
     GRO = 'gro',
     groUSDC_e = 'gro_usdc_e',
     groUSDT_e = 'gro_usdt_e',
     groDAI_e = 'gro_dai_e',
+    USDC = 'usdc',
+    USDT = 'usdt',
+    DAI = 'dai',
 }
 
 // Must be aligned with table MD_TOKENS
@@ -52,6 +56,9 @@ enum TokenId {
     groUSDC_e = 4,
     groUSDT_e = 5,
     groDAI_e = 6,
+    USDC = 7,
+    USDT = 8,
+    DAI = 9,
 }
 
 enum Bool {

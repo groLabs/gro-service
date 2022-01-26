@@ -10,6 +10,8 @@ import {
     NetworkId,
     NetworkName,
     GlobalNetwork,
+    TokenId,
+    TokenName,
 } from '../types';
 import { ICall } from '../interfaces/ICall';
 import { QUERY_ERROR } from '../constants';
@@ -227,6 +229,43 @@ const getBlockDataAvax = async (blockNumber) => {
     return block;
 };
 
+const getTokenInfoFromAddress = (
+    address: string,
+): [TokenId, TokenName] => {
+    switch (address) {
+        case '0x3ADb04E127b9C0a5D36094125669d4603AC52a0c':
+            return [
+                TokenId.GVT,
+                TokenName.GVT
+            ];
+        case '0xF0a93d4994B3d98Fb5e3A2F90dBc2d69073Cb86b':
+            return [
+                TokenId.PWRD,
+                TokenName.PWRD
+            ];
+        case '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48':
+            return [
+                TokenId.USDC,
+                TokenName.USDC
+            ];
+        case '0xdAC17F958D2ee523a2206206994597C13D831ec7':
+            return [
+                TokenId.USDT,
+                TokenName.USDT
+            ];
+        case '0x6B175474E89094C44Da98b954EedeAC495271d0F':
+            return [
+                TokenId.DAI,
+                TokenName.DAI
+            ];
+        default:
+            return [
+                TokenId.UNKNOWN,
+                TokenName.UNKNOWN
+            ];
+    }
+}
+
 export {
     errorObj,
     isPlural,
@@ -241,5 +280,5 @@ export {
     getProviderAvax,
     getBlockData,
     getBlockDataAvax,
-
+    getTokenInfoFromAddress,
 }
