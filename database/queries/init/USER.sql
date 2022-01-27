@@ -187,3 +187,20 @@ CREATE TABLE gro."TOKEN_PRICE" (
 ) TABLESPACE pg_default;
 
 ALTER TABLE gro."TOKEN_PRICE" OWNER to postgres;
+
+CREATE TABLE gro."USER_VESTING_BONUS" (
+    "block_number" INTEGER NOT NULL,
+    "tx_hash" CHARACTER VARYING (66) NOT NULL,
+    "network_id" INTEGER NULL,
+    "user_address" CHARACTER VARYING (42) NOT NULL,
+    "amount" NUMERIC (20, 8) NULL,
+    "creation_date" TIMESTAMP (6) NULL,
+    CONSTRAINT "USER_VESTING_BONUS_pkey" PRIMARY KEY (
+        "block_number",
+        "tx_hash",
+        "network_id",
+        "user_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."USER_VESTING_BONUS" OWNER to postgres;

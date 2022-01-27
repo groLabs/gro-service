@@ -64,6 +64,10 @@ ALTER TABLE gro."MD_FEATURES" OWNER to postgres;
 INSERT INTO gro."MD_FEATURES"("feature_id", "description", "creation_date")
 VALUES (1, 'PERSONAL_STATS', now()::timestamp);
 
+INSERT INTO gro."MD_FEATURES"("feature_id", "description", "creation_date")
+VALUES (2, 'VESTING_BONUS', now()::timestamp);
+
+
 /****************************************************
                     MD_STATUS 
  ****************************************************/

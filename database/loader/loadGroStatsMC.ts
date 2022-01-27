@@ -21,10 +21,6 @@ import {
 } from '../handler/logHandler';
 
 
-const checkLastTimestamp = async () => {
-    return await query('select_last_protocol_load.sql', ['GRO_STATS']);
-}
-
 const loadAPY = async (stats): Promise<boolean> => {
     try {
         const [
@@ -282,5 +278,4 @@ const loadAllTables = async (stats) => {
 export {
     loadAPY,
     loadAllTables,
-    checkLastTimestamp,
 }
