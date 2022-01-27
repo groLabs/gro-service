@@ -264,6 +264,13 @@ export const staker_pools = {
         start_block: 13355180,
         bal_per_week: 1000,
     },
+    single_staking_100_pwrd_6: {
+        deposit_url: 'NA',
+        remove_url: 'NA',
+        display_order: '6',
+        pid: '6',
+        disable: 'false',
+    },
 };
 export const discord = {
     token: process.env[`DISCORD_TOKEN_${process.env.BOT_ENV}`],
