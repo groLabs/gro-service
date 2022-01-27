@@ -34,12 +34,12 @@ interface IFilter extends ethers.EventFilter {
 }
 
 async function fetchInstantUnlockPercentange() {
-    const PERCENT_DECIMAL = BigNumber.from(10000)
+    const PERCENT_DECIMAL = new BN(10000)
     try {
         const instantUnlock = await grovesting.instantUnlockPercent() as BigNumber
-        return instantUnlock.div(PERCENT_DECIMAL)
+        return new BN(instantUnlock.toString()).div(PERCENT_DECIMAL).toString()
     } catch {
-        return BigNumber.from(3000).div(PERCENT_DECIMAL)
+        return new BN(3000).div(PERCENT_DECIMAL).toString()
     }
 
 }

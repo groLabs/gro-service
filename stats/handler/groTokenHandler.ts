@@ -1027,7 +1027,9 @@ async function getGvtApy(currentApy, latestBlock) {
         latestBlock
     );
 
-    return { upper: printPercent(poolSingleGvtStats.tokenApy), lower: printPercent((poolSingleGvtStats.tokenApy as BigNumber).mul(await fetchInstantUnlockPercentange()))}
+    const tokenApy = (poolSingleGvtStats.tokenApy as BigNumber).toString()
+
+    return { upper: printPercent(new BN(tokenApy)), lower: printPercent(new BN(tokenApy).times(new BN(await fetchInstantUnlockPercentange())))}
 
 }
 
