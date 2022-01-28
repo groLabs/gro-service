@@ -1,11 +1,11 @@
 import { etlGroStatsMC } from './etl/etlGroStatsMC';
 import { etlPriceCheck, etlPriceCheckHDL } from './etl/etlPriceCheck';
+import { etlVestingBonus } from './etl/etlVestingBonus';
 import { etlPersonalStats } from './etl/etlPersonalStats';
 import { etlPersonalStatsCache } from './etl/etlPersonalStatsCache';
 import { loadContractInfoFromRegistry } from '../registry/registryLoader';
 import { getPriceCheck } from './handler/priceCheckHandler';
 import { checkDateRange } from './common/globalUtil';
-// import scheduler from './scheduler/dbStatsScheduler';
 import { getHistoricalAPY } from './handler/historicalAPY';
 import { loadUserBalances } from './loader/loadUserBalances';
 import { etlTokenPrice } from './etl/etlTokenPrice';
@@ -22,6 +22,8 @@ import {
 } from './common/statusUtil';
 import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/airdrop4handler';
 import { QUERY_SUCCESS } from './constants';
+
+
 
 
 (async () => {
@@ -164,12 +166,26 @@ import { QUERY_SUCCESS } from './constants';
                         console.log(`Wrong parameters for getDbStatus - e.g. setDbStatus 1 2`);
                     }
                     break;
+                case 'vestingBonusETL':
+                    await loadContractInfoFromRegistry();
+                    if (params.length === 2) {
+                        await etlVestingBonus(
+                            parseInt(params[1])      // isETL (0: false / 1: true)
+                        );
+                    } else {
+                        console.log(`Wrong parameters for vestingBonusETL - e.g. vestingBonusETL`);
+                    }
+                    break;
                 default:
                     console.log(`Unknown parameter/s: ${params}`);
                     break;
             }
             process.exit(0);
         }
+
+        // Vesting Bonus
+        // await loadContractInfoFromRegistry();
+        // console.log(await getVestingBonus('0x9B7a6E6b894E243E994cfAA32eA07D8a60740981'));
 
         // Status:
         // await loadContractInfoFromRegistry();

@@ -32,6 +32,7 @@
         "GroDAOVesting",
         "GroVesting",
         "GroDAOToken",
+        "GroHodler",
         "VotingAggregator",
         "AVAXDAIVault",
         "AVAXUSDCVault",
@@ -127,6 +128,21 @@
                 "startBlock": 11115277,
                 "abiVersion": "fa8e260",
                 "tag": "Other",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "GroHodler": [
+            {
+                "address": "0xcb46185B2013315C7e5C28088a811DF657E5D52d",
+                "deployedBlock": 11220047,
+                "startBlock": 11220047,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
                 "tokens": [],
                 "protocols": [],
                 "protocolsDisplayName": [],

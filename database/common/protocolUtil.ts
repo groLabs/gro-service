@@ -12,6 +12,7 @@ import {
 const checkLastTimestamp = async (source) => {
     return await query('select_last_protocol_load.sql', [source]);
 }
+
 const checkQueryResult = (
     result,
     table,

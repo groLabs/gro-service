@@ -8,12 +8,20 @@ import { getAllStatsMC } from '../handler/groStatsHandlerMC';
 import { getPriceCheck } from '../handler/priceCheckHandler';
 import { getHistoricalAPY } from '../handler/historicalAPY';
 import { getPersonalStatsMC } from '../handler/personalStatsHandlerMC';
+import { getVestingBonus } from '../handler/vestingBonusHandler';
 import { etlPersonalStatsCache } from '../etl/etlPersonalStatsCache';
 import {
     QUERY_ERROR,
-    QUERY_SUCCESS
+    QUERY_SUCCESS,
 } from '../constants';
-import { Status } from '../types';
+import {
+    Status,
+    Feature,
+} from '../types';
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 
 
 const router = express.Router();
@@ -61,45 +69,50 @@ router.get(
             .withMessage('should be a valid address and start with "0x"'),
     ]),
     wrapAsync(async (req, res) => {
-        let { network, address } = req.query;
-        network = network || '';
-        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
-            throw new ParameterError(`Parameter network failed in database: ${network.toLowerCase()} vs. ${process.env.NODE_ENV.toLowerCase()}`);
-        }
-        // Get status for feature_id = 1 (personalStats)
-        const dbStatus = await getDbStatus(1);
+        try {
+            let { network, address } = req.query;
+            network = network || '';
+            if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+                throw new ParameterError(`Parameter network failed in database: ${network.toLowerCase()} vs. ${process.env.NODE_ENV.toLowerCase()}`);
+            }
+            // Get status for feature_id = 1 (personalStats)
+            const dbStatus = await getDbStatus(1);
 
-        if (dbStatus.status === QUERY_SUCCESS && dbStatus.data.statusId === Status.ACTIVE) {
-            // DB active -> provide personalStats from dbBot
-            const load = await etlPersonalStatsCache(address);
-            if (load) {
-                const personalStats = await getPersonalStatsMC(address);
-                res.json(personalStats);
-            } else {
-                res.json(
-                    {
+            if (dbStatus.status === QUERY_SUCCESS && dbStatus.data.statusId === Status.ACTIVE) {
+                // DB active -> provide personalStats from dbBot
+                const load = await etlPersonalStatsCache(address);
+                if (load) {
+                    const personalStats = await getPersonalStatsMC(address);
+                    res.json(personalStats);
+                } else {
+                    res.json({
                         "gro_personal_position_mc": {
                             status: QUERY_ERROR.toString(),
                             data: 'Error while processing personalStats cache from DB: see logs in host',
                         }
-                    }
-                );
-            }
-        } else {
-            // DB inactive or query error -> provide personalStats from statsBot
-            const msg = dbStatus.data.statusId === Status.INACTIVE
-                ? 'DB is inactive'
-                : 'DB error when checking status';
-            res.json(
-                {
+                    });
+                }
+            } else {
+                // DB inactive or query error -> provide personalStats from statsBot
+                const msg = dbStatus.data.statusId === Status.INACTIVE
+                    ? 'DB is inactive'
+                    : 'DB error when checking status';
+                res.json({
                     "gro_personal_position_mc": {
                         status: QUERY_ERROR.toString(),
                         data: msg,
                     }
+                });
+            }
+        } catch (err) {
+            showError('routes->database.ts on /gro_personal_position_mc', err);
+            res.json({
+                "gro_personal_position_mc": {
+                    status: QUERY_ERROR.toString(),
+                    data: err,
                 }
-            );
+            });
         }
-
     })
 );
 
@@ -152,6 +165,50 @@ router.get(
         }
         const groStats = await getHistoricalAPY(attr, freq, start, end);
         res.json(groStats);
+    })
+);
+
+// E.g.: http://localhost:3010/database/gro_bonus_claimed?network=ropsten&address=0x9F41F3038E7864463E60213491060e7d15014d6c
+const CLAIMED_ERROR = {
+    "status": QUERY_ERROR.toString(),
+    "address": '',
+    "amount": '',
+};
+router.get(
+    '/gro_bonus_claimed',
+    validate([
+        query('network')
+            .trim()
+            .notEmpty()
+            .withMessage(`network can't be empty`),
+        query('address')
+            .notEmpty()
+            .withMessage(`address can't be empty`)
+            .isLength({ min: 42, max: 42 })
+            .withMessage('address must be 42 characters long')
+            .matches(/^0x[A-Za-z0-9]{40}/)
+            .withMessage('should be a valid address and start with "0x"'),
+    ]),
+    wrapAsync(async (req, res) => {
+        try {
+            let { network, address } = req.query;
+            network = network || '';
+            if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+                throw new ParameterError(`Parameter network failed in database: ${network.toLowerCase()} vs. ${process.env.NODE_ENV.toLowerCase()}`);
+            }
+            // Get DB status for vesting bonus
+            const dbStatus = await getDbStatus(Feature.VESTING_BONUS);
+
+            if (dbStatus.status === QUERY_SUCCESS && dbStatus.data.statusId === Status.ACTIVE) {
+                const claims = await getVestingBonus(address);
+                res.json(claims);
+            } else {
+                res.json(CLAIMED_ERROR);
+            }
+        } catch (err) {
+            showError('routes->database.ts on /gro_bonus_claimed', err);
+            res.json(CLAIMED_ERROR);
+        }
     })
 );
 

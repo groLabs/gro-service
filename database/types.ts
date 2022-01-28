@@ -123,6 +123,7 @@ enum Transfer {
 // Must be aligned with table MD_FEATURES
 enum Feature {
     PERSONAL_STATS = 1,
+    VESTING_BONUS = 2,
 }
 
 // Must be aligned with table MD_STATUS

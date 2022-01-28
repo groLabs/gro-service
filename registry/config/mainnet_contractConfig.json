@@ -29,6 +29,7 @@
         "3CrvPrimary",
         "BalancerWeightedPool",
         "TokenCounter",
+        "GroHodler",
         "GroDAOVesting",
         "GroVesting",
         "GroDAOToken",
@@ -60,6 +61,21 @@
         "AVAXBouncer"
     ],
     "contractHistories": {
+        "GroHodler": [
+            {
+                "address": "0xEf10eac205817A88C6d504d02481053E85A8F927",
+                "deployedBlock": 13405194,
+                "startBlock": 13405194,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
         "AVAXDAIVault_v1_7": [
             {
                 "address": "0xA36fb886B458688C05616DbDB819Eb34b6FbbBa3",
