@@ -30,7 +30,8 @@ import {
     getBalancesCrvLP
 } from '../common/balanceUtil';
 import { multiCall } from '../caller/multiCaller';
-import gvtABI from '../../abi/ce7b149/NonRebasingGToken.json'; // To be able to call function balanceOf()
+import gvtABI from '../../abi/ce7b149/NonRebasingGToken.json';
+import argentABI from '../../abi/Argent.json';
 import { BALANCES_BATCH as BATCH } from '../constants';
 import { getConfig } from '../../common/configUtil';
 import {
@@ -43,7 +44,9 @@ import {
     showInfo,
     showError,
 } from '../handler/logHandler';
+
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
+const argentAddress = getConfig('argentWalletDetector.address');
 
 
 const GRO_ADDRESS = getConfig('staker_pools.contracts.gro_address');
@@ -55,6 +58,7 @@ const VOTE_AGGREGATOR_ADDRESS = '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D';
 
 let rowCount = 0;
 
+let contract = [];
 let gvt = [];
 let pwrd = [];
 let gro = [];
@@ -106,6 +110,7 @@ const getBalancesSC = async (
         }
 
         const [
+            contractUpdate,
             gvtUpdate,
             pwrdUpdate,
             groUpdate,
@@ -127,6 +132,7 @@ const getBalancesSC = async (
             usdteUpdate_1_7,
             daieUpdate_1_7,
         ] = await Promise.all([
+            multiCall(GN.ETHEREUM, argentAddress, '', argentABI, 'isArgentWallet', userBatch, ReturnType.BOOL, Base.D18),
             getBalances(getGroVault().address, userBatch, block),
             getBalances(getPowerD().address, userBatch, block),
             getBalances(GRO_ADDRESS, userBatch, block),
@@ -156,6 +162,7 @@ const getBalancesSC = async (
         ]);
 
         if (gvt.length === 0) {
+            contract = contractUpdate
             gvt = gvtUpdate;
             pwrd = pwrdUpdate;
             gro = groUpdate;
@@ -177,6 +184,7 @@ const getBalancesSC = async (
             usdte_1_7 = usdteUpdate_1_7;
             daie_1_7 = daieUpdate_1_7;
         } else {
+            contract.push(...contractUpdate);
             gvt[0].amount_unstaked.push(...gvtUpdate[0].amount_unstaked);
             gvt[1].amount_staked.push(...gvtUpdate[1].amount_staked);
             pwrd[0].amount_unstaked.push(...pwrdUpdate[0].amount_unstaked);
@@ -226,6 +234,7 @@ const getBalancesSC = async (
 
         return (newOffset >= users.length)
             ? {
+                contract: contract,
                 gvt: gvt,
                 pwrd: pwrd,
                 gro: gro,
@@ -268,6 +277,9 @@ const insertBalances = async (
                 day,
                 getNetwork(GN.ETHEREUM).id,
                 addr,
+                contract[i]
+                    ? 1                                 // Argent wallet
+                    : 0,                                // non Argent wallet
                 res.gvt[0].amount_unstaked[i],          // unstaked gvt
                 res.pwrd[0].amount_unstaked[i],         // unstaked pwrd
                 res.gro[0].amount_unstaked[i],          // unstaked gro
@@ -385,6 +397,7 @@ const checkTokenCounterDate = (day: moment.Moment) => {
 
 /// @notice Initialise global vars to 0 or empty
 const cleanseVars = () => {
+    contract = [];
     gvt = [];
     pwrd = [];
     gro = [];

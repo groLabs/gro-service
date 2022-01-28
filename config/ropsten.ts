@@ -314,3 +314,6 @@ export const subgraph = {
     balancerV2_pool_id_gro_weth:
         '0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f',
 };
+export const argentWalletDetector = {
+    address: '0xF230cF8980BaDA094720C01308319eF192F0F311',
+}

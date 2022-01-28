@@ -1,33 +1,36 @@
-import { 
+import { BigNumber as BN } from 'ethers';
+import { showError } from '../handler/logHandler';
+import { parseAmount } from '../common/globalUtil';
+import {
     getProvider,
     getProviderAvax,
- } from '../common/globalUtil';
-import { BigNumber as BN } from 'ethers';
-import { getConfig } from '../../common/configUtil';
-import {
-    Multicall,
-    ContractCallResults,
-    ContractCallContext,
-} from 'ethereum-multicall';
+} from '../common/globalUtil';
 import {
     Base,
-    GlobalNetwork,
     ReturnType,
+    GlobalNetwork,
 } from '../types';
-import { parseAmount } from '../common/globalUtil';
+import {
+    Multicall,
+    ContractCallContext,
+    ContractCallResults,
+} from 'ethereum-multicall';
+/*
 import gvtABI from '../../abi/ce7b149/NonRebasingGToken.json';
 import getVestingABI from '../../abi/GROVesting.json';
 import tokenCounterABI from '../../abi/fa8e260/TokenCounter.json';
-
-// const GRO_ADDRESS = getConfig('staker_pools.contracts.gro_address');
+import { getConfig } from '../../common/configUtil';
+const GRO_ADDRESS = getConfig('staker_pools.contracts.gro_address');
 const GRO_GVT_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_gvt_pool_address');
 const GRO_USDC_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_usdc_pool_address');
 const CRV_PWRD_ADDRESS = getConfig('staker_pools.contracts.curve_pwrd3crv_pool_address');
-// const GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address');
-// const VOTE_AGGREGATOR_ADDRESS = '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D';
+const GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address');
+const VOTE_AGGREGATOR_ADDRESS = '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D';
+*/
 
-const multicall = new Multicall({ ethersProvider: getProvider(), tryAggregate: true });
-const multicallAvax = new Multicall({ ethersProvider: getProviderAvax(), tryAggregate: true });
+// Multicall providers
+const multicallProvider = new Multicall({ ethersProvider: getProvider(), tryAggregate: true });
+const multicallAvaxProvider = new Multicall({ ethersProvider: getProviderAvax(), tryAggregate: true });
 
 
 const multiCall = async (
@@ -40,78 +43,86 @@ const multiCall = async (
     returnType: ReturnType,
     base: Base,
 ) => {
+    try {
+        let items = [];
+        let result = [];
+        let results: ContractCallResults;
 
-    let items = [];
-    let result = [];
-    let results: ContractCallResults;
-
-    for (let i = 0; i < addresses.length; i++) {
-        items.push({
-            reference: 'item',
-            methodName: methodName,
-            methodParameters: poolAddress
-                ? [poolAddress, [addresses[i]]]
-                : [addresses[i]]
-        });
-    }
-
-    const contractCallContext: ContractCallContext[] = [
-        {
-            reference: 'ref',
-            contractAddress: contractAddress,
-            abi: abi,
-            calls: items,
-        },
-    ];
-
-    if (globalNetwork === GlobalNetwork.ETHEREUM) {
-        results = await multicall.call(contractCallContext);
-    } else if (globalNetwork === GlobalNetwork.AVALANCHE) {
-        results = await multicallAvax.call(contractCallContext);
-    }
-
-    for (let item of results.results.ref.callsReturnContext) {
-        if (item.success) {
-            switch (returnType) {
-                case ReturnType.UINT:
-                    result.push(parseAmount(BN.from(item.returnValues[0].hex), base));
-                    break;
-                case ReturnType.BOOL:
-                    result.push(item.returnValues[0]);
-                    break;
-                case ReturnType.UINT_UINT:
-                    result.push([
-                        parseAmount(BN.from(item.returnValues[0].hex), base),
-                        parseAmount(BN.from(item.returnValues[1].hex), base),
-                    ]);
-                    break;
-                case ReturnType.arrUINT_arrUINT_arrUINT:
-                    result.push([
-                        parseAmount(BN.from(item.returnValues[0][0].hex), base),
-                        parseAmount(BN.from(item.returnValues[1][0].hex), base),
-                        parseAmount(BN.from(item.returnValues[2][0].hex), base),
-                    ]);
-                    break;
-                case ReturnType.arrUINT_arrUINT_arrarrUINT:
-                    result.push([
-                        parseAmount(BN.from(item.returnValues[0][0].hex), base),
-                        parseAmount(BN.from(item.returnValues[1][0].hex), base),
-                        parseAmount(BN.from(item.returnValues[2][0][0].hex), base),
-                        parseAmount(BN.from(item.returnValues[2][0][1].hex), base),
-                        // parseAmount(BN.from(item.returnValues[2][0][1].hex),
-                        //     poolAddress === GRO_USDC_ADDRESS ? Base.D6 : Base.D18),
-                    ])
-                default:
-                    break;
-            }
-        } else {
-            console.log('unsuccessful :/');
-            return [];
+        for (let i = 0; i < addresses.length; i++) {
+            items.push({
+                reference: 'item',
+                methodName: methodName,
+                methodParameters: poolAddress
+                    ? [poolAddress, [addresses[i]]]
+                    : [addresses[i]]
+            });
         }
-    }
 
-    // console.log('result', result);
-    return result;
+        const contractCallContext: ContractCallContext[] = [
+            {
+                reference: 'ref',
+                contractAddress: contractAddress,
+                abi: abi,
+                calls: items,
+            },
+        ];
+
+        if (globalNetwork === GlobalNetwork.ETHEREUM) {
+            results = await multicallProvider.call(contractCallContext);
+        } else if (globalNetwork === GlobalNetwork.AVALANCHE) {
+            results = await multicallAvaxProvider.call(contractCallContext);
+        }
+
+        for (let item of results.results.ref.callsReturnContext) {
+            if (item.success) {
+                switch (returnType) {
+                    case ReturnType.UINT:
+                        result.push(parseAmount(BN.from(item.returnValues[0].hex), base));
+                        break;
+                    case ReturnType.BOOL:
+                        result.push(item.returnValues[0]);
+                        break;
+                    case ReturnType.UINT_UINT:
+                        result.push([
+                            parseAmount(BN.from(item.returnValues[0].hex), base),
+                            parseAmount(BN.from(item.returnValues[1].hex), base),
+                        ]);
+                        break;
+                    case ReturnType.arrUINT_arrUINT_arrUINT:
+                        result.push([
+                            parseAmount(BN.from(item.returnValues[0][0].hex), base),
+                            parseAmount(BN.from(item.returnValues[1][0].hex), base),
+                            parseAmount(BN.from(item.returnValues[2][0].hex), base),
+                        ]);
+                        break;
+                    case ReturnType.arrUINT_arrUINT_arrarrUINT:
+                        result.push([
+                            parseAmount(BN.from(item.returnValues[0][0].hex), base),
+                            parseAmount(BN.from(item.returnValues[1][0].hex), base),
+                            parseAmount(BN.from(item.returnValues[2][0][0].hex), base),
+                            parseAmount(BN.from(item.returnValues[2][0][1].hex), base),
+                            // parseAmount(BN.from(item.returnValues[2][0][1].hex),
+                            // poolAddress === GRO_USDC_ADDRESS ? Base.D6 : Base.D18),
+                        ])
+                    default:
+                        showError(
+                            'multiCaller.ts->multiCall()',
+                            `Unknown return type: ${returnType}`);
+                        return [];
+                }
+            } else {
+                showError(
+                    'multiCaller.ts->multiCall()',
+                    `Error during callsReturnContext -> item: ${item}`);
+                return [];
+            }
+        }
+
+        return result;
+    } catch (err) {
+        showError('multiCaller.ts->multiCall()', err);
+        return [];
+    }
     // console.log(results.results.ref.callsReturnContext);
     // console.log(results.results.ref.callsReturnContext[0].returnValues);
     // console.log(BN.from(results.results.ref.callsReturnContext[0].returnValues[0].hex).toString());
@@ -159,19 +170,19 @@ const runTest = async () => {
     // );
 
     // tokenCounter - getCurvePwrd
-    await multiCall(
-        GlobalNetwork.ETHEREUM,
-        '0xAFFbD08B4754c3423f3583398C5749Bc22F26Ad7',   // contractAddress
-        CRV_PWRD_ADDRESS,   // pool address (GRO/GVT pool)
-        tokenCounterABI,
-        'getCurvePwrd',
-        [
-            '0x2B19fDE5d7377b48BE50a5D0A78398a496e8B15C',
-            '0xAd192a9eAEe1E342CAbB1Cd32f01de3b77D8598f',
-        ],
-        ReturnType.arrUINT_arrUINT_arrUINT,
-        Base.D18,
-    );
+    // await multiCall(
+    //     GlobalNetwork.ETHEREUM,
+    //     '0xAFFbD08B4754c3423f3583398C5749Bc22F26Ad7',   // contractAddress
+    //     CRV_PWRD_ADDRESS,   // pool address (GRO/GVT pool)
+    //     tokenCounterABI,
+    //     'getCurvePwrd',
+    //     [
+    //         '0x2B19fDE5d7377b48BE50a5D0A78398a496e8B15C',
+    //         '0xAd192a9eAEe1E342CAbB1Cd32f01de3b77D8598f',
+    //     ],
+    //     ReturnType.arrUINT_arrUINT_arrUINT,
+    //     Base.D18,
+    // );
 }
 
 export {
