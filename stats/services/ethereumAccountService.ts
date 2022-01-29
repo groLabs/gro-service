@@ -10,6 +10,7 @@ import { getTransactions, getTransaction } from './generatePersonTransaction';
 import { shortAccount } from '../../common/digitalUtil';
 import { AppendGTokenMintOrBurnAmountToLog } from '../common/tool';
 import { getAccountFailTransactions } from '../handler/failedTransactionHandler';
+import { getUserBonusInfo } from './vestingBonusService';
 
 import { ContractNames } from '../../registry/registry';
 import { newContract } from '../../registry/contracts';
@@ -757,6 +758,7 @@ async function ethereumPersonalStats(account) {
         current_balance: {},
         net_returns: {},
         net_returns_ratio: {},
+        vest_bonus: {},
         address: account,
         gro_balance_combined: '0',
     } as any;
@@ -796,6 +798,11 @@ async function ethereumPersonalStats(account) {
         result.airdrops = airdrops;
         const combinedGROBalance = await getCombinedGROBalance(account);
         result.gro_balance_combined = combinedGROBalance;
+        const vestBonusInfo = await getUserBonusInfo(
+            account,
+            latestBlock.number
+        );
+        result.vest_bonus = vestBonusInfo;
 
         // calculate groVault deposit & withdraw
         let groVaultDepositAmount = new BN(0);
