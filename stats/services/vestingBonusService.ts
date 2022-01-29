@@ -133,7 +133,7 @@ async function getUnclaimedBonus(account) {
 async function getClaimTotalBonusOnV1(account) {
     let claimTotal = new BN(0);
     if (routeConfig.db_bot) {
-        const endPoint = `${routeConfig.db_bot.hostname}/${routeConfig.db_bot.path}?network=${nodeEnv}&address=${account}`;
+        const endPoint = `${routeConfig.db_bot.hostname}/${routeConfig.db_bot.path}${account}`;
         const res = await axios.get(endPoint).catch((error) => {
             logger.error(error);
         });

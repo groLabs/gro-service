@@ -303,6 +303,10 @@ export const route = {
         path: '/stats/gro_personal_position?network=ropsten&address=',
         port: process.env.BOT_DEV_PORT,
     },
+    db_bot: {
+        hostname: 'https://ajj49or3nh.execute-api.eu-west-2.amazonaws.com',
+        path: 'database/gro_bonus_claimed?network=ropsten&address=',
+    },
 };
 export const subgraph = {
     uniswapV2_graph_url:

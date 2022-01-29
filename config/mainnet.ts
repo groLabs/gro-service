@@ -284,6 +284,10 @@ export const route = {
         path: '/stats/gro_personal_position?network=mainnet&address=',
         port: 443,
     },
+    db_bot: {
+        hostname: 'https://h4sk4iwj75.execute-api.eu-west-2.amazonaws.com',
+        path: 'database/gro_bonus_claimed?network=mainnet&address=',
+    },
 };
 export const lbp = {
     // Balancer V2 LBP: GRO LBP
