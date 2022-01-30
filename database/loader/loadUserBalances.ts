@@ -54,7 +54,10 @@ const GRO_GVT_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_gvt_pool_a
 const GRO_USDC_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_usdc_pool_address');
 const CRV_PWRD_ADDRESS = getConfig('staker_pools.contracts.curve_pwrd3crv_pool_address');
 const GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address');
+// Vote Aggregator only available in mainnet
 const VOTE_AGGREGATOR_ADDRESS = '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D';
+const VOTE_AGGREGATOR_GENESIS_BLOCK = 13548959;
+
 
 let rowCount = 0;
 
@@ -136,7 +139,7 @@ const getBalancesSC = async (
             getBalances(getGroVault().address, userBatch, block),
             getBalances(getPowerD().address, userBatch, block),
             getBalances(GRO_ADDRESS, userBatch, block),
-            (nodeEnv === NetworkName.MAINNET)
+            (nodeEnv === NetworkName.MAINNET && block >= VOTE_AGGREGATOR_GENESIS_BLOCK)
                 ? getBalances(VOTE_AGGREGATOR_ADDRESS, userBatch, block)
                 : [],
             getBalancesUniBalLP(GRO_GVT_ADDRESS, userBatch, block),
@@ -191,7 +194,7 @@ const getBalancesSC = async (
             pwrd[1].amount_staked.push(...pwrdUpdate[1].amount_staked);
             gro[0].amount_unstaked.push(...groUpdate[0].amount_unstaked);
             gro[1].amount_staked.push(...groUpdate[1].amount_staked);
-            (nodeEnv === NetworkName.MAINNET)
+            (nodeEnv === NetworkName.MAINNET && block >= VOTE_AGGREGATOR_GENESIS_BLOCK)
                 ? groTotal[0].amount_unstaked.push(...groTotalUpdate[0].amount_unstaked)
                 : [];
             lpGroGvt[0].amount_pooled_lp.push(...lpGroGvtUpdate[0].amount_pooled_lp);
@@ -283,7 +286,7 @@ const insertBalances = async (
                 res.gvt[0].amount_unstaked[i],          // unstaked gvt
                 res.pwrd[0].amount_unstaked[i],         // unstaked pwrd
                 res.gro[0].amount_unstaked[i],          // unstaked gro
-                (nodeEnv === NetworkName.MAINNET)
+                (nodeEnv === NetworkName.MAINNET && res.groTotal.length > 0)
                     ? res.groTotal[0].amount_unstaked[i]    // total gro
                     : null,
                 res.gro[1].amount_staked[i],            // pool0 - staked lp
