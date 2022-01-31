@@ -61,6 +61,90 @@
         "AVAXBouncer"
     ],
     "contractHistories": {
+        "DAIVaultAdaptor": [
+            {
+                "address": "0xF239120f6197c289f662369dd1B1Bf236140f3Df",
+                "deployedBlock": 10524894,
+                "startBlock": 10525267,
+                "endBlock": 10633479,
+                "abiVersion": "3c80e58",
+                "tag": "Vault",
+                "tokens": ["TESTDAISTABLE"],
+                "protocols": ["TESTDAIPROTOCOL"],
+                "protocolsDisplayName": ["TESTDAIPROTOCOL"],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0xEC46C56439B3A4023AF203059eb78bFD5A15588B",
+                "deployedBlock": 10631080,
+                "startBlock": 10633479,
+                "endBlock": null,
+                "abiVersion": "551353c",
+                "tag": "Vault",
+                "tokens": ["TESTDAISTABLE"],
+                "protocols": ["TESTDAIPROTOCOL"],
+                "protocolsDisplayName": ["TESTDAIPROTOCOL"],
+                "metaData": { "N": "DAI yVault", "CN": "DAI", "DN": "DAI" },
+                "active": true
+            }
+        ],
+        "USDCVaultAdaptor": [
+            {
+                "address": "0x1Af03157a5d3cC3c8FE02199090445b13dE99734",
+                "deployedBlock": 10524894,
+                "startBlock": 10525267,
+                "endBlock": 10633479,
+                "abiVersion": "3c80e58",
+                "tag": "Vault",
+                "tokens": ["TESTUSDCSTABLE"],
+                "protocols": ["TESTUSDCPROTOCL"],
+                "protocolsDisplayName": ["TESTUSDCPROTOCL"],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0xb5fb4b745d7d3d13BE30e4583407B4a824540dF3",
+                "deployedBlock": 10631080,
+                "startBlock": 10633479,
+                "endBlock": null,
+                "abiVersion": "551353c",
+                "tag": "Vault",
+                "tokens": ["TESTUSDCSTABLE"],
+                "protocols": ["TESTUSDCPROTOCL"],
+                "protocolsDisplayName": ["TESTUSDCPROTOCL"],
+                "metaData": { "N": "USDC yVault", "CN": "USDC", "DN": "USDC" },
+                "active": true
+            }
+        ],
+        "USDTVaultAdaptor": [
+            {
+                "address": "0x2095213E61Cb34532923Aa11D2Bc6E4E63e7A188",
+                "deployedBlock": 10524894,
+                "startBlock": 10525267,
+                "endBlock": 10633479,
+                "abiVersion": "3c80e58",
+                "tag": "Vault",
+                "tokens": ["TESTUSDTSTABLE"],
+                "protocols": ["TESTUSDTPROTOCL"],
+                "protocolsDisplayName": ["TESTUSDTPROTOCL"],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0x2c469395c52785C0ae8Da5e3c2D6f4b5Df16B34b",
+                "deployedBlock": 10631080,
+                "startBlock": 10633479,
+                "endBlock": null,
+                "abiVersion": "551353c",
+                "tag": "Vault",
+                "tokens": ["TESTUSDTSTABLE"],
+                "protocols": ["TESTUSDTPROTOCL"],
+                "protocolsDisplayName": ["TESTUSDTPROTOCL"],
+                "metaData": { "N": "USDT yVault", "CN": "USDT", "DN": "USDT" },
+                "active": true
+            }
+        ],
         "BalancerWeightedPool": [
             {
                 "address": "0x702605f43471183158938c1a3e5f5a359d7b31ba",
