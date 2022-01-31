@@ -23,21 +23,27 @@ import {
 
 import { getLatestSystemContract } from '../common/contractStorage';
 import { getAllAirdropResults } from './airdropService';
-// const { getPoolTransactions } = require('./lpoolService');
+import LpTokenStakerABI from '../abi/LPTokenStaker.json';
 
 import erc20ABI from '../../abi/ERC20.json';
 
 const logger = require('../statsLogger');
 
-const fromBlock = getConfig('blockchain.start_block');
 const fromTimestamp = getConfig('blockchain.start_timestamp');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
+const stakerAddress = getConfig('staker_pools.contracts.staker_address');
+const stakerGVTPoolId = getConfig('staker_pools.single_staking_100_gvt_3.pid');
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 const providerKey = 'stats_personal';
 const provider = getAlchemyRpcProvider(providerKey);
+const latestStaker = new ethers.Contract(
+    stakerAddress,
+    LpTokenStakerABI,
+    provider
+);
 
 const accountDepositHandlerHistories = {};
 const accountWithdrawHandlerHistories = {};
@@ -390,9 +396,18 @@ async function getTransferHistories(
         depositLogs.push(...inLogs[i].data);
         withdrawLogs.push(...outLogs[i].data);
     }
+
+    // skip these transfer out events that stake gtoken to LPTokenStaker
+    const distWithdrawLogs = [];
+    withdrawLogs.forEach((log) => {
+        const [, to] = log.args;
+        if (to.toLowerCase() !== stakerAddress.toLowerCase()) {
+            distWithdrawLogs.push(log);
+        }
+    });
     return {
         deposit: depositLogs,
-        withdraw: withdrawLogs,
+        withdraw: distWithdrawLogs,
     };
 }
 
@@ -744,6 +759,18 @@ async function getCombinedGROBalance(account) {
     return div(balance, CONTRACT_ASSET_DECIMAL, amountDecimal);
 }
 
+async function getGVTBalanceOnStaker(account) {
+    const userInfo = await latestStaker.userInfo(stakerGVTPoolId, account);
+    const latestGroVault = getLatestGroVault();
+    const usdBalance = await latestGroVault.getShareAssets(userInfo[0]);
+    return usdBalance;
+}
+
+async function getPwrDBalanceOnStaker(account) {
+    const usdBalance = await latestStaker.getUserPwrd(account);
+    return usdBalance;
+}
+
 async function ethereumPersonalStats(account) {
     const result = {
         status: 'error',
@@ -776,10 +803,17 @@ async function ethereumPersonalStats(account) {
         promises.push(getTransactionHistories(account));
         promises.push(getLatestPowerD().getAssets(account));
         promises.push(getLatestGroVault().getAssets(account));
+        promises.push(BigNumber.from(0)); //promises.push(getPwrDBalanceOnStaker(account)); after tokeonomicsv2 migration
+        promises.push(getGVTBalanceOnStaker(account));
+
         const results = await Promise.all(promises);
         const data = results[0];
-        const pwrdBalance = new BN(results[1].toString());
-        const gvtBalance = new BN(results[2].toString());
+        const pwrdBalanceInToken = new BN(results[1].toString());
+        const gvtBalanceInToken = new BN(results[2].toString());
+        const pwrdBalanceInStaker = new BN(results[3].toString());
+        const gvtBalanceInStaker = new BN(results[4].toString());
+        const pwrdBalance = pwrdBalanceInToken.plus(pwrdBalanceInStaker);
+        const gvtBalance = gvtBalanceInToken.plus(gvtBalanceInStaker);
 
         // logger.info(`${account} historical: ${JSON.stringify(data)}`);
         const { groVault, powerD, approval } = data;
@@ -888,14 +922,14 @@ async function ethereumPersonalStats(account) {
         );
 
         // current_balance
-        const totalBalance = pwrdBalance.plus(gvtBalance);
+        const totalBalance = pwrdBalanceInToken.plus(gvtBalanceInToken);
         result.current_balance.pwrd = div(
-            pwrdBalance,
+            pwrdBalanceInToken,
             CONTRACT_ASSET_DECIMAL,
             amountDecimal
         );
         result.current_balance.gvt = div(
-            gvtBalance,
+            gvtBalanceInToken,
             CONTRACT_ASSET_DECIMAL,
             amountDecimal
         );
