@@ -126,7 +126,7 @@
             "active": true
         },
         "Buoy3Pool": {
-            "address": "0xbF8C81B2977B10F13A4AC542e72969a6E123f5fE",
+            "address": "0x7D17C9b9B154B1b31ADD5115f5F519eC50A59421",
             "deployedBlock": 13303492,
             "startBlock": 13304056,
             "abiVersion": "fa8e260",
@@ -138,7 +138,7 @@
             "active": true
         },
         "Lifeguard": {
-            "address": "0x5D3Ab53b6B66f86bbFaBC2A58c0F26Ea7dFB8126",
+            "address": "0xc118F2EB1291F9bc0c2a4C2d61b59f1785b047B5",
             "deployedBlock": 13303495,
             "startBlock": 12836674,
             "abiVersion": "ce7b149",

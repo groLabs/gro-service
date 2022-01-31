@@ -33,11 +33,14 @@ export const airdrop = {
         'airdrop-1-proofs.json',
         'airdrop-2-proofs.json',
         'airdrop-3-proofs.json',
+        'airdrop-4-proofs.json',
+        'airdrop-5-proofs.json',
+        'airdrop-6-proofs.json',
     ],
 };
 export const gro_gate = {
     folder: '../grogate',
-    files: ['bouncer-3-proofs.json'],
+    files: ['bouncer-17-proofs.json'],
 };
 export const buoy_start_block = 13304056;
 export const blockchain = {

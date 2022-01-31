@@ -55,11 +55,11 @@ const airdropDefaultValue = {
 };
 
 function expired(currentTimestamp, airdropExpiryTS) {
-    if (!airdropExpiryTS) return false;
+    if (!airdropExpiryTS) return 'false';
     if (parseInt(airdropExpiryTS, 10) > currentTimestamp) {
-        return false;
+        return 'false';
     }
-    return true;
+    return 'true';
 }
 
 async function readAirdropFile(fileName) {
@@ -129,7 +129,8 @@ async function getAirdropResultWithProof(
     result.merkle_root_index = merkleIndex.toString();
     result.claimable = claimable;
     result.expiry_ts = expiryTimestamp;
-    result.expired = expired(currentTimestamp, result.expiry_ts);
+    const isExpired = expired(currentTimestamp, result.expiry_ts);
+    result.expired = isExpired;
     if (accountAirdrop) {
         // result = { ...airdropDefaultValue };
         const { amount, proof } = accountAirdrop;
@@ -152,6 +153,10 @@ async function getAirdropResultWithProof(
             result.amount = amountBn.dividedBy(DECIMAL).toFixed(2);
             result.claimed = claimed.toString();
         }
+    }
+    if (isExpired === 'true') {
+        result.claimable = 'false';
+        result.proofs = [];
     }
     return result;
 }
