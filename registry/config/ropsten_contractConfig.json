@@ -31,6 +31,7 @@
         "TokenCounter",
         "GroDAOVesting",
         "GroDAOToken",
+        "VotingAggregator",
         "AVAXDAIVault",
         "AVAXUSDCVault",
         "AVAXUSDTVault",
@@ -40,6 +41,20 @@
         "AVAXBouncer"
     ],
     "latestContracts": {
+        "VotingAggregator":
+            {
+                "address": "0x2c57F9067E50E819365df7c5958e2c4C14A91C2D",
+                "deployedBlock": 13548959,
+                "startBlock": 13548959,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Governance",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            },
         "3CRVVaultAdaptor": {
             "address": "0xBF0fbDA0a9F7bBeBA9F5D7C14ffbDdEFF36985Dc",
             "deployedBlock": 10631080,

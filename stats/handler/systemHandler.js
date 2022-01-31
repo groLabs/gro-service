@@ -387,23 +387,25 @@ async function getMegaExposureStats(blockTag, systemStats) {
     const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
     const { vaultsAddress: adapterAddresses, contracts: vaultStrategies } =
         vaultAndStrateyInfo;
+    const tokens = ["TESTTOKEN1", "TESTTOKEN2", "TESTTOKEN3"]
+    const protocols = ["TESTPROTOCOL1", "TESTPROTOCOL2", "TESTPROTOCOL3"]
     for (let i = 0; i < vaultsStats.length - 1; i += 1) {
         const vault = vaultsStats[i];
         const { contract: vaultAdaptor, contractInfo: vaultAdaptorInfo } =
             vaultStrategies[adapterAddresses[i]];
         console.log(
             `vault index ${i} ${JSON.stringify(vaultAdaptorInfo)} protocol ${
-                vaultAdaptorInfo.protocols[0]
-            } tokens ${vaultAdaptorInfo.tokens[0]}`
+                protocols[i]
+            } tokens ${tokens[i]}`
         );
         exposureProtocol.push({
-            name: vaultAdaptorInfo.protocols[0],
-            display_name: vaultAdaptorInfo.protocolsDisplayName[0],
+            name: protocols[i],
+            display_name: protocols[i],
             concentration: vault.share,
         });
         exposureStableCoin.push({
-            name: vaultAdaptorInfo.tokens[0],
-            display_name: vaultAdaptorInfo.tokens[0],
+            name: tokens[i],
+            display_name: tokens[i],
             concentration: vault.share,
         });
     }
@@ -443,67 +445,8 @@ async function getExposureStats(blockTag, systemStats) {
         vaultAndStrateyInfo;
     const { contractInfo: adaptorInfo } = vaultStrategies[adapterAddresses[0]];
     logger.info(`check protocols length ${adaptorInfo.protocols.length}`);
-    if (adaptorInfo.protocols.length > 0) {
-        return getMegaExposureStats(blockTag, systemStats);
+    return getMegaExposureStats(blockTag, systemStats);
     }
-
-    const riskResult = await exposure.getExactRiskExposure(preCal, blockTag);
-    const exposureStableCoin = riskResult[0].map((concentration, i) => ({
-        name: stableCoins[i],
-        display_name: stableCoins[i],
-        concentration: convertToSharePercentDecimal(concentration),
-    }));
-    const exposureProtocol = [];
-    const protocols = [];
-    const vaultsStats = systemStats.vault;
-    for (let i = 0; i < vaultsStats.length; i += 1) {
-        const vault = vaultsStats[i];
-        const { strategies } = vaultStrategies[adapterAddresses[i]].vault;
-        const strategyList = vault.strategies;
-        for (let j = 0; j < strategyList.length; j += 1) {
-            const { contractInfo } = strategies[j];
-            const strategy = strategyList[j];
-            const { protocols: strategyProtocols, protocolsDisplayName } =
-                contractInfo;
-            for (let k = 0; k < strategyProtocols.length; k += 1) {
-                const index = protocols.indexOf(strategyProtocols[k]);
-                if (index >= 0) {
-                    const exposure = exposureProtocol[index];
-                    exposure.concentration = exposure.concentration.add(
-                        strategy.share
-                    );
-                } else {
-                    protocols.push(strategyProtocols[k]);
-                    exposureProtocol.push({
-                        name: strategyProtocols[k],
-                        display_name: protocolsDisplayName[k],
-                        concentration: strategy.share,
-                    });
-                }
-            }
-        }
-    }
-    // curve's stable coin
-    const curveVaultIndex = adapterAddresses.length - 1;
-
-    exposureProtocol.forEach((item) => {
-        if (item.name === 'Curve') {
-            exposureStableCoin.push({
-                name: stableCoins[curveVaultIndex],
-                display_name: stableCoins[curveVaultIndex],
-                concentration: item.concentration,
-            });
-            item.concentration = vaultsStats[3].share;
-            logger.info(`curve ${vaultsStats[3].share} ${item.concentration}`);
-        }
-        logger.info(`exposureProtocol ${item.name} ${item.concentration}`);
-    });
-    const exposureStats = {
-        stablecoins: exposureStableCoin,
-        protocols: exposureProtocol,
-    };
-    return exposureStats;
-}
 
 async function getTvlStats(blockTag) {
     logger.info('TvlStats');
