@@ -1,5 +1,16 @@
 [
     {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_timelock",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
         "anonymous": false,
         "inputs": [
             {
@@ -32,6 +43,12 @@
                 "internalType": "address",
                 "name": "user",
                 "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "vest",
+                "type": "bool"
             },
             {
                 "indexed": true,
@@ -103,6 +120,224 @@
         "anonymous": false,
         "inputs": [
             {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "newGro",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogGroPerBlock",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+            }
+        ],
+        "name": "LogLpTokenAdded",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "newMax",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogMaxGroPerBlock",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256[]",
+                "name": "pids",
+                "type": "uint256[]"
+            }
+        ],
+        "name": "LogMigrate",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256[]",
+                "name": "pids",
+                "type": "uint256[]"
+            }
+        ],
+        "name": "LogMigrateFrom",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "staker",
+                "type": "address"
+            }
+        ],
+        "name": "LogMigrateFromV1",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256[]",
+                "name": "pids",
+                "type": "uint256[]"
+            }
+        ],
+        "name": "LogMigrateUser",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "vest",
+                "type": "bool"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256[]",
+                "name": "pids",
+                "type": "uint256[]"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogMultiClaim",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256[]",
+                "name": "pids",
+                "type": "uint256[]"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256[]",
+                "name": "amounts",
+                "type": "uint256[]"
+            }
+        ],
+        "name": "LogMultiWithdraw",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "newManager",
+                "type": "address"
+            }
+        ],
+        "name": "LogNewManagment",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "pPid",
+                "type": "uint256"
+            }
+        ],
+        "name": "LogNewPwrdPid",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "staker",
+                "type": "address"
+            }
+        ],
+        "name": "LogNewStaker",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "newVester",
+                "type": "address"
+            }
+        ],
+        "name": "LogNewVester",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "staker",
+                "type": "address"
+            }
+        ],
+        "name": "LogOldStaker",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
                 "indexed": true,
                 "internalType": "uint256",
                 "name": "pid",
@@ -116,6 +351,32 @@
             }
         ],
         "name": "LogSetPool",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "pause",
+                "type": "bool"
+            }
+        ],
+        "name": "LogSetStatus",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "timelock",
+                "type": "address"
+            }
+        ],
+        "name": "LogSetTimelock",
         "type": "event"
     },
     {
@@ -147,6 +408,25 @@
             }
         ],
         "name": "LogUpdatePool",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "staker",
+                "type": "address"
+            }
+        ],
+        "name": "LogUserMigrateFromV1",
         "type": "event"
     },
     {
@@ -194,6 +474,33 @@
         "type": "event"
     },
     {
+        "inputs": [],
+        "name": "PWRD",
+        "outputs": [
+            { "internalType": "address", "name": "", "type": "address" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "TIME_LOCK",
+        "outputs": [
+            { "internalType": "address", "name": "", "type": "address" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "", "type": "address" }
+        ],
+        "name": "activeLpTokens",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "uint256",
@@ -213,11 +520,8 @@
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "pid",
-                "type": "uint256"
-            }
+            { "internalType": "bool", "name": "vest", "type": "bool" },
+            { "internalType": "uint256", "name": "pid", "type": "uint256" }
         ],
         "name": "claim",
         "outputs": [],
@@ -226,40 +530,20 @@
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_pid",
-                "type": "uint256"
-            },
-            {
-                "internalType": "address",
-                "name": "_user",
-                "type": "address"
-            }
+            { "internalType": "uint256", "name": "_pid", "type": "uint256" },
+            { "internalType": "address", "name": "_user", "type": "address" }
         ],
         "name": "claimable",
         "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "", "type": "uint256" }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "pid",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "pid", "type": "uint256" },
+            { "internalType": "uint256", "name": "amount", "type": "uint256" }
         ],
         "name": "deposit",
         "outputs": [],
@@ -268,11 +552,7 @@
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "pid",
-                "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "pid", "type": "uint256" }
         ],
         "name": "emergencyWithdraw",
         "outputs": [],
@@ -280,14 +560,21 @@
         "type": "function"
     },
     {
+        "inputs": [
+            { "internalType": "address", "name": "user", "type": "address" }
+        ],
+        "name": "getUserPwrd",
+        "outputs": [
+            { "internalType": "uint256", "name": "", "type": "uint256" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [],
         "name": "groPerBlock",
         "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "", "type": "uint256" }
         ],
         "stateMutability": "view",
         "type": "function"
@@ -296,22 +583,14 @@
         "inputs": [],
         "name": "manager",
         "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
+            { "internalType": "address", "name": "", "type": "address" }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256[]",
-                "name": "pids",
-                "type": "uint256[]"
-            }
+            { "internalType": "uint256[]", "name": "pids", "type": "uint256[]" }
         ],
         "name": "massUpdatePools",
         "outputs": [],
@@ -322,22 +601,14 @@
         "inputs": [],
         "name": "maxGroPerBlock",
         "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "", "type": "uint256" }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_pid",
-                "type": "uint256"
-            }
+            { "internalType": "uint256[]", "name": "pids", "type": "uint256[]" }
         ],
         "name": "migrate",
         "outputs": [],
@@ -345,14 +616,99 @@
         "type": "function"
     },
     {
+        "inputs": [
+            { "internalType": "uint256[]", "name": "pids", "type": "uint256[]" }
+        ],
+        "name": "migrateFrom",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "inputs": [],
-        "name": "migrator",
-        "outputs": [
+        "name": "migrateFromV1",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "account", "type": "address" },
+            { "internalType": "uint256[]", "name": "pids", "type": "uint256[]" }
+        ],
+        "name": "migrateUser",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "migratedFromV1",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "bool", "name": "vest", "type": "bool" },
+            { "internalType": "uint256[]", "name": "pids", "type": "uint256[]" }
+        ],
+        "name": "multiClaim",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
             {
-                "internalType": "contract IMigrator",
-                "name": "",
-                "type": "address"
+                "internalType": "uint256[]",
+                "name": "pids",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "amounts",
+                "type": "uint256[]"
             }
+        ],
+        "name": "multiWithdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "bool", "name": "vest", "type": "bool" },
+            {
+                "internalType": "uint256[]",
+                "name": "pids",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "amounts",
+                "type": "uint256[]"
+            }
+        ],
+        "name": "multiWithdrawAndClaim",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "newStaker",
+        "outputs": [
+            { "internalType": "address", "name": "", "type": "address" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "oldStaker",
+        "outputs": [
+            { "internalType": "address", "name": "", "type": "address" }
         ],
         "stateMutability": "view",
         "type": "function"
@@ -361,22 +717,30 @@
         "inputs": [],
         "name": "owner",
         "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
+            { "internalType": "address", "name": "", "type": "address" }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "pPid",
+        "outputs": [
+            { "internalType": "uint256", "name": "", "type": "uint256" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "paused",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "", "type": "uint256" }
         ],
         "name": "poolInfo",
         "outputs": [
@@ -408,11 +772,7 @@
         "inputs": [],
         "name": "poolLength",
         "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "pools",
-                "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "pools", "type": "uint256" }
         ],
         "stateMutability": "view",
         "type": "function"
@@ -426,11 +786,7 @@
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_pid",
-                "type": "uint256"
-            },
+            { "internalType": "uint256", "name": "_pid", "type": "uint256" },
             {
                 "internalType": "uint256",
                 "name": "_allocPoint",
@@ -457,11 +813,7 @@
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "_manager",
-                "type": "address"
-            }
+            { "internalType": "address", "name": "_manager", "type": "address" }
         ],
         "name": "setManager",
         "outputs": [],
@@ -483,24 +835,41 @@
     },
     {
         "inputs": [
-            {
-                "internalType": "contract IMigrator",
-                "name": "_migrator",
-                "type": "address"
-            }
+            { "internalType": "address", "name": "staker", "type": "address" }
         ],
-        "name": "setMigrator",
+        "name": "setNewStaker",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "_vesting",
-                "type": "address"
-            }
+            { "internalType": "address", "name": "staker", "type": "address" }
+        ],
+        "name": "setOldStaker",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "uint256", "name": "_pPid", "type": "uint256" }
+        ],
+        "name": "setPwrdPid",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "bool", "name": "pause", "type": "bool" }],
+        "name": "setStatus",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "_vesting", "type": "address" }
         ],
         "name": "setVesting",
         "outputs": [],
@@ -511,22 +880,14 @@
         "inputs": [],
         "name": "totalAllocPoint",
         "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "", "type": "uint256" }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "newOwner",
-                "type": "address"
-            }
+            { "internalType": "address", "name": "newOwner", "type": "address" }
         ],
         "name": "transferOwnership",
         "outputs": [],
@@ -535,11 +896,7 @@
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "pid",
-                "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "pid", "type": "uint256" }
         ],
         "name": "updatePool",
         "outputs": [
@@ -566,7 +923,7 @@
                         "type": "address"
                     }
                 ],
-                "internalType": "struct LPTokenStaker.PoolInfo",
+                "internalType": "struct StakerStructs.PoolInfo",
                 "name": "pool",
                 "type": "tuple"
             }
@@ -576,30 +933,33 @@
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            },
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
+            { "internalType": "uint256", "name": "", "type": "uint256" },
+            { "internalType": "address", "name": "", "type": "address" }
         ],
         "name": "userInfo",
         "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            },
-            {
-                "internalType": "int256",
-                "name": "rewardDebt",
-                "type": "int256"
-            }
+            { "internalType": "uint256", "name": "amount", "type": "uint256" },
+            { "internalType": "int256", "name": "rewardDebt", "type": "int256" }
         ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "", "type": "address" },
+            { "internalType": "uint256", "name": "", "type": "uint256" }
+        ],
+        "name": "userMigrated",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "", "type": "address" }
+        ],
+        "name": "userMigratedFromV1",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
         "stateMutability": "view",
         "type": "function"
     },
@@ -618,16 +978,8 @@
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "pid",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
+            { "internalType": "uint256", "name": "pid", "type": "uint256" },
+            { "internalType": "uint256", "name": "amount", "type": "uint256" }
         ],
         "name": "withdraw",
         "outputs": [],
@@ -636,16 +988,9 @@
     },
     {
         "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "pid",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
+            { "internalType": "bool", "name": "vest", "type": "bool" },
+            { "internalType": "uint256", "name": "pid", "type": "uint256" },
+            { "internalType": "uint256", "name": "amount", "type": "uint256" }
         ],
         "name": "withdrawAndClaim",
         "outputs": [],

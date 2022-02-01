@@ -197,7 +197,7 @@ export const contracts = {
 export const staker_pools = {
     contracts: {
         gro_address: '0x9892fff05b42adc940c251ca879d912dfa94c731',
-        staker_address: '0xCD72ccA707C61C2d7361F99B6c66bC312dB50BF7',
+        staker_address: '0x3833a91981f609BcA68a670a353A4ACC0493D620',
         gro_price_oracle_address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
         uniswap_gro_gvt_pool_address:
             '0x02910bC117C6F1E7347aEF1A8e94a0B45041EF3F',
@@ -215,7 +215,7 @@ export const staker_pools = {
         deposit_url: 'NA',
         remove_url: 'NA',
         display_order: '1',
-        pid: '1',
+        pid: '0',
         disable: 'false',
     },
     uniswap_v2_5050_gro_gvt_1: {
@@ -224,7 +224,7 @@ export const staker_pools = {
         remove_url:
             'https://app.uniswap.org/#/remove/v2/0x4394be2135357833A9e18D5A73B2a0C629efE984/0x9892fFf05B42AdC940C251cA879D912Dfa94c731',
         display_order: '2',
-        pid: '0',
+        pid: '1',
         disable: 'false',
         start_block: 11117850,
     },
@@ -234,7 +234,7 @@ export const staker_pools = {
         remove_url:
             'https://app.uniswap.org/#/remove/v2/0xa553cda420072a759ac352dca4cec70709829614/0x9892fFf05B42AdC940C251cA879D912Dfa94c731',
         display_order: '3',
-        pid: '6',
+        pid: '2',
         disable: 'false',
         start_block: 11136489,
     },
@@ -242,14 +242,14 @@ export const staker_pools = {
         deposit_url: 'NA',
         remove_url: 'NA',
         display_order: '4',
-        pid: '2',
+        pid: '3',
         disable: 'false',
     },
     curve_meta_pwrd_3crv_4: {
         deposit_url: 'NA',
         remove_url: 'NA',
         display_order: '5',
-        pid: '3',
+        pid: '4',
         disable: 'false',
         start_block: 11124360,
     },

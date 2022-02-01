@@ -803,7 +803,7 @@ async function ethereumPersonalStats(account) {
         promises.push(getTransactionHistories(account));
         promises.push(getLatestPowerD().getAssets(account));
         promises.push(getLatestGroVault().getAssets(account));
-        promises.push(BigNumber.from(0)); //promises.push(getPwrDBalanceOnStaker(account)); after tokeonomicsv2 migration
+        promises.push(getPwrDBalanceOnStaker(account));
         promises.push(getGVTBalanceOnStaker(account));
 
         const results = await Promise.all(promises);

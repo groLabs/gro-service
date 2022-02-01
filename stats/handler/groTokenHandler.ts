@@ -672,10 +672,10 @@ async function getSinglePwrdStats(
     const totalPwrdTvl = singleStaked;
     logger.info(`totalPwrdTvl single tvl ${totalPwrdTvl}`);
     // get real alloc points when contract is live
-    const poolSixInfo = await lpTokenStaker.poolInfo(
-        pool6Config.pid,
-        latestBlock
-    );
+    // const poolSixInfo = await lpTokenStaker.poolInfo(
+    //     pool6Config.pid,
+    //     latestBlock
+    // );
     let rewardApy = BigNumber.from(0);
     if (!singleStaked.isZero()) {
         rewardApy = groPerBlock
@@ -1143,7 +1143,7 @@ async function getPools(currentApy, latestBlock) {
         totalAllocPoint,
         block24hAgo
     );
-    logger.info(' -- pool5');
+    logger.info(' -- pool6');
     const poolSinglePwrdStats = await getSinglePwrdStats(
         priceOracle,
         groPerBlock,
