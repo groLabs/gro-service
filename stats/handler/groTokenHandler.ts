@@ -671,17 +671,17 @@ async function getSinglePwrdStats(
     logger.info(`stacked single ${singleStaked}`);
     const totalPwrdTvl = singleStaked;
     logger.info(`totalPwrdTvl single tvl ${totalPwrdTvl}`);
-    // get real alloc points when contract is live
-    // const poolSixInfo = await lpTokenStaker.poolInfo(
-    //     pool6Config.pid,
-    //     latestBlock
-    // );
+
+    const poolSixInfo = await lpTokenStaker.poolInfo(
+        pool6Config.pid,
+        latestBlock
+    );
     let rewardApy = BigNumber.from(0);
     if (!singleStaked.isZero()) {
         rewardApy = groPerBlock
             .mul(1)
             .mul(BLOCKS_PER_YEAR)
-            .mul(100) //add correct alloc point later
+            .mul(poolSixInfo.allocPoint)
             .mul(ONE)
             .div(totalAllocPoint)
             .div(singleStaked);
@@ -1081,6 +1081,26 @@ async function getGvtApy(currentApy, latestBlock) {
 
 }
 
+async function getPwrdApy(currentApy, latestBlock) {
+    await initContracts();
+    const priceOracle = await getGroPriceFromUniswap(latestBlock);
+    // reward in staker per block
+    const groPerBlock = await lpTokenStaker.groPerBlock(latestBlock);
+    const totalAllocPoint = await lpTokenStaker.totalAllocPoint(latestBlock);
+    const poolSinglePwrdStats = await getSinglePwrdStats(
+        priceOracle,
+        groPerBlock,
+        totalAllocPoint,
+        currentApy,
+        latestBlock
+    );
+
+    const tokenApy = (poolSinglePwrdStats.tokenApy as BigNumber).toString()
+
+    return { upper: printPercent(new BN(tokenApy)), lower: printPercent(new BN(tokenApy).times(new BN(await fetchInstantUnlockPercentange())))}
+
+}
+
 async function getPools(currentApy, latestBlock) {
     await initContracts();
     const NAH = 'NA';
@@ -1394,4 +1414,5 @@ export {
     getPools,
     getLpTokenAmountOfBalancerPool,
     getGvtApy,
+    getPwrdApy,
 };

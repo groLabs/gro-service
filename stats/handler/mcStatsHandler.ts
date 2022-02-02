@@ -12,7 +12,7 @@ import { getSystemApy } from './apyHandler';
 import { getGtokenApy, getHodlBonusApy } from './currentApyHandler';
 import { getAvaxSystemStats } from './avaxSystemHandler';
 import { getTvlStats, getSystemStats, getExposureStats } from './systemHandler';
-import { getPools, getGvtApy } from './groTokenHandler';
+import { getPools, getGvtApy, getPwrdApy } from './groTokenHandler';
 import { ParameterError } from '../../common/error';
 import { apyStatsMessage } from '../../discordMessage/statsMessage';
 
@@ -139,9 +139,11 @@ async function generateGroStatsMcFile() {
     stats.pools = poolsInfo.pools;
 
     const gvtBoostApy = await getGvtApy((apy as any).current, latestBlockTag);
+    const pwrdBoostApy = await getPwrdApy((apy as any).current, latestBlockTag);
+
     stats.pwrdBoost = {
-        upperBoostApy: 0,
-        lowerBoostApy: 0,
+        upperBoostApy: pwrdBoostApy.upper,
+        lowerBoostApy: pwrdBoostApy.lower,
     };
     stats.gvtBoost = {
         upperBoostApy: gvtBoostApy.upper,
