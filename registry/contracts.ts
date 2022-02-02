@@ -114,17 +114,17 @@ async function newSystemLatestVaultStrategyContracts(signerInfo) {
         };
     }
 
-    const curveVaultAddress = await controller.curveVault();
-    vaultsAddress.push(curveVaultAddress);
-    const curveVaultAdapter = newLatestContractByAddress(
-        curveVaultAddress,
-        signerInfo
-    );
-    result[curveVaultAddress] = {
-        contract: curveVaultAdapter.contract,
-        contractInfo: curveVaultAdapter.contractInfo,
-        vault: {},
-    };
+    // const curveVaultAddress = await controller.curveVault();
+    // vaultsAddress.push(curveVaultAddress);
+    // const curveVaultAdapter = newLatestContractByAddress(
+    //     curveVaultAddress,
+    //     signerInfo
+    // );
+    // result[curveVaultAddress] = {
+    //     contract: curveVaultAdapter.contract,
+    //     contractInfo: curveVaultAdapter.contractInfo,
+    //     vault: {},
+    // };
 
     // init vault for every vault adapter
     const vaultAdapterAddresses = Object.keys(result);
