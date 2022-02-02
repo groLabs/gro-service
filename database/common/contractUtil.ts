@@ -85,6 +85,11 @@ const getBuoy = () => {
         .contract;
 }
 
+// const getGroHodler = () => {
+//     return getLatestSystemContract(ContractNames.GroHodler, getProviderKey())
+//         .contract;
+// }
+
 const getStables = async () => {
     const info = await getStableCoinsInfo();
     return info;

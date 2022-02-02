@@ -124,6 +124,7 @@ ContractABIMapping[ContractNames.CRVVaultAdaptor] = 'VaultAdaptorYearnV2_032';
 ContractABIMapping[ContractNames.CRVPrimary] = 'BaseStrategy';
 ContractABIMapping[ContractNames.BalancerWeightedPool] = 'BalancerWeightedPool';
 ContractABIMapping[ContractNames.TokenCounter] = 'TokenCounter';
+ContractABIMapping[ContractNames.GroHodler] = 'GroHodler';
 ContractABIMapping[ContractNames.GroDAOVesting] = 'GroDAOVesting';
 ContractABIMapping[ContractNames.GroHodler] = 'GroHodler';
 ContractABIMapping[ContractNames.LPTokenStakerV1] = 'LPTokenStakerV1';

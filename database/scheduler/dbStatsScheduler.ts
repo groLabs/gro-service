@@ -3,6 +3,7 @@ import { getConfig } from '../../common/configUtil';
 import { etlGroStatsMC } from '../etl/etlGroStatsMC';
 import { etlPriceCheck } from '../etl/etlPriceCheck';
 import { etlTokenPrice } from '../etl/etlTokenPrice';
+import { etlVestingBonus } from '../etl/etlVestingBonus';
 import { etlPersonalStats } from '../etl/etlPersonalStats';
 import { calcLoadingDateRange } from '../common/personalUtil';
 import { loadContractInfoFromRegistry } from '../../registry/registryLoader';
@@ -16,12 +17,16 @@ const personalStatsJobSetting =
     // getConfig('trigger_scheduler.db_personal_stats', false) || '*/120 * * * * *'; // X seconds [TESTING]
     getConfig('trigger_scheduler.db_personal_stats', false) || '5 0 * * *'; // everyday at 00:05 AM [PRODUCTION]
 const tokenPriceSetting =
-    //getConfig('trigger_scheduler.db_token_price', false) || '*/30 * * * * *';  // 30 seconds [TESTING]
+    // getConfig('trigger_scheduler.db_token_price', false) || '*/30 * * * * *';  // 30 seconds [TESTING]
     getConfig('trigger_scheduler.db_token_price', false) || '*/5 * * * *'; // 5 mins [PRODUCTION]
+const vestingBonusSetting =
+    // getConfig('trigger_scheduler.db_vesting_bonus', false) || '*/15 * * * * *';  // 30 seconds [TESTING]
+    getConfig('trigger_scheduler.db_vesting_bonus', false) || '*/5 * * * *'; // 1 min [PRODUCTION]  ** TO BE CHANGED TO 1 MIN ONCE WE GO LIVE!
 import {
     showInfo,
     showError,
 } from '../handler/logHandler';
+import { Bool } from '../types';
 
 
 const groStatsJob = async () => {
@@ -87,12 +92,24 @@ const tokenPriceJob = async () => {
     });
 }
 
+const vestingBonusJob = async () => {
+    showInfo('vestingBonusJob initialised');
+    schedule.scheduleJob(vestingBonusSetting, async () => {
+        try {
+            await etlVestingBonus(Bool.FALSE);
+        } catch (err) {
+            showError('dbStatsScheduler.ts->vestingBonusJob()', err);
+        }
+    });
+}
+
 const startDbStatsJobs = async () => {
     //TODO: capture exception in contract load fails
     await loadContractInfoFromRegistry();
     groStatsJob();
     priceCheckJob();
     tokenPriceJob();
+    vestingBonusJob();
 }
 
 export {
