@@ -15,8 +15,6 @@
         "USDCVaultAdaptor",
         "USDTVault",
         "USDTVaultAdaptor",
-        "3CRVVault",
-        "3CRVVaultAdaptor",
         "DepositHandler",
         "EmergencyHandler",
         "WithdrawHandler",
@@ -26,7 +24,6 @@
         "USDCSecondary",
         "USDTPrimary",
         "USDTSecondary",
-        "3CrvPrimary",
         "BalancerWeightedPool",
         "TokenCounter",
         "GroDAOVesting",
@@ -71,9 +68,9 @@
                 "endBlock": 10633479,
                 "abiVersion": "3c80e58",
                 "tag": "Vault",
-                "tokens": ["TESTDAISTABLE"],
-                "protocols": ["TESTDAIPROTOCOL"],
-                "protocolsDisplayName": ["TESTDAIPROTOCOL"],
+                "tokens": ["Frax"],
+                "protocols": ["Frax"],
+                "protocolsDisplayName": ["Frax"],
                 "metaData": {},
                 "active": false
             },
@@ -84,9 +81,9 @@
                 "endBlock": null,
                 "abiVersion": "551353c",
                 "tag": "Vault",
-                "tokens": ["TESTDAISTABLE"],
-                "protocols": ["TESTDAIPROTOCOL"],
-                "protocolsDisplayName": ["TESTDAIPROTOCOL"],
+                "tokens": ["Frax"],
+                "protocols": ["Frax"],
+                "protocolsDisplayName": ["Frax"],
                 "metaData": { "N": "DAI yVault", "CN": "DAI", "DN": "DAI" },
                 "active": true
             }
@@ -99,9 +96,9 @@
                 "endBlock": 10633479,
                 "abiVersion": "3c80e58",
                 "tag": "Vault",
-                "tokens": ["TESTUSDCSTABLE"],
-                "protocols": ["TESTUSDCPROTOCL"],
-                "protocolsDisplayName": ["TESTUSDCPROTOCL"],
+                "tokens": ["oUSD"],
+                "protocols": ["oUSD"],
+                "protocolsDisplayName": ["oUSD"],
                 "metaData": {},
                 "active": false
             },
@@ -112,9 +109,9 @@
                 "endBlock": null,
                 "abiVersion": "551353c",
                 "tag": "Vault",
-                "tokens": ["TESTUSDCSTABLE"],
-                "protocols": ["TESTUSDCPROTOCL"],
-                "protocolsDisplayName": ["TESTUSDCPROTOCL"],
+                "tokens": ["oUSD"],
+                "protocols": ["oUSD"],
+                "protocolsDisplayName": ["oUSD"],
                 "metaData": { "N": "USDC yVault", "CN": "USDC", "DN": "USDC" },
                 "active": true
             }
@@ -127,9 +124,9 @@
                 "endBlock": 10633479,
                 "abiVersion": "3c80e58",
                 "tag": "Vault",
-                "tokens": ["TESTUSDTSTABLE"],
-                "protocols": ["TESTUSDTPROTOCL"],
-                "protocolsDisplayName": ["TESTUSDTPROTOCL"],
+                "tokens": ["mUSD"],
+                "protocols": ["mUSD"],
+                "protocolsDisplayName": ["mUSD"],
                 "metaData": {},
                 "active": false
             },
@@ -140,10 +137,149 @@
                 "endBlock": null,
                 "abiVersion": "551353c",
                 "tag": "Vault",
-                "tokens": ["TESTUSDTSTABLE"],
-                "protocols": ["TESTUSDTPROTOCL"],
-                "protocolsDisplayName": ["TESTUSDTPROTOCL"],
+                "tokens": ["mUSD"],
+                "protocols": ["mUSD"],
+                "protocolsDisplayName": ["mUSD"],
                 "metaData": { "N": "USDT yVault", "CN": "USDT", "DN": "USDT" },
+                "active": true
+            }
+        ],
+        "DAIPrimary": [
+            {
+                "address": "0xdc245c3827214c17F618275eab5aa3B39E760C24",
+                "deployedBlock": 10524894,
+                "startBlock": 10525267,
+                "endBlock": 10633479,
+                "abiVersion": "3c80e58",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0xdaca6C95360B9F61E5713AFCC781c19A6bFf5697",
+                "deployedBlock": 10631080,
+                "startBlock": 10633479,
+                "endBlock": 11909990,
+                "abiVersion": "551353c",
+                "tag": "Strategy",
+                "tokens": ["DAI"],
+                "protocols": ["Compound"],
+                "protocolsDisplayName": ["Compound"],
+                "metaData": {
+                    "N": "Lev Comp",
+                    "DN": "Lev Comp - DAI",
+                    "DY": 106000
+                },
+                "active": false
+            },
+            {
+                "address": "0x265ac3727c867584408CB0773c2520b534CF5106",
+                "deployedBlock": 11909990,
+                "startBlock": 11909990,
+                "endBlock": null,
+                "abiVersion": "551353c",
+                "tag": "Strategy",
+                "tokens": ["DAI"],
+                "protocols": ["CRV"],
+                "protocolsDisplayName": ["CRV"],
+                "metaData": {
+                    "N": "CRV",
+                    "DN": "CRV - Frax",
+                    "DY": 106000
+                },
+                "active": true
+            }
+        ],
+        "USDCPrimary": [
+            {
+                "address": "0xd602d05c7DA1DCFA452082BC5eEd512982df0147",
+                "deployedBlock": 10524894,
+                "startBlock": 10525267,
+                "endBlock": 10633479,
+                "abiVersion": "3c80e58",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0xD753b1beC20CB69Fd6a9a848a04291d30bD01067",
+                "deployedBlock": 10631080,
+                "startBlock": 10633479,
+                "endBlock": 11909991,
+                "abiVersion": "551353c",
+                "tag": "Strategy",
+                "tokens": ["USDC"],
+                "protocols": ["Compound"],
+                "protocolsDisplayName": ["Compound"],
+                "metaData": {
+                    "N": "Lev Comp",
+                    "DN": "Lev Comp - USDC",
+                    "DY": 98500
+                },
+                "active": false
+            },
+            {
+                "address": "0x328e885c9EA407846979220035dbabA51A82238c",
+                "deployedBlock": 11909991,
+                "startBlock": 11909991,
+                "endBlock": null,
+                "abiVersion": "551353c",
+                "tag": "Strategy",
+                "tokens": ["oUSD"],
+                "protocols": ["CRV"],
+                "protocolsDisplayName": ["CRV"],
+                "metaData": {
+                    "N": "CRV",
+                    "DN": "CRV - oUSD",
+                    "DY": 98500
+                },
+                "active": true
+            }
+        ],
+        "USDTPrimary": [
+            {
+                "address": "0x9D52ADe51444B460a1A5cf29d56f609C2AEEA462",
+                "deployedBlock": 10524894,
+                "startBlock": 10525267,
+                "endBlock": 10633479,
+                "abiVersion": "3c80e58",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0x434E1C5e41842e4E27E96a2bCF40b6a8b57ADB2f",
+                "deployedBlock": 10631080,
+                "startBlock": 10633479,
+                "endBlock": 11909992,
+                "abiVersion": "551353c",
+                "tag": "Strategy",
+                "tokens": ["USDT"],
+                "protocols": ["Idle", "Compound", "Aave"],
+                "protocolsDisplayName": ["Idle", "Compound", "Aave"],
+                "metaData": { "N": "Idle", "DN": "Idle - USDT", "DY": 45343 },
+                "active": false
+            },
+            {
+                "address": "0xaaD7AAb0Be0FD2110938B8c6259c1Ae36673566c",
+                "deployedBlock": 11909992,
+                "startBlock": 11909992,
+                "endBlock": null,
+                "abiVersion": "551353c",
+                "tag": "Strategy",
+                "tokens": ["mUSD"],
+                "protocols": ["CRV"],
+                "protocolsDisplayName": ["CRV"],
+                "metaData": { "N": "CRV", "DN": "CRV - mUSUD", "DY": 45343 },
                 "active": true
             }
         ],
