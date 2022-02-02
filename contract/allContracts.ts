@@ -179,31 +179,31 @@ async function initVaults() {
         await initVaultStrategyLabel(i, vault, strategiesLength);
     }
 
-    // Curve vault
-    const curveVaultAddress = await controller.curveVault();
-    const tcurveVault = new ethers.Contract(
-        curveVaultAddress,
-        vaultAdapterABI,
-        nonceManager
-    ) as VaultAdaptor;
-    vaults.push(tcurveVault);
-    const curveVaultStrategyLength = await tcurveVault.getStrategiesLength();
-    logger.info(
-        `curve vault ${curveVaultAddress} has ${curveVaultStrategyLength} strategies.`
-    );
-    strategyLength.push(curveVaultStrategyLength);
-    await initVaultStrategyLabel(3, tcurveVault, curveVaultStrategyLength);
+    // // Curve vault
+    // const curveVaultAddress = await controller.curveVault();
+    // const tcurveVault = new ethers.Contract(
+    //     curveVaultAddress,
+    //     vaultAdapterABI,
+    //     nonceManager
+    // ) as VaultAdaptor;
+    // vaults.push(tcurveVault);
+    // const curveVaultStrategyLength = await tcurveVault.getStrategiesLength();
+    // logger.info(
+    //     `curve vault ${curveVaultAddress} has ${curveVaultStrategyLength} strategies.`
+    // );
+    // strategyLength.push(curveVaultStrategyLength);
+    // await initVaultStrategyLabel(3, tcurveVault, curveVaultStrategyLength);
 }
 
-async function initCurveVault() {
-    const curveVaultAddress = await controller.curveVault();
-    logger.info(`curve vault address: ${curveVaultAddress}`);
-    curveVault = new ethers.Contract(
-        curveVaultAddress,
-        vaultAdapterABI,
-        nonceManager
-    ) as VaultAdaptor;
-}
+// async function initCurveVault() {
+//     const curveVaultAddress = await controller.curveVault();
+//     logger.info(`curve vault address: ${curveVaultAddress}`);
+//     curveVault = new ethers.Contract(
+//         curveVaultAddress,
+//         vaultAdapterABI,
+//         nonceManager
+//     ) as VaultAdaptor;
+// }
 
 function renameDuplicatedFactorEntry(abi) {
     const keys = abi.keys();
@@ -310,7 +310,7 @@ async function initAllContracts() {
     promises.push(initInsurance());
     promises.push(initPnl());
     promises.push(initVaults());
-    promises.push(initCurveVault());
+    // promises.push(initCurveVault());
     promises.push(initGvt());
     promises.push(initPwrd());
     promises.push(initLifeguard());

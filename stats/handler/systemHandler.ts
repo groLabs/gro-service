@@ -98,7 +98,7 @@ async function checkStrategyChange(blockTag) {
         // not check curve strategy
         for (
             let vaultIndex = 0;
-            vaultIndex < vaults.length - 1;
+            vaultIndex < vaults.length;
             vaultIndex += 1
         ) {
             const { strategies } = vaultStrategy[vaultIndex];
@@ -203,23 +203,23 @@ async function getCurveStrategyStats(vault, vaultTotalAsset, blockTag) {
     return strategies;
 }
 
-async function getCurveVaultStats(blockTag) {
-    const curveVault = getLatestSystemContract(
-        ContractNames.CRVVaultAdaptor
-    ).contract;
-    const vaultTotalAsset = await curveVault.totalAssets(blockTag);
-    const assetUsd = await getUsdValueForLP(vaultTotalAsset, blockTag);
-    const strategyStats = await getCurveStrategyStats(
-        curveVault,
-        vaultTotalAsset,
-        blockTag
-    );
-    return {
-        name: 'Curve yVault',
-        amount: assetUsd,
-        strategies: strategyStats,
-    };
-}
+// async function getCurveVaultStats(blockTag) {
+//     const curveVault = getLatestSystemContract(
+//         ContractNames.CRVVaultAdaptor
+//     ).contract;
+//     const vaultTotalAsset = await curveVault.totalAssets(blockTag);
+//     const assetUsd = await getUsdValueForLP(vaultTotalAsset, blockTag);
+//     const strategyStats = await getCurveStrategyStats(
+//         curveVault,
+//         vaultTotalAsset,
+//         blockTag
+//     );
+//     return {
+//         name: 'Curve yVault',
+//         amount: assetUsd,
+//         strategies: strategyStats,
+//     };
+// }
 
 async function getStrategiesStats(
     vault,
@@ -266,7 +266,7 @@ async function getVaultStats(blockTag) {
     const { contracts: vaultStrategyContracts } = vaultAndStrateyInfo;
 
     const vaultAssets = [];
-    for (let vaultIndex = 0; vaultIndex < vaults.length - 1; vaultIndex += 1) {
+    for (let vaultIndex = 0; vaultIndex < vaults.length; vaultIndex += 1) {
         const vault = vaults[vaultIndex];
         const vaultTotalAsset = await vault.totalAssets(blockTag);
         const assetUsd = await getUsdValue(
@@ -289,8 +289,8 @@ async function getVaultStats(blockTag) {
             strategies: strategyStats,
         });
     }
-    const curveVaultStats = await getCurveVaultStats(blockTag);
-    vaultAssets.push(curveVaultStats);
+    // const curveVaultStats = await getCurveVaultStats(blockTag);
+    // vaultAssets.push(curveVaultStats);
 
     return vaultAssets;
 }
@@ -378,7 +378,7 @@ async function getMegaExposureStats(blockTag, systemStats) {
     const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
     const { vaultsAddress: adapterAddresses, contracts: vaultStrategies } =
         vaultAndStrateyInfo;
-    for (let i = 0; i < vaultsStats.length - 1; i += 1) {
+    for (let i = 0; i < vaultsStats.length; i += 1) {
         const vault = vaultsStats[i];
         const { contract: vaultAdaptor, contractInfo: vaultAdaptorInfo } =
             vaultStrategies[adapterAddresses[i]];
