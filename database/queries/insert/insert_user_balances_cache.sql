@@ -2,6 +2,7 @@ INSERT INTO gro."USER_BALANCES_CACHE" (
         "balance_date",
         "network_id",
         "user_address",
+        "contract_id",
         "gvt_unstaked_amount",
         "pwrd_unstaked_amount",
         "gro_unstaked_amount",
@@ -74,5 +75,6 @@ VALUES (
         $34,
         $35,
         $36,
-        $37
+        $37,
+        $38
     );

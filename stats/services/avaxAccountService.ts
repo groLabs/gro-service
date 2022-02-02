@@ -414,6 +414,7 @@ async function singleVaultEvents(account, adpaterType, token, decimals) {
         account
     );
     let eventsPromise;
+
     const isVersion1 = !adpaterType.includes('_v');
     if (isVersion1 && !claimed && balance.isZero()) {
         eventsPromise = [

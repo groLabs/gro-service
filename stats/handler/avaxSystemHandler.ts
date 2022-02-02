@@ -1,14 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import { BigNumber, ethers } from 'ethers';
 import { BigNumber as BN } from 'bignumber.js';
-import {
-    MESSAGE_TYPES,
-    DISCORD_CHANNELS,
-    sendMessageToChannel,
-} from '../../common/discord/discordService';
-import { getCurrentApy } from './currentApyHandler';
 import { ContractNames } from '../../registry/registry';
-import { sendAlertMessage } from '../../common/alertMessageSender';
 import aggregatorABI from '../abi/aggregator.json';
 import poolABI from '../abi/Pool.json';
 import routerABI from '../abi/uniswapRoute.json';
@@ -51,6 +44,24 @@ const USDT_POOL = new ethers.Contract(
     provider
 );
 
+const DAI = new ethers.Contract(
+    '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
+    erc20ABI,
+    provider
+);
+
+const USDC = new ethers.Contract(
+    '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
+    erc20ABI,
+    provider
+);
+
+const USDT = new ethers.Contract(
+    '0xc7198437980c041c805A1EDcbA50c1Ce5db95118',
+    erc20ABI,
+    provider
+);
+
 const router = new ethers.Contract(
     '0x60aE616a2155Ee3d9A68541Ba4544862310933d4',
     routerABI,
@@ -90,6 +101,21 @@ const POOLS = [
     USDC_POOL,
     USDT_POOL,
 ];
+
+const WANT_TOKENS = [
+    DAI,
+    USDC,
+    USDT,
+    DAI,
+    USDC,
+    USDT,
+    DAI,
+    USDC,
+    USDT,
+    DAI,
+    USDC,
+    USDT,
+];
 const MS_PER_YEAR = BigNumber.from('31536000');
 const STABLECOINS = [
     'DAI.e',
@@ -108,6 +134,7 @@ const STABLECOINS = [
 const RISK_FREE_RATE = BigNumber.from(2400);
 
 const BLOCKS_OF_3DAYS = 130000;
+const BLOCKS_OF_12HOURS = 2200;
 const START_TIME_STAMP = [
     1638707119, 1638549778, 1638549778, 1639664984, 1639664984, 1639664984,
     1641855405, 1641855405, 1641855405, 1643046910, 1643046910, 1643046910,
@@ -433,7 +460,7 @@ async function calculatePositionReturn(
     return { wantOpen, wantClose, positionReturn };
 }
 
-async function calculateTimeWeightedPositionReturn(
+async function calculateTimeWeightedOpenPositionReturn(
     vaultAdapter,
     vaultIndex,
     strategyContract,
@@ -449,44 +476,32 @@ async function calculateTimeWeightedPositionReturn(
             adjustedEvents ? adjustedEvents.length : 0
         }`
     );
-    const positionInfo = await strategyContract.getPosition(positionId, {
+    const wantOpen = await strategyContract.calcEstimatedWant({
         blockTag: openBlock,
     });
-    let wantOpen = positionInfo[2][0];
-    const strategyInfoBefore = await vaultAdapter.strategies(
-        strategyContract.address,
-        {
-            blockTag: endBlock - 1,
-        }
-    );
-    const strategyInfoAfter = await vaultAdapter.strategies(
+
+    const strategyInfo = await vaultAdapter.strategies(
         strategyContract.address,
         {
             blockTag: endBlock,
         }
     );
-    const profit = strategyInfoAfter.totalGain.sub(
-        strategyInfoBefore.totalGain
-    );
-    const loss = strategyInfoAfter.totalLoss.sub(strategyInfoBefore.totalLoss);
-    let wantClose = wantOpen.add(profit).sub(loss);
-    if (profit.eq(ZERO) && loss.eq(ZERO)) {
-        wantOpen = strategyInfoAfter.totalDebt;
-        wantClose = await strategyContract.estimatedTotalAssets({
-            blockTag: endBlock,
-        });
-    }
+    let currentEstimated = await strategyContract.estimatedTotalAssets({
+        blockTag: endBlock,
+    });
+    const profit = currentEstimated.sub(strategyInfo.totalDebt);
+    const wantClose = wantOpen.add(profit);
+
     logger.info(
-        `position gain/loss vaultIndex ${vaultIndex} ${positionId} ${strategyInfoAfter.totalDebt} + ${strategyInfoAfter.totalGain} ${strategyInfoBefore.totalGain} - ${strategyInfoAfter.totalLoss} ${strategyInfoBefore.totalLoss}`
+        `open position gain/loss vaultIndex ${vaultIndex} ${positionId} currentEstimated ${currentEstimated} - totalDebt ${strategyInfo.totalDebt} profit ${profit} wantOpen ${wantOpen} wantClose ${wantClose}`
     );
-    const positionGain = wantClose.sub(wantOpen);
     // eslint-disable-next-line max-len
     const { totalDebt } = await vaultAdapter.strategies(
         strategyContract.address,
         { blockTag: openBlock }
     );
 
-    let positionReturn = positionGain
+    let positionReturn = profit
         .mul(SHARE_DECIMAL)
         .mul(MS_PER_YEAR)
         .div(totalDebt)
@@ -510,7 +525,95 @@ async function calculateTimeWeightedPositionReturn(
         timeWeighted = timeWeighted
             .add(preTotalDebt.mul(BigNumber.from(endTimestamp - startTs)))
             .div(endTimestamp - openTimestamp);
-        positionReturn = positionGain
+        positionReturn = profit
+            .mul(SHARE_DECIMAL)
+            .mul(MS_PER_YEAR)
+            .div(timeWeighted)
+            .div(endTimestamp - openTimestamp);
+    }
+    return { wantOpen, wantClose, positionReturn };
+}
+
+async function calculateTimeWeightedPositionReturn(
+    vaultAdapter,
+    vaultIndex,
+    strategyContract,
+    openBlock,
+    openTimestamp,
+    endBlock,
+    endTimestamp,
+    positionId,
+    adjustedEvents
+) {
+    logger.info(
+        `adjustedEvents.length ${positionId} ${
+            adjustedEvents ? adjustedEvents.length : 0
+        }`
+    );
+    const endEstimated = await strategyContract.estimatedTotalAssets({
+        blockTag: endBlock,
+    });
+    const wantBalance = await WANT_TOKENS[vaultIndex].balanceOf(
+        strategyContract.address,
+        {
+            blockTag: endBlock - 1,
+        }
+    );
+    const wantClose = endEstimated.sub(wantBalance);
+    const strategyInfoBefore = await vaultAdapter.strategies(
+        strategyContract.address,
+        {
+            blockTag: endBlock - 1,
+        }
+    );
+    const strategyInfoAfter = await vaultAdapter.strategies(
+        strategyContract.address,
+        {
+            blockTag: endBlock,
+        }
+    );
+    const gain = strategyInfoAfter.totalGain.sub(strategyInfoBefore.totalGain);
+    const loss = strategyInfoAfter.totalLoss.sub(strategyInfoBefore.totalLoss);
+
+    let positionProfit = gain.sub(loss);
+    if (gain.eq(ZERO) && loss.eq(ZERO)) {
+        positionProfit = endEstimated.sub(strategyInfoAfter.totalDebt);
+    }
+    let wantOpen = wantClose.sub(positionProfit);
+    logger.info(
+        `position gain/loss vaultIndex ${vaultIndex} ${positionId} ${strategyInfoAfter.totalDebt} + ${strategyInfoAfter.totalGain} ${strategyInfoBefore.totalGain} - ${strategyInfoAfter.totalLoss} ${strategyInfoBefore.totalLoss} | endEstimated ${endEstimated} wantBalance ${wantBalance} wantOpen ${wantOpen} wantClose ${wantClose}`
+    );
+    // eslint-disable-next-line max-len
+    const { totalDebt } = await vaultAdapter.strategies(
+        strategyContract.address,
+        { blockTag: openBlock }
+    );
+
+    let positionReturn = positionProfit
+        .mul(SHARE_DECIMAL)
+        .mul(MS_PER_YEAR)
+        .div(totalDebt)
+        .div(BigNumber.from(endTimestamp - openTimestamp));
+
+    if (adjustedEvents && adjustedEvents.length > 0) {
+        let timeWeighted = ZERO;
+        let preTotalDebt = totalDebt;
+        let startTs = openTimestamp;
+        for (let i = 0; i < adjustedEvents.length; i += 1) {
+            const adjustedEvent = adjustedEvents[i];
+            const duration = BigNumber.from(adjustedEvent.timestamp - startTs);
+            timeWeighted = timeWeighted.add(preTotalDebt.mul(duration));
+            const strategyInfo = await vaultAdapter.strategies(
+                strategyContract.address,
+                { blockTag: adjustedEvent.block }
+            );
+            preTotalDebt = strategyInfo.totalDebt;
+            startTs = adjustedEvent.timestamp;
+        }
+        timeWeighted = timeWeighted
+            .add(preTotalDebt.mul(BigNumber.from(endTimestamp - startTs)))
+            .div(endTimestamp - openTimestamp);
+        positionReturn = positionProfit
             .mul(SHARE_DECIMAL)
             .mul(MS_PER_YEAR)
             .div(timeWeighted)
@@ -734,8 +837,8 @@ async function calculateVaultReturn(
     //         endBlock - BLOCKS_OF_3DAYS
     //     } startBlock ${startBlock}`
     // );
-    if (endBlock - BLOCKS_OF_3DAYS > startBlock) {
-        const blockNumber3DaysAgo = endBlock - BLOCKS_OF_3DAYS;
+    if (endBlock - BLOCKS_OF_12HOURS > startBlock) {
+        const blockNumber3DaysAgo = endBlock - BLOCKS_OF_12HOURS;
         const block3DaysAgo = await provider.getBlock(blockNumber3DaysAgo);
         logger.info(`block.timestamp 3days ago ${block3DaysAgo.timestamp}`);
         const startTotalSupply = await vaultAdapter.totalSupply({
@@ -884,12 +987,12 @@ async function calculateVaultUnlockedReturn(
         const blockNumber3DaysAgo = endBlock - BLOCKS_OF_3DAYS;
         const block3DaysAgo = await provider.getBlock(blockNumber3DaysAgo);
         logger.info(`block.timestamp 3days ago ${block3DaysAgo.timestamp}`);
-        const startTotalSupply = await vaultAdapter.totalSupply({
-            blockTag: blockNumber3DaysAgo,
-        });
-        const startEstimated = await vaultAdapter.totalEstimatedAssets({
-            blockTag: blockNumber3DaysAgo,
-        });
+        // const startTotalSupply = await vaultAdapter.totalSupply({
+        //     blockTag: blockNumber3DaysAgo,
+        // });
+        // const startEstimated = await vaultAdapter.totalEstimatedAssets({
+        //     blockTag: blockNumber3DaysAgo,
+        // });
         const open3DaysAgoPricePerShare = await vaultAdapter.getPricePerShare({
             blockTag: blockNumber3DaysAgo,
         });
@@ -901,7 +1004,7 @@ async function calculateVaultUnlockedReturn(
             .div(openPricePerShare)
             .div(duration);
         console.log(
-            `~~~~ unlocked 3days ${duration} ${blockNumber3DaysAgo} open3DaysAgoTotalSupply ${startTotalSupply} open3DaysAgoEstimated ${startEstimated} open3DaysAgoPricePerShare ${open3DaysAgoPricePerShare}`
+            `~~~~ unlocked 3days vaultIndex ${vaultIndex} ${duration} ${blockNumber3DaysAgo} closePricePerShare ${closePricePerShare} open3DaysAgoPricePerShare ${open3DaysAgoPricePerShare}`
         );
     }
 
@@ -1031,7 +1134,6 @@ async function generateVaultData(
     }
     const startBlock = 9000000;
     // const startBlock = 7408960;
-
     logger.info('openEvents');
     const openEvents = await getPositionOpenEvents(
         strategyContract,
@@ -1145,17 +1247,35 @@ async function generateVaultData(
             // );
         } else {
             const duration = BigNumber.from(block.timestamp - open.timestamp);
-            const { wantOpen, wantClose, positionReturn } =
-                await calculatePositionReturn(
-                    vaultAdapter,
-                    vaultIndex,
-                    strategyContract,
-                    open.block,
-                    block.number,
-                    duration,
-                    key,
-                    false
-                );
+            let wantOpen;
+            let wantClose;
+            let positionReturn;
+            if (vaultIndex > 8) {
+                ({ wantOpen, wantClose, positionReturn } =
+                    await calculateTimeWeightedOpenPositionReturn(
+                        vaultAdapter,
+                        vaultIndex,
+                        strategyContract,
+                        open.block,
+                        open.timestamp,
+                        block.block,
+                        block.timestamp,
+                        key,
+                        adjustedEvents[key]
+                    ));
+            } else {
+                ({ wantOpen, wantClose, positionReturn } =
+                    await calculatePositionReturn(
+                        vaultAdapter,
+                        vaultIndex,
+                        strategyContract,
+                        open.block,
+                        block.number,
+                        duration,
+                        key,
+                        false
+                    ));
+            }
             logger.info(
                 `activePosition ${vaultIndex} ${wantOpen} ${wantClose} ${positionReturn}`
             );
