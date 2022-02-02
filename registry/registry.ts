@@ -49,9 +49,9 @@ const ContractNames = {
     USDTVaultAdaptor: 'USDTVaultAdaptor',
     USDTPrimary: 'USDTPrimary',
     USDTSecondary: 'USDTSecondary',
-    CRVVault: '3CRVVault',
-    CRVVaultAdaptor: '3CRVVaultAdaptor',
-    CRVPrimary: '3CrvPrimary',
+    // CRVVault: '3CRVVault',
+    // CRVVaultAdaptor: '3CRVVaultAdaptor',
+    // CRVPrimary: '3CrvPrimary',
     BalancerWeightedPool: 'BalancerWeightedPool',
     TokenCounter: 'TokenCounter',
     GroDAOVesting: 'GroDAOVesting',
@@ -91,9 +91,9 @@ ContractABIMapping[ContractNames.USDTVault] = 'Vault';
 ContractABIMapping[ContractNames.USDTVaultAdaptor] = 'VaultAdaptorYearnV2_032';
 ContractABIMapping[ContractNames.USDTPrimary] = 'BaseStrategy';
 ContractABIMapping[ContractNames.USDTSecondary] = 'BaseStrategy';
-ContractABIMapping[ContractNames.CRVVault] = 'Vault';
-ContractABIMapping[ContractNames.CRVVaultAdaptor] = 'VaultAdaptorYearnV2_032';
-ContractABIMapping[ContractNames.CRVPrimary] = 'BaseStrategy';
+// ContractABIMapping[ContractNames.CRVVault] = 'Vault';
+// ContractABIMapping[ContractNames.CRVVaultAdaptor] = 'VaultAdaptorYearnV2_032';
+// ContractABIMapping[ContractNames.CRVPrimary] = 'BaseStrategy';
 ContractABIMapping[ContractNames.BalancerWeightedPool] = 'BalancerWeightedPool';
 ContractABIMapping[ContractNames.TokenCounter] = 'TokenCounter';
 ContractABIMapping[ContractNames.GroDAOVesting] = 'GroDAOVesting';
