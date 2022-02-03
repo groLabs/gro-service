@@ -12,5 +12,6 @@ SELECT $1 as table_name,
 	$3 as creation_date
 FROM gro."USER_TRANSFERS" t
 WHERE date(t.transfer_date) = $2
+	AND t.network_id = ANY($4::integer [])
 GROUP BY t.network_id,
 	date_trunc('day', t.transfer_date) + '23:59:59';

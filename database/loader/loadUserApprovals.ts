@@ -11,6 +11,7 @@ import { personalStatsApprovalsParser } from '../parser/personalStatsApprovalsPa
 import { QUERY_ERROR } from '../constants';
 import {
     Transfer,
+    LoadType,
     GlobalNetwork,
     ContractVersion,
 } from '../types';
@@ -35,36 +36,43 @@ import { isContractDeployed } from './loadUserTransfers';
 const loadUserApprovals = async (
     fromDate: string,
     toDate: string,
-    account: string
+    account: string,
+    globalNetwork: GlobalNetwork,
+    loadType: LoadType,
 ): Promise<boolean> => {
     try {
-        // Add new blocks into ETH_BLOCKS (incl. block timestamp)
-        if (await loadEthBlocks('loadUserApprovals', account)) {
-            // Insert approvals
-            const q = (account)
-                ? 'insert_user_approvals_cache.sql'
-                : 'insert_user_approvals.sql';
-            const params = (account)
-                ? [account]
-                : [];
-            const res = await query(q, params);
-            if (res.status === QUERY_ERROR)
+        if (loadType !== LoadType.TRANSFERS) {
+            // Add new blocks into ETH_BLOCKS (incl. block timestamp)
+            if (await loadEthBlocks('loadUserApprovals', account)) {
+                // Insert approvals
+                const q = (account)
+                    ? 'insert_user_approvals_cache.sql'
+                    : 'insert_user_approvals.sql';
+                const params = (account)
+                    ? [account]
+                    : [];
+                const res = await query(q, params);
+                if (res.status === QUERY_ERROR)
+                    return false;
+                if (!account) {
+                    const numTransfers = res.rowCount;
+                    const table = 'added into USER_APPROVALS';
+                    showInfo(`${numTransfers} record${isPlural(numTransfers)} ${table}`);
+                }
+            } else {
                 return false;
-            if (!account) {
-                const numTransfers = res.rowCount;
-                const table = 'added into USER_APPROVALS';
-                showInfo(`${numTransfers} record${isPlural(numTransfers)} ${table}`);
+            }
+            // Update table SYS_USER_LOADS with the last loads
+            if (account) {
+                return true;
+            } else {
+                const res = await loadTableUpdates('USER_APPROVALS', fromDate, toDate, globalNetwork);
+                return (res) ? true : false;
             }
         } else {
-            return false;
-        }
-        // Update table SYS_USER_LOADS with the last loads
-        if (account) {
             return true;
-        } else {
-            const res = await loadTableUpdates('USER_APPROVALS', fromDate, toDate);
-            return (res) ? true : false;
         }
+
     } catch (err) {
         showError('loadUserApprovals.ts->loadUserApprovals()', err);
         return false;

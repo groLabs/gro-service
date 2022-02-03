@@ -18,6 +18,7 @@ import {
 } from '../constants';
 import {
     Transfer,
+    LoadType,
     NetworkId,
     GlobalNetwork,
     ContractVersion,
@@ -40,35 +41,41 @@ import {
 const loadUserTransfers = async (
     fromDate: string,
     toDate: string,
-    account: string
+    account: string,
+    globalNetwork: GlobalNetwork,
+    loadType: LoadType
 ): Promise<boolean> => {
     try {
-        // Add new blocks into ETH_BLOCKS (incl. block timestamp)
-        if (await loadEthBlocks('loadUserTransfers', account)) {
-            // Insert deposits, withdrawals & transfers
-            const q = (account)
-                ? 'insert_user_transfers_cache.sql'
-                : 'insert_user_transfers.sql';
-            const params = (account)
-                ? [account]
-                : [];
-            const res = await query(q, params);
-            if (res.status === QUERY_ERROR)
+        if (loadType !== LoadType.APPROVALS) {
+            // Add new blocks into ETH_BLOCKS (incl. block timestamp)
+            if (await loadEthBlocks('loadUserTransfers', account)) {
+                // Insert deposits, withdrawals & transfers
+                const q = (account)
+                    ? 'insert_user_transfers_cache.sql'
+                    : 'insert_user_transfers.sql';
+                const params = (account)
+                    ? [account]
+                    : [];
+                const res = await query(q, params);
+                if (res.status === QUERY_ERROR)
+                    return false;
+                if (!account) {
+                    const numTransfers = res.rowCount;
+                    const table = 'added into USER_TRANSFERS';
+                    showInfo(`${numTransfers} record${isPlural(numTransfers)} ${table}`);
+                }
+            } else {
                 return false;
-            if (!account) {
-                const numTransfers = res.rowCount;
-                const table = 'added into USER_TRANSFERS';
-                showInfo(`${numTransfers} record${isPlural(numTransfers)} ${table}`);
+            }
+            // Update table SYS_USER_LOADS with the last loads
+            if (account) {
+                return true;
+            } else {
+                const res = await loadTableUpdates('USER_TRANSFERS', fromDate, toDate, globalNetwork);
+                return res ? true : false;
             }
         } else {
-            return false;
-        }
-        // Update table SYS_USER_LOADS with the last loads
-        if (account) {
             return true;
-        } else {
-            const res = await loadTableUpdates('USER_TRANSFERS', fromDate, toDate);
-            return res ? true : false;
         }
     } catch (err) {
         showError('loadUserTransfers.ts->loadUserTransfers()', err);

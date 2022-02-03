@@ -14,6 +14,7 @@ import { loadUserNetReturns } from '../loader/loadUserNetReturns';
 import { QUERY_ERROR } from '../constants';
 import {
     Transfer,
+    LoadType,
     GlobalNetwork as GN,
     ContractVersion as Ver,
 } from '../types';
@@ -177,17 +178,13 @@ const loadCache = async (account: string): Promise<boolean> => {
                 );
             }
 
-
-            // //TODO: when errors retrieving deposits, withdrawals or transfers in personalUtil->getTransferEvents()
-            // // (eg: Message: TypeError: Cannot read property 'PowerDollar' of undefined), it returns true!! (should be false)
-
             const now = moment.utc().format('DD/MM/YYYY').toString();
 
             const res = await Promise.all(result);
 
             if (res.every(Boolean)) {
-                if (await loadUserTransfers(null, null, account))
-                    if (await loadUserApprovals(null, null, account))
+                if (await loadUserTransfers(null, null, account, GN.ALL,  LoadType.TRANSFERS))
+                    if (await loadUserApprovals(null, null, account, GN.ALL, LoadType.APPROVALS))
                         if (await loadUserBalances(now, now, account, ''))
                             if (await loadUserNetReturns(account))
                                 return true;

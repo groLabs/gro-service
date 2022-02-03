@@ -92,10 +92,12 @@ const preload = async (
     }
 };
 
-/// @notice Delete transfers & approvals for a given time interval
+/// @notice Delete transfers and/or approvals for a given time interval
 /// @dev    Date format 'MM/DD/YYYY' has to be set to compare dates <= or >= (won't work with 'DD/MM/YYYY')
 /// @param  fromDate The start date to delete data
 /// @param  toDdate The end date to delete data
+/// @param  gn The Global network (see types.ts)
+/// @param  lt The Load type (see types.ts)
 /// @return True if no exceptions found; false otherwise
 const remove = async (
     fromDate: string,
@@ -249,8 +251,8 @@ const loadTransfers = async (
 
             if (res.every(Boolean)) {
                 if (await remove(fromDate, toDate, gn, lt))
-                    if (await loadUserTransfers(fromDate, toDate, null))
-                        if (await loadUserApprovals(fromDate, toDate, null))
+                    if (await loadUserTransfers(fromDate, toDate, null, gn, lt))
+                        if (await loadUserApprovals(fromDate, toDate, null, gn, lt))
                             return true;
             } else {
                 showError(
