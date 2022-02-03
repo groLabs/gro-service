@@ -147,11 +147,20 @@ async function parseMultiClaim(account, endBlock) {
                 poolsTotalResult[pidString] = BigNumber.from(0);
             }
             // temporary set the instantUnlockPercent to 3000, but it may changed
-            let distAmount = amounts[i]
+            let distAmount
+            try {
+                distAmount = amounts[i]
                 .mul(BigNumber.from(3000))
                 .div(BigNumber.from(10000));
+            } catch {
+                distAmount = BigNumber.from(0);
+            }
             if (vest) {
-                distAmount = amounts[i];
+                if (amounts[i] === undefined) {
+                    distAmount = BigNumber.from(0);
+                } else {
+                    distAmount = amounts[i];
+                }
             }
             poolsTotalResult[pidString] =
                 poolsTotalResult[pidString].add(distAmount);
@@ -274,7 +283,7 @@ async function calculateUserBalanceInPools(account) {
     for (let i = 0; i < pools.length; i += 1) {
         if (Number(i).toString() !== pwrdPool) {
             const { pid, tvl } = pools[i];
-            const usdAmount = balancesPercent[pid].multipliedBy(new BN(tvl));
+            const usdAmount = new BN(balancesPercent[pid]).multipliedBy(new BN(tvl));
             result[pid] = usdAmount.toFixed(2);
             balanceTotal = balanceTotal.plus(usdAmount);
         } else {
