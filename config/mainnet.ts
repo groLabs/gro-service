@@ -8,9 +8,7 @@ export const airdrop = {
     files: [
         'airdrop-0-proofs.json',
         'airdrop-1-proofs.json',
-        'airdrop-2-proofs.json',
-        'airdrop-3-proofs.json',
-        'airdrop-4-proofs.json',
+        'airdrop-2-proofs.json'
     ],
 };
 export const gro_gate = {

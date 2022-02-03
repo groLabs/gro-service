@@ -78,9 +78,9 @@
         ],
         "AVAXDAIVault_v1_7": [
             {
-                "address": "0xA36fb886B458688C05616DbDB819Eb34b6FbbBa3",
-                "deployedBlock": 9754161,
-                "startBlock": 9754161,
+                "address": "0x6063597B9356B246E706Fd6A48C780F897e3ef55",
+                "deployedBlock": 10364122,
+                "startBlock": 10364122,
                 "abiVersion": "6270d2c",
                 "endBlock": null,
                 "tag": "AVAX",
@@ -97,9 +97,9 @@
         ],
         "AVAXUSDCVault_v1_7": [
             {
-                "address": "0x2388977399CE436Cf902d43A75C6d078898c0F33",
-                "deployedBlock": 9753847,
-                "startBlock": 9753847,
+                "address": "0x2Eb05cfFA24309b9aaf300392A4D8Db745d4E592",
+                "deployedBlock": 10363699,
+                "startBlock": 10363699,
                 "abiVersion": "6270d2c",
                 "endBlock": null,
                 "tag": "AVAX",
@@ -116,9 +116,9 @@
         ],
         "AVAXUSDTVault_v1_7": [
             {
-                "address": "0x8dbd821B96498a8a7a05024b23D6b58c8a0DF98C",
-                "deployedBlock": 9754083,
-                "startBlock": 9754083,
+                "address": "0x6EF44077a1F5e10cDfcCc30EFb7dCdb1d5475581",
+                "deployedBlock": 10363976,
+                "startBlock": 10363976,
                 "abiVersion": "6270d2c",
                 "endBlock": null,
                 "tag": "AVAX",
@@ -135,9 +135,9 @@
         ],
         "AVAXDAIStrategy_v1_7": [
             {
-                "address": "0x35322B1ebcfCC5533fcb2B55a06d2c63865F393f",
-                "deployedBlock": 9754180,
-                "startBlock": 9754180,
+                "address": "0x670EA3f675a332D561d5a9ECaa16c097Ac0b0ba5",
+                "deployedBlock": 10364128 ,
+                "startBlock": 10364128 ,
                 "abiVersion": "6270d2c",
                 "tag": "AVAX",
                 "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
@@ -153,9 +153,9 @@
         ],
         "AVAXUSDCStrategy_v1_7": [
             {
-                "address": "0x85b1d53B528991f46D83bA321D02d07FDC47FbC3",
-                "deployedBlock": 9753860,
-                "startBlock": 9753860,
+                "address": "0xa797C615FC49a39363FdFA3398E8D524756E9a13",
+                "deployedBlock": 10363748,
+                "startBlock": 10363748,
                 "abiVersion": "6270d2c",
                 "tag": "AVAX",
                 "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
@@ -171,9 +171,9 @@
         ],
         "AVAXUSDTStrategy_v1_7": [
             {
-                "address": "0x17A5D3e919166134E511A242015A67B06ef1D319",
-                "deployedBlock": 9754110,
-                "startBlock": 9754110,
+                "address": "0x370e6e9cd875db40293f9dba86361ca7ff399b63",
+                "deployedBlock": 10363984,
+                "startBlock": 10363984,
                 "abiVersion": "6270d2c",
                 "tag": "AVAX",
                 "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
