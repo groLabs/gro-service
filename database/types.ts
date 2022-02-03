@@ -5,6 +5,13 @@ enum GlobalNetwork {
     ALL = 100,
 }
 
+enum LoadType {
+    UNKNOWN = 0,
+    TRANSFERS = 1,
+    APPROVALS = 2,
+    ALL = 100,
+}
+
 enum NetworkName {
     UNKNOWN = 'unknown',
     MAINNET = 'mainnet',
@@ -139,6 +146,7 @@ export {
     TokenId,
     Feature,
     Transfer,
+    LoadType,
     TokenName,
     NetworkId,
     SqlCommand,

@@ -8,7 +8,7 @@ import {
     loadUserTransfers,
     loadTmpUserTransfers
 } from '../loader/loadUserTransfers';
-// import { loadUserApprovals, loadTmpUserApprovals } from '../loader/loadUserApprovals';
+import { loadUserApprovals, loadTmpUserApprovals } from '../loader/loadUserApprovals';
 import { loadUserBalances } from '../loader/loadUserBalances';
 import { loadUserNetReturns } from '../loader/loadUserNetReturns';
 import { QUERY_ERROR } from '../constants';
@@ -42,7 +42,7 @@ const preloadCache = async (account: string) => {
             transfers,
             maxTransferDate,
         ] = await Promise.all([
-            query('delete_user_approvals_tmp_cache.sql', params),
+            query('delete_user_approvals_cache_tmp.sql', params),
             query('delete_user_deposits_cache.sql', params),
             query('delete_user_withdrawals_cache.sql', params),
             query('delete_user_approvals_cache.sql', params),
@@ -72,22 +72,32 @@ const preloadCache = async (account: string) => {
             .utc(maxTransferDate.rows[0].max_transfer_date)
             .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
             .add(1, 'days');
+        let toDate = moment.utc();
 
 
         // Retrieve blocks from dates to be processed
-        //return (await findBlockByDate(fromDate, true)).block;
         const [
             _fromBlock,
+            _toBlock,
             _fromBlockAvax,
+            _toBlockAvax,
         ] = await Promise.all([
             findBlockByDate(fromDate, true),
+            findBlockByDate(toDate, true),
             findBlockByDateAvax(fromDate, true),
+            findBlockByDateAvax(toDate, true),
         ]);
+
         const fromBlock = _fromBlock.block;
-        const fromBlockAvax: number = _fromBlockAvax.block;
+        const toBlock = _toBlock.block;
+        const fromBlockAvax = _fromBlockAvax.block;
+        const toBlockAvax = _toBlockAvax.block;
+
         return [
             fromBlock,
-            fromBlockAvax
+            toBlock,
+            fromBlockAvax,
+            toBlockAvax,
         ];
 
     } catch (err) {
@@ -98,92 +108,89 @@ const preloadCache = async (account: string) => {
     }
 }
 
-//TODO1: ***** Function to return the AVAX calls per version (instead of repeating code)
+
 //TODO2: ***** Use vault end dates, so no need to retrieve events for contracts that have been migrated
 const loadCache = async (account: string): Promise<boolean> => {
     try {
         const [
             fromBlock,
+            toBlock,
             fromBlockAvax,
+            toBlockAvax,
         ] = await preloadCache(account);
 
-        if (fromBlock > 0) {
-            const res = await Promise.all([
-                // Ethereum
-                loadTmpUserTransfers(GN.ETHEREUM, Ver.NO_VERSION, fromBlock, 'latest', Transfer.DEPOSIT, account),
-                loadTmpUserTransfers(GN.ETHEREUM, Ver.NO_VERSION, fromBlock, 'latest', Transfer.WITHDRAWAL, account),
-                loadTmpUserTransfers(GN.ETHEREUM, Ver.NO_VERSION, fromBlock, 'latest', Transfer.TRANSFER_GVT_OUT, account),
-                loadTmpUserTransfers(GN.ETHEREUM, Ver.NO_VERSION, fromBlock, 'latest', Transfer.TRANSFER_GVT_IN, account),
-                loadTmpUserTransfers(GN.ETHEREUM, Ver.NO_VERSION, fromBlock, 'latest', Transfer.TRANSFER_PWRD_OUT, account),
-                loadTmpUserTransfers(GN.ETHEREUM, Ver.NO_VERSION, fromBlock, 'latest', Transfer.TRANSFER_PWRD_IN, account),
-                loadTmpUserTransfers(GN.ETHEREUM, Ver.NO_VERSION, fromBlock, 'latest', Transfer.TRANSFER_GRO_IN, account),
-                loadTmpUserTransfers(GN.ETHEREUM, Ver.NO_VERSION, fromBlock, 'latest', Transfer.TRANSFER_GRO_OUT, account),
-                // AVAX vaults v1.0
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_0, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDCe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_0, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDCe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_0, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_0, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_OUT, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_0, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDTe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_0, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDTe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_0, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_0, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_OUT, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_0, fromBlockAvax, 'latest', Transfer.DEPOSIT_DAIe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_0, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_DAIe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_0, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_0, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
-                // AVAX vaults v1.5
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDCe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDCe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_OUT, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDTe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDTe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_OUT, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.DEPOSIT_DAIe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_DAIe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_5, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
-                // AVAX vaults v1.6
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDCe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDCe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_OUT, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDTe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDTe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_OUT, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.DEPOSIT_DAIe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_DAIe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_6, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
-                // AVAX vaults v1.7
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDCe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDCe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.TRANSFER_USDCe_OUT, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.DEPOSIT_USDTe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_USDTe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.TRANSFER_USDTe_OUT, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.DEPOSIT_DAIe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.WITHDRAWAL_DAIe, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_IN, account),
-                loadTmpUserTransfers(GN.AVALANCHE, Ver.VAULT_1_7, fromBlockAvax, 'latest', Transfer.TRANSFER_DAIe_OUT, account),
-            ]);
+        // Number of Avax contract versions
+        const numAvaxVersions = (Object.keys(Ver).length / 2) - 1;
 
-            //TODO: when errors retrieving deposits, withdrawals or transfers in personalUtil->getTransferEvents()
-            // (eg: Message: TypeError: Cannot read property 'PowerDollar' of undefined), it returns true!! (should be false)
+        if (fromBlock > 0) {
+
+            let result = [];
+
+            // Ethereum transfers
+            result.push(...[...Array(8)].map((_, i) => loadTmpUserTransfers(
+                GN.ETHEREUM,
+                Ver.NO_VERSION,
+                fromBlock,
+                toBlock,
+                i + 1,
+                account,
+                true))
+            );
+
+            // Ethereum approvals
+            result.push(
+                loadTmpUserApprovals(
+                    GN.ETHEREUM,
+                    Ver.NO_VERSION,
+                    fromBlock,
+                    toBlock,
+                    Transfer.DEPOSIT,
+                    account,
+                    true)
+            );
+
+
+            // Load transfers types 500 to 511 from Avalanche (see types.ts->enum Transfer)
+            // for every vault version
+            for (let version = 1; version <= numAvaxVersions; version++) {
+                result.push(...[...Array(12)].map((_, i) => loadTmpUserTransfers(
+                    GN.AVALANCHE,
+                    version,
+                    fromBlockAvax,
+                    toBlockAvax,
+                    i + 500,
+                    account,
+                    true))
+                );
+            }
+
+            // Load approvals from Avalanche for every vault version
+            for (let version = 1; version <= numAvaxVersions; version++) {
+                result.push(loadTmpUserApprovals(
+                    GN.AVALANCHE,
+                    version,
+                    fromBlockAvax,
+                    toBlockAvax,
+                    Transfer.DEPOSIT_USDCe,
+                    account,
+                    true)
+                );
+            }
+
+
+            // //TODO: when errors retrieving deposits, withdrawals or transfers in personalUtil->getTransferEvents()
+            // // (eg: Message: TypeError: Cannot read property 'PowerDollar' of undefined), it returns true!! (should be false)
 
             const now = moment.utc().format('DD/MM/YYYY').toString();
 
+            const res = await Promise.all(result);
+
             if (res.every(Boolean)) {
-                //if (await loadTmpUserApprovals(fromBlock, 'latest', account))
                 if (await loadUserTransfers(null, null, account))
-                    //if (await loadUserApprovals(null, null, account))
-                    if (await loadUserBalances(now, now, account, ''))
-                        if (await loadUserNetReturns(account))
-                            return true;
+                    if (await loadUserApprovals(null, null, account))
+                        if (await loadUserBalances(now, now, account, ''))
+                            if (await loadUserNetReturns(account))
+                                return true;
             } else {
                 showError(
                     'etlPersonalStatsCache.ts->loadCache()',

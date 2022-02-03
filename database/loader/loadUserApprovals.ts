@@ -5,16 +5,12 @@ import {
     isPlural,
     getTokenInfoFromAddress,
 } from '../common/globalUtil';
-import { transferType } from '../common/personalUtil';
 import { ICall } from '../interfaces/ICall';
 import { getApprovalEvents } from '../listener/getApprovalEvents';
-// import { parseApprovalEvents } from '../parser/personalStatsApprovalsParser';
 import { personalStatsApprovalsParser } from '../parser/personalStatsApprovalsParser'
 import { QUERY_ERROR } from '../constants';
 import {
-    TokenId,
     Transfer,
-    TokenName,
     GlobalNetwork,
     ContractVersion,
 } from '../types';
@@ -22,14 +18,14 @@ import {
     showInfo,
     showError,
 } from '../handler/logHandler';
+import { getProviderAvax } from '../common/globalUtil';
+import { getCoinApprovalFilters, } from '../../common/filterGenerateTool';
+import { getAvaxApprovalEventFilters } from '../listener/getApprovalFiltersAvax';
+import { isContractDeployed } from './loadUserTransfers';
 
-//TEST
-import {
-    getCoinApprovalFilters,
-} from '../../common/filterGenerateTool';
 
-/// @notice Loads approvals into USER_STD_FACT_APPROVALS
-///         Data is sourced from USER_STD_TMP_APPROVALS (full load w/o filters)
+/// @notice Loads approvals into USER_APPROVALS
+///         Data is sourced from USER_APPROVALS_TMP (full load w/o filters)
 ///         All blocks from such transactions are stored into ETH_BLOCKS (incl. timestamp)
 ///         Latest block & time processed are stored into SYS_USER_LOADS
 /// @param fromDate
@@ -44,9 +40,9 @@ const loadUserApprovals = async (
     try {
         // Add new blocks into ETH_BLOCKS (incl. block timestamp)
         if (await loadEthBlocks('loadUserApprovals', account)) {
-            // Insert approvals into USER_APPROVALS or USER_APPROVALS_CACHE
+            // Insert approvals
             const q = (account)
-                ? 'insert_user_cache_fact_approvals.sql'
+                ? 'insert_user_approvals_cache.sql'
                 : 'insert_user_approvals.sql';
             const params = (account)
                 ? [account]
@@ -54,8 +50,11 @@ const loadUserApprovals = async (
             const res = await query(q, params);
             if (res.status === QUERY_ERROR)
                 return false;
-            const numTransfers = res.rowCount;
-            showInfo(`${account ? 'CACHE: ' : ''}${numTransfers} record${isPlural(numTransfers)} added into USER_APPROVALS`);
+            if (!account) {
+                const numTransfers = res.rowCount;
+                const table = 'added into USER_APPROVALS';
+                showInfo(`${numTransfers} record${isPlural(numTransfers)} ${table}`);
+            }
         } else {
             return false;
         }
@@ -76,73 +75,99 @@ const loadUserApprovals = async (
 const loadTmpUserApprovals = async (
     network: GlobalNetwork,
     contractVersion: ContractVersion,
-    fromBlock: number,
+    _fromBlock: number,
     toBlock: any,
     side: Transfer,
     account: string,
+    isCacheLoad: boolean,
 ): Promise<boolean> => {
     try {
+        let approvalFilters;
 
-        // Get all approval filters (for GVT, PWRD, USDC, USDT, DAI)
-        const approvalFilters = await getCoinApprovalFilters(
-            'default',
+        const [
+            isDeployed,
             fromBlock,
-            toBlock,
-            account
-        );
+        ] = isContractDeployed(network, contractVersion, side, _fromBlock, isCacheLoad);
 
-        //TODO: same but for AVAX
+        if (isDeployed) {
 
-        for (const approvalFilter of approvalFilters) {
+            const isAvax = side >= 500 && side < 1000 ? true : false;
 
-            const [tokenId, tokenName] = getTokenInfoFromAddress(approvalFilter.filter.address);
-            let rows = 0;
-
-            const logs = await getApprovalEvents(
-                approvalFilter,
-                side,
-            );
-
-            if (logs.status === QUERY_ERROR) {
-                return false;
+            if (isAvax) {
+                // Get all AVAX approval filters (for USDCe, USDTe, DAIe)
+                approvalFilters = getAvaxApprovalEventFilters(
+                    account,
+                    contractVersion,
+                    getProviderAvax(),
+                    fromBlock,
+                    toBlock,
+                );
             } else {
-                for (let i = 0; i < logs.data.length; i++) {
+                // Get all ETH approval filters (for GVT, PWRD, USDC, USDT, DAI)
+                approvalFilters = await getCoinApprovalFilters(
+                    'default',
+                    fromBlock,
+                    toBlock,
+                    account
+                );
+            }
 
-                    const result: ICall = await personalStatsApprovalsParser(
-                        contractVersion,
-                        network,
-                        tokenId,
-                        logs.data[i],
-                        side,
-                        account
-                    );
+            for (const approvalFilter of approvalFilters) {
 
-                    if (result.status === QUERY_ERROR)
-                        return false;
+                const [tokenId, tokenName] = getTokenInfoFromAddress(approvalFilter.filter.address);
+                let rows = 0;
 
-                    // Convert params from object to array
-                    let params = [];
-                    for (const item of result.data)
-                        params.push(Object.values(item));
+                const logs = await getApprovalEvents(
+                    approvalFilter,
+                    side,
+                );
 
-                    for (const param of params) {
+                if (logs.status === QUERY_ERROR) {
+                    return false;
+                } else {
+                    for (let i = 0; i < logs.data.length; i++) {
 
-                        const res = await query(
-                            (account)
-                                ? 'insert_user_approvals_tmp_cache.sql'
-                                : 'insert_user_approvals_tmp.sql'
+                        const result: ICall = await personalStatsApprovalsParser(
+                            contractVersion,
+                            network,
+                            tokenId,
+                            logs.data[i],
+                            side,
+                        );
 
-                            , param);
-
-                        if (res.status === QUERY_ERROR)
+                        if (result.status === QUERY_ERROR)
                             return false;
 
-                        rows += res.rowCount;
+                        // Convert params from object to array
+                        let params = [];
+                        for (const item of result.data)
+                            params.push(Object.values(item));
+
+                        for (const param of params) {
+
+                            const res = await query(
+                                (account)
+                                    ? 'insert_user_approvals_cache_tmp.sql'
+                                    : 'insert_user_approvals_tmp.sql'
+
+                                , param);
+
+                            if (res.status === QUERY_ERROR)
+                                return false;
+
+                            rows += res.rowCount;
+                        }
                     }
                 }
+                if (!account && rows > 0) {
+                    const info = `${rows} ${tokenName} approval${isPlural(rows)}`;
+                    showInfo(`${info} [${ContractVersion[contractVersion]}] added into USER_APPROVALS_TMP`);
+                }
+
             }
-            if (!account)
-                showInfo(`${rows} ${tokenName} approval${isPlural(rows)} added into USER_APPROVALS_TMP`);
+        } else {
+            // not deployed. No need to load
+            console.log(`Not deployed | side: ${side}`);
         }
 
         return true;
@@ -150,7 +175,7 @@ const loadTmpUserApprovals = async (
     } catch (err) {
         showError(
             'loadUserApprovals.ts->loadTmpUserApprovals()',
-            `[blocks: ${fromBlock} to: ${toBlock}]`);
+            `[blocks: ${_fromBlock} to: ${toBlock}]: ${err}`);
         return false;
     }
 }

@@ -9,7 +9,7 @@ import { getTransferEvents } from '../listener/getTransferEvents';
 import { ICall } from '../interfaces/ICall';
 import {
     isPlural,
-    getNetwork
+    getNetwork,
 } from '../common/globalUtil'
 import { personalStatsTransfersParser } from '../parser/personalStatsTransfersParser';
 import {
@@ -29,8 +29,8 @@ import {
 } from '../handler/logHandler';
 
 
-/// @notice - Loads deposits/withdrawals into USER_STD_FACT_TRANSFERS
-///         - Data is sourced from USER_STD_TMP_DEPOSITS & USER_STD_TMP_TRANSACTIONS (full load w/o filters)
+/// @notice - Loads deposits/withdrawals into USER_TRANSFERS
+///         - Data is sourced from USER_DEPOSITS_TMP & USER_WITHDRAWALS_TMP (full load w/o filters)
 ///         - All blocks from such transactions are stored into ETH_BLOCKS (incl. timestamp)
 ///         - Load date is stored into SYS_USER_LOADS
 /// @param  fromDate Start date to load transfers
@@ -55,10 +55,9 @@ const loadUserTransfers = async (
             const res = await query(q, params);
             if (res.status === QUERY_ERROR)
                 return false;
-
             if (!account) {
                 const numTransfers = res.rowCount;
-                const table = `added into ${account ? 'USER_TRANSFERS_CACHE' : 'USER_TRANSFERS'}`;
+                const table = 'added into USER_TRANSFERS';
                 showInfo(`${numTransfers} record${isPlural(numTransfers)} ${table}`);
             }
         } else {
@@ -69,7 +68,7 @@ const loadUserTransfers = async (
             return true;
         } else {
             const res = await loadTableUpdates('USER_TRANSFERS', fromDate, toDate);
-            return (res) ? true : false;
+            return res ? true : false;
         }
     } catch (err) {
         showError('loadUserTransfers.ts->loadUserTransfers()', err);
@@ -78,8 +77,8 @@ const loadUserTransfers = async (
 }
 
 //TBR
-/// @notice - Loads deposits & withdrawals into temporary tables USER_STD_TMP_DEPOSITS 
-///         & USER_STD_TMP_WITHDRAWALS respectively
+/// @notice - Loads deposits & withdrawals into temporary tables USER_DEPOSITS_TMP 
+///         & USER_WITHDRAWALS_TMP
 ///         - Amount for GVT & PWRD deposits/withdrawals is retrieved from its TRANSFER event
 ///         - Value for GTO, USDCe, USDTe & DAIe is retrieve by multiplying amount x pricePerShare
 /// @dev    - Truncates always temporary tables beforehand even if no data is to be processed,
@@ -98,12 +97,13 @@ const loadTmpUserTransfers = async (
     toBlock: number | string,
     side: Transfer,
     account: string,
+    isCacheLoad: boolean,
 ): Promise<boolean> => {
     try {
         const [
             isDeployed,
             fromBlock
-        ] = isContractDeployed(network, contractVersion, side, _fromBlock);
+        ] = isContractDeployed(network, contractVersion, side, _fromBlock, isCacheLoad);
 
         if (isDeployed) {
             const logs: ICall = await getTransferEvents(
@@ -126,7 +126,7 @@ const loadTmpUserTransfers = async (
                         side,
                         account
                     );
-                    
+
                     if (result.status === QUERY_ERROR)
                         return false;
 
@@ -150,11 +150,14 @@ const loadTmpUserTransfers = async (
                         if (!res)
                             return false;
 
-                        if (!account)
-                            showInfo(`${rows} ${transferType(side)}${isPlural(rows)} added into ${(isInflow(side))
+                        if (!account) {
+                            const info = `${rows} ${transferType(side)}${isPlural(rows)} [${ContractVersion[contractVersion]}]`
+                            showInfo(`${info} added into ${(isInflow(side))
                                 ? 'USER_DEPOSITS_TMP'
                                 : 'USER_WITHDRAWALS_TMP'
                                 }`);
+                        }
+
                     }
                 }
             }
@@ -171,6 +174,7 @@ const loadTmpUserTransfers = async (
                                 ? 'Vault 1.7'
                                 : ''} -> No data load required`);
         }
+
         return true;
 
     } catch (err) {
@@ -183,6 +187,11 @@ const loadTmpUserTransfers = async (
 }
 
 ///@notice
+///     For cache load (personalStats)
+///     Case 1: block < deployment block => return true and deployment block as fromBlock
+///     Case 2: block >= deployment block => return true & block as fromBlock
+///
+///     For daily loads
 ///     Case 1: block >= block at start day of deplyment date but 
 ///             block <= deployment block => return true & deployment block as new fromBlock,
 ///             otherwise, this day would be incorrectly exluded from the loads
@@ -192,16 +201,26 @@ const loadTmpUserTransfers = async (
 const checkGenesisDate = (
     block: number,
     startOfDayBlock: number,
-    deploymentBlock: number
+    deploymentBlock: number,
+    isCacheLoad: boolean,
 ) => {
-    if ((block >= startOfDayBlock - 1)
-        && (block < deploymentBlock)) {
-        return [true, deploymentBlock];
-    } else if (block > deploymentBlock) {
-        return [true, block];
+    if (isCacheLoad) {
+        if (block < deploymentBlock) {
+            return [true, deploymentBlock];
+        } else {
+            return [true, block];
+        }
     } else {
-        return [false, block];
+        if ((block >= startOfDayBlock - 1)
+            && (block < deploymentBlock)) {
+            return [true, deploymentBlock];
+        } else if (block > deploymentBlock) {
+            return [true, block];
+        } else {
+            return [false, block];
+        }
     }
+
 }
 
 //@notice:  Determine if data needs to be loaded depending on the date of SC deployments
@@ -209,7 +228,8 @@ const isContractDeployed = (
     network: GlobalNetwork,
     contractVersion: ContractVersion,
     side: Transfer,
-    block: number
+    block: number,
+    isCacheLoad: boolean
 ) => {
     const networkId = getNetwork(network).id;
 
@@ -226,6 +246,7 @@ const isContractDeployed = (
                     block,
                     GENESIS.ETHEREUM.GVT_START_OF_DAY_BLOCK,
                     GENESIS.ETHEREUM.GVT_DEPLOYMENT_BLOCK,
+                    isCacheLoad,
                 );
             case Transfer.TRANSFER_GRO_IN:
             case Transfer.TRANSFER_GRO_OUT:
@@ -233,6 +254,7 @@ const isContractDeployed = (
                     block,
                     GENESIS.ETHEREUM.GRO_START_OF_DAY_BLOCK,
                     GENESIS.ETHEREUM.GRO_DEPLOYMENT_BLOCK,
+                    isCacheLoad,
                 );
             default:
                 showError(
@@ -249,24 +271,28 @@ const isContractDeployed = (
                 block,
                 GENESIS.AVALANCHE.VAULTS_1_0_START_OF_DAY_BLOCK,
                 GENESIS.AVALANCHE.VAULT_USDC_1_0_DEPLOYMENT_BLOCK,
+                isCacheLoad,
             );
         else if (contractVersion === ContractVersion.VAULT_1_5)
             return checkGenesisDate(
                 block,
                 GENESIS.AVALANCHE.VAULTS_1_5_START_OF_DAY_BLOCK,
                 GENESIS.AVALANCHE.VAULT_USDT_1_5_DEPLOYMENT_BLOCK,
+                isCacheLoad,
             );
         else if (contractVersion === ContractVersion.VAULT_1_6)
             return checkGenesisDate(
                 block,
                 GENESIS.AVALANCHE.VAULTS_1_6_START_OF_DAY_BLOCK,
                 GENESIS.AVALANCHE.VAULT_USDT_1_6_DEPLOYMENT_BLOCK,
+                isCacheLoad,
             );
         else if (contractVersion === ContractVersion.VAULT_1_7)
             return checkGenesisDate(
                 block,
                 GENESIS.AVALANCHE.VAULTS_1_7_START_OF_DAY_BLOCK,
                 GENESIS.AVALANCHE.VAULT_USDT_1_7_DEPLOYMENT_BLOCK,
+                isCacheLoad,
             );
         else {
             showError(
@@ -285,4 +311,5 @@ const isContractDeployed = (
 export {
     loadUserTransfers,
     loadTmpUserTransfers,
+    isContractDeployed,
 };

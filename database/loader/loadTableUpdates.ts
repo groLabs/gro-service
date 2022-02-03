@@ -42,7 +42,7 @@ const loadTableUpdates = async (
                         return false;
                     } else if (transfers.rowCount === 0) {
                         // Insert 0 records to allow personalStats cache know the latest transfers
-                        // loaded even one day there weren't events.
+                        // loaded even one day there weren't transfers.
                         const params = [
                             tableName,
                             1,
