@@ -12,6 +12,8 @@ import { getEvents } from '../../common/logFilter';
 
 const logger = require('../statsLogger');
 
+const network = getConfig('blockchain.network') as string;
+
 const rpccURL =
     getConfig('avalanche.rpc_url', false) ||
     'https://api.avax.network/ext/bc/C/rpc';
@@ -135,14 +137,31 @@ const RISK_FREE_RATE = BigNumber.from(2400);
 
 const BLOCKS_OF_3DAYS = 130000;
 const BLOCKS_OF_12HOURS = 2200;
-const START_TIME_STAMP = [
-    1638707119, 1638549778, 1638549778, 1639664984, 1639664984, 1639664984,
-    1641855405, 1641855405, 1641855405, 1643046910, 1643046910, 1643046910,
-];
-const START_BLOCK = [
-    7838860, 7759709, 7759709, 8317127, 8317127, 8317127, 9402752, 9402752,
-    9402752, 10002948, 10002948, 10002948,
-];
+
+let START_TIME_STAMP = []
+let START_BLOCK = []
+if (network === 'ropsten') {
+    START_TIME_STAMP = [
+        1638707119, 1638549778, 1638549778, 1639664984, 1639664984, 1639664984,
+        1641855405, 1641855405, 1641855405, 1643046910, 1643046910, 1643046910,
+    ];
+    START_BLOCK = [
+        7838860, 7759709, 7759709, 8317127, 8317127, 8317127, 9402752, 9402752,
+        9402752, 10002948, 10002948, 10002948,
+    ];
+
+} else {
+    START_TIME_STAMP = [
+        1638707119, 1638549778, 1638549778, 1639664984, 1639664984, 1639664984,
+        1641855405, 1641855405, 1641855405, 1643760427, 1643760427, 1643760427,
+    ];
+    START_BLOCK = [
+        7838860, 7759709, 7759709, 8317127, 8317127, 8317127, 9402752, 9402752,
+        9402752, 10364128, 10364128, 10364128,
+    ];
+
+}
+
 const providerKey = 'stats_gro';
 const positionCache = {};
 
