@@ -32,14 +32,7 @@ CREATE TABLE gro."USER_APPROVALS_CACHE_TMP" (
     "spender_address" CHARACTER VARYING (42) NULL,
     "amount" NUMERIC (20, 8) NULL,
     "value" NUMERIC (20, 8) NULL,
-    "creation_date" TIMESTAMP (6) NULL,
-    CONSTRAINT "USER_APPROVALS_CACHE_TMP_pkey" PRIMARY KEY (
-        "block_number",
-        "network_id",
-        "tx_hash",
-        "token_id",
-        "sender_address"
-    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+    "creation_date" TIMESTAMP (6) NULL
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."USER_APPROVALS_CACHE_TMP" OWNER to postgres;
