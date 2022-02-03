@@ -24,7 +24,7 @@ SELECT a."block_number",
     a."spender_address",
     sum(a."amount"),
     sum(a."value"),
-    a."creation_date"
+    now()
 FROM gro."USER_APPROVALS_CACHE_TMP" a
     LEFT JOIN gro."ETH_BLOCKS" b ON a."block_number" = b."block_number"
     AND a."network_id" = b."network_id"
@@ -38,4 +38,4 @@ GROUP BY a."block_number",
     a."version_id",
     a."sender_address",
     a."spender_address",
-    a."creation_date";
+    now();
