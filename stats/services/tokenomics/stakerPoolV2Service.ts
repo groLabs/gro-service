@@ -147,23 +147,14 @@ async function parseMultiClaim(account, endBlock) {
                 poolsTotalResult[pidString] = BigNumber.from(0);
             }
             // temporary set the instantUnlockPercent to 3000, but it may changed
-            let distAmount
-            try {
-                distAmount = amounts[i]
-                .mul(BigNumber.from(3000))
-                .div(BigNumber.from(10000));
-            } catch {
-                distAmount = BigNumber.from(0);
-            }
+            let distAmount = amounts
+            .mul(BigNumber.from(3000))
+            .div(BigNumber.from(10000));
             if (vest) {
-                if (amounts[i] === undefined) {
-                    distAmount = BigNumber.from(0);
-                } else {
-                    distAmount = amounts[i];
-                }
+                distAmount = amounts;
             }
             poolsTotalResult[pidString] =
-                poolsTotalResult[pidString].add(distAmount);
+            poolsTotalResult[pidString].add(distAmount);
             poolsTotalResult.all = poolsTotalResult.all.add(distAmount);
         }
     });
@@ -183,7 +174,6 @@ async function getPoolsClaimTotal(account, endBlock) {
         const multiValue = multiClaimTotal[pid] || BigNumber.from(0);
         poolsTotalResult[pid] = singleValue.add(multiValue);
     });
-
     return poolsTotalResult;
 }
 
