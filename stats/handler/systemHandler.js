@@ -387,8 +387,8 @@ async function getMegaExposureStats(blockTag, systemStats) {
     const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
     const { vaultsAddress: adapterAddresses, contracts: vaultStrategies } =
         vaultAndStrateyInfo;
-    const tokens = ["TESTTOKEN1", "TESTTOKEN2", "TESTTOKEN3"]
-    const protocols = ["TESTPROTOCOL1", "TESTPROTOCOL2", "TESTPROTOCOL3"]
+    const tokens = ['Frax', 'oUSD', 'mUSD'];
+    const protocols = ['Frax', 'oUSD', 'mUSD'];
     for (let i = 0; i < vaultsStats.length - 1; i += 1) {
         const vault = vaultsStats[i];
         const { contract: vaultAdaptor, contractInfo: vaultAdaptorInfo } =
