@@ -20,7 +20,7 @@ FROM (
         FROM gro."USER_TRANSFERS" t
             LEFT JOIN gro."MD_TOKENS" tok ON t."token_id" = tok."token_id"
         WHERE t."user_address" = $1
-        AND t."token_id" NOT IN (0,3)
+            AND t."token_id" IN (1, 2, 4, 5, 6)
         UNION ALL
         SELECT tc."transfer_id" as "transfer_id",
             tc."token_id" as "token_id",
@@ -34,5 +34,5 @@ FROM (
         FROM gro."USER_TRANSFERS_CACHE" tc
             LEFT JOIN gro."MD_TOKENS" tok ON tc."token_id" = tok."token_id"
         WHERE tc."user_address" = $1
-        AND tc."token_id" NOT IN (0,3)
+            AND tc."token_id" IN (1, 2, 4, 5, 6)
     ) tt;

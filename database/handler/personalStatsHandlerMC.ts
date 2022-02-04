@@ -4,16 +4,17 @@ import {
     errorObj,
     getNetwork,
 } from '../common/globalUtil';
-import { getConfig } from '../../common/configUtil';
 import { showError } from '../handler/logHandler';
+import { getConfig } from '../../common/configUtil';
 import {
+    MAX_NUMBER,
     QUERY_ERROR,
-    QUERY_SUCCESS
+    QUERY_SUCCESS,
 } from '../constants';
 import {
     Transfer,
+    GlobalNetwork as GN,
     ContractVersion as CV,
-    GlobalNetwork as GN
 } from '../types';
 import { ICall } from '../interfaces/ICall';
 const launchTimeEth = getConfig('blockchain.start_timestamp');
@@ -388,7 +389,6 @@ const getNetReturns = async (account: string): Promise<ICall> => {
                 isUser = false;
             }
 
-
             return {
                 "status": QUERY_SUCCESS,
                 "data": {
@@ -440,6 +440,65 @@ const getNetReturns = async (account: string): Promise<ICall> => {
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getNetReturns()', err);
         return errorObj(showErrDesc(err));
+
+    }
+}
+
+const getApprovals = async (account: string): Promise<ICall> => {
+    try {
+
+        const approvals_eth = [];
+        const approvals_avax = [];
+
+        const q = 'select_fe_user_approvals.sql';
+        const approvals = await query(q, [account]);
+
+        if (approvals.status !== QUERY_ERROR) {
+
+            for (const item of approvals.rows) {
+
+                if (!item.token
+                    || !item.hash
+                    || !item.coin_amount)
+                    return errorObj(`Missing data in DB [approvals] for user ${account}`);
+
+                // Convert -1 values from the DB into infinity (or MAX_NUMBER)
+                if (item.coin_amount < 0) {
+                    item.coin_amount = MAX_NUMBER.toString();
+                    item.usd_amount = MAX_NUMBER.toString();
+                }
+
+                // Numbers to strings
+                item.block_number = item.block_number.toString();
+                item.timestamp = item.timestamp.toString();
+
+                switch (parseInt(item.network_id)) {
+                    case getNetwork(GN.ETHEREUM).id:
+                        approvals_eth.push(item);
+                        break;
+                    case getNetwork(GN.AVALANCHE).id:
+                        approvals_avax.push(item);
+                        break;
+                    default:
+                        const msg = `Unrecognized network_id (${item.network_id})`;
+                        showError('personalStatsHandlerMC.ts->getApprovals()', msg);
+                        return errorObj(msg);
+                }
+            }
+
+            return {
+                "status": QUERY_SUCCESS,
+                "data": {
+                    "ethereum": {
+                        "approvals": approvals_eth,
+                    },
+                    "avalanche": {
+                        "approvals": approvals_avax,
+                    },
+                }
+            }
+        }
+    } catch (err) {
 
     }
 }
@@ -496,19 +555,28 @@ const getPersonalStatsMC = async (account: string) => {
     try {
         const [
             transfers,
+            approvals,
             balances,
-            returns
+            returns,
         ] = await Promise.all([
             getTransfers(account),
+            getApprovals(account),
             getNetBalances(account),
             getNetReturns(account),
         ]);
+
         const mcTotals = getMcTotals(transfers, balances, returns);
 
         if (transfers.status === QUERY_ERROR) {
             return {
                 "gro_personal_position_mc": {
                     ...errorObj(transfers.data),
+                },
+            };
+        } else if (approvals.status === QUERY_ERROR) {
+            return {
+                "gro_personal_position_mc": {
+                    ...errorObj(approvals.data),
                 },
             };
         } else if (balances.status === QUERY_ERROR) {
@@ -540,7 +608,10 @@ const getPersonalStatsMC = async (account: string) => {
                     "ethereum": {
                         "launch_timestamp": launchTimeEth.toString(),
                         "network_id": getNetwork(GN.ETHEREUM).id.toString(),
-                        "transaction": transfers.data.ethereum,
+                        "transaction": {
+                            ...transfers.data.ethereum,
+                            ...approvals.data.ethereum,
+                        },
                         ...transfers.data.ethereum_amounts,
                         ...balances.data.ethereum,
                         ...returns.data.ethereum,
@@ -549,7 +620,10 @@ const getPersonalStatsMC = async (account: string) => {
                     "avalanche": {
                         "launch_timestamp": launchTimeAvax.toString(),
                         "network_id": getNetwork(GN.AVALANCHE).id.toString(),
-                        "transaction": transfers.data.avalanche,
+                        "transaction": {
+                            ...transfers.data.avalanche,
+                            ...approvals.data.avalanche,
+                        },
                         ...transfers.data.avalanche_amounts,
                         ...balances.data.avalanche,
                         ...returns.data.avalanche,

@@ -33,11 +33,11 @@ const getApprovalEvents = async (
 
         if (result.status === QUERY_ERROR) {
             showError(
-                'getTransferEvents.ts->getTransferEvents()',
-                `Error while retrieving transfer events -> [side:${side}]: ${result.data}`
+                'getApprovalEvents.ts->getApprovalEvents()',
+                `Error while retrieving approval events -> [side:${side}]: ${result.data}`
             );
             return errorObj(
-                `Error in getTransferEvents->getEvents(): [side:${side}]: ${result.data}`
+                `Error in getApprovalEvents->getEvents(): [side:${side}]: ${result.data}`
             );
         }
 
