@@ -846,7 +846,9 @@ async function ethereumPersonalStats(account) {
         let groVaultDepositAmount = new BN(0);
         let groVaultWithdrawAmount = new BN(0);
         data.groVault.deposit.forEach((log) => {
+            if (log.name === 'LogNewDeposit') {
             groVaultDepositAmount = groVaultDepositAmount.plus(log.amount);
+            }
         });
         data.groVault.withdraw.forEach((log) => {
             groVaultWithdrawAmount = groVaultWithdrawAmount.plus(log.amount);
@@ -856,7 +858,9 @@ async function ethereumPersonalStats(account) {
         let powerDDepositAmount = new BN(0);
         let powerDWithdrawAmount = new BN(0);
         data.powerD.deposit.forEach((log) => {
+            if (log.name === 'LogNewDeposit') {
             powerDDepositAmount = powerDDepositAmount.plus(log.amount);
+            }
         });
         data.powerD.withdraw.forEach((log) => {
             powerDWithdrawAmount = powerDWithdrawAmount.plus(log.amount);
