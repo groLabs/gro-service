@@ -1,13 +1,39 @@
 import moment from 'moment';
 import { query } from '../handler/queryHandler';
-import { isPlural } from '../common/globalUtil';
+import {
+    isPlural,
+    getNetwork,
+} from '../common/globalUtil';
 import { generateDateRange } from '../common/personalUtil';
 import { QUERY_ERROR } from '../constants';
 import {
     showInfo,
     showError,
 } from '../handler/logHandler';
+import { GlobalNetwork as GN } from '../types';
 
+/// @return An array of network id's based on LoadType (see types.ts)
+const getNetworkParams = (gn: GN) => {
+    switch (gn) {
+        case GN.ALL:
+            return [
+                getNetwork(GN.ETHEREUM).id,
+                getNetwork(GN.AVALANCHE).id
+            ];
+        case GN.ETHEREUM:
+            return [
+                getNetwork(GN.ETHEREUM).id
+            ];
+        case GN.AVALANCHE:
+            return [
+                getNetwork(GN.AVALANCHE).id
+            ];
+        default:
+            return [
+                getNetwork(GN.UNKNOWN).id
+            ];
+    }
+}
 
 /// @notice Store the last load time and amount of records loaded into SYS_USER_LOADS
 ///         for each day of a given time range
@@ -19,6 +45,7 @@ const loadTableUpdates = async (
     tableName: string,
     _fromDate: string,
     _toDate: string,
+    globalNetwork: GN,
 ): Promise<boolean> => {
     try {
         const dates = generateDateRange(_fromDate, _toDate);
@@ -31,6 +58,7 @@ const loadTableUpdates = async (
                 tableName,
                 targetDate,
                 moment.utc(),
+                getNetworkParams(globalNetwork),
             ];
 
             let q: string;
@@ -42,7 +70,7 @@ const loadTableUpdates = async (
                         return false;
                     } else if (transfers.rowCount === 0) {
                         // Insert 0 records to allow personalStats cache know the latest transfers
-                        // loaded even one day there weren't events.
+                        // loaded even one day there weren't transfers.
                         const params = [
                             tableName,
                             1,

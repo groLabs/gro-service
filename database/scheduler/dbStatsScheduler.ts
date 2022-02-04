@@ -26,7 +26,11 @@ import {
     showInfo,
     showError,
 } from '../handler/logHandler';
-import { Bool } from '../types';
+import { 
+    Bool,
+    LoadType,
+    GlobalNetwork,
+} from '../types';
 
 
 const groStatsJob = async () => {
@@ -65,9 +69,10 @@ const personalStatsJob = async () => {
             if (res.length > 0) {
                 showInfo(`Starting personal stats load (from: ${res[0]}, to: ${res[1]})`);
                 await etlPersonalStats(
-                    res[0], // start date 'DD/MM/YYYY'
-                    res[1], // end date 'DD/MM/YYYY'
-                    100,    // load ETH & AVAX data
+                    res[0],                 // start date 'DD/MM/YYYY'
+                    res[1],                 // end date 'DD/MM/YYYY'
+                    GlobalNetwork.ALL,      // load ETH & AVAX data
+                    LoadType.ALL,           // load transfers & approvals
                 );
             } else {
                 showInfo(`No personal stats load required`);

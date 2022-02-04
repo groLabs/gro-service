@@ -53,14 +53,15 @@ import { QUERY_SUCCESS } from './constants';
                 //     }
                 //     break;
                 case 'personalStatsETL':
-                    if (params.length === 4 && checkDateRange(params[1], params[2])) {
+                    if (params.length === 5 && checkDateRange(params[1], params[2])) {
                         await loadContractInfoFromRegistry();
                         await etlPersonalStats(
                             params[1],              // start date
                             params[2],              // end date
-                            parseInt(params[3]));   // network (1: Ethereum, 2: Avalanche, 100: All)
-                    } else {
-                        console.log('Wrong parameters for personal stats ETL - e.g.: personalStatsETL 28/06/2021 29/06/2021 100');
+                            parseInt(params[3]),    // network (1: Ethereum, 2: Avalanche, 100: All)
+                            parseInt(params[4]))    // load type (1: Transfers, 2: Approvals, 100: All)
+                        } else {
+                        console.log('Wrong parameters for personal stats ETL - e.g.: personalStatsETL 28/06/2021 29/06/2021 100 100');
                     }
                     break;
                 case 'personalStatsETLcache':

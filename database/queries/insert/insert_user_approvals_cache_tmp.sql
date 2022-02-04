@@ -1,13 +1,14 @@
 -- @notice: any change here should be also applied to 'insert_tmp_user_approvals'
-INSERT INTO gro."USER_APPROVALS_TMP_CACHE" (
+INSERT INTO gro."USER_APPROVALS_CACHE_TMP" (
         "block_number",
-        "network_id",
-        "stablecoin_id",
         "tx_hash",
+        "network_id",
+        "token_id",
+        "version_id",
         "sender_address",
         "spender_address",
-        "coin_amount",
-        "coin_value",
+        "amount",
+        "value",
         "creation_date"
     )
 VALUES (
@@ -19,5 +20,6 @@ VALUES (
         $6,
         $7,
         $8,
-        $9
+        $9,
+        $10
     );
