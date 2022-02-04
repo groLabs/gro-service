@@ -926,14 +926,14 @@ async function ethereumPersonalStats(account) {
         );
 
         // current_balance
-        const totalBalance = pwrdBalanceInToken.plus(gvtBalanceInToken);
+        const totalBalance = pwrdBalance.plus(gvtBalance);
         result.current_balance.pwrd = div(
-            pwrdBalanceInToken,
+            pwrdBalance,
             CONTRACT_ASSET_DECIMAL,
             amountDecimal
         );
         result.current_balance.gvt = div(
-            gvtBalanceInToken,
+            gvtBalance,
             CONTRACT_ASSET_DECIMAL,
             amountDecimal
         );
