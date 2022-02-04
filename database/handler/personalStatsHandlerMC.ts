@@ -1,29 +1,35 @@
 import moment from 'moment';
 import { query } from './queryHandler';
-import {
-    errorObj,
-    getNetwork,
-} from '../common/globalUtil';
+import { getNetwork } from '../common/globalUtil';
 import { showError } from '../handler/logHandler';
 import { getConfig } from '../../common/configUtil';
 import {
     MAX_NUMBER,
     QUERY_ERROR,
-    QUERY_SUCCESS,
 } from '../constants';
 import {
     Transfer,
     GlobalNetwork as GN,
     ContractVersion as CV,
 } from '../types';
-import { ICall } from '../interfaces/ICall';
 const launchTimeEth = getConfig('blockchain.start_timestamp');
 const launchTimeAvax = getConfig('blockchain.avax_launch_timestamp');
 
 
+const QUERY_ERROR_FE = 'error';
+const QUERY_SUCCESS_FE = 'ok';
+interface ICallFE {
+    "status": string;
+    "data": any;
+}
+const errorObjFE = (msg: string) => ({
+    "status": QUERY_ERROR_FE,
+    "data": msg,
+});
+
 const showErrDesc = (err: any): string => JSON.stringify(err, Object.getOwnPropertyNames(err));
 
-const getTransfers = async (account: string): Promise<ICall> => {
+const getTransfers = async (account: string): Promise<ICallFE> => {
     try {
         const deposits_eth = [];
         const withdrawals_eth = [];
@@ -56,7 +62,7 @@ const getTransfers = async (account: string): Promise<ICall> => {
                 if (!item.token_id
                     || !item.transfer_id
                     || !item.usd_amount)
-                    return errorObj(`Missing data in DB [transfers] for user ${account}`);
+                    return errorObjFE(`Missing data in DB [transfers] for user ${account}`);
 
                 const versionId = item.version_id ? item.version_id : 0;
 
@@ -146,7 +152,7 @@ const getTransfers = async (account: string): Promise<ICall> => {
                     default:
                         const msg = `Unrecognized transfer_id (${item.transfer_id})`;
                         showError('personalStatsHandlerMC.ts->getTransfers()', msg);
-                        return errorObj(msg);
+                        return errorObjFE(msg);
                 }
             }
 
@@ -162,7 +168,7 @@ const getTransfers = async (account: string): Promise<ICall> => {
                 + amount_removed_dai_e_avax.reduce((a, b) => a + b, 0);
 
             const result = {
-                "status": QUERY_SUCCESS,
+                "status": QUERY_SUCCESS_FE,
                 "data": {
                     "ethereum": {
                         "deposits": deposits_eth,
@@ -278,17 +284,17 @@ const getTransfers = async (account: string): Promise<ICall> => {
             };
             return result;
         } else
-            return errorObj(`Error from DB when querying transfers for user: ${account}`);
+            return errorObjFE(`Error from DB when querying transfers for user: ${account}`);
 
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getTransfers()', err);
-        return errorObj(`Error from DB when querying transfers -> ${showErrDesc(err)}`);
+        return errorObjFE(`Error from DB when querying transfers -> ${showErrDesc(err)}`);
     }
 }
 
 // A FE request will always insert the target address in USER_BALANCES_CACHE (either if had any interaction or not),
 // so there will always be a query return, but checking for empty return is still added in case the query changes
-const getNetBalances = async (account: string): Promise<ICall> => {
+const getNetBalances = async (account: string): Promise<ICallFE> => {
     try {
         const q = 'select_fe_user_net_balances.sql';
         const result = await query(q, [account]);
@@ -301,7 +307,7 @@ const getNetBalances = async (account: string): Promise<ICall> => {
                 res = result.rows[0];
                 // Check if any of the keys is missing
                 if (!Object.values(res).some(x => x !== null && x !== ''))
-                    return errorObj(`Missing data in DB [balances] for user ${account}`);
+                    return errorObjFE(`Missing data in DB [balances] for user ${account}`);
             } else {
                 isUser = false;
             }
@@ -326,7 +332,7 @@ const getNetBalances = async (account: string): Promise<ICall> => {
                 : 0;
 
             return {
-                "status": QUERY_SUCCESS,
+                "status": QUERY_SUCCESS_FE,
                 "data": {
                     "ethereum": {
                         "current_balance": {
@@ -364,14 +370,14 @@ const getNetBalances = async (account: string): Promise<ICall> => {
                 },
             };
         } else
-            return errorObj(`Error from DB when querying balances for user: ${account}`);
+            return errorObjFE(`Error from DB when querying balances for user: ${account}`);
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getNetBalances()', err);
-        return errorObj(showErrDesc(err));
+        return errorObjFE(showErrDesc(err));
     }
 }
 
-const getNetReturns = async (account: string): Promise<ICall> => {
+const getNetReturns = async (account: string): Promise<ICallFE> => {
     try {
         const qBalance = 'select_fe_user_net_returns.sql';
         const result = await query(qBalance, [account]);
@@ -384,13 +390,13 @@ const getNetReturns = async (account: string): Promise<ICall> => {
                 res = result.rows[0];
                 // Check if any of the keys is missing
                 if (!Object.values(res).some(x => x !== null && x !== ''))
-                    return errorObj(`Missing data in DB [returns] for user ${account}`);
+                    return errorObjFE(`Missing data in DB [returns] for user ${account}`);
             } else {
                 isUser = false;
             }
 
             return {
-                "status": QUERY_SUCCESS,
+                "status": QUERY_SUCCESS_FE,
                 "data": {
                     "ethereum": {
                         "net_returns": {
@@ -436,15 +442,15 @@ const getNetReturns = async (account: string): Promise<ICall> => {
                 },
             };
         } else
-            return errorObj(`Error from DB when querying net returns for user: ${account}`);
+            return errorObjFE(`Error from DB when querying net returns for user: ${account}`);
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getNetReturns()', err);
-        return errorObj(showErrDesc(err));
+        return errorObjFE(showErrDesc(err));
 
     }
 }
 
-const getApprovals = async (account: string): Promise<ICall> => {
+const getApprovals = async (account: string): Promise<ICallFE> => {
     try {
 
         const approvals_eth = [];
@@ -460,7 +466,7 @@ const getApprovals = async (account: string): Promise<ICall> => {
                 if (!item.token
                     || !item.hash
                     || !item.coin_amount)
-                    return errorObj(`Missing data in DB [approvals] for user ${account}`);
+                    return errorObjFE(`Missing data in DB [approvals] for user ${account}`);
 
                 // Convert -1 values from the DB into infinity (or MAX_NUMBER)
                 if (item.coin_amount < 0) {
@@ -482,12 +488,12 @@ const getApprovals = async (account: string): Promise<ICall> => {
                     default:
                         const msg = `Unrecognized network_id (${item.network_id})`;
                         showError('personalStatsHandlerMC.ts->getApprovals()', msg);
-                        return errorObj(msg);
+                        return errorObjFE(msg);
                 }
             }
 
             return {
-                "status": QUERY_SUCCESS,
+                "status": QUERY_SUCCESS_FE,
                 "data": {
                     "ethereum": {
                         "approvals": approvals_eth,
@@ -504,13 +510,13 @@ const getApprovals = async (account: string): Promise<ICall> => {
 }
 
 const getMcTotals = (
-    transfers: ICall,
-    balances: ICall,
-    returns: ICall,
-): ICall => {
+    transfers: ICallFE,
+    balances: ICallFE,
+    returns: ICallFE,
+): ICallFE => {
     try {
         const result = {
-            "status": QUERY_SUCCESS,
+            "status": QUERY_SUCCESS_FE,
             "data": {
                 "amount_added": {
                     "ethereum": transfers.data.ethereum_amounts.amount_added.total,
@@ -547,7 +553,7 @@ const getMcTotals = (
         return result;
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getMcTotals()', err);
-        return errorObj(`Error when parsing MC Totals -> ${showErrDesc(err)}`);
+        return errorObjFE(`Error when parsing MC Totals -> ${showErrDesc(err)}`);
     }
 }
 
@@ -567,40 +573,40 @@ const getPersonalStatsMC = async (account: string) => {
 
         const mcTotals = getMcTotals(transfers, balances, returns);
 
-        if (transfers.status === QUERY_ERROR) {
+        if (transfers.status === QUERY_ERROR_FE) {
             return {
                 "gro_personal_position_mc": {
-                    ...errorObj(transfers.data),
+                    ...errorObjFE(transfers.data),
                 },
             };
-        } else if (approvals.status === QUERY_ERROR) {
+        } else if (approvals.status === QUERY_ERROR_FE) {
             return {
                 "gro_personal_position_mc": {
-                    ...errorObj(approvals.data),
+                    ...errorObjFE(approvals.data),
                 },
             };
-        } else if (balances.status === QUERY_ERROR) {
+        } else if (balances.status === QUERY_ERROR_FE) {
             return {
                 "gro_personal_position_mc": {
-                    ...errorObj(balances.data),
+                    ...errorObjFE(balances.data),
                 },
             };
-        } else if (returns.status === QUERY_ERROR) {
+        } else if (returns.status === QUERY_ERROR_FE) {
             return {
                 "gro_personal_position_mc": {
-                    ...errorObj(returns.data),
+                    ...errorObjFE(returns.data),
                 },
             };
-        } else if (mcTotals.status === QUERY_ERROR) {
+        } else if (mcTotals.status === QUERY_ERROR_FE) {
             return {
                 "gro_personal_position_mc": {
-                    ...errorObj(mcTotals.data),
+                    ...errorObjFE(mcTotals.data),
                 },
             };
         } else {
             const result = {
                 "gro_personal_position_mc": {
-                    "status": QUERY_SUCCESS.toString(),
+                    "status": QUERY_SUCCESS_FE,
                     "current_timestamp": moment().unix().toString(),
                     "address": account,
                     "network": getNetwork(GN.ETHEREUM).name,
@@ -608,6 +614,7 @@ const getPersonalStatsMC = async (account: string) => {
                     "ethereum": {
                         "launch_timestamp": launchTimeEth.toString(),
                         "network_id": getNetwork(GN.ETHEREUM).id.toString(),
+                        "status": QUERY_SUCCESS_FE,
                         "transaction": {
                             ...transfers.data.ethereum,
                             ...approvals.data.ethereum,
@@ -620,6 +627,7 @@ const getPersonalStatsMC = async (account: string) => {
                     "avalanche": {
                         "launch_timestamp": launchTimeAvax.toString(),
                         "network_id": getNetwork(GN.AVALANCHE).id.toString(),
+                        "status": QUERY_SUCCESS_FE,
                         "transaction": {
                             ...transfers.data.avalanche,
                             ...approvals.data.avalanche,
@@ -635,7 +643,7 @@ const getPersonalStatsMC = async (account: string) => {
 
     } catch (err) {
         showError('personalStatsHandlerMC.ts->getPersonalStatsMC()', err);
-        return errorObj(`Error when parsing the final JSON output -> ${showErrDesc(err)}`);
+        return errorObjFE(`Error when parsing the final JSON output -> ${showErrDesc(err)}`);
     }
 }
 
