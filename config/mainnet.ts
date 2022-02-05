@@ -112,10 +112,10 @@ export const transaction_long_pending = {
     rebalance: 60000,
 };
 export const keep_stats_file_number = 250;
-export const stats_folder = '../stats';
+export const stats_folder = '../stats/mainnet';
 export const log_folder = '../logs';
-export const blockNumberFile = '../stats/lastBlockNumber.json';
-export const stats_latest = '../stats/gro-latest.json';
+export const blockNumberFile = '../stats/mainnet/lastBlockNumber.json';
+export const stats_latest = '../stats/mainnet/gro-latest.json';
 export const pendingTransactionFile = '../pendingTransaction.json';
 export const vault_name = [
     'DAI yVault',
