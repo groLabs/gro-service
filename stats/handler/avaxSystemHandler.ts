@@ -495,9 +495,6 @@ async function calculateTimeWeightedOpenPositionReturn(
             adjustedEvents ? adjustedEvents.length : 0
         }`
     );
-    const wantOpen = await strategyContract.calcEstimatedWant({
-        blockTag: openBlock,
-    });
 
     const strategyInfo = await vaultAdapter.strategies(
         strategyContract.address,
@@ -505,14 +502,14 @@ async function calculateTimeWeightedOpenPositionReturn(
             blockTag: endBlock,
         }
     );
-    let currentEstimated = await strategyContract.estimatedTotalAssets({
+    const wantOpen = await strategyContract.estimatedTotalAssets({
         blockTag: endBlock,
     });
-    const profit = currentEstimated.sub(strategyInfo.totalDebt);
+    const profit = wantOpen.sub(strategyInfo.totalDebt);
     const wantClose = wantOpen.add(profit);
 
     logger.info(
-        `open position gain/loss vaultIndex ${vaultIndex} ${positionId} currentEstimated ${currentEstimated} - totalDebt ${strategyInfo.totalDebt} profit ${profit} wantOpen ${wantOpen} wantClose ${wantClose}`
+        `open position gain/loss vaultIndex ${vaultIndex} ${positionId} currentEstimated ${wantOpen} - totalDebt ${strategyInfo.totalDebt} profit ${profit} wantOpen ${wantOpen} wantClose ${wantClose}`
     );
     // eslint-disable-next-line max-len
     const { totalDebt } = await vaultAdapter.strategies(
