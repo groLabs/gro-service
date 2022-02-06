@@ -136,7 +136,7 @@ const STABLECOINS = [
 const RISK_FREE_RATE = BigNumber.from(2400);
 
 const BLOCKS_OF_3DAYS = 130000;
-const BLOCKS_OF_12HOURS = 2200;
+const BLOCKS_OF_12HOURS = 21600;
 
 let START_TIME_STAMP = []
 let START_BLOCK = []
@@ -999,33 +999,30 @@ async function calculateVaultUnlockedReturn(
 
     let vaultReturn3Days = vaultReturn;
 
-    if (endBlock - BLOCKS_OF_3DAYS > startBlock) {
-        const blockNumber3DaysAgo = endBlock - BLOCKS_OF_3DAYS;
-        const block3DaysAgo = await provider.getBlock(blockNumber3DaysAgo);
-        logger.info(`block.timestamp 3days ago ${block3DaysAgo.timestamp}`);
-        // const startTotalSupply = await vaultAdapter.totalSupply({
-        //     blockTag: blockNumber3DaysAgo,
-        // });
-        // const startEstimated = await vaultAdapter.totalEstimatedAssets({
-        //     blockTag: blockNumber3DaysAgo,
-        // });
-        const open3DaysAgoPricePerShare = await vaultAdapter.getPricePerShare({
-            blockTag: blockNumber3DaysAgo,
+    if (endBlock - BLOCKS_OF_12HOURS > startBlock) {
+        const blockNumber12hoursAgo = endBlock - BLOCKS_OF_12HOURS;
+        const TWELVE_HOURS_SECONDS = '43200';
+        const block12hoursAgo = await provider.getBlock(blockNumber12hoursAgo);
+        logger.info(`block.timestamp 12hours ago ${block12hoursAgo.timestamp}`);
+
+        const open12hoursAgoPricePerShare = await vaultAdapter.getPricePerShare({
+            blockTag: blockNumber12hoursAgo,
         });
-        const duration = BigNumber.from(endTimestamp - block3DaysAgo.timestamp);
-        vaultReturn3Days = closePricePerShare
-            .sub(open3DaysAgoPricePerShare)
-            .mul(SHARE_DECIMAL)
-            .mul(MS_PER_YEAR)
-            .div(openPricePerShare)
-            .div(duration);
-        console.log(
-            `~~~~ unlocked 3days vaultIndex ${vaultIndex} ${duration} ${blockNumber3DaysAgo} closePricePerShare ${closePricePerShare} open3DaysAgoPricePerShare ${open3DaysAgoPricePerShare}`
+        const duration = BigNumber.from(endTimestamp - block12hoursAgo.timestamp);
+        vaultReturn3Days = new BN(closePricePerShare.toString())
+                           .dividedBy(new BN(open12hoursAgoPricePerShare.toString()))
+                           .minus(new BN('1'))
+                           .multipliedBy(new BN('31556926'))
+                           .dividedBy(new BN(TWELVE_HOURS_SECONDS))
+        vaultReturn3Days = BigNumber.from(vaultReturn3Days.multipliedBy(new BN(SHARE_DECIMAL.toString())).integerValue().toString())
+
+            logger.info(
+            `~~~~ unlocked 12hours vaultIndex ${vaultIndex} ${duration} ${blockNumber12hoursAgo} closePricePerShare ${closePricePerShare} open12hoursagoPricePerShare ${open12hoursAgoPricePerShare}`
         );
     }
 
     logger.info(
-        `realized  vaultReturn ${vaultReturn} vaultReturn3Days ${vaultReturn3Days}`
+        `realized  vaultReturn ${vaultReturn} vaultReturn12hours ${vaultReturn3Days}`
     );
     return { vaultReturn, vaultReturn3Days };
 }
