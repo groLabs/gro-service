@@ -413,5 +413,6 @@ export {
     ContractABIMapping,
     readLocalContractConfig,
     getLatestContracts,
+    getContractHistory,
     getContractsHistory,
 };

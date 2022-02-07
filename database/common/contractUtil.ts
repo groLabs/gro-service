@@ -4,10 +4,12 @@ import {
     getProvider,
     getProviderKey,
     getProviderAvax,
+    errorObj
 } from './globalUtil';
 import {
     ContractNames,
     ContractABIMapping,
+    getContractHistory,  // testing
 } from '../../registry/registry';
 import { newSystemLatestContracts } from '../../registry/contracts';
 import { getLatestContractsAddress } from '../../registry/registryLoader';
@@ -15,7 +17,8 @@ import {
     showInfo,
     showError,
 } from '../handler/logHandler';
-
+import { ICall } from '../interfaces/ICall';
+import { QUERY_SUCCESS } from '../constants';
 
 const stableCoins = [];
 const stableCoinsInfo: any = {};
@@ -150,6 +153,27 @@ const getDAIeVault_1_7 = () => {
         .contract;
 }
 
+const getContractInfoHistory = async (
+    contractName: string,
+    block: number,
+) : Promise<ICall> => {
+    const contracts = await getContractHistory(contractName);
+    for (const contract of contracts) {
+        const endBlock = (contract.endBlock == null || isNaN(contract.endBlock))
+            ? 99999999999
+            : contract.endBlock;
+        if (block >= contract.startBlock && block < endBlock)
+            return {
+                status: QUERY_SUCCESS,
+                data: contract,
+            }
+    }
+    const errMsg = `Contract <${contractName}> not found for block ${block}`
+    showError('contractUtil.ts->getContractInfoHistory()',errMsg);
+    return errorObj(errMsg);
+}
+
+
 const getStableCoins = async () => {
     if (!stableCoins.length) {
         const latestController = getLatestSystemContract(
@@ -212,4 +236,5 @@ export {
     getUSDCeVault_1_7,
     getUSDTeVault_1_7,
     getDAIeVault_1_7,
+    getContractInfoHistory,
 };

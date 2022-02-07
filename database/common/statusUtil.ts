@@ -6,6 +6,7 @@ const {
     getPowerD: getPWRD,
     // getGroDAO: getGRO,
     getUSDCeVault,
+    getContractInfoHistory,
 } = require('../common/contractUtil');
 import {
     checkTime,
@@ -110,14 +111,19 @@ const isContract = async () => {
 // input:   ./files/airdropHoldersAvax.ts
 // output:  console.log => wallet|gro_amount
 const groAirdropHolders = async (targetTimestamp: number) => {
-    const VOTE_AGGREGATOR_ADDRESS = '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D';
-    // @ts-ignore
     const block = (await findBlockByDate(moment.unix(targetTimestamp), false)).block;
-    console.log(`Balances at block ${block}:`)
-    const res = await getBalances(VOTE_AGGREGATOR_ADDRESS, balances, block);
-    const combinedGro = res[0].amount_unstaked;
-    for (let i = 0; i < balances.length; i++) {
-        console.log(`${balances[i]}|${combinedGro[i]}`);
+    const voteAggregator = (await getContractInfoHistory('VotingAggregator', block));
+    if (voteAggregator.status === QUERY_SUCCESS) {
+        console.log(`Combined GRO balances at block ${block} with voteAggregator address ${voteAggregator.data.address}`);
+        const res = await getBalances(
+            voteAggregator.data.address,
+            balances,
+            block
+        );
+        const combinedGro = res[0].amount_unstaked;
+        for (let i = 0; i < balances.length; i++) {
+            console.log(`${balances[i]}|${combinedGro[i]}`);
+        }
     }
 }
 
