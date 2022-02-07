@@ -523,7 +523,7 @@ async function getGTokenUSDAmount(tokenAddress, share) {
     let usdAmount = 0;
     if (groVault.address === tokenAddress) {
         usdAmount = await groVault.getShareAssets(share).catch((error) => {
-            logger.error(error);
+            // logger.error(error);
             return share;
         });
     } else {
@@ -762,7 +762,10 @@ async function getCombinedGROBalance(account) {
 async function getGVTBalanceOnStaker(account) {
     const userInfo = await latestStaker.userInfo(stakerGVTPoolId, account);
     const latestGroVault = getLatestGroVault();
-    const usdBalance = await latestGroVault.getShareAssets(userInfo[0]);
+    const usdBalance = await latestGroVault.getShareAssets(userInfo[0]).catch((error) => {
+        // logger.error(error);
+        return usdBalance;
+    });
     return usdBalance;
 }
 
