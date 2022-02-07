@@ -588,13 +588,13 @@ async function calculateTimeWeightedPositionReturn(
             blockTag: endBlock,
         }
     );
-    const gain = strategyInfoAfter.totalGain.sub(strategyInfoBefore.totalGain);
-    const loss = strategyInfoAfter.totalLoss.sub(strategyInfoBefore.totalLoss);
+    // const gain = strategyInfoAfter.totalGain.sub(strategyInfoBefore.totalGain);
+    // const loss = strategyInfoAfter.totalLoss.sub(strategyInfoBefore.totalLoss);
 
-    let positionProfit = gain.sub(loss);
-    if (gain.eq(ZERO) && loss.eq(ZERO)) {
-        positionProfit = endEstimated.sub(strategyInfoAfter.totalDebt);
-    }
+    // let positionProfit = gain.sub(loss);
+    // if (gain.eq(ZERO) && loss.eq(ZERO)) {
+    let positionProfit = endEstimated.sub(strategyInfoAfter.totalDebt);
+    // }
     let wantOpen = wantClose.sub(positionProfit);
     logger.info(
         `position gain/loss vaultIndex ${vaultIndex} ${positionId} ${strategyInfoAfter.totalDebt} + ${strategyInfoAfter.totalGain} ${strategyInfoBefore.totalGain} - ${strategyInfoAfter.totalLoss} ${strategyInfoBefore.totalLoss} | endEstimated ${endEstimated} wantBalance ${wantBalance} wantOpen ${wantOpen} wantClose ${wantClose}`

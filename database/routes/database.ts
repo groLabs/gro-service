@@ -87,7 +87,7 @@ router.get(
                 } else {
                     res.json({
                         "gro_personal_position_mc": {
-                            status: QUERY_ERROR.toString(),
+                            status: 'error',
                             data: 'Error while processing personalStats cache from DB: see logs in host',
                         }
                     });
@@ -99,7 +99,7 @@ router.get(
                     : 'DB error when checking status';
                 res.json({
                     "gro_personal_position_mc": {
-                        status: QUERY_ERROR.toString(),
+                        status: 'error',
                         data: msg,
                     }
                 });
@@ -108,7 +108,7 @@ router.get(
             showError('routes->database.ts on /gro_personal_position_mc', err);
             res.json({
                 "gro_personal_position_mc": {
-                    status: QUERY_ERROR.toString(),
+                    status: 'error',
                     data: err,
                 }
             });
