@@ -1,5 +1,6 @@
 //@ts-nocheck
 import BN from 'bignumber.js';
+import fetch from 'node-fetch';
 import { ethers, BigNumber } from 'ethers';
 import { ContractNames } from '../../registry/registry';
 import { getConfig } from '../../common/configUtil';
@@ -498,6 +499,29 @@ async function singleVaultEvents(account, adpaterType, token, decimals) {
     };
 }
 
+async function isAvaxRpcThrottled() {
+    try {
+        let chainIdRequest = {
+            method: 'eth_chainId',
+            params: [],
+            id: 1,
+            jsonrpc: '2.0',
+        };
+        const res = await fetch(`https://api.avax.network/ext/bc/C/rpc`, {
+            method: 'POST',
+            body: JSON.stringify(chainIdRequest),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        logger.info(`status ${res.status}`);
+        if (!res || res.status === 429) {
+            return true;
+        }
+    } catch (error) {
+        logger.error(error);
+    }
+    return false;
+}
+
 async function avaxPersonalStats(account) {
     const result = {
         status: 'error',
@@ -521,8 +545,13 @@ async function avaxPersonalStats(account) {
     // network id
     // const network = await provider.getNetwork();
     // console.log(`avax network: ${JSON.stringify(network)}`);
-    result.network_id = '43114'; // getNetwork not work for avax
+    result.network_id = '43114'; // getNetwork not wåork for avax
+    const throttled = await isAvaxRpcThrottled();
+    logger.info(`rpc throttled ${throttled}`);
 
+    if (throttled) {
+        return result;
+    }
     try {
         // deposit & withdraw & transfer & approval events
         const vaultEventsPromise = [
@@ -641,6 +670,9 @@ async function avaxPersonalStats(account) {
             ...daiVaultEvents2.depositEvents,
             ...usdcVaultEvents2.depositEvents,
             ...usdtVaultEvents2.depositEvents,
+            ...daiVaultEvents3.depositEvents,
+            ...usdcVaultEvents3.depositEvents,
+            ...usdtVaultEvents3.depositEvents,
         ];
         fullTransactionField(result, depositEvents, 'deposits');
 
@@ -655,6 +687,9 @@ async function avaxPersonalStats(account) {
             ...daiVaultEvents2.withdrawEvents,
             ...usdcVaultEvents2.withdrawEvents,
             ...usdtVaultEvents2.withdrawEvents,
+            ...daiVaultEvents3.withdrawEvents,
+            ...usdcVaultEvents3.withdrawEvents,
+            ...usdtVaultEvents3.withdrawEvents,
         ];
         fullTransactionField(result, withdrawEvents, 'withdrawals');
 
@@ -669,6 +704,9 @@ async function avaxPersonalStats(account) {
             ...daiVaultEvents2.transferEvents.inLogs,
             ...usdcVaultEvents2.transferEvents.inLogs,
             ...usdtVaultEvents2.transferEvents.inLogs,
+            ...daiVaultEvents3.transferEvents.inLogs,
+            ...usdcVaultEvents3.transferEvents.inLogs,
+            ...usdtVaultEvents3.transferEvents.inLogs,
         ];
         const transferOut = [
             ...daiVaultEvents.transferEvents.outLogs,
@@ -680,6 +718,9 @@ async function avaxPersonalStats(account) {
             ...daiVaultEvents2.transferEvents.outLogs,
             ...usdcVaultEvents2.transferEvents.outLogs,
             ...usdtVaultEvents2.transferEvents.outLogs,
+            ...daiVaultEvents3.transferEvents.outLogs,
+            ...usdcVaultEvents3.transferEvents.outLogs,
+            ...usdtVaultEvents3.transferEvents.outLogs,
         ];
         fullTransactionField(result, transferIn, 'transfers_in');
         fullTransactionField(result, transferOut, 'transfers_out');
@@ -695,6 +736,9 @@ async function avaxPersonalStats(account) {
             ...daiVaultEvents2.approvalEvents,
             ...usdcVaultEvents2.approvalEvents,
             ...usdtVaultEvents2.approvalEvents,
+            ...daiVaultEvents3.approvalEvents,
+            ...usdcVaultEvents3.approvalEvents,
+            ...usdtVaultEvents3.approvalEvents,
         ];
         fullTransactionField(result, approvals, 'approvals');
 
