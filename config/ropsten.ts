@@ -197,7 +197,7 @@ export const contracts = {
 export const staker_pools = {
     contracts: {
         gro_address: '0x9892fff05b42adc940c251ca879d912dfa94c731',
-        staker_address: '0x45a3e75e4488437B8E6A4b6a3D4ff132d1995476',
+        staker_address: '0x5B55057A6d761B0462f2EC83Cfcb5f4Ae32F4CEE',
         gro_price_oracle_address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
         uniswap_gro_gvt_pool_address:
             '0x02910bC117C6F1E7347aEF1A8e94a0B45041EF3F',
@@ -327,4 +327,4 @@ export const subgraph = {
 };
 export const argentWalletDetector = {
     address: '0xF230cF8980BaDA094720C01308319eF192F0F311',
-}
+};

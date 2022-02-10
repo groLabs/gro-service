@@ -315,9 +315,9 @@
         ],
         "GroDAOVesting": [
             {
-                "address": "0xA123740cddf7A7a82967C6E799358331cD95c716",
-                "deployedBlock": 11220036,
-                "startBlock": 11220036,
+                "address": "0x9ed28e703843270f9C05Eb8d41A58d1c250DE7a0",
+                "deployedBlock": 11938192,
+                "startBlock": 11938192,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Vesting",
@@ -330,9 +330,9 @@
         ],
         "GroVesting": [
             {
-                "address": "0xc91BeE5b2fa9170E07d3fEF748De9bB4C5658730",
-                "deployedBlock": 11623034,
-                "startBlock": 11623034,
+                "address": "0xb12ecfbBD72827cB23c8785f36d62B37a7999f2e",
+                "deployedBlock": 11938936,
+                "startBlock": 11938936,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Vesting",
@@ -359,9 +359,9 @@
         ],
         "GroHodler": [
             {
-                "address": "0xaBd575aBeF4B8E73850293531A39E6e72b2fd41B",
-                "deployedBlock": 11906720,
-                "startBlock": 11906720,
+                "address": "0x842d01A2Fcb11e05Bfab5e86B75056CA1e1Ddd46",
+                "deployedBlock": 11938938,
+                "startBlock": 11938938,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Vesting",
@@ -374,9 +374,9 @@
         ],
         "LPTokenStakerV1": [
             {
-                "address": "0x4a0706ac4dc5fc1e991e0bdbc76238ed040ba8e5",
-                "deployedBlock": 11906491,
-                "startBlock": 11906491,
+                "address": "0x65B9Bbf7EAb046033d5E8988Ba1aB67A615F15E4",
+                "deployedBlock": 11938261,
+                "startBlock": 11938261,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Vesting",
@@ -389,9 +389,9 @@
         ],
         "LPTokenStakerV2": [
             {
-                "address": "0x45a3e75e4488437B8E6A4b6a3D4ff132d1995476",
-                "deployedBlock": 11918789,
-                "startBlock": 11918789,
+                "address": "0x5B55057A6d761B0462f2EC83Cfcb5f4Ae32F4CEE",
+                "deployedBlock": 11938890,
+                "startBlock": 11938890,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Vesting",
