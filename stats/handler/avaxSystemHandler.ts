@@ -757,6 +757,9 @@ async function getAvaxExposure(
     if (vaultIndex > 5) {
         debt = debts[1];
     }
+    if (vaultIndex < 3) {
+        debt = positionInfo.debt[0];
+    }
     console.log(`collateralSize ${collateralSize} ${debt}`);
     const swapPool = POOLS[vaultIndex];
     const token0 = await swapPool.token0();
