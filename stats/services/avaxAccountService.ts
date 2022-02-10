@@ -428,8 +428,10 @@ async function singleVaultEvents(account, adpaterType, token, decimals) {
         eventsPromise = [
             getDepositHistory(account, token, adpaterType, decimals),
             getWithdrawHistory(account, token, adpaterType, decimals),
-            getVaultTokenTransferHistory(account, token, adpaterType, decimals),
-            getApprovalHistory(account, adpaterType, decimals, token),
+            // getVaultTokenTransferHistory(account, token, adpaterType, decimals),
+            // getApprovalHistory(account, adpaterType, decimals, token),
+            Promise.resolve({ inLogs: [], outLogs: [] }),
+            Promise.resolve([]),
         ];
     }
 
@@ -554,6 +556,7 @@ async function avaxPersonalStats(account) {
     }
     try {
         // deposit & withdraw & transfer & approval events
+        /*
         const vaultEventsPromise = [
             singleVaultEvents(account, ContractNames.AVAXDAIVault, 'DAI.e', 18),
             singleVaultEvents(
@@ -568,42 +571,42 @@ async function avaxPersonalStats(account) {
                 'USDT.e',
                 6
             ),
-            singleVaultEvents(
-                account,
-                ContractNames.AVAXDAIVault_v1_5,
-                'DAI.e',
-                18
-            ),
-            singleVaultEvents(
-                account,
-                ContractNames.AVAXUSDCVault_v1_5,
-                'USDC.e',
-                6
-            ),
-            singleVaultEvents(
-                account,
-                ContractNames.AVAXUSDTVault_v1_5,
-                'USDT.e',
-                6
-            ),
-            singleVaultEvents(
-                account,
-                ContractNames.AVAXDAIVault_v1_6,
-                'DAI.e',
-                18
-            ),
-            singleVaultEvents(
-                account,
-                ContractNames.AVAXUSDCVault_v1_6,
-                'USDC.e',
-                6
-            ),
-            singleVaultEvents(
-                account,
-                ContractNames.AVAXUSDTVault_v1_6,
-                'USDT.e',
-                6
-            ),
+            // singleVaultEvents(
+            //     account,
+            //     ContractNames.AVAXDAIVault_v1_5,
+            //     'DAI.e',
+            //     18
+            // ),
+            // singleVaultEvents(
+            //     account,
+            //     ContractNames.AVAXUSDCVault_v1_5,
+            //     'USDC.e',
+            //     6
+            // ),
+            // singleVaultEvents(
+            //     account,
+            //     ContractNames.AVAXUSDTVault_v1_5,
+            //     'USDT.e',
+            //     6
+            // ),
+            // singleVaultEvents(
+            //     account,
+            //     ContractNames.AVAXDAIVault_v1_6,
+            //     'DAI.e',
+            //     18
+            // ),
+            // singleVaultEvents(
+            //     account,
+            //     ContractNames.AVAXUSDCVault_v1_6,
+            //     'USDC.e',
+            //     6
+            // ),
+            // singleVaultEvents(
+            //     account,
+            //     ContractNames.AVAXUSDTVault_v1_6,
+            //     'USDT.e',
+            //     6
+            // ),
             singleVaultEvents(
                 account,
                 ContractNames.AVAXDAIVault_v1_7,
@@ -627,26 +630,63 @@ async function avaxPersonalStats(account) {
             daiVaultEvents,
             usdcVaultEvents,
             usdtVaultEvents,
-            daiVaultEvents1,
-            usdcVaultEvents1,
-            usdtVaultEvents1,
-            daiVaultEvents2,
-            usdcVaultEvents2,
-            usdtVaultEvents2,
+            // daiVaultEvents1,
+            // usdcVaultEvents1,
+            // usdtVaultEvents1,
+            // daiVaultEvents2,
+            // usdcVaultEvents2,
+            // usdtVaultEvents2,
             daiVaultEvents3,
             usdcVaultEvents3,
             usdtVaultEvents3,
         ] = await Promise.all(vaultEventsPromise);
+		*/
+        const daiVaultEvents = await singleVaultEvents(
+            account,
+            ContractNames.AVAXDAIVault,
+            'DAI.e',
+            18
+        );
+        const usdcVaultEvents = await singleVaultEvents(
+            account,
+            ContractNames.AVAXUSDCVault,
+            'USDC.e',
+            6
+        );
+        const usdtVaultEvents = await singleVaultEvents(
+            account,
+            ContractNames.AVAXUSDTVault,
+            'USDT.e',
+            6
+        );
+        const daiVaultEvents3 = await singleVaultEvents(
+            account,
+            ContractNames.AVAXDAIVault_v1_7,
+            'DAI.e',
+            18
+        );
+        const usdcVaultEvents3 = await singleVaultEvents(
+            account,
+            ContractNames.AVAXUSDCVault_v1_7,
+            'USDC.e',
+            6
+        );
+        const usdtVaultEvents3 = await singleVaultEvents(
+            account,
+            ContractNames.AVAXUSDTVault_v1_7,
+            'USDT.e',
+            6
+        );
 
         fullData(result, daiVaultEvents, 'groDAI.e_vault');
         fullData(result, usdcVaultEvents, 'groUSDC.e_vault');
         fullData(result, usdtVaultEvents, 'groUSDT.e_vault');
-        fullData(result, daiVaultEvents1, 'groDAI.e_vault_v1_5');
-        fullData(result, usdcVaultEvents1, 'groUSDC.e_vault_v1_5');
-        fullData(result, usdtVaultEvents1, 'groUSDT.e_vault_v1_5');
-        fullData(result, daiVaultEvents2, 'groDAI.e_vault_v1_6');
-        fullData(result, usdcVaultEvents2, 'groUSDC.e_vault_v1_6');
-        fullData(result, usdtVaultEvents2, 'groUSDT.e_vault_v1_6');
+        // fullData(result, daiVaultEvents1, 'groDAI.e_vault_v1_5');
+        // fullData(result, usdcVaultEvents1, 'groUSDC.e_vault_v1_5');
+        // fullData(result, usdtVaultEvents1, 'groUSDT.e_vault_v1_5');
+        // fullData(result, daiVaultEvents2, 'groDAI.e_vault_v1_6');
+        // fullData(result, usdcVaultEvents2, 'groUSDC.e_vault_v1_6');
+        // fullData(result, usdtVaultEvents2, 'groUSDT.e_vault_v1_6');
         fullData(result, daiVaultEvents3, 'groDAI.e_vault_v1_7');
         fullData(result, usdcVaultEvents3, 'groUSDC.e_vault_v1_7');
         fullData(result, usdtVaultEvents3, 'groUSDT.e_vault_v1_7');
@@ -664,12 +704,12 @@ async function avaxPersonalStats(account) {
             ...daiVaultEvents.depositEvents,
             ...usdcVaultEvents.depositEvents,
             ...usdtVaultEvents.depositEvents,
-            ...daiVaultEvents1.depositEvents,
-            ...usdcVaultEvents1.depositEvents,
-            ...usdtVaultEvents1.depositEvents,
-            ...daiVaultEvents2.depositEvents,
-            ...usdcVaultEvents2.depositEvents,
-            ...usdtVaultEvents2.depositEvents,
+            // ...daiVaultEvents1.depositEvents,
+            // ...usdcVaultEvents1.depositEvents,
+            // ...usdtVaultEvents1.depositEvents,
+            // ...daiVaultEvents2.depositEvents,
+            // ...usdcVaultEvents2.depositEvents,
+            // ...usdtVaultEvents2.depositEvents,
             ...daiVaultEvents3.depositEvents,
             ...usdcVaultEvents3.depositEvents,
             ...usdtVaultEvents3.depositEvents,
@@ -681,12 +721,12 @@ async function avaxPersonalStats(account) {
             ...daiVaultEvents.withdrawEvents,
             ...usdcVaultEvents.withdrawEvents,
             ...usdtVaultEvents.withdrawEvents,
-            ...daiVaultEvents1.withdrawEvents,
-            ...usdcVaultEvents1.withdrawEvents,
-            ...usdtVaultEvents1.withdrawEvents,
-            ...daiVaultEvents2.withdrawEvents,
-            ...usdcVaultEvents2.withdrawEvents,
-            ...usdtVaultEvents2.withdrawEvents,
+            // ...daiVaultEvents1.withdrawEvents,
+            // ...usdcVaultEvents1.withdrawEvents,
+            // ...usdtVaultEvents1.withdrawEvents,
+            // ...daiVaultEvents2.withdrawEvents,
+            // ...usdcVaultEvents2.withdrawEvents,
+            // ...usdtVaultEvents2.withdrawEvents,
             ...daiVaultEvents3.withdrawEvents,
             ...usdcVaultEvents3.withdrawEvents,
             ...usdtVaultEvents3.withdrawEvents,
@@ -698,12 +738,12 @@ async function avaxPersonalStats(account) {
             ...daiVaultEvents.transferEvents.inLogs,
             ...usdcVaultEvents.transferEvents.inLogs,
             ...usdtVaultEvents.transferEvents.inLogs,
-            ...daiVaultEvents1.transferEvents.inLogs,
-            ...usdcVaultEvents1.transferEvents.inLogs,
-            ...usdtVaultEvents1.transferEvents.inLogs,
-            ...daiVaultEvents2.transferEvents.inLogs,
-            ...usdcVaultEvents2.transferEvents.inLogs,
-            ...usdtVaultEvents2.transferEvents.inLogs,
+            // ...daiVaultEvents1.transferEvents.inLogs,
+            // ...usdcVaultEvents1.transferEvents.inLogs,
+            // ...usdtVaultEvents1.transferEvents.inLogs,
+            // ...daiVaultEvents2.transferEvents.inLogs,
+            // ...usdcVaultEvents2.transferEvents.inLogs,
+            // ...usdtVaultEvents2.transferEvents.inLogs,
             ...daiVaultEvents3.transferEvents.inLogs,
             ...usdcVaultEvents3.transferEvents.inLogs,
             ...usdtVaultEvents3.transferEvents.inLogs,
@@ -712,12 +752,12 @@ async function avaxPersonalStats(account) {
             ...daiVaultEvents.transferEvents.outLogs,
             ...usdcVaultEvents.transferEvents.outLogs,
             ...usdtVaultEvents.transferEvents.outLogs,
-            ...daiVaultEvents1.transferEvents.outLogs,
-            ...usdcVaultEvents1.transferEvents.outLogs,
-            ...usdtVaultEvents1.transferEvents.outLogs,
-            ...daiVaultEvents2.transferEvents.outLogs,
-            ...usdcVaultEvents2.transferEvents.outLogs,
-            ...usdtVaultEvents2.transferEvents.outLogs,
+            // ...daiVaultEvents1.transferEvents.outLogs,
+            // ...usdcVaultEvents1.transferEvents.outLogs,
+            // ...usdtVaultEvents1.transferEvents.outLogs,
+            // ...daiVaultEvents2.transferEvents.outLogs,
+            // ...usdcVaultEvents2.transferEvents.outLogs,
+            // ...usdtVaultEvents2.transferEvents.outLogs,
             ...daiVaultEvents3.transferEvents.outLogs,
             ...usdcVaultEvents3.transferEvents.outLogs,
             ...usdtVaultEvents3.transferEvents.outLogs,
@@ -730,12 +770,12 @@ async function avaxPersonalStats(account) {
             ...daiVaultEvents.approvalEvents,
             ...usdcVaultEvents.approvalEvents,
             ...usdtVaultEvents.approvalEvents,
-            ...daiVaultEvents1.approvalEvents,
-            ...usdcVaultEvents1.approvalEvents,
-            ...usdtVaultEvents1.approvalEvents,
-            ...daiVaultEvents2.approvalEvents,
-            ...usdcVaultEvents2.approvalEvents,
-            ...usdtVaultEvents2.approvalEvents,
+            // ...daiVaultEvents1.approvalEvents,
+            // ...usdcVaultEvents1.approvalEvents,
+            // ...usdtVaultEvents1.approvalEvents,
+            // ...daiVaultEvents2.approvalEvents,
+            // ...usdcVaultEvents2.approvalEvents,
+            // ...usdtVaultEvents2.approvalEvents,
             ...daiVaultEvents3.approvalEvents,
             ...usdcVaultEvents3.approvalEvents,
             ...usdtVaultEvents3.approvalEvents,
