@@ -124,7 +124,7 @@ async function getVaultUserAllowance(account, vaultType, decimals, provider) {
     ).contract;
 
     const userAllowance = await latestVault.userAllowance(account);
-    return formatNumber2(userAllowance, decimals, 0);
+    return userAllowance.div(BigNumber.from(10).pow(decimals));
 }
 
 async function getVaultUserClaimed(account, vaultType, provider) {
@@ -214,9 +214,8 @@ function fullupSingleVault(
     }
     allowance = BigNumber.from(allowance);
     dataSource[
-	    `gro${vaultType}.e_vault${vaultsVersion[vaultType]}`
+        `gro${vaultType}.e_vault${vaultsVersion[vaultType]}`
     ].remaining_allowance = allowance.toString();
-
 
     const distBaseAllowance = BigNumber.from(baseAllowance);
     dataSource[
@@ -367,6 +366,4 @@ async function getAccountAllowance(account, provider) {
     return result;
 }
 
-export {
-    getAccountAllowance,
-};
+export { getAccountAllowance };
