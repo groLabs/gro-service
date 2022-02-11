@@ -92,9 +92,9 @@ async function checkStrategyChange(blockTag) {
         const vaultStrategy = await getStrategies();
         const latestContractInfo = getLatestContractsAddressByAddress();
         const yearnVaults = await getLatestYearnVaults();
-        const emergencyThreshold = BigNumber.from(500);
-        const criticalThreshold = BigNumber.from(300);
-        const warningThreshold = BigNumber.from(150);
+        const emergencyThreshold = BigNumber.from(2500);
+        const criticalThreshold = BigNumber.from(2000);
+        const warningThreshold = BigNumber.from(1500);
         // not check curve strategy
         for (
             let vaultIndex = 0;
