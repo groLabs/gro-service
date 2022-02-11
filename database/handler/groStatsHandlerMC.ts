@@ -167,6 +167,15 @@ const getAvaxTVL = async (targetTimestamp: number) => {
                 ...calcKPI(tvl, 'labs_dai_vault'),
                 ...calcKPI(tvl, 'labs_usdc_vault'),
                 ...calcKPI(tvl, 'labs_usdt_vault'),
+                ...calcKPI(tvl, 'labs_dai_vault_1_5'),
+                ...calcKPI(tvl, 'labs_usdc_vault_1_5'),
+                ...calcKPI(tvl, 'labs_usdt_vault_1_5'),
+                ...calcKPI(tvl, 'labs_dai_vault_1_6'),
+                ...calcKPI(tvl, 'labs_usdc_vault_1_6'),
+                ...calcKPI(tvl, 'labs_usdt_vault_1_6'),
+                ...calcKPI(tvl, 'labs_dai_vault_1_7'),
+                ...calcKPI(tvl, 'labs_usdc_vault_1_7'),
+                ...calcKPI(tvl, 'labs_usdt_vault_1_7'),
                 ...calcKPI(tvl, 'total'),
             };
         } else {

@@ -80,6 +80,33 @@ const getTVL = (stats, network: NetworkName) => {
             stats[network].tvl['groUSDT.e_vault']
                 ? stats[network].tvl['groUSDT.e_vault']
                 : null,
+            stats[network].tvl['groDAI.e_vault_v1_5']
+                ? stats[network].tvl['groDAI.e_vault_v1_5']
+                : null,
+            stats[network].tvl['groUSDC.e_vault_v1_5']
+                ? stats[network].tvl['groUSDC.e_vault_v1_5']
+                : null,
+            stats[network].tvl['groUSDT.e_vault_v1_5']
+                ? stats[network].tvl['groUSDT.e_vault_v1_5']
+                : null,
+            stats[network].tvl['groDAI.e_vault_v1_6']
+                ? stats[network].tvl['groDAI.e_vault_v1_6']
+                : null,
+            stats[network].tvl['groUSDC.e_vault_v1_6']
+                ? stats[network].tvl['groUSDC.e_vault_v1_6']
+                : null,
+            stats[network].tvl['groUSDT.e_vault_v1_6']
+                ? stats[network].tvl['groUSDT.e_vault_v1_6']
+                : null,
+            stats[network].tvl['groDAI.e_vault_v1_7']
+                ? stats[network].tvl['groDAI.e_vault_v1_7']
+                : null,
+            stats[network].tvl['groUSDC.e_vault_v1_7']
+                ? stats[network].tvl['groUSDC.e_vault_v1_7']
+                : null,
+            stats[network].tvl['groUSDT.e_vault_v1_7']
+                ? stats[network].tvl['groUSDT.e_vault_v1_7']
+                : null,
             stats[network].tvl.total
                 ? stats[network].tvl.total
                 : null,

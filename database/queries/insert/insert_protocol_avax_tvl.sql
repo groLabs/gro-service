@@ -5,6 +5,15 @@ INSERT INTO gro."PROTOCOL_AVAX_TVL" (
         "labs_dai_vault",
         "labs_usdc_vault",
         "labs_usdt_vault",
+        "labs_dai_vault_1_5",
+        "labs_usdc_vault_1_5",
+        "labs_usdt_vault_1_5",
+        "labs_dai_vault_1_6",
+        "labs_usdc_vault_1_6",
+        "labs_usdt_vault_1_6",
+        "labs_dai_vault_1_7",
+        "labs_usdc_vault_1_7",
+        "labs_usdt_vault_1_7",
         "total",
         "creation_date"
     )
@@ -16,5 +25,14 @@ VALUES (
         $5,
         $6,
         $7,
-        $8
+        $8,
+        $9,
+        $10,
+        $11,
+        $12,
+        $13,
+        $14,
+        $15,
+        $16,
+        $17
     );
