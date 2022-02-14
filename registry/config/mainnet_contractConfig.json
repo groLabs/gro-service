@@ -78,6 +78,36 @@
                 "active": true
             }
         ],
+        "GroVesting": [
+            {
+                "address": "0xA28693bf01Dc261887b238646Bb9636cB3a3730B",
+                "deployedBlock": 13405101,
+                "startBlock": 13405101,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "VotingAggregator": [
+            {
+                "address": "0x2c57F9067E50E819365df7c5958e2c4C14A91C2D",
+                "deployedBlock": 13548959,
+                "startBlock": 13548959,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
         "LPTokenStakerV1": [
             {
                 "address": "0x001C249c09090D79Dc350A286247479F08c7aaD7",
@@ -168,8 +198,8 @@
         "AVAXDAIStrategy_v1_7": [
             {
                 "address": "0x670EA3f675a332D561d5a9ECaa16c097Ac0b0ba5",
-                "deployedBlock": 10364128 ,
-                "startBlock": 10364128 ,
+                "deployedBlock": 10364128,
+                "startBlock": 10364128,
                 "abiVersion": "6270d2c",
                 "tag": "AVAX",
                 "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
