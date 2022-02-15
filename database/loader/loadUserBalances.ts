@@ -21,8 +21,12 @@ import {
     getDAIeVault_1_5,
     getDAIeVault_1_6,
     getDAIeVault_1_7,
+    getContractInfoHistory,
 } from '../common/contractUtil';
-import { QUERY_ERROR } from '../constants';
+import {
+    QUERY_ERROR,
+    QUERY_SUCCESS,
+} from '../constants';
 import {
     checkTime,
     getBalances,
@@ -48,19 +52,15 @@ import {
 const nodeEnv = process.env.NODE_ENV.toLowerCase();
 const argentAddress = getConfig('argentWalletDetector.address');
 
-
+// Contract addresses
 const GRO_ADDRESS = getConfig('staker_pools.contracts.gro_address');
 const GRO_GVT_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_gvt_pool_address');
 const GRO_USDC_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_usdc_pool_address');
 const CRV_PWRD_ADDRESS = getConfig('staker_pools.contracts.curve_pwrd3crv_pool_address');
 const GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address');
-// Vote Aggregator only available in mainnet
-const VOTE_AGGREGATOR_ADDRESS = '0x2c57F9067E50E819365df7c5958e2c4C14A91C2D';
-const VOTE_AGGREGATOR_GENESIS_BLOCK = 13548959;
 
 
 let rowCount = 0;
-
 let contract = [];
 let gvt = [];
 let pwrd = [];
@@ -99,6 +99,7 @@ const getBalancesSC = async (
     block: number,
     offset: number,
     account: string,
+    voteAggregatorAddress: string,
 ) => {
     try {
         const newOffset = (offset + BATCH >= users.length)
@@ -139,8 +140,8 @@ const getBalancesSC = async (
             getBalances(getGroVault().address, userBatch, block),
             getBalances(getPowerD().address, userBatch, block),
             getBalances(GRO_ADDRESS, userBatch, block),
-            (nodeEnv === NetworkName.MAINNET && block >= VOTE_AGGREGATOR_GENESIS_BLOCK)
-                ? getBalances(VOTE_AGGREGATOR_ADDRESS, userBatch, block)
+            (nodeEnv === NetworkName.MAINNET)
+                ? getBalances(voteAggregatorAddress, userBatch, block)
                 : [],
             getBalancesUniBalLP(GRO_GVT_ADDRESS, userBatch, block),
             getBalancesUniBalLP(GRO_USDC_ADDRESS, userBatch, block),
@@ -194,7 +195,7 @@ const getBalancesSC = async (
             pwrd[1].amount_staked.push(...pwrdUpdate[1].amount_staked);
             gro[0].amount_unstaked.push(...groUpdate[0].amount_unstaked);
             gro[1].amount_staked.push(...groUpdate[1].amount_staked);
-            (nodeEnv === NetworkName.MAINNET && block >= VOTE_AGGREGATOR_GENESIS_BLOCK)
+            (nodeEnv === NetworkName.MAINNET)
                 ? groTotal[0].amount_unstaked.push(...groTotalUpdate[0].amount_unstaked)
                 : [];
             lpGroGvt[0].amount_pooled_lp.push(...lpGroGvtUpdate[0].amount_pooled_lp);
@@ -259,7 +260,13 @@ const getBalancesSC = async (
                 usdte_1_7: usdte_1_7,
                 daie_1_7: daie_1_7,
             }
-            : getBalancesSC(users, block, newOffset, account);
+            : getBalancesSC(
+                users,
+                block,
+                newOffset,
+                account,
+                voteAggregatorAddress
+            );
 
     } catch (err) {
         showError('loadUserBalances.ts->getBalancesSC()', err);
@@ -462,7 +469,6 @@ const loadUserBalances = async (
             } else {
                 showInfo(`Table USER_BALANCES_SNAPSHOT truncated`);
             }
-
         }
 
         if (!account)
@@ -482,8 +488,29 @@ const loadUserBalances = async (
             // @ts-ignore
             const block = (await findBlockByDate(day, false)).block;
 
+            // Vote Aggregator contract only available in mainnet
+            let voteAggregatorAddress = '';
+            if (nodeEnv === NetworkName.MAINNET) {
+                const voteAggregator = (await getContractInfoHistory('VotingAggregator', block));
+                if (voteAggregator.status === QUERY_SUCCESS) {
+                    voteAggregatorAddress = voteAggregator.data.address;
+                } else {
+                    showError(
+                        'loadUserBalances.ts->loadUserBalances()',
+                        `tokenAggregator contract not found for block ${block}`
+                    );
+                    return false;
+                }
+            }
+
             // Retrieve balances from the SC
-            const result = await getBalancesSC(users, block, 0, account);
+            const result = await getBalancesSC(
+                users,
+                block,
+                0,
+                account,
+                voteAggregatorAddress,
+            );
             if (!result)
                 showError(
                     'loadUserBalances.ts->loadUserBalances()',
