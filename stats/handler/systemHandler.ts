@@ -447,6 +447,8 @@ async function getExposureStats(blockTag, systemStats) {
     const exposureProtocol = [];
     const protocols = [];
     const vaultsStats = systemStats.vault;
+    let fraxStrategyShare = BigNumber.from(0);
+
     for (let i = 0; i < vaultsStats.length; i += 1) {
         const vault = vaultsStats[i];
         const { strategies } = vaultStrategies[adapterAddresses[i]].vault;
@@ -471,24 +473,40 @@ async function getExposureStats(blockTag, systemStats) {
                         concentration: strategy.share,
                     });
                 }
+                if (i === 0 && j === 1 && k === 1) {
+                    exposureStableCoin.push({
+                        name: 'MUSD',
+                        display_name: 'MUSD',
+                        concentration: strategy.share,
+                    });
+                }
+                if (i === 1 && j === 1 && k === 1) {
+                    exposureStableCoin.push({
+                        name: 'OUSD',
+                        display_name: 'OUSD',
+                        concentration: strategy.share,
+                    });
+                }
+                if (i === 2 && j === 1 && k === 1) {
+                    exposureStableCoin.push({
+                        name: 'FRAX',
+                        display_name: 'FRAX',
+                        concentration: strategy.share,
+                    });
+                }
             }
         }
     }
     // curve's stable coin
     const curveVaultIndex = adapterAddresses.length - 1;
 
-    exposureProtocol.forEach((item) => {
-        if (item.name === 'Curve') {
-            exposureStableCoin.push({
-                name: stableCoins[curveVaultIndex],
-                display_name: stableCoins[curveVaultIndex],
-                concentration: item.concentration,
-            });
-            item.concentration = vaultsStats[3].share;
-            logger.info(`curve ${vaultsStats[3].share} ${item.concentration}`);
-        }
-        logger.info(`exposureProtocol ${item.name} ${item.concentration}`);
-    });
+    // exposureProtocol.forEach((item) => {
+    //     if (item.name === 'Curve') {
+    //         item.concentration = vaultsStats[3].share;
+    //         logger.info(`curve ${vaultsStats[3].share} ${item.concentration}`);
+    //     }
+    //     logger.info(`exposureProtocol ${item.name} ${item.concentration}`);
+    // });
     const exposureStats = {
         stablecoins: exposureStableCoin,
         protocols: exposureProtocol,

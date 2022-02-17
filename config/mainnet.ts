@@ -1,19 +1,19 @@
 require('dotenv').config();
 export const registry_address = '0x4801de71ECabF5B85D3a51c461fcE657aa93f50f';
+export const staker = {
+    address: '0x2E32bAd45a1C29c1EA27cf4dD588DF9e68ED376C',
+    start_block: 14268775,
+};
+export const vesting = {
+    address: '0x748218256AfE0A19a88EBEB2E0C5Ce86d2178360',
+    start_block: 14268760,
+};
 export const airdrop = {
-    address: '0x6b1bFf72F00cC147b5Dc7A5b156Fe7A6Fd206ddA',
-    start_block: 13417433,
+    address: '0xF3d39A7FEbA9bE0C1D18b355E7eD01070Ee2c561',
+    start_block: 14268737,
     folder: '../airdrop',
     gas_pwrd: 'airdrop1_result.csv',
-    files: [
-        'airdrop-0-proofs.json',
-        'airdrop-1-proofs.json',
-        'airdrop-2-proofs.json',
-        'airdrop-3-proofs.json',
-        'airdrop-4-proofs.json',
-        'airdrop-5-proofs.json',
-        'airdrop-6-proofs.json',
-    ],
+    files: [],
 };
 export const gro_gate = {
     folder: '../grogate',
@@ -181,7 +181,7 @@ export const contracts = {
 export const staker_pools = {
     contracts: {
         gro_address: '0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7',
-        staker_address: '0x001C249c09090D79Dc350A286247479F08c7aaD7',
+        staker_address: '0x2E32bAd45a1C29c1EA27cf4dD588DF9e68ED376C',
         gro_price_oracle_address: '0x7a250d5630b4cf539739df2c5dacb4c659f2488d',
         uniswap_gro_gvt_pool_address:
             '0x2ac5bC9ddA37601EDb1A5E29699dEB0A5b67E9bB',
@@ -246,6 +246,13 @@ export const staker_pools = {
         disable: 'false',
         start_block: 13355180,
         bal_per_week: 1000,
+    },
+    single_staking_100_pwrd_6: {
+        deposit_url: 'NA',
+        remove_url: 'NA',
+        display_order: '6',
+        pid: '6',
+        disable: 'false',
     },
 };
 export const discord = {

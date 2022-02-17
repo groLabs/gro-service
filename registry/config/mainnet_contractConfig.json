@@ -76,6 +76,19 @@
                 "protocolsDisplayName": [],
                 "metaData": {},
                 "active": true
+            },
+            {
+                "address": "0x8b4A30c8884ca4AfF1E4c82Cce79802a63E61397",
+                "deployedBlock": 13405194,
+                "startBlock": 13405194,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
             }
         ],
         "GroVesting": [
@@ -91,6 +104,19 @@
                 "protocolsDisplayName": [],
                 "metaData": {},
                 "active": true
+            },
+            {
+                "address": "0x748218256AfE0A19a88EBEB2E0C5Ce86d2178360",
+                "deployedBlock": 14268701,
+                "startBlock": 14268760,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
             }
         ],
         "VotingAggregator": [
@@ -98,6 +124,19 @@
                 "address": "0x2c57F9067E50E819365df7c5958e2c4C14A91C2D",
                 "deployedBlock": 13548959,
                 "startBlock": 13548959,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            },
+            {
+                "address": "0x519A27636e13d177e5C50aaF758B72dE9360651c",
+                "deployedBlock": 14268740,
+                "startBlock": 14268756,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Vesting",
@@ -125,9 +164,9 @@
         ],
         "LPTokenStakerV2": [
             {
-                "address": "0x0000000000000000000000000000000000000000",
-                "deployedBlock": -1,
-                "startBlock": -1,
+                "address": "0x2E32bAd45a1C29c1EA27cf4dD588DF9e68ED376C",
+                "deployedBlock": 14268645,
+                "startBlock": 14268775,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Vesting",
@@ -245,6 +284,224 @@
                     "N": "ah_USDT.e_strat_v1_7",
                     "DN": "USDT.e AH v1.7",
                     "DY": 117589
+                },
+                "active": true
+            }
+        ],
+        "DAISecondary": [
+            {
+                "address": "0xfE1dc5d17827565A32B7F9E8601B9c21C1343476",
+                "deployedBlock": 12502029,
+                "startBlock": 12522788,
+                "endBlock": 12836674,
+                "abiVersion": "21ac80a",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0xEA5a6c635B19A4C27BDb2BCa3D868BC6e2d3208c",
+                "deployedBlock": 12832421,
+                "startBlock": 12836674,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "DAI"
+                ],
+                "protocols": [
+                    "Cream"
+                ],
+                "protocolsDisplayName": [
+                    "CREAM"
+                ],
+                "metaData": {
+                    "N": "Cream",
+                    "DN": "CREAM - DAI",
+                    "PDN": {
+                        "2": "CREAM"
+                    },
+                    "DY": 41334
+                },
+                "active": true
+            },
+            {
+                "address": "0x870D9594CDDDdF39e049192E5c3135273f0f4c94",
+                "deployedBlock": 12832421,
+                "startBlock": 12836674,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "DAI"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex"
+                ],
+                "metaData": {
+                    "N": "CRV",
+                    "DN": "CRV - mUSD",
+                    "DY": 80000
+                },
+                "active": true
+            }
+        ],
+        "USDCSecondary": [
+            {
+                "address": "0x3Bc1bAa5D220aAFc334dc92c8495a7Ab64C0A791",
+                "deployedBlock": 12502035,
+                "startBlock": 12522788,
+                "endBlock": 12836674,
+                "abiVersion": "21ac80a",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0x2782d2d206df0872136643fb40a713A9E8A177F3",
+                "deployedBlock": 12832430,
+                "startBlock": 12836674,
+                "endBlock": 13502267,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0xb3C24b7F8EB0b391499086f1A341bE7DeC737020",
+                "deployedBlock": 13502055,
+                "startBlock": 13502267,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "USDC"
+                ],
+                "protocols": [
+                    "Aave"
+                ],
+                "protocolsDisplayName": [
+                    "Aave"
+                ],
+                "metaData": {
+                    "N": "Aave",
+                    "DN": "Aave - USDC",
+                    "DY": 49956
+                },
+                "active": true
+            },
+            {
+                "address": "0xe2140f2Af979c96966916D81e7C735ae858581CB",
+                "deployedBlock": 13502055,
+                "startBlock": 13502267,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "USDC"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex"
+                ],
+                "metaData": {
+                    "N": "CRV",
+                    "DN": "CRV - oUSD",
+                    "DY": 81400
+                },
+                "active": true
+            }
+        ],
+        "USDTSecondary": [
+            {
+                "address": "0x44A0a49b3116a04Eef0341ae78Ee26A2816CAea6",
+                "deployedBlock": 12502044,
+                "startBlock": 12522788,
+                "endBlock": 12836674,
+                "abiVersion": "21ac80a",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0xAF97a5313514a34B10EB67b50316C96Df9ef1610",
+                "deployedBlock": 12832449,
+                "startBlock": 12836674,
+                "endBlock": 13502267,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0x1eBd09942E6a23190d21Eda4445FD9baBE501902",
+                "deployedBlock": 13502063,
+                "startBlock": 13502267,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "USDT"
+                ],
+                "protocols": [
+                    "Aave"
+                ],
+                "protocolsDisplayName": [
+                    "Aave"
+                ],
+                "metaData": {
+                    "N": "Aave",
+                    "DN": "Aave - USDT",
+                    "DY": 49513
+                },
+                "active": true
+            },
+            {
+                "address": "0x33070C339f88CB29562eF9Ca7d1e14a87d7451C0",
+                "deployedBlock": 13502063,
+                "startBlock": 13502267,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "USDT"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex"
+                ],
+                "metaData": {
+                    "N": "Curve",
+                    "DN": "CRV - Frax",
+                    "DY": 82000
                 },
                 "active": true
             }
