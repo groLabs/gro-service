@@ -248,6 +248,224 @@
                 },
                 "active": true
             }
+        ],
+        "DAISecondary": [
+            {
+                "address": "0xfE1dc5d17827565A32B7F9E8601B9c21C1343476",
+                "deployedBlock": 12502029,
+                "startBlock": 12522788,
+                "endBlock": 12836674,
+                "abiVersion": "21ac80a",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0xEA5a6c635B19A4C27BDb2BCa3D868BC6e2d3208c",
+                "deployedBlock": 12832421,
+                "startBlock": 12836674,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "DAI"
+                ],
+                "protocols": [
+                    "Cream"
+                ],
+                "protocolsDisplayName": [
+                    "CREAM"
+                ],
+                "metaData": {
+                    "N": "Cream",
+                    "DN": "CREAM - DAI",
+                    "PDN": {
+                        "2": "CREAM"
+                    },
+                    "DY": 41334
+                },
+                "active": true
+            },
+            {
+                "address": "0x870D9594CDDDdF39e049192E5c3135273f0f4c94",
+                "deployedBlock": 12832421,
+                "startBlock": 12836674,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "DAI"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex"
+                ],
+                "metaData": {
+                    "N": "CRV",
+                    "DN": "CRV - mUSD",
+                    "DY": 80000
+                },
+                "active": true
+            }
+        ],
+        "USDCSecondary": [
+            {
+                "address": "0x3Bc1bAa5D220aAFc334dc92c8495a7Ab64C0A791",
+                "deployedBlock": 12502035,
+                "startBlock": 12522788,
+                "endBlock": 12836674,
+                "abiVersion": "21ac80a",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0x2782d2d206df0872136643fb40a713A9E8A177F3",
+                "deployedBlock": 12832430,
+                "startBlock": 12836674,
+                "endBlock": 13502267,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0xb3C24b7F8EB0b391499086f1A341bE7DeC737020",
+                "deployedBlock": 13502055,
+                "startBlock": 13502267,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "USDC"
+                ],
+                "protocols": [
+                    "Aave"
+                ],
+                "protocolsDisplayName": [
+                    "Aave"
+                ],
+                "metaData": {
+                    "N": "Aave",
+                    "DN": "Aave - USDC",
+                    "DY": 49956
+                },
+                "active": true
+            },
+            {
+                "address": "0xe2140f2Af979c96966916D81e7C735ae858581CB",
+                "deployedBlock": 13502055,
+                "startBlock": 13502267,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "USDC"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex"
+                ],
+                "metaData": {
+                    "N": "CRV",
+                    "DN": "CRV - oUSD",
+                    "DY": 81400
+                },
+                "active": true
+            }
+        ],
+        "USDTSecondary": [
+            {
+                "address": "0x44A0a49b3116a04Eef0341ae78Ee26A2816CAea6",
+                "deployedBlock": 12502044,
+                "startBlock": 12522788,
+                "endBlock": 12836674,
+                "abiVersion": "21ac80a",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0xAF97a5313514a34B10EB67b50316C96Df9ef1610",
+                "deployedBlock": 12832449,
+                "startBlock": 12836674,
+                "endBlock": 13502267,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0x1eBd09942E6a23190d21Eda4445FD9baBE501902",
+                "deployedBlock": 13502063,
+                "startBlock": 13502267,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "USDT"
+                ],
+                "protocols": [
+                    "Aave"
+                ],
+                "protocolsDisplayName": [
+                    "Aave"
+                ],
+                "metaData": {
+                    "N": "Aave",
+                    "DN": "Aave - USDT",
+                    "DY": 49513
+                },
+                "active": true
+            },
+            {
+                "address": "0x33070C339f88CB29562eF9Ca7d1e14a87d7451C0",
+                "deployedBlock": 13502063,
+                "startBlock": 13502267,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "USDT"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex"
+                ],
+                "metaData": {
+                    "N": "Curve",
+                    "DN": "CRV - Frax",
+                    "DY": 82000
+                },
+                "active": true
+            }
         ]
     }
 }
