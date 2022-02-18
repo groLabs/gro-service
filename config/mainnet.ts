@@ -17,7 +17,7 @@ export const airdrop = {
 };
 export const gro_gate = {
     folder: '../grogate',
-    files: [[process.env.AVAX_BOUNCER_PROOF_FILE]],
+    files: [process.env.AVAX_BOUNCER_PROOF_FILE],
 };
 export const buoy_start_block = 13304056;
 export const blockchain = {
@@ -324,4 +324,4 @@ export const subgraph = {
 };
 export const argentWalletDetector = {
     address: '0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8',
-}
+};
