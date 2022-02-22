@@ -22,34 +22,13 @@ export const timeout_retry_staller = 1000;
 export const pagerduty = {
     token: process.env.PAGERDUTY_TOKEN,
     from: process.env.PAGERDUTY_TRIGGER_FROM,
-    service: 'P22YTVG',
-    policies: {
-        emerg: {
-            id: 'PD1HPMI',
-            type: 'escalation_policy_reference',
-            summary: 'test policy',
+    senders: {
+        default_sender: {
+            service: 'P22YTVG',
+            priority: 'PM0DQIR',
+            urgency: 'high',
+            policy: 'PD1HPMI',
         },
-        crit: {
-            id: 'PD1HPMI',
-            type: 'escalation_policy_reference',
-            summary: 'test policy',
-        },
-        warn: {
-            id: 'PD1HPMI',
-            type: 'escalation_policy_reference',
-            summary: 'test policy',
-        },
-    },
-    urgency: {
-        high: 'high',
-        low: 'low',
-    },
-    priority: {
-        p1: 'PM0DQIR',
-        p2: 'PIRSQ61',
-        p3: 'PEF4PTB',
-        p4: 'PB5GOEO',
-        p5: 'PXWVO1L',
     },
 };
 export const harvest_callcost = {

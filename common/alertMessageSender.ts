@@ -1,24 +1,38 @@
-import { DISCORD_CHANNELS, sendMessageToChannel } from '../common/discord/discordService';
+import {
+    DISCORD_CHANNELS,
+    sendMessageToChannel,
+} from '../common/discord/discordService';
 import { IDiscordMessage } from '../discordMessage/discordMessageTypes';
-import { createIncident } from '../pagerduty/pagerdutyService';
+import { getPagerdutyIncidentSender } from '../pagerduty/pagerdutyService';
+
+type PagerdutyBody = {
+    senderName?: string;
+    title: string;
+    details: string;
+};
 
 function sendMessageToDiscord(discordMessage: IDiscordMessage): void {
     sendMessageToChannel(DISCORD_CHANNELS.botAlerts, discordMessage);
 }
 
-function triggerPagerdutyIncident(incidentContent: any): void {
-    createIncident(incidentContent);
+function pagerdutySender(incidentContent: PagerdutyBody): any {
+    const senderName = incidentContent.senderName || 'default_sender';
+    return getPagerdutyIncidentSender(senderName).sendIncident(
+        incidentContent.title,
+        incidentContent.details
+    );
 }
 
-function sendAlertMessage(messageBody: { pagerduty?: any; discord: any; }): void {
+function sendAlertMessage(messageBody: {
+    pagerduty?: PagerdutyBody;
+    discord: any;
+}): void {
     if (messageBody.discord) {
         sendMessageToDiscord(messageBody.discord);
     }
     if (messageBody.pagerduty) {
-        triggerPagerdutyIncident(messageBody.pagerduty);
+        pagerdutySender(messageBody.pagerduty);
     }
 }
 
-export {
-    sendAlertMessage,
-};
+export { PagerdutyBody, sendAlertMessage };

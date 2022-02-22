@@ -141,8 +141,7 @@ async function checkTvlChange(
                 discord: discordMessage,
                 pagerduty: {
                     title: '[EMERG] P1 - System’s asset is abnormal',
-                    description: discordMessage.description,
-                    urgency: 'high',
+                    details: discordMessage.description,
                 },
             });
         } else if (diff.gte(criticalThreshold)) {
@@ -151,8 +150,7 @@ async function checkTvlChange(
                 discord: discordMessage,
                 pagerduty: {
                     title: '[CRIT] P1 - System’s asset is abnormal',
-                    description: discordMessage.description,
-                    urgency: 'low',
+                    details: discordMessage.description,
                 },
             });
         } else if (diff.gte(warningThreshold)) {

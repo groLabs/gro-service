@@ -1,10 +1,15 @@
-import { MESSAGE_TYPES, MESSAGE_EMOJI, DISCORD_CHANNELS, sendMessageToChannel } from '../common/discord/discordService';
+import {
+    MESSAGE_TYPES,
+    MESSAGE_EMOJI,
+    DISCORD_CHANNELS,
+    sendMessageToChannel,
+} from '../common/discord/discordService';
 import { getConfig } from '../common/configUtil';
 import { shortAccount } from '../common/digitalUtil';
 import { sendAlertMessage } from '../common/alertMessageSender';
-import { IDiscordMessage } from './discordMessageTypes'
+import { IDiscordMessage } from './discordMessageTypes';
 
-const stableCoinNames = getConfig('stable_coin', false) as string[] || [
+const stableCoinNames = (getConfig('stable_coin', false) as string[]) || [
     'DAI',
     'USDC',
     'USDT',
@@ -63,8 +68,7 @@ function safetyCheckMessage() {
         discord: discordMessage,
         pagerduty: {
             title: '[CRIT] B11 - Price safety check returned false',
-            description: discordMessage.description,
-            urgency: 'low',
+            details: discordMessage.description,
         },
     });
 }

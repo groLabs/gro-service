@@ -1,4 +1,9 @@
-import { MESSAGE_TYPES, DISCORD_CHANNELS, sendMessage, sendMessageToChannel } from '../common/discord/discordService';
+import {
+    MESSAGE_TYPES,
+    DISCORD_CHANNELS,
+    sendMessage,
+    sendMessageToChannel,
+} from '../common/discord/discordService';
 import { sendAlertMessage } from '../common/alertMessageSender';
 
 const stableCoin = ['DAI', 'USDC', 'USDT'];
@@ -20,7 +25,7 @@ function curvePriceMessage(content) {
     } else {
         const pagerdutyBody = {
             title: '[EMERG] B10 - Curve price check returned false',
-            description: msg,
+            details: msg,
         };
 
         sendAlertMessage({ discord: discordMessage, pagerduty: pagerdutyBody });
@@ -45,7 +50,7 @@ function chainlinkPriceMessage(content) {
     } else {
         const pagerdutyBody = {
             title: '[EMERG] B9 - Chainlink price check returned false',
-            description: msg,
+            details: msg,
         };
 
         sendAlertMessage({ discord: discordMessage, pagerduty: pagerdutyBody });
@@ -74,8 +79,4 @@ function strategyCheckMessage(content) {
     }
 }
 
-export {
-    chainlinkPriceMessage,
-    curvePriceMessage,
-    strategyCheckMessage,
-};
+export { chainlinkPriceMessage, curvePriceMessage, strategyCheckMessage };

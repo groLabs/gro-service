@@ -1,7 +1,10 @@
 import fetch from 'node-fetch';
 import { sendAlertMessage } from './alertMessageSender';
 
-async function sendHealthCheckFailedAlert(type: string, url: string): Promise<void> {
+async function sendHealthCheckFailedAlert(
+    type: string,
+    url: string
+): Promise<void> {
     let discordDescription: string;
     let pagerdutyDescription: string;
     let pagerdutyTitle: string;
@@ -26,12 +29,16 @@ async function sendHealthCheckFailedAlert(type: string, url: string): Promise<vo
         },
         pagerduty: {
             title: pagerdutyTitle,
-            description: pagerdutyDescription,
+            details: pagerdutyDescription,
         },
     });
 }
 
-async function checkServerHealth(type: string, urls: string[], logger: { info: (arg0: string) => void; }): Promise<void> {
+async function checkServerHealth(
+    type: string,
+    urls: string[],
+    logger: { info: (arg0: string) => void }
+): Promise<void> {
     for (let i = 0; i < urls.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         if (urls[i] !== undefined && urls[i] !== '') {
@@ -57,6 +64,4 @@ async function checkServerHealth(type: string, urls: string[], logger: { info: (
     }
 }
 
-export {
-    checkServerHealth,
-};
+export { checkServerHealth };

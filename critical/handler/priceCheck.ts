@@ -79,7 +79,6 @@ export async function checkCurveCoinRatio(providerKey, configCoinRatios) {
 
     if (ratioAbnormal.length) {
         const { ratio, configRatio, level, coin } = ratioAbnormal[0];
-        const urgency = level === 'EMERG' ? 'high' : 'low';
         const ratioPercent = ratio.div(BigNumber.from(100));
         const configRatioPercent = configRatio.div(BigNumber.from(100));
         sendAlertMessage({
@@ -87,9 +86,8 @@ export async function checkCurveCoinRatio(providerKey, configCoinRatios) {
                 description: `[${level}] P5 - Curve coin balance compare | Coin ${coin} is ${ratioPercent}% below ${configRatioPercent}% of tri-pool`,
             },
             pagerduty: {
-                urgency,
                 title: `[${level}] P5 - Curve coin balance compare`,
-                description: `[${level}] P5 - Coin ${coin} is ${ratioPercent}% below ${configRatioPercent}% of tri-pool`,
+                details: `[${level}] P5 - Coin ${coin} is ${ratioPercent}% below ${configRatioPercent}% of tri-pool`,
             },
         });
     }
@@ -120,7 +118,6 @@ export async function checkChainlinkPrice(price, configPrice) {
 
     if (ratioAbnormal.length) {
         const { key, level, value } = ratioAbnormal[0];
-        const urgency = level === 'EMERG' ? 'high' : 'low';
         const pricePairValue = formatNumber(value, 4, 2);
         const pridePair = key.toUpperCase().split('TO');
         sendAlertMessage({
@@ -128,9 +125,8 @@ export async function checkChainlinkPrice(price, configPrice) {
                 description: `[${level}] P4 - Chainlink coin pair compare | Ratio between ${pridePair[0]} and ${pridePair[1]} is ${pricePairValue}, threshold 1.4`,
             },
             pagerduty: {
-                urgency,
                 title: `[${level}] P4 - Chainlink price pair compare`,
-                description: `[${level}] P4 - Ratio between ${pridePair[0]} and ${pridePair[1]} is ${pricePairValue}, threshold 1.4`,
+                details: `[${level}] P4 - Ratio between ${pridePair[0]} and ${pridePair[1]} is ${pricePairValue}, threshold 1.4`,
             },
         });
     }

@@ -156,8 +156,7 @@ async function checkStrategyChange(blockTag) {
                             discord: discordMessage,
                             pagerduty: {
                                 title: `[EMERG] P2 - Strategy ${strategyName}'s asset isabnormal`,
-                                description: discordMessage.description,
-                                urgency: 'high',
+                                details: discordMessage.description,
                             },
                         });
                     } else if (diff.gte(criticalThreshold)) {
@@ -166,8 +165,7 @@ async function checkStrategyChange(blockTag) {
                             discord: discordMessage,
                             pagerduty: {
                                 title: `[CRIT] P2 - Strategy ${strategyName}'s asset is abnormal`,
-                                description: discordMessage.description,
-                                urgency: 'low',
+                                details: discordMessage.description,
                             },
                         });
                     } else if (diff.gte(warningThreshold)) {
