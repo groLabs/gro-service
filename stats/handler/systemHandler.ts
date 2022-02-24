@@ -487,16 +487,13 @@ async function getExposureStats(blockTag, systemStats) {
                         concentration: strategy.share,
                     });
                 }
-                if (i === 2 && k === 1) {
-                    fraxStrategyShare = strategy.share;
-                }
-                if (i === 3 && k === 0) {
+                if (i === 2 && k === 1 && j===1 ) {
                     exposureStableCoin.push({
                         name: 'FRAX',
                         display_name: 'FRAX',
-                        concentration: strategy.share.add(fraxStrategyShare),
+                        concentration: strategy.share,
                     });
-                }
+                } 
             }
         }
     }

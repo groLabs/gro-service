@@ -1,6 +1,6 @@
 import axios from 'axios';
 import BN from 'bignumber.js';
-import { BigNumber } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { ContractNames } from '../../registry/registry';
 import { getConfig } from '../../common/configUtil';
 import {
@@ -132,8 +132,9 @@ async function getUnclaimedBonus(account) {
 
 async function getClaimTotalBonusOnV1(account) {
     let claimTotal = new BN(0);
+        let checkSumAddress = ethers.utils.getAddress(account)
     if (routeConfig.db_bot) {
-        const endPoint = `${routeConfig.db_bot.hostname}/${routeConfig.db_bot.path}${account}`;
+        const endPoint = `${routeConfig.db_bot.hostname}/${routeConfig.db_bot.path}${checkSumAddress}`;
         const res = await axios.get(endPoint).catch((error) => {
             logger.error(error);
         });

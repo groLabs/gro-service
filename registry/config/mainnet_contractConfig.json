@@ -63,9 +63,22 @@
         "AVAXBouncer"
     ],
     "contractHistories": {
-        "GroHodler": [
+	        "GroHodler": [
             {
                 "address": "0xEf10eac205817A88C6d504d02481053E85A8F927",
+                "deployedBlock": 13405194,
+                "startBlock": 13405194,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            },
+            {
+                "address": "0x8b4A30c8884ca4AfF1E4c82Cce79802a63E61397",
                 "deployedBlock": 13405194,
                 "startBlock": 13405194,
                 "endBlock": null,
@@ -91,6 +104,19 @@
                 "protocolsDisplayName": [],
                 "metaData": {},
                 "active": true
+            },
+            {
+                "address": "0x748218256AfE0A19a88EBEB2E0C5Ce86d2178360",
+                "deployedBlock": 14268701,
+                "startBlock": 14268760,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
             }
         ],
         "VotingAggregator": [
@@ -98,6 +124,19 @@
                 "address": "0x2c57F9067E50E819365df7c5958e2c4C14A91C2D",
                 "deployedBlock": 13548959,
                 "startBlock": 13548959,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            },
+            {
+                "address": "0x519A27636e13d177e5C50aaF758B72dE9360651c",
+                "deployedBlock": 14268740,
+                "startBlock": 14268756,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Vesting",
@@ -125,9 +164,9 @@
         ],
         "LPTokenStakerV2": [
             {
-                "address": "0x0000000000000000000000000000000000000000",
-                "deployedBlock": -1,
-                "startBlock": -1,
+                "address": "0x2E32bAd45a1C29c1EA27cf4dD588DF9e68ED376C",
+                "deployedBlock": 14268645,
+                "startBlock": 14268775,
                 "endBlock": null,
                 "abiVersion": "fa8e260",
                 "tag": "Vesting",
