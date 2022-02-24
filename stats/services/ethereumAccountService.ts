@@ -854,7 +854,9 @@ async function ethereumPersonalStats(account) {
             }
         });
         data.groVault.withdraw.forEach((log) => {
+            if (log.name === 'LogNewWithdrawal') {
             groVaultWithdrawAmount = groVaultWithdrawAmount.plus(log.amount);
+            }
         });
 
         // calcuate powerd deposti & withdraw
@@ -866,7 +868,9 @@ async function ethereumPersonalStats(account) {
             }
         });
         data.powerD.withdraw.forEach((log) => {
+            if (log.name === 'LogNewWithdrawal') {
             powerDWithdrawAmount = powerDWithdrawAmount.plus(log.amount);
+            }
         });
         // amount_added
         const depositAmount = powerDDepositAmount.plus(groVaultDepositAmount);
