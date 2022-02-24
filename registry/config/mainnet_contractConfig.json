@@ -348,7 +348,7 @@
                 ],
                 "metaData": {
                     "N": "CRV",
-                    "DN": "CRV - mUSD",
+                    "DN": "3CRV - mUSD",
                     "DY": 80000
                 },
                 "active": true
@@ -424,7 +424,7 @@
                 ],
                 "metaData": {
                     "N": "CRV",
-                    "DN": "CRV - oUSD",
+                    "DN": "3CRV - oUSD",
                     "DY": 81400
                 },
                 "active": true
@@ -500,7 +500,7 @@
                 ],
                 "metaData": {
                     "N": "Curve",
-                    "DN": "CRV - Frax",
+                    "DN": "3CRV - Frax",
                     "DY": 82000
                 },
                 "active": true
