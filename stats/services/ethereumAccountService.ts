@@ -496,6 +496,23 @@ function isGTokenTransferToStaker(log) {
     return result;
 }
 
+function isGTokenTransferFromStaker(log) {
+    const [from ,] = log.args;
+    const stakers = [
+        getLatestContractsAddress()[
+            ContractNames.LPTokenStakerV1
+        ].address.toLowerCase(),
+        getLatestContractsAddress()[
+            ContractNames.LPTokenStakerV2
+        ].address.toLowerCase(),
+    ];
+    let result = false;
+    if (stakers.includes(from.toLowerCase())) {
+        result = true;
+    }
+    return result;
+}
+
 async function getPowerDTransferHistories(account) {
     const logs = await getGTokenTransferEvents(account, true);
 
@@ -504,6 +521,7 @@ async function getPowerDTransferHistories(account) {
     const { deposit, withdraw } = logs as any;
     deposit.forEach((log) => {
         if (log.args[0] === ZERO_ADDRESS) return;
+        if (isGTokenTransferFromStaker(log)) return;
         log.amount = new BN(log.args[2].toString());
         log.coin_amount = log.args[2].toString();
         transferIn.push(log);
