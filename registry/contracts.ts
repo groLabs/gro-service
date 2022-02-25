@@ -148,7 +148,10 @@ async function newSystemLatestVaultStrategyContracts(signerInfo) {
             result[vaultAdapterAddresses[i]];
         const { contract: vaultInstance, strategies } = vault;
         // eslint-disable-next-line no-await-in-loop
-        const strategyLength = await vaultAdapter.getStrategiesLength();
+        // force to strategy 2
+        // because we manually to change the vaultAdapter.getStrategiesLength to 2
+        // const strategyLength = await vaultAdapter.getStrategiesLength();
+        const strategyLength = 2;
         result[vaultAdapterAddresses[i]].strategyLength = strategyLength;
         for (let j = 0; j < strategyLength; j += 1) {
             // eslint-disable-next-line no-await-in-loop
