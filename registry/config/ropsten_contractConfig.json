@@ -374,7 +374,7 @@
         ],
         "LPTokenStakerV1": [
             {
-                "address": "0x65B9Bbf7EAb046033d5E8988Ba1aB67A615F15E4",
+                "address": "0x960B4287040092804672431595348a09bE1f58D9",
                 "deployedBlock": 11938261,
                 "startBlock": 11938261,
                 "endBlock": null,
@@ -389,7 +389,7 @@
         ],
         "LPTokenStakerV2": [
             {
-                "address": "0x5B55057A6d761B0462f2EC83Cfcb5f4Ae32F4CEE",
+                "address": "0xBDD6433D47deCaE546966de9F89B2B5A44dF1E3A",
                 "deployedBlock": 11938890,
                 "startBlock": 11938890,
                 "endBlock": null,

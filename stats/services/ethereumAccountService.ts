@@ -479,6 +479,40 @@ async function getGroVaultTransferFromHistories(account) {
     return logs;
 }
 
+function isGTokenTransferToStaker(log) {
+    const [, to] = log.args;
+    const stakers = [
+        getLatestContractsAddress()[
+            ContractNames.LPTokenStakerV1
+        ].address.toLowerCase(),
+        getLatestContractsAddress()[
+            ContractNames.LPTokenStakerV2
+        ].address.toLowerCase(),
+    ];
+    let result = false;
+    if (stakers.includes(to.toLowerCase())) {
+        result = true;
+    }
+    return result;
+}
+
+function isGTokenTransferFromStaker(log) {
+    const [from] = log.args;
+    const stakers = [
+        getLatestContractsAddress()[
+            ContractNames.LPTokenStakerV1
+        ].address.toLowerCase(),
+        getLatestContractsAddress()[
+            ContractNames.LPTokenStakerV2
+        ].address.toLowerCase(),
+    ];
+    let result = false;
+    if (stakers.includes(from.toLowerCase())) {
+        result = true;
+    }
+    return result;
+}
+
 async function getPowerDTransferHistories(account) {
     const logs = await getGTokenTransferEvents(account, true);
 
@@ -487,12 +521,14 @@ async function getPowerDTransferHistories(account) {
     const { deposit, withdraw } = logs as any;
     deposit.forEach((log) => {
         if (log.args[0] === ZERO_ADDRESS) return;
+        if (isGTokenTransferFromStaker(log)) return;
         log.amount = new BN(log.args[2].toString());
         log.coin_amount = log.args[2].toString();
         transferIn.push(log);
     });
     withdraw.forEach((log) => {
         if (log.args[1] === ZERO_ADDRESS) return;
+        if (isGTokenTransferToStaker(log)) return;
         log.amount = new BN(log.args[2].toString());
         log.coin_amount = log.args[2].toString();
         transferOut.push(log);
@@ -662,6 +698,7 @@ async function parseVaultTransferFromLogs(logs, gtokenApprovaltxns) {
     deposit.forEach((log) => {
         // skip mint gtoken
         if (log.args[0] === ZERO_ADDRESS) return;
+        if (isGTokenTransferFromStaker(log)) return;
         if (gtokenApprovaltxns.includes(log.transactionHash)) {
             transferIn.push(log);
             groVaultFactors[`${log.blockNumber}`] = 0;
@@ -671,6 +708,7 @@ async function parseVaultTransferFromLogs(logs, gtokenApprovaltxns) {
     withdraw.forEach((log) => {
         // skip burn gtoken
         if (log.args[1] === ZERO_ADDRESS) return;
+        if (isGTokenTransferToStaker(log)) return;
         if (gtokenApprovaltxns.includes(log.transactionHash)) {
             transferOut.push(log);
             groVaultFactors[`${log.blockNumber}`] = 0;
@@ -736,6 +774,7 @@ async function getTransactionHistories(account) {
 
     const approval = await getApprovalHistories(account);
     const gtokenApprovalTxns = approval.gtokenApprovalTxn;
+
     const transferFromEvents = await parseVaultTransferFromLogs(
         groVaultTransferFromLogs,
         [...gtokenApprovalTxns]
@@ -762,10 +801,12 @@ async function getCombinedGROBalance(account) {
 async function getGVTBalanceOnStaker(account) {
     const userInfo = await latestStaker.userInfo(stakerGVTPoolId, account);
     const latestGroVault = getLatestGroVault();
-    const usdBalance = await latestGroVault.getShareAssets(userInfo[0]).catch((error) => {
-        // logger.error(error);
-        return usdBalance;
-    });
+    const usdBalance = await latestGroVault
+        .getShareAssets(userInfo[0])
+        .catch((error) => {
+            // logger.error(error);
+            return usdBalance;
+        });
     return usdBalance;
 }
 
@@ -913,6 +954,7 @@ async function ethereumPersonalStats(account) {
             CONTRACT_ASSET_DECIMAL,
             amountDecimal
         );
+
         result.net_amount_added.gvt = div(
             netGvtAmount,
             CONTRACT_ASSET_DECIMAL,
