@@ -473,27 +473,27 @@ async function getExposureStats(blockTag, systemStats) {
                         concentration: strategy.share,
                     });
                 }
-                if (i === 0 && j === 1 && k === 1) {
+                if (i === 0 && k === 1) {
                     exposureStableCoin.push({
                         name: 'MUSD',
                         display_name: 'MUSD',
                         concentration: strategy.share,
                     });
                 }
-                if (i === 1 && j === 1 && k === 1) {
+                if (i === 1 && k === 1) {
                     exposureStableCoin.push({
                         name: 'OUSD',
                         display_name: 'OUSD',
                         concentration: strategy.share,
                     });
                 }
-                if (i === 2 && j === 1 && k === 1) {
+                if (i === 2 && k === 1 && j===1 ) {
                     exposureStableCoin.push({
                         name: 'FRAX',
                         display_name: 'FRAX',
                         concentration: strategy.share,
                     });
-                }
+                } 
             }
         }
     }
