@@ -55,12 +55,14 @@ const ContractNames = {
     USDTVaultAdaptor: 'USDTVaultAdaptor',
     USDTPrimary: 'USDTPrimary',
     USDTSecondary: 'USDTSecondary',
-    CRVVault: '3CRVVault',
-    CRVVaultAdaptor: '3CRVVaultAdaptor',
-    CRVPrimary: '3CrvPrimary',
+    // CRVVault: '3CRVVault',
+    // CRVVaultAdaptor: '3CRVVaultAdaptor',
+    // CRVPrimary: '3CrvPrimary',
     BalancerWeightedPool: 'BalancerWeightedPool',
     TokenCounter: 'TokenCounter',
     GroHodler: 'GroHodler',
+    LPTokenStakerV1: 'LPTokenStakerV1',
+    LPTokenStakerV2: 'LPTokenStakerV2',
     GroDAOVesting: 'GroDAOVesting',
     GroVesting: 'GroVesting',
     GroDAOToken: 'GroDAOToken',
@@ -117,13 +119,16 @@ ContractABIMapping[ContractNames.USDTVault] = 'Vault';
 ContractABIMapping[ContractNames.USDTVaultAdaptor] = 'VaultAdaptorYearnV2_032';
 ContractABIMapping[ContractNames.USDTPrimary] = 'BaseStrategy';
 ContractABIMapping[ContractNames.USDTSecondary] = 'BaseStrategy';
-ContractABIMapping[ContractNames.CRVVault] = 'Vault';
-ContractABIMapping[ContractNames.CRVVaultAdaptor] = 'VaultAdaptorYearnV2_032';
-ContractABIMapping[ContractNames.CRVPrimary] = 'BaseStrategy';
+// ContractABIMapping[ContractNames.CRVVault] = 'Vault';
+// ContractABIMapping[ContractNames.CRVVaultAdaptor] = 'VaultAdaptorYearnV2_032';
+// ContractABIMapping[ContractNames.CRVPrimary] = 'BaseStrategy';
 ContractABIMapping[ContractNames.BalancerWeightedPool] = 'BalancerWeightedPool';
 ContractABIMapping[ContractNames.TokenCounter] = 'TokenCounter';
 ContractABIMapping[ContractNames.GroHodler] = 'GroHodler';
 ContractABIMapping[ContractNames.GroDAOVesting] = 'GroDAOVesting';
+ContractABIMapping[ContractNames.GroHodler] = 'GroHodler';
+ContractABIMapping[ContractNames.LPTokenStakerV1] = 'LPTokenStakerV1';
+ContractABIMapping[ContractNames.LPTokenStakerV2] = 'LPTokenStaker';
 ContractABIMapping[ContractNames.GroVesting] = 'GroVesting';
 ContractABIMapping[ContractNames.GroDAOToken] = 'GroDAOToken';
 ContractABIMapping[ContractNames.VotingAggregator] = 'VoteAggregator';

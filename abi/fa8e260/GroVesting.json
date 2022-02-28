@@ -5,6 +5,11 @@
                 "internalType": "contract IVesting",
                 "name": "_oldVesting",
                 "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "timeLock",
+                "type": "address"
             }
         ],
         "stateMutability": "nonpayable",
@@ -88,7 +93,7 @@
         "anonymous": false,
         "inputs": [
             {
-                "indexed": false,
+                "indexed": true,
                 "internalType": "address",
                 "name": "user",
                 "type": "address"
@@ -222,6 +227,19 @@
         "anonymous": false,
         "inputs": [
             {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "pause",
+                "type": "bool"
+            }
+        ],
+        "name": "LogSetStatus",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
                 "indexed": true,
                 "internalType": "address",
                 "name": "user",
@@ -307,6 +325,19 @@
                 "internalType": "uint256",
                 "name": "",
                 "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "TIME_LOCK",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
             }
         ],
         "stateMutability": "view",
@@ -534,6 +565,19 @@
     },
     {
         "inputs": [],
+        "name": "paused",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "renounceOwnership",
         "outputs": [],
         "stateMutability": "nonpayable",
@@ -600,6 +644,19 @@
             }
         ],
         "name": "setMaxLockPeriod",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bool",
+                "name": "pause",
+                "type": "bool"
+            }
+        ],
+        "name": "setStatus",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"

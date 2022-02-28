@@ -1,5 +1,5 @@
 import BN from 'bignumber.js';
-import { ethers, BigNumber } from 'ethers';
+import { ethers } from 'ethers';
 import { getFilterEvents } from '../../common/logFilter';
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import { ContractCallError, ParameterError } from '../../common/error';
@@ -10,9 +10,11 @@ import { getTransactions, getTransaction } from './generatePersonTransaction';
 import { shortAccount } from '../../common/digitalUtil';
 import { AppendGTokenMintOrBurnAmountToLog } from '../common/tool';
 import { getAccountFailTransactions } from '../handler/failedTransactionHandler';
+import { getUserBonusInfo } from './vestingBonusService';
 
 import { ContractNames } from '../../registry/registry';
 import { newContract } from '../../registry/contracts';
+import { getUserPoolsInfo } from './stakerPoolService';
 
 import {
     getContractsHistory,
@@ -21,21 +23,27 @@ import {
 
 import { getLatestSystemContract } from '../common/contractStorage';
 import { getAllAirdropResults } from './airdropService';
-// const { getPoolTransactions } = require('./lpoolService');
+import LpTokenStakerABI from '../abi/LPTokenStaker.json';
 
 import erc20ABI from '../../abi/ERC20.json';
 
 const logger = require('../statsLogger');
 
-const fromBlock = getConfig('blockchain.start_block');
 const fromTimestamp = getConfig('blockchain.start_timestamp');
 const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 const ratioDecimal = getConfig('blockchain.ratio_decimal_place', false) || 4;
+const stakerAddress = getConfig('staker_pools.contracts.staker_address');
+const stakerGVTPoolId = getConfig('staker_pools.single_staking_100_gvt_3.pid');
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 const providerKey = 'stats_personal';
 const provider = getAlchemyRpcProvider(providerKey);
+const latestStaker = new ethers.Contract(
+    stakerAddress,
+    LpTokenStakerABI,
+    provider
+);
 
 const accountDepositHandlerHistories = {};
 const accountWithdrawHandlerHistories = {};
@@ -388,9 +396,18 @@ async function getTransferHistories(
         depositLogs.push(...inLogs[i].data);
         withdrawLogs.push(...outLogs[i].data);
     }
+
+    // skip these transfer out events that stake gtoken to LPTokenStaker
+    const distWithdrawLogs = [];
+    withdrawLogs.forEach((log) => {
+        const [, to] = log.args;
+        if (to.toLowerCase() !== stakerAddress.toLowerCase()) {
+            distWithdrawLogs.push(log);
+        }
+    });
     return {
         deposit: depositLogs,
-        withdraw: withdrawLogs,
+        withdraw: distWithdrawLogs,
     };
 }
 
@@ -462,6 +479,40 @@ async function getGroVaultTransferFromHistories(account) {
     return logs;
 }
 
+function isGTokenTransferToStaker(log) {
+    const [, to] = log.args;
+    const stakers = [
+        getLatestContractsAddress()[
+            ContractNames.LPTokenStakerV1
+        ].address.toLowerCase(),
+        getLatestContractsAddress()[
+            ContractNames.LPTokenStakerV2
+        ].address.toLowerCase(),
+    ];
+    let result = false;
+    if (stakers.includes(to.toLowerCase())) {
+        result = true;
+    }
+    return result;
+}
+
+function isGTokenTransferFromStaker(log) {
+    const [from] = log.args;
+    const stakers = [
+        getLatestContractsAddress()[
+            ContractNames.LPTokenStakerV1
+        ].address.toLowerCase(),
+        getLatestContractsAddress()[
+            ContractNames.LPTokenStakerV2
+        ].address.toLowerCase(),
+    ];
+    let result = false;
+    if (stakers.includes(from.toLowerCase())) {
+        result = true;
+    }
+    return result;
+}
+
 async function getPowerDTransferHistories(account) {
     const logs = await getGTokenTransferEvents(account, true);
 
@@ -470,12 +521,14 @@ async function getPowerDTransferHistories(account) {
     const { deposit, withdraw } = logs as any;
     deposit.forEach((log) => {
         if (log.args[0] === ZERO_ADDRESS) return;
+        if (isGTokenTransferFromStaker(log)) return;
         log.amount = new BN(log.args[2].toString());
         log.coin_amount = log.args[2].toString();
         transferIn.push(log);
     });
     withdraw.forEach((log) => {
         if (log.args[1] === ZERO_ADDRESS) return;
+        if (isGTokenTransferToStaker(log)) return;
         log.amount = new BN(log.args[2].toString());
         log.coin_amount = log.args[2].toString();
         transferOut.push(log);
@@ -506,7 +559,7 @@ async function getGTokenUSDAmount(tokenAddress, share) {
     let usdAmount = 0;
     if (groVault.address === tokenAddress) {
         usdAmount = await groVault.getShareAssets(share).catch((error) => {
-            logger.error(error);
+            // logger.error(error);
             return share;
         });
     } else {
@@ -645,6 +698,7 @@ async function parseVaultTransferFromLogs(logs, gtokenApprovaltxns) {
     deposit.forEach((log) => {
         // skip mint gtoken
         if (log.args[0] === ZERO_ADDRESS) return;
+        if (isGTokenTransferFromStaker(log)) return;
         if (gtokenApprovaltxns.includes(log.transactionHash)) {
             transferIn.push(log);
             groVaultFactors[`${log.blockNumber}`] = 0;
@@ -654,6 +708,7 @@ async function parseVaultTransferFromLogs(logs, gtokenApprovaltxns) {
     withdraw.forEach((log) => {
         // skip burn gtoken
         if (log.args[1] === ZERO_ADDRESS) return;
+        if (isGTokenTransferToStaker(log)) return;
         if (gtokenApprovaltxns.includes(log.transactionHash)) {
             transferOut.push(log);
             groVaultFactors[`${log.blockNumber}`] = 0;
@@ -719,6 +774,7 @@ async function getTransactionHistories(account) {
 
     const approval = await getApprovalHistories(account);
     const gtokenApprovalTxns = approval.gtokenApprovalTxn;
+
     const transferFromEvents = await parseVaultTransferFromLogs(
         groVaultTransferFromLogs,
         [...gtokenApprovalTxns]
@@ -742,6 +798,23 @@ async function getCombinedGROBalance(account) {
     return div(balance, CONTRACT_ASSET_DECIMAL, amountDecimal);
 }
 
+async function getGVTBalanceOnStaker(account) {
+    const userInfo = await latestStaker.userInfo(stakerGVTPoolId, account);
+    const latestGroVault = getLatestGroVault();
+    const usdBalance = await latestGroVault
+        .getShareAssets(userInfo[0])
+        .catch((error) => {
+            // logger.error(error);
+            return usdBalance;
+        });
+    return usdBalance;
+}
+
+async function getPwrDBalanceOnStaker(account) {
+    const usdBalance = await latestStaker.getUserPwrd(account);
+    return usdBalance;
+}
+
 async function ethereumPersonalStats(account) {
     const result = {
         status: 'error',
@@ -757,6 +830,8 @@ async function ethereumPersonalStats(account) {
         current_balance: {},
         net_returns: {},
         net_returns_ratio: {},
+        vest_bonus: {},
+        pools: {},
         address: account,
         gro_balance_combined: '0',
     } as any;
@@ -772,10 +847,17 @@ async function ethereumPersonalStats(account) {
         promises.push(getTransactionHistories(account));
         promises.push(getLatestPowerD().getAssets(account));
         promises.push(getLatestGroVault().getAssets(account));
+        promises.push(getPwrDBalanceOnStaker(account));
+        promises.push(getGVTBalanceOnStaker(account));
+
         const results = await Promise.all(promises);
         const data = results[0];
-        const pwrdBalance = new BN(results[1].toString());
-        const gvtBalance = new BN(results[2].toString());
+        const pwrdBalanceInToken = new BN(results[1].toString());
+        const gvtBalanceInToken = new BN(results[2].toString());
+        const pwrdBalanceInStaker = new BN(results[3].toString());
+        const gvtBalanceInStaker = new BN(results[4].toString());
+        const pwrdBalance = pwrdBalanceInToken.plus(pwrdBalanceInStaker);
+        const gvtBalance = gvtBalanceInToken.plus(gvtBalanceInStaker);
 
         // logger.info(`${account} historical: ${JSON.stringify(data)}`);
         const { groVault, powerD, approval } = data;
@@ -796,6 +878,13 @@ async function ethereumPersonalStats(account) {
         result.airdrops = airdrops;
         const combinedGROBalance = await getCombinedGROBalance(account);
         result.gro_balance_combined = combinedGROBalance;
+        const vestBonusInfo = await getUserBonusInfo(
+            account,
+            latestBlock.number
+        );
+        result.vest_bonus = vestBonusInfo;
+
+        result.pools = await getUserPoolsInfo(account, latestBlock.number);
 
         // calculate groVault deposit & withdraw
         let groVaultDepositAmount = new BN(0);
@@ -865,6 +954,7 @@ async function ethereumPersonalStats(account) {
             CONTRACT_ASSET_DECIMAL,
             amountDecimal
         );
+
         result.net_amount_added.gvt = div(
             netGvtAmount,
             CONTRACT_ASSET_DECIMAL,

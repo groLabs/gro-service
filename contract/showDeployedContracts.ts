@@ -28,8 +28,8 @@ async function getDeployedContracts(controllerAddress) {
     for (let i = 0; i < vaultAddresses.length; i += 1) {
         logger.info(`Vault adapter ${i + 1} : ${vaultAddresses[i]}`);
     }
-    const curveVaultAddress = await controller.curveVault();
-    logger.info(`Curve vault adapter : ${curveVaultAddress}`);
+    // const curveVaultAddress = await controller.curveVault();
+    // logger.info(`Curve vault adapter : ${newSystemLatestVaultStrategyContractsAddress}`);
 
     // pnl
     const pnlAddress = await controller.pnl();

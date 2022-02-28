@@ -10,6 +10,7 @@ import moment from 'moment';
 import { findBlockByDate } from '../../database/common/globalUtil';
 import { callSubgraph } from '../../common/subgraphCaller';
 import { floatToBN } from '../../common/digitalUtil';
+import { fetchInstantUnlockPercentange } from '../services/lpoolService'
 
 const logger = require('../statsLogger');
 
@@ -52,6 +53,7 @@ const pool2Config = getConfig('staker_pools.uniswap_v2_5050_gro_usdc_2');
 const pool3Config = getConfig('staker_pools.single_staking_100_gvt_3');
 const pool4Config = getConfig('staker_pools.curve_meta_pwrd_3crv_4');
 const pool5Config = getConfig('staker_pools.balancer_v2_8020_gro_weth_5');
+const pool6Config = getConfig('staker_pools.single_staking_100_pwrd_6');
 
 // Uniswap v2 subgraph
 const sgUniswapURL = getConfig('subgraph.uniswapV2_graph_url');
@@ -275,12 +277,16 @@ async function getGroPriceFromUniswap(blockTag) {
     const gvtPriceInUsd = await groVault.getPricePerShare(blockTag);
     logger.info(`gvtPriceInUsd ${gvtPriceInUsd}`);
 
+    const pwrdPriceInUsd = await groPwrd.getPricePerShare(blockTag);
+    logger.info(`pwrdPriceInUsd ${gvtPriceInUsd}`);
+
     const groPriceInUsd = gvtPriceInUsd.mul(groPriceInGvt).div(ONE);
     logger.info(`groPriceInUsd ${groPriceInUsd}`);
     return {
         groPriceInGvt,
         groPriceInUsd,
         gvtPriceInUsd,
+        pwrdPriceInUsd,
     };
 }
 
@@ -652,6 +658,49 @@ async function getSingleGvtStats(
     return poolInfo;
 }
 
+
+async function getSinglePwrdStats(
+    priceOracle,
+    groPerBlock,
+    totalAllocPoint,
+    currentApy,
+    latestBlock
+) {
+    const totalPwrd = await groPwrd.totalSupply();
+    const singleStaked = await groPwrd.balanceOf(lpTokenStaker.address);
+    logger.info(`stacked single ${singleStaked}`);
+    const totalPwrdTvl = singleStaked;
+    logger.info(`totalPwrdTvl single tvl ${totalPwrdTvl}`);
+
+    const poolSixInfo = await lpTokenStaker.poolInfo(
+        pool6Config.pid,
+        latestBlock
+    );
+    let rewardApy = BigNumber.from(0);
+    if (!singleStaked.isZero()) {
+        rewardApy = groPerBlock
+            .mul(1)
+            .mul(BLOCKS_PER_YEAR)
+            .mul(poolSixInfo.allocPoint)
+            .mul(ONE)
+            .div(totalAllocPoint)
+            .div(singleStaked);
+    }
+    const tokenApy = currentApy.pwrd.mul(GTOKEN_SCALE);
+    const totalApy = rewardApy.add(tokenApy);
+    logger.info(`totalApy ${totalApy}`);
+    const poolInfo = {
+        tvl: totalPwrdTvl,
+        stakedLP: singleStaked,
+        totalLP: totalPwrd,
+        lpPrice: priceOracle.pwrdPriceInUsd,
+        totalApy,
+        tokenApy,
+        rewardApy,
+    };
+    return poolInfo;
+}
+
 async function getCurveLpApy(curvePool, latestBlockTag, startBlock?) {
     const currentVirtualPrice = await curvePool.get_virtual_price(
         latestBlockTag
@@ -1012,6 +1061,46 @@ const getBalancerGroWethStats = async (
     }
 };
 
+async function getGvtApy(currentApy, latestBlock) {
+    await initContracts();
+    const priceOracle = await getGroPriceFromUniswap(latestBlock);
+    // reward in staker per block
+    const groPerBlock = await lpTokenStaker.groPerBlock(latestBlock);
+    const totalAllocPoint = await lpTokenStaker.totalAllocPoint(latestBlock);
+    const poolSingleGvtStats = await getSingleGvtStats(
+        priceOracle,
+        groPerBlock,
+        totalAllocPoint,
+        currentApy,
+        latestBlock
+    );
+
+    const tokenApy = (poolSingleGvtStats.tokenApy as BigNumber).toString()
+
+    return { upper: printPercent(new BN(tokenApy)), lower: printPercent(new BN(tokenApy).times(new BN(await fetchInstantUnlockPercentange())))}
+
+}
+
+async function getPwrdApy(currentApy, latestBlock) {
+    await initContracts();
+    const priceOracle = await getGroPriceFromUniswap(latestBlock);
+    // reward in staker per block
+    const groPerBlock = await lpTokenStaker.groPerBlock(latestBlock);
+    const totalAllocPoint = await lpTokenStaker.totalAllocPoint(latestBlock);
+    const poolSinglePwrdStats = await getSinglePwrdStats(
+        priceOracle,
+        groPerBlock,
+        totalAllocPoint,
+        currentApy,
+        latestBlock
+    );
+
+    const tokenApy = (poolSinglePwrdStats.tokenApy as BigNumber).toString()
+
+    return { upper: printPercent(new BN(tokenApy)), lower: printPercent(new BN(tokenApy).times(new BN(await fetchInstantUnlockPercentange())))}
+
+}
+
 async function getPools(currentApy, latestBlock) {
     await initContracts();
     const NAH = 'NA';
@@ -1073,6 +1162,14 @@ async function getPools(currentApy, latestBlock) {
         groPerBlock,
         totalAllocPoint,
         block24hAgo
+    );
+    logger.info(' -- pool6');
+    const poolSinglePwrdStats = await getSinglePwrdStats(
+        priceOracle,
+        groPerBlock,
+        totalAllocPoint,
+        currentApy,
+        latestBlock
     );
 
     const pools = [
@@ -1267,6 +1364,34 @@ async function getPools(currentApy, latestBlock) {
                 },
             },
         },
+        {
+            deposit_url: pool6Config.deposit_url,
+            remove_url: pool6Config.remove_url,
+            name: 'single_staking_100_pwrd_6',
+            display_name: 'PWRD',
+            type: 'ss_1',
+            display_type: 'PWRD Pool',
+            display_order: pool6Config.display_order,
+            tokens: ['pwrd'],
+            pid: pool6Config.pid,
+            tvl: printUsd(poolSinglePwrdStats.tvl),
+            tvl_staked: printUsd(poolSinglePwrdStats.tvl),
+            staked: poolSinglePwrdStats.stakedLP.toString(),
+            unstaked: poolSinglePwrdStats.totalLP
+                .sub(poolSinglePwrdStats.stakedLP)
+                .toString(),
+            required_tokens_num: '1',
+            disable: pool6Config.disable,
+            lp_usd_price: printUsd(poolSinglePwrdStats.lpPrice),
+            apy: {
+                current: {
+                    total: printPercent(poolSinglePwrdStats.totalApy),
+                    token: printPercent(poolSinglePwrdStats.tokenApy),
+                    pool_fees: '0.0000',
+                    reward: printPercent(poolSinglePwrdStats.rewardApy),
+                },
+            },
+        },
     ];
     const tokenPriceUsd = {
         pwrd: '1.0000000',
@@ -1288,4 +1413,6 @@ export {
     getGroPriceFromUniswap,
     getPools,
     getLpTokenAmountOfBalancerPool,
+    getGvtApy,
+    getPwrdApy,
 };

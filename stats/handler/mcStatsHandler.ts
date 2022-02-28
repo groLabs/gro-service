@@ -12,7 +12,7 @@ import { getSystemApy } from './apyHandler';
 import { getGtokenApy, getHodlBonusApy } from './currentApyHandler';
 import { getAvaxSystemStats } from './avaxSystemHandler';
 import { getTvlStats, getSystemStats, getExposureStats } from './systemHandler';
-import { getPools } from './groTokenHandler';
+import { getPools, getGvtApy, getPwrdApy } from './groTokenHandler';
 import { ParameterError } from '../../common/error';
 import { apyStatsMessage } from '../../discordMessage/statsMessage';
 
@@ -137,6 +137,18 @@ async function generateGroStatsMcFile() {
     const poolsInfo = await getPools((apy as any).current, latestBlockTag);
     stats.token_price_usd = poolsInfo.tokenPriceUsd;
     stats.pools = poolsInfo.pools;
+
+    const gvtBoostApy = await getGvtApy((apy as any).current, latestBlockTag);
+    const pwrdBoostApy = await getPwrdApy((apy as any).current, latestBlockTag);
+
+    stats.pwrdBoost = {
+        upperBoostApy: pwrdBoostApy.upper,
+        lowerBoostApy: pwrdBoostApy.lower,
+    };
+    stats.gvtBoost = {
+        upperBoostApy: gvtBoostApy.upper,
+        lowerBoostApy: gvtBoostApy.lower,
+    };
     const statsFilename = `${statsDir}/gro-stats-${latestBlock.timestamp}.json`;
     fs.writeFileSync(statsFilename, JSON.stringify(stats));
     const argentStatsFilename = `${statsDir}/argent-stats-${latestBlock.timestamp}.json`;

@@ -136,7 +136,7 @@ const STABLECOINS = [
 const RISK_FREE_RATE = BigNumber.from(2400);
 
 const BLOCKS_OF_3DAYS = 130000;
-const BLOCKS_OF_12HOURS = 2200;
+const BLOCKS_OF_12HOURS = 21600;
 
 let START_TIME_STAMP = []
 let START_BLOCK = []
@@ -495,9 +495,6 @@ async function calculateTimeWeightedOpenPositionReturn(
             adjustedEvents ? adjustedEvents.length : 0
         }`
     );
-    const wantOpen = await strategyContract.calcEstimatedWant({
-        blockTag: openBlock,
-    });
 
     const strategyInfo = await vaultAdapter.strategies(
         strategyContract.address,
@@ -505,14 +502,14 @@ async function calculateTimeWeightedOpenPositionReturn(
             blockTag: endBlock,
         }
     );
-    let currentEstimated = await strategyContract.estimatedTotalAssets({
+    const wantOpen = await strategyContract.estimatedTotalAssets({
         blockTag: endBlock,
     });
-    const profit = currentEstimated.sub(strategyInfo.totalDebt);
+    const profit = wantOpen.sub(strategyInfo.totalDebt);
     const wantClose = wantOpen.add(profit);
 
     logger.info(
-        `open position gain/loss vaultIndex ${vaultIndex} ${positionId} currentEstimated ${currentEstimated} - totalDebt ${strategyInfo.totalDebt} profit ${profit} wantOpen ${wantOpen} wantClose ${wantClose}`
+        `open position gain/loss vaultIndex ${vaultIndex} ${positionId} currentEstimated ${wantOpen} - totalDebt ${strategyInfo.totalDebt} profit ${profit} wantOpen ${wantOpen} wantClose ${wantClose}`
     );
     // eslint-disable-next-line max-len
     const { totalDebt } = await vaultAdapter.strategies(
@@ -591,13 +588,13 @@ async function calculateTimeWeightedPositionReturn(
             blockTag: endBlock,
         }
     );
-    const gain = strategyInfoAfter.totalGain.sub(strategyInfoBefore.totalGain);
-    const loss = strategyInfoAfter.totalLoss.sub(strategyInfoBefore.totalLoss);
+    // const gain = strategyInfoAfter.totalGain.sub(strategyInfoBefore.totalGain);
+    // const loss = strategyInfoAfter.totalLoss.sub(strategyInfoBefore.totalLoss);
 
-    let positionProfit = gain.sub(loss);
-    if (gain.eq(ZERO) && loss.eq(ZERO)) {
-        positionProfit = endEstimated.sub(strategyInfoAfter.totalDebt);
-    }
+    // let positionProfit = gain.sub(loss);
+    // if (gain.eq(ZERO) && loss.eq(ZERO)) {
+    let positionProfit = endEstimated.sub(strategyInfoAfter.totalDebt);
+    // }
     let wantOpen = wantClose.sub(positionProfit);
     logger.info(
         `position gain/loss vaultIndex ${vaultIndex} ${positionId} ${strategyInfoAfter.totalDebt} + ${strategyInfoAfter.totalGain} ${strategyInfoBefore.totalGain} - ${strategyInfoAfter.totalLoss} ${strategyInfoBefore.totalLoss} | endEstimated ${endEstimated} wantBalance ${wantBalance} wantOpen ${wantOpen} wantClose ${wantClose}`
@@ -759,6 +756,9 @@ async function getAvaxExposure(
     let debt = debts[0];
     if (vaultIndex > 5) {
         debt = debts[1];
+    }
+    if (vaultIndex < 3) {
+        debt = positionInfo.debt[0];
     }
     console.log(`collateralSize ${collateralSize} ${debt}`);
     const swapPool = POOLS[vaultIndex];
@@ -1002,33 +1002,30 @@ async function calculateVaultUnlockedReturn(
 
     let vaultReturn3Days = vaultReturn;
 
-    if (endBlock - BLOCKS_OF_3DAYS > startBlock) {
-        const blockNumber3DaysAgo = endBlock - BLOCKS_OF_3DAYS;
-        const block3DaysAgo = await provider.getBlock(blockNumber3DaysAgo);
-        logger.info(`block.timestamp 3days ago ${block3DaysAgo.timestamp}`);
-        // const startTotalSupply = await vaultAdapter.totalSupply({
-        //     blockTag: blockNumber3DaysAgo,
-        // });
-        // const startEstimated = await vaultAdapter.totalEstimatedAssets({
-        //     blockTag: blockNumber3DaysAgo,
-        // });
-        const open3DaysAgoPricePerShare = await vaultAdapter.getPricePerShare({
-            blockTag: blockNumber3DaysAgo,
+    if (endBlock - BLOCKS_OF_12HOURS > startBlock) {
+        const blockNumber12hoursAgo = endBlock - BLOCKS_OF_12HOURS;
+        const TWELVE_HOURS_SECONDS = '43200';
+        const block12hoursAgo = await provider.getBlock(blockNumber12hoursAgo);
+        logger.info(`block.timestamp 12hours ago ${block12hoursAgo.timestamp}`);
+
+        const open12hoursAgoPricePerShare = await vaultAdapter.getPricePerShare({
+            blockTag: blockNumber12hoursAgo,
         });
-        const duration = BigNumber.from(endTimestamp - block3DaysAgo.timestamp);
-        vaultReturn3Days = closePricePerShare
-            .sub(open3DaysAgoPricePerShare)
-            .mul(SHARE_DECIMAL)
-            .mul(MS_PER_YEAR)
-            .div(openPricePerShare)
-            .div(duration);
-        console.log(
-            `~~~~ unlocked 3days vaultIndex ${vaultIndex} ${duration} ${blockNumber3DaysAgo} closePricePerShare ${closePricePerShare} open3DaysAgoPricePerShare ${open3DaysAgoPricePerShare}`
+        const duration = BigNumber.from(endTimestamp - block12hoursAgo.timestamp);
+        vaultReturn3Days = new BN(closePricePerShare.toString())
+                           .dividedBy(new BN(open12hoursAgoPricePerShare.toString()))
+                           .minus(new BN('1'))
+                           .multipliedBy(new BN('31556926'))
+                           .dividedBy(new BN(TWELVE_HOURS_SECONDS))
+        vaultReturn3Days = BigNumber.from(vaultReturn3Days.multipliedBy(new BN(SHARE_DECIMAL.toString())).integerValue().toString())
+
+            logger.info(
+            `~~~~ unlocked 12hours vaultIndex ${vaultIndex} ${duration} ${blockNumber12hoursAgo} closePricePerShare ${closePricePerShare} open12hoursagoPricePerShare ${open12hoursAgoPricePerShare}`
         );
     }
 
     logger.info(
-        `realized  vaultReturn ${vaultReturn} vaultReturn3Days ${vaultReturn3Days}`
+        `realized  vaultReturn ${vaultReturn} vaultReturn12hours ${vaultReturn3Days}`
     );
     return { vaultReturn, vaultReturn3Days };
 }
@@ -1369,7 +1366,7 @@ async function generateVaultData(
 async function getAvaxSystemStats() {
     const block = await provider.getBlock('latest');
     logger.info(`block.number ${block.number}`);
-    const blockTag = { blockTag: block.number - 1 };
+    const blockTag = { blockTag: block.number - 2 };
     logger.info('SystemStats');
     const latestVaults = await getLatestVaultAdapters();
     const latestStrategies = await getLatestStrategies();

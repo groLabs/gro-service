@@ -1,5 +1,8 @@
 import { ethers } from 'ethers';
-import { newSystemLatestContracts, newSystemLatestVaultStrategyContracts } from '../../registry/contracts';
+import {
+    newSystemLatestContracts,
+    newSystemLatestVaultStrategyContracts,
+} from '../../registry/contracts';
 import { ContractABIMapping } from '../../registry/registry';
 import { getLatestContractsAddress } from '../../registry/registryLoader';
 
@@ -9,22 +12,26 @@ const latestSystemContracts = {};
 const latestContractsOnAVAX = {};
 const latestVaultStrategyContracts = {};
 const latestStableCoins = {};
+const historyContractsInstance = {};
 const contractCallFailedCount = { personalStats: 0, personalMCStats: 0 };
 
 function newContract(contractName, contractInfo, providerOrWallet) {
-    const contractAddress = contractInfo.address;
-    let contract;
-    if (contractAddress === '0x0000000000000000000000000000000000000000') {
-        logger.error(`Not find address for contract: ${contractName}`);
-        return contract;
+    const contractAddress = contractInfo.address.toLowerCase();
+    if (!historyContractsInstance[contractAddress]) {
+        let contract;
+        if (contractAddress === '0x0000000000000000000000000000000000000000') {
+            logger.error(`Not find address for contract: ${contractName}`);
+            return contract;
+        }
+        const abiVersion = contractInfo.abiVersion.replace(/\./g, '-');
+        const contractABIFileName = ContractABIMapping[contractName];
+        // eslint-disable-next-line global-require
+        const abi = require(`../../abi/${abiVersion}/${contractABIFileName}.json`);
+        contract = new ethers.Contract(contractAddress, abi, providerOrWallet);
+        logger.info(`Created new ${contractName} contract.`);
+        historyContractsInstance[contractAddress] = { contract, contractInfo };
     }
-    const abiVersion = contractInfo.abiVersion.replace(/\./g, '-');
-    const contractABIFileName = ContractABIMapping[contractName];
-    // eslint-disable-next-line global-require
-    const abi = require(`../../abi/${abiVersion}/${contractABIFileName}.json`);
-    contract = new ethers.Contract(contractAddress, abi, providerOrWallet);
-    logger.info(`Created new ${contractName} contract.`);
-    return { contract, contractInfo };
+    return historyContractsInstance[contractAddress];
 }
 
 function getLatestSystemContract(contractName, providerKey) {
@@ -97,4 +104,5 @@ export {
     getLatestVaultsAndStrategies,
     getLatestStableCoins,
     reloadData,
+    newContract,
 };

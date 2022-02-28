@@ -7,8 +7,8 @@
                 "type": "address"
             },
             {
-                "internalType": "address",
-                "name": "oldHodler",
+                "internalType": "contract IHodler",
+                "name": "_oldHodler",
                 "type": "address"
             }
         ],
@@ -32,10 +32,16 @@
         "anonymous": false,
         "inputs": [
             {
-                "indexed": false,
+                "indexed": true,
                 "internalType": "address",
                 "name": "user",
                 "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "vest",
+                "type": "bool"
             },
             {
                 "indexed": false,
@@ -158,7 +164,13 @@
         "type": "function"
     },
     {
-        "inputs": [],
+        "inputs": [
+            {
+                "internalType": "bool",
+                "name": "vest",
+                "type": "bool"
+            }
+        ],
         "name": "claim",
         "outputs": [
             {
@@ -197,7 +209,45 @@
         "type": "function"
     },
     {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "getLastClaimTime",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "lastClaimTime",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [],
+        "name": "getPendingBonus",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            }
+        ],
         "name": "getPendingBonus",
         "outputs": [
             {
@@ -224,12 +274,38 @@
     },
     {
         "inputs": [],
+        "name": "oldHodler",
+        "outputs": [
+            {
+                "internalType": "contract IHodler",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "owner",
         "outputs": [
             {
                 "internalType": "address",
                 "name": "",
                 "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "paused",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
             }
         ],
         "stateMutability": "view",
@@ -290,6 +366,19 @@
             }
         ],
         "name": "setStatus",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_vester",
+                "type": "address"
+            }
+        ],
+        "name": "setVester",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"

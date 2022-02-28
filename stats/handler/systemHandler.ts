@@ -92,13 +92,13 @@ async function checkStrategyChange(blockTag) {
         const vaultStrategy = await getStrategies();
         const latestContractInfo = getLatestContractsAddressByAddress();
         const yearnVaults = await getLatestYearnVaults();
-        const emergencyThreshold = BigNumber.from(500);
-        const criticalThreshold = BigNumber.from(300);
-        const warningThreshold = BigNumber.from(150);
+        const emergencyThreshold = BigNumber.from(2500);
+        const criticalThreshold = BigNumber.from(2000);
+        const warningThreshold = BigNumber.from(1500);
         // not check curve strategy
         for (
             let vaultIndex = 0;
-            vaultIndex < vaults.length - 1;
+            vaultIndex < vaults.length;
             vaultIndex += 1
         ) {
             const { strategies } = vaultStrategy[vaultIndex];
@@ -203,23 +203,23 @@ async function getCurveStrategyStats(vault, vaultTotalAsset, blockTag) {
     return strategies;
 }
 
-async function getCurveVaultStats(blockTag) {
-    const curveVault = getLatestSystemContract(
-        ContractNames.CRVVaultAdaptor
-    ).contract;
-    const vaultTotalAsset = await curveVault.totalAssets(blockTag);
-    const assetUsd = await getUsdValueForLP(vaultTotalAsset, blockTag);
-    const strategyStats = await getCurveStrategyStats(
-        curveVault,
-        vaultTotalAsset,
-        blockTag
-    );
-    return {
-        name: 'Curve yVault',
-        amount: assetUsd,
-        strategies: strategyStats,
-    };
-}
+// async function getCurveVaultStats(blockTag) {
+//     const curveVault = getLatestSystemContract(
+//         ContractNames.CRVVaultAdaptor
+//     ).contract;
+//     const vaultTotalAsset = await curveVault.totalAssets(blockTag);
+//     const assetUsd = await getUsdValueForLP(vaultTotalAsset, blockTag);
+//     const strategyStats = await getCurveStrategyStats(
+//         curveVault,
+//         vaultTotalAsset,
+//         blockTag
+//     );
+//     return {
+//         name: 'Curve yVault',
+//         amount: assetUsd,
+//         strategies: strategyStats,
+//     };
+// }
 
 async function getStrategiesStats(
     vault,
@@ -266,7 +266,7 @@ async function getVaultStats(blockTag) {
     const { contracts: vaultStrategyContracts } = vaultAndStrateyInfo;
 
     const vaultAssets = [];
-    for (let vaultIndex = 0; vaultIndex < vaults.length - 1; vaultIndex += 1) {
+    for (let vaultIndex = 0; vaultIndex < vaults.length; vaultIndex += 1) {
         const vault = vaults[vaultIndex];
         const vaultTotalAsset = await vault.totalAssets(blockTag);
         const assetUsd = await getUsdValue(
@@ -289,8 +289,8 @@ async function getVaultStats(blockTag) {
             strategies: strategyStats,
         });
     }
-    const curveVaultStats = await getCurveVaultStats(blockTag);
-    vaultAssets.push(curveVaultStats);
+    // const curveVaultStats = await getCurveVaultStats(blockTag);
+    // vaultAssets.push(curveVaultStats);
 
     return vaultAssets;
 }
@@ -370,6 +370,41 @@ async function getPrepareCalculation(systemStats, blockTag) {
     return systemState;
 }
 
+async function getMegaExposureStats(blockTag, systemStats) {
+    logger.info(`getMegaExposureStats blockTag : ${JSON.stringify(blockTag)}`);
+    const exposureProtocol = [];
+    const exposureStableCoin = [];
+    const vaultsStats = systemStats.vault;
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { vaultsAddress: adapterAddresses, contracts: vaultStrategies } =
+        vaultAndStrateyInfo;
+    for (let i = 0; i < vaultsStats.length; i += 1) {
+        const vault = vaultsStats[i];
+        const { contract: vaultAdaptor, contractInfo: vaultAdaptorInfo } =
+            vaultStrategies[adapterAddresses[i]];
+        console.log(
+            `vault index ${i} ${JSON.stringify(vaultAdaptorInfo)} protocol ${
+                vaultAdaptorInfo.protocols[0]
+            } tokens ${vaultAdaptorInfo.tokens[0]}`
+        );
+        exposureProtocol.push({
+            name: vaultAdaptorInfo.protocols[0],
+            display_name: vaultAdaptorInfo.protocolsDisplayName[0],
+            concentration: vault.share,
+        });
+        exposureStableCoin.push({
+            name: vaultAdaptorInfo.tokens[0],
+            display_name: vaultAdaptorInfo.tokens[0],
+            concentration: vault.share,
+        });
+    }
+    const exposureStats = {
+        stablecoins: exposureStableCoin,
+        protocols: exposureProtocol,
+    };
+    return exposureStats;
+}
+
 async function getExposureStats(blockTag, systemStats) {
     const { contract: exposure } = getLatestSystemContract(
         ContractNames.exposure
@@ -394,6 +429,15 @@ async function getExposureStats(blockTag, systemStats) {
         });
         preCal = await getPrepareCalculation(systemStats, blockTag);
     }
+    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
+    const { vaultsAddress: adapterAddresses, contracts: vaultStrategies } =
+        vaultAndStrateyInfo;
+    const { contractInfo: adaptorInfo } = vaultStrategies[adapterAddresses[0]];
+    logger.info(`check protocols length ${adaptorInfo.protocols.length}`);
+    if (adaptorInfo.protocols.length > 0) {
+        return getMegaExposureStats(blockTag, systemStats);
+    }
+
     const riskResult = await exposure.getExactRiskExposure(preCal, blockTag);
     const exposureStableCoin = riskResult[0].map((concentration, i) => ({
         name: stableCoins[i],
@@ -403,9 +447,8 @@ async function getExposureStats(blockTag, systemStats) {
     const exposureProtocol = [];
     const protocols = [];
     const vaultsStats = systemStats.vault;
-    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
-    const { vaultsAddress: adapterAddresses, contracts: vaultStrategies } =
-        vaultAndStrateyInfo;
+    let fraxStrategyShare = BigNumber.from(0);
+
     for (let i = 0; i < vaultsStats.length; i += 1) {
         const vault = vaultsStats[i];
         const { strategies } = vaultStrategies[adapterAddresses[i]].vault;
@@ -430,24 +473,40 @@ async function getExposureStats(blockTag, systemStats) {
                         concentration: strategy.share,
                     });
                 }
+                if (i === 0 && k === 1) {
+                    exposureStableCoin.push({
+                        name: 'MUSD',
+                        display_name: 'MUSD',
+                        concentration: strategy.share,
+                    });
+                }
+                if (i === 1 && k === 1) {
+                    exposureStableCoin.push({
+                        name: 'OUSD',
+                        display_name: 'OUSD',
+                        concentration: strategy.share,
+                    });
+                }
+                if (i === 2 && k === 1 && j===1 ) {
+                    exposureStableCoin.push({
+                        name: 'FRAX',
+                        display_name: 'FRAX',
+                        concentration: strategy.share,
+                    });
+                } 
             }
         }
     }
     // curve's stable coin
     const curveVaultIndex = adapterAddresses.length - 1;
 
-    exposureProtocol.forEach((item) => {
-        if (item.name === 'Curve') {
-            exposureStableCoin.push({
-                name: stableCoins[curveVaultIndex],
-                display_name: stableCoins[curveVaultIndex],
-                concentration: item.concentration,
-            });
-            item.concentration = vaultsStats[3].share;
-            logger.info(`curve ${vaultsStats[3].share} ${item.concentration}`);
-        }
-        logger.info(`exposureProtocol ${item.name} ${item.concentration}`);
-    });
+    // exposureProtocol.forEach((item) => {
+    //     if (item.name === 'Curve') {
+    //         item.concentration = vaultsStats[3].share;
+    //         logger.info(`curve ${vaultsStats[3].share} ${item.concentration}`);
+    //     }
+    //     logger.info(`exposureProtocol ${item.name} ${item.concentration}`);
+    // });
     const exposureStats = {
         stablecoins: exposureStableCoin,
         protocols: exposureProtocol,

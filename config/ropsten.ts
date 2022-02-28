@@ -131,10 +131,10 @@ export const transaction_long_pending = {
     rebalance: 60000,
 };
 export const keep_stats_file_number = 250;
-export const stats_folder = '../stats';
+export const stats_folder = '../stats/ropsten';
 export const log_folder = '../logs';
-export const blockNumberFile = '../stats/lastBlockNumber.json';
-export const stats_latest = '../stats/gro-latest.json';
+export const blockNumberFile = '../stats/ropsten/lastBlockNumber.json';
+export const stats_latest = '../stats/ropsten/gro-latest.json';
 export const pendingTransactionFile = '../pendingTransaction.json';
 export const vault_name = [
     'DAI yVault',
@@ -197,7 +197,7 @@ export const contracts = {
 export const staker_pools = {
     contracts: {
         gro_address: '0x9892fff05b42adc940c251ca879d912dfa94c731',
-        staker_address: '0xCD72ccA707C61C2d7361F99B6c66bC312dB50BF7',
+        staker_address: '0xbdd6433d47decae546966de9f89b2b5a44df1e3a',
         gro_price_oracle_address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
         uniswap_gro_gvt_pool_address:
             '0x02910bC117C6F1E7347aEF1A8e94a0B45041EF3F',
@@ -215,7 +215,7 @@ export const staker_pools = {
         deposit_url: 'NA',
         remove_url: 'NA',
         display_order: '1',
-        pid: '1',
+        pid: '0',
         disable: 'false',
     },
     uniswap_v2_5050_gro_gvt_1: {
@@ -224,7 +224,7 @@ export const staker_pools = {
         remove_url:
             'https://app.uniswap.org/#/remove/v2/0x4394be2135357833A9e18D5A73B2a0C629efE984/0x9892fFf05B42AdC940C251cA879D912Dfa94c731',
         display_order: '2',
-        pid: '0',
+        pid: '1',
         disable: 'false',
         start_block: 11117850,
     },
@@ -234,7 +234,7 @@ export const staker_pools = {
         remove_url:
             'https://app.uniswap.org/#/remove/v2/0xa553cda420072a759ac352dca4cec70709829614/0x9892fFf05B42AdC940C251cA879D912Dfa94c731',
         display_order: '3',
-        pid: '6',
+        pid: '2',
         disable: 'false',
         start_block: 11136489,
     },
@@ -242,14 +242,14 @@ export const staker_pools = {
         deposit_url: 'NA',
         remove_url: 'NA',
         display_order: '4',
-        pid: '2',
+        pid: '3',
         disable: 'false',
     },
     curve_meta_pwrd_3crv_4: {
         deposit_url: 'NA',
         remove_url: 'NA',
         display_order: '5',
-        pid: '3',
+        pid: '4',
         disable: 'false',
         start_block: 11124360,
     },
@@ -263,6 +263,13 @@ export const staker_pools = {
         disable: 'false',
         start_block: 13355180,
         bal_per_week: 1000,
+    },
+    single_staking_100_pwrd_6: {
+        deposit_url: 'NA',
+        remove_url: 'NA',
+        display_order: '6',
+        pid: '6',
+        disable: 'false',
     },
 };
 export const discord = {
@@ -303,6 +310,10 @@ export const route = {
         path: '/stats/gro_personal_position?network=ropsten&address=',
         port: process.env.BOT_DEV_PORT,
     },
+    db_bot: {
+        hostname: 'https://ajj49or3nh.execute-api.eu-west-2.amazonaws.com',
+        path: 'database/gro_bonus_claimed?network=ropsten&address=',
+    },
 };
 export const subgraph = {
     uniswapV2_graph_url:
@@ -316,4 +327,4 @@ export const subgraph = {
 };
 export const argentWalletDetector = {
     address: '0xF230cF8980BaDA094720C01308319eF192F0F311',
-}
+};
