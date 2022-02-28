@@ -1366,7 +1366,7 @@ async function generateVaultData(
 async function getAvaxSystemStats() {
     const block = await provider.getBlock('latest');
     logger.info(`block.number ${block.number}`);
-    const blockTag = { blockTag: block.number - 1 };
+    const blockTag = { blockTag: block.number - 2 };
     logger.info('SystemStats');
     const latestVaults = await getLatestVaultAdapters();
     const latestStrategies = await getLatestStrategies();
