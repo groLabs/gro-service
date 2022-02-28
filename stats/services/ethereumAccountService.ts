@@ -497,7 +497,7 @@ function isGTokenTransferToStaker(log) {
 }
 
 function isGTokenTransferFromStaker(log) {
-    const [from ,] = log.args;
+    const [from] = log.args;
     const stakers = [
         getLatestContractsAddress()[
             ContractNames.LPTokenStakerV1
@@ -698,6 +698,7 @@ async function parseVaultTransferFromLogs(logs, gtokenApprovaltxns) {
     deposit.forEach((log) => {
         // skip mint gtoken
         if (log.args[0] === ZERO_ADDRESS) return;
+        if (isGTokenTransferFromStaker(log)) return;
         if (gtokenApprovaltxns.includes(log.transactionHash)) {
             transferIn.push(log);
             groVaultFactors[`${log.blockNumber}`] = 0;
