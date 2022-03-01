@@ -372,7 +372,7 @@
                     "Frax"
                 ],
                 "metaData": {
-                    "N": "StableConvexXPool",
+                    "N": "Convex XPool Dai primary",
                     "DN": "Convex-FRAX-3CRV",
                     "DY": 60000
                 },
@@ -466,7 +466,7 @@
                     "mStable"
                 ],
                 "metaData": {
-                    "N": "StableConvexXPool",
+                    "N": "Convex XPool Dai secondary",
                     "DN": "Convex-mUSD-3CRV",
                     "DY": 60000
                 },
@@ -556,7 +556,7 @@
                     "Convex"
                 ],
                 "metaData": {
-                    "N": "StableConvexXPool",
+                    "N": "Convex XPool USDC",
                     "DN": "Convex-MIM-3CRV",
                     "DY": 110000
                 },
@@ -637,7 +637,7 @@
                     "Convex"
                 ],
                 "metaData": {
-                    "N": "StableConvexXPool",
+                    "N": "Convex XPool USDT",
                     "DN": "Convex-UST-wormhole-3CRV",
                     "DY": 110000
                 },
