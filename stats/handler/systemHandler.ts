@@ -456,8 +456,11 @@ async function getExposureStats(blockTag, systemStats) {
         for (let j = 0; j < strategyList.length; j += 1) {
             const { contractInfo } = strategies[j];
             const strategy = strategyList[j];
-            const { protocols: strategyProtocols, protocolsDisplayName } =
-                contractInfo;
+            const {
+                protocols: strategyProtocols,
+                tokens: strategyTokens,
+                protocolsDisplayName,
+            } = contractInfo;
             for (let k = 0; k < strategyProtocols.length; k += 1) {
                 const index = protocols.indexOf(strategyProtocols[k]);
                 if (index >= 0) {
@@ -473,27 +476,15 @@ async function getExposureStats(blockTag, systemStats) {
                         concentration: strategy.share,
                     });
                 }
-                if (i === 0 && k === 1) {
+            }
+            for (let t = 0; t < strategyTokens.length; t += 1) {
+                if (!stableCoins.includes(strategyTokens[t])) {
                     exposureStableCoin.push({
-                        name: 'MUSD',
-                        display_name: 'MUSD',
+                        name: strategyTokens[t],
+                        display_name: strategyTokens[t],
                         concentration: strategy.share,
                     });
                 }
-                if (i === 1 && k === 1) {
-                    exposureStableCoin.push({
-                        name: 'OUSD',
-                        display_name: 'OUSD',
-                        concentration: strategy.share,
-                    });
-                }
-                if (i === 2 && k === 1 && j===1 ) {
-                    exposureStableCoin.push({
-                        name: 'FRAX',
-                        display_name: 'FRAX',
-                        concentration: strategy.share,
-                    });
-                } 
             }
         }
     }
