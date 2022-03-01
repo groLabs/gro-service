@@ -411,21 +411,13 @@ async function getTransferHistories(
     };
 }
 
-async function getGTokenTransferEvents(
-    account,
-    isPWRD,
-    groVaultOriginalTransfer?
-) {
+async function getGTokenTransferEvents(account, isPWRD) {
     const contractName = isPWRD ? ContractNames.powerD : ContractNames.groVault;
     const tokenHistory = getContractsHistory()[contractName];
     const gtokens = isPWRD ? getPowerDContracts() : getGroVaultContracts();
     const inTransfers = [];
     const outTransfers = [];
     const contractInterfaces = [];
-    let logSign = isPWRD ? 'Transfer' : 'LogTransfer';
-    if (!isPWRD && groVaultOriginalTransfer) {
-        logSign = 'Transfer';
-    }
     for (let i = 0; i < tokenHistory.length; i += 1) {
         const contractInfo = tokenHistory[i];
         const { startBlock, address } = contractInfo;
@@ -433,10 +425,10 @@ async function getGTokenTransferEvents(
             ? contractInfo.endBlock
             : 'latest';
         const contract = gtokens[address];
-        const inFilter = contract.filters[logSign](null, account);
+        const inFilter = contract.filters.Transfer(null, account);
         inFilter.fromBlock = startBlock;
         inFilter.toBlock = endBlock;
-        const outFilter = contract.filters[logSign](account);
+        const outFilter = contract.filters.Transfer(account);
         outFilter.fromBlock = startBlock;
         outFilter.toBlock = endBlock;
         inTransfers.push(inFilter);
@@ -456,29 +448,35 @@ async function getGTokenTransferEvents(
     return logs;
 }
 
-async function getGroVaultTransferHistories(account) {
-    const logs = await getGTokenTransferEvents(account, false);
-
-    (logs as any).deposit.forEach((log) => {
-        log.amount = new BN(log.args[2].toString())
-            .multipliedBy(CONTRACT_ASSET_DECIMAL)
-            .div(new BN(log.args[3].toString()));
-        log.coin_amount = log.args[2].toString();
+async function getGVTRefactor(logs) {
+    const groVaultFactors = {};
+    const { deposit, withdraw } = logs;
+    deposit.forEach((log) => {
+        // skip mint gtoken
+        if (log.args[0] === ZERO_ADDRESS) return;
+        groVaultFactors[`${log.blockNumber}`] = 0;
     });
-    (logs as any).withdraw.forEach((log) => {
-        log.amount = new BN(log.args[2].toString())
-            .multipliedBy(CONTRACT_ASSET_DECIMAL)
-            .div(new BN(log.args[3].toString()));
-        log.coin_amount = log.args[2].toString();
+    withdraw.forEach((log) => {
+        // skip burn gtoken
+        if (log.args[1] === ZERO_ADDRESS) return;
+        groVaultFactors[`${log.blockNumber}`] = 0;
     });
-    return logs;
+    const blockNumbers = Object.keys(groVaultFactors);
+    const factorPromises = [];
+    for (let i = 0; i < blockNumbers.length; i += 1) {
+        factorPromises.push(
+            getLatestGroVault().factor({
+                blockTag: parseInt(blockNumbers[i], 10),
+            })
+        );
+    }
+    const factorPromiseResult = await Promise.all(factorPromises);
+    for (let i = 0; i < blockNumbers.length; i += 1) {
+        const blockNumber = blockNumbers[i];
+        groVaultFactors[blockNumber] = factorPromiseResult[i];
+    }
+    return groVaultFactors;
 }
-
-async function getGroVaultTransferFromHistories(account) {
-    const logs = await getGTokenTransferEvents(account, false, true);
-    return logs;
-}
-
 function isGTokenTransferToStaker(log) {
     const [, to] = log.args;
     const stakers = [
@@ -513,6 +511,37 @@ function isGTokenTransferFromStaker(log) {
     return result;
 }
 
+async function getGroVaultTransferHistories(account) {
+    const logs = await getGTokenTransferEvents(account, false);
+    const gvtRefactors = await getGVTRefactor(logs);
+
+    const transferIn = [];
+    const transferOut = [];
+    const { deposit, withdraw } = logs as any;
+
+    deposit.forEach((log) => {
+        if (log.args[0] === ZERO_ADDRESS) return;
+        if (isGTokenTransferFromStaker(log)) return;
+        const factor = gvtRefactors[`${log.blockNumber}`];
+        log.amount = new BN(log.args[2].toString())
+            .multipliedBy(CONTRACT_ASSET_DECIMAL)
+            .div(new BN(factor.toString()));
+        log.coin_amount = log.args[2].toString();
+        transferIn.push(log);
+    });
+    withdraw.forEach((log) => {
+        if (log.args[1] === ZERO_ADDRESS) return;
+        if (isGTokenTransferToStaker(log)) return;
+        const factor = gvtRefactors[`${log.blockNumber}`];
+        log.amount = new BN(log.args[2].toString())
+            .multipliedBy(CONTRACT_ASSET_DECIMAL)
+            .div(new BN(factor.toString()));
+        log.coin_amount = log.args[2].toString();
+        transferOut.push(log);
+    });
+    return { deposit: transferIn, withdraw: transferOut };
+}
+
 async function getPowerDTransferHistories(account) {
     const logs = await getGTokenTransferEvents(account, true);
 
@@ -534,19 +563,6 @@ async function getPowerDTransferHistories(account) {
         transferOut.push(log);
     });
     return { deposit: transferIn, withdraw: transferOut };
-}
-
-function getStableCoinIndex(tokenSymbio) {
-    switch (tokenSymbio) {
-        case 'DAI':
-            return 0;
-        case 'USDC':
-            return 1;
-        case 'USDT':
-            return 2;
-        default:
-            throw new ParameterError(`Not found token symbo: ${tokenSymbio}`);
-    }
 }
 
 function isGToken(tokenSymbio) {
@@ -758,13 +774,11 @@ async function getTransactionHistories(account) {
     promises.push(getPowerDTransferHistories(account));
     promises.push(getDepositHistories(account));
     promises.push(getWithdrawHistories(account));
-    promises.push(getGroVaultTransferFromHistories(account));
     const result = await Promise.all(promises);
     const powerD = result[1];
     const depositLogs = result[2];
     const groVault = result[0];
     const withdrawLogs = result[3];
-    const groVaultTransferFromLogs = result[4];
 
     groVault.deposit.push(...depositLogs.groVault);
     powerD.deposit.push(...depositLogs.powerD);
@@ -773,15 +787,6 @@ async function getTransactionHistories(account) {
     powerD.withdraw.push(...withdrawLogs.powerD);
 
     const approval = await getApprovalHistories(account);
-    const gtokenApprovalTxns = approval.gtokenApprovalTxn;
-
-    const transferFromEvents = await parseVaultTransferFromLogs(
-        groVaultTransferFromLogs,
-        [...gtokenApprovalTxns]
-    );
-
-    groVault.deposit.push(...transferFromEvents.deposit);
-    groVault.withdraw.push(...transferFromEvents.withdraw);
 
     return { groVault, powerD, approval: approval.approvalEvents };
 }
