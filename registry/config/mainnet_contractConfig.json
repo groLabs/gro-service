@@ -63,7 +63,7 @@
         "AVAXBouncer"
     ],
     "contractHistories": {
-	        "GroHodler": [
+        "GroHodler": [
             {
                 "address": "0xEf10eac205817A88C6d504d02481053E85A8F927",
                 "deployedBlock": 13405194,
@@ -288,6 +288,97 @@
                 "active": true
             }
         ],
+        "DAIPrimary": [
+            {
+                "address": "0x14a0982C6cEB2ac27f404f0dFf97aaF908be0ec4",
+                "deployedBlock": 12502027,
+                "startBlock": 12522788,
+                "endBlock": 12742593,
+                "abiVersion": "21ac80a",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0xACc4D9CFEca661eF5eee226aa8f25eed3F730722",
+                "deployedBlock": 12738038,
+                "startBlock": 12742593,
+                "endBlock": 12836674,
+                "abiVersion": "81a94dd",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0xe274ecf4aB31363a1AD7dACB663cBb4FDeeE49b9",
+                "deployedBlock": 12833580,
+                "startBlock": 12836674,
+                "endBlock": 12857465,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0x63D3376aabdDd618DAAFbb29D8f27Ce47a28a952",
+                "deployedBlock": 12856494,
+                "startBlock": 12857465,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "DAI"
+                ],
+                "protocols": [
+                    "Compound"
+                ],
+                "protocolsDisplayName": [
+                    "Compound"
+                ],
+                "metaData": {
+                    "N": "Lev Comp",
+                    "DN": "Lev Comp - DAI",
+                    "DY": 106000
+                },
+                "active": true
+            },
+            {
+                "address": "0xDea436e15B40E7B707A7002A749f416dFE5B383F",
+                "deployedBlock": 14300356,
+                "startBlock": 14300356,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "DAI",
+                    "FRAX"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex",
+                    "Frax"
+                ],
+                "metaData": {
+                    "N": "StableConvexXPool",
+                    "DN": "Convex-FRAX-3CRV",
+                    "DY": 60000
+                },
+                "active": true
+            }
+        ],
         "DAISecondary": [
             {
                 "address": "0xfE1dc5d17827565A32B7F9E8601B9c21C1343476",
@@ -336,7 +427,8 @@
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
                 "tokens": [
-                    "DAI"
+                    "DAI",
+                    "MUSD"
                 ],
                 "protocols": [
                     "Curve",
@@ -352,14 +444,41 @@
                     "DY": 80000
                 },
                 "active": true
+            },
+            {
+                "address": "0x4d5b5376Cbcc001bb4F8930208828Ab87D121dA8",
+                "deployedBlock": 14300367,
+                "startBlock": 14300367,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "DAI",
+                    "MUSD"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex",
+                    "mStable"
+                ],
+                "metaData": {
+                    "N": "StableConvexXPool",
+                    "DN": "Convex-mUSD-3CRV",
+                    "DY": 60000
+                },
+                "active": true
             }
         ],
-        "USDCSecondary": [
+        "USDCPrimary": [
             {
-                "address": "0x3Bc1bAa5D220aAFc334dc92c8495a7Ab64C0A791",
-                "deployedBlock": 12502035,
+                "address": "0xbD49a881E5e87d4D078536E9d11475453013b455",
+                "deployedBlock": 12502034,
                 "startBlock": 12522788,
-                "endBlock": 12836674,
+                "endBlock": 12742593,
                 "abiVersion": "21ac80a",
                 "tag": "Strategy",
                 "tokens": [],
@@ -369,10 +488,23 @@
                 "active": false
             },
             {
-                "address": "0x2782d2d206df0872136643fb40a713A9E8A177F3",
-                "deployedBlock": 12832430,
+                "address": "0x715B548ed664488bdC6429122Dc5C86A0f6173CC",
+                "deployedBlock": 12738075,
+                "startBlock": 12742593,
+                "endBlock": 12836674,
+                "abiVersion": "81a94dd",
+                "tag": "Strategy",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": false
+            },
+            {
+                "address": "0x0EEE1Ef4B178262b0C7e95400Dc110e84871488d",
+                "deployedBlock": 12833591,
                 "startBlock": 12836674,
-                "endBlock": 13502267,
+                "endBlock": 12857475,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
                 "tokens": [],
@@ -382,9 +514,9 @@
                 "active": false
             },
             {
-                "address": "0xb3C24b7F8EB0b391499086f1A341bE7DeC737020",
-                "deployedBlock": 13502055,
-                "startBlock": 13502267,
+                "address": "0x6a23a7c1fA98728E7F57989a79EF555690F1426e",
+                "deployedBlock": 12856496,
+                "startBlock": 12857475,
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
@@ -392,27 +524,28 @@
                     "USDC"
                 ],
                 "protocols": [
-                    "Aave"
+                    "Compound"
                 ],
                 "protocolsDisplayName": [
-                    "Aave"
+                    "Compound"
                 ],
                 "metaData": {
-                    "N": "Aave",
-                    "DN": "Aave - USDC",
-                    "DY": 49956
+                    "N": "Lev Comp",
+                    "DN": "Lev Comp - USDC",
+                    "DY": 98500
                 },
                 "active": true
             },
             {
-                "address": "0xe2140f2Af979c96966916D81e7C735ae858581CB",
-                "deployedBlock": 13502055,
-                "startBlock": 13502267,
+                "address": "0x8b335D3E266389Ae08A2F22b01D33813d40ED8Fd",
+                "deployedBlock": 14300371,
+                "startBlock": 14300371,
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
                 "tokens": [
-                    "USDC"
+                    "USDC",
+                    "MIM"
                 ],
                 "protocols": [
                     "Curve",
@@ -423,19 +556,19 @@
                     "Convex"
                 ],
                 "metaData": {
-                    "N": "CRV",
-                    "DN": "3CRV - oUSD",
-                    "DY": 81400
+                    "N": "StableConvexXPool",
+                    "DN": "Convex-MIM-3CRV",
+                    "DY": 110000
                 },
                 "active": true
             }
         ],
-        "USDTSecondary": [
+        "USDTPrimary": [
             {
-                "address": "0x44A0a49b3116a04Eef0341ae78Ee26A2816CAea6",
-                "deployedBlock": 12502044,
+                "address": "0xF03Ef5142Df61555A3d0CA740a7D7c90a231246e",
+                "deployedBlock": 12502041,
                 "startBlock": 12522788,
-                "endBlock": 12836674,
+                "endBlock": 12742593,
                 "abiVersion": "21ac80a",
                 "tag": "Strategy",
                 "tokens": [],
@@ -445,11 +578,11 @@
                 "active": false
             },
             {
-                "address": "0xAF97a5313514a34B10EB67b50316C96Df9ef1610",
-                "deployedBlock": 12832449,
-                "startBlock": 12836674,
-                "endBlock": 13502267,
-                "abiVersion": "ce7b149",
+                "address": "0xCdED5e77d6395D82f1C4F97825aEb5f5740EC165",
+                "deployedBlock": 12667685,
+                "startBlock": 12742593,
+                "endBlock": 12836674,
+                "abiVersion": "81a94dd",
                 "tag": "Strategy",
                 "tokens": [],
                 "protocols": [],
@@ -458,9 +591,9 @@
                 "active": false
             },
             {
-                "address": "0x1eBd09942E6a23190d21Eda4445FD9baBE501902",
-                "deployedBlock": 13502063,
-                "startBlock": 13502267,
+                "address": "0x3C3D9228ef8d9750d9C43F9155315DeDE57ddee1",
+                "deployedBlock": 12833596,
+                "startBlock": 12836674,
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
@@ -468,27 +601,32 @@
                     "USDT"
                 ],
                 "protocols": [
+                    "Idle",
+                    "Compound",
                     "Aave"
                 ],
                 "protocolsDisplayName": [
+                    "Idle",
+                    "Compound",
                     "Aave"
                 ],
                 "metaData": {
-                    "N": "Aave",
-                    "DN": "Aave - USDT",
-                    "DY": 49513
+                    "N": "Idle",
+                    "DN": "Idle - USDT",
+                    "DY": 45343
                 },
                 "active": true
             },
             {
-                "address": "0x33070C339f88CB29562eF9Ca7d1e14a87d7451C0",
-                "deployedBlock": 13502063,
-                "startBlock": 13502267,
+                "address": "0xDE5a25415C637b52d59Ef980b29a5fDa8dC3C70B",
+                "deployedBlock": 14300374,
+                "startBlock": 14300374,
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
                 "tokens": [
-                    "USDT"
+                    "USDT",
+                    "UST"
                 ],
                 "protocols": [
                     "Curve",
@@ -499,9 +637,9 @@
                     "Convex"
                 ],
                 "metaData": {
-                    "N": "Curve",
-                    "DN": "3CRV - Frax",
-                    "DY": 82000
+                    "N": "StableConvexXPool",
+                    "DN": "Convex-UST-wormhole-3CRV",
+                    "DY": 110000
                 },
                 "active": true
             }

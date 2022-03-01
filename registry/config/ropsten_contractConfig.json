@@ -81,9 +81,9 @@
                 "endBlock": null,
                 "abiVersion": "551353c",
                 "tag": "Vault",
-                "tokens": ["Frax"],
-                "protocols": ["Frax"],
-                "protocolsDisplayName": ["Frax"],
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
                 "metaData": { "N": "DAI yVault", "CN": "DAI", "DN": "DAI" },
                 "active": true
             }
@@ -96,9 +96,9 @@
                 "endBlock": 10633479,
                 "abiVersion": "3c80e58",
                 "tag": "Vault",
-                "tokens": ["oUSD"],
-                "protocols": ["oUSD"],
-                "protocolsDisplayName": ["oUSD"],
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
                 "metaData": {},
                 "active": false
             },
@@ -109,9 +109,9 @@
                 "endBlock": null,
                 "abiVersion": "551353c",
                 "tag": "Vault",
-                "tokens": ["oUSD"],
-                "protocols": ["oUSD"],
-                "protocolsDisplayName": ["oUSD"],
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
                 "metaData": { "N": "USDC yVault", "CN": "USDC", "DN": "USDC" },
                 "active": true
             }
@@ -124,9 +124,9 @@
                 "endBlock": 10633479,
                 "abiVersion": "3c80e58",
                 "tag": "Vault",
-                "tokens": ["mUSD"],
-                "protocols": ["mUSD"],
-                "protocolsDisplayName": ["mUSD"],
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
                 "metaData": {},
                 "active": false
             },
@@ -137,9 +137,9 @@
                 "endBlock": null,
                 "abiVersion": "551353c",
                 "tag": "Vault",
-                "tokens": ["mUSD"],
-                "protocols": ["mUSD"],
-                "protocolsDisplayName": ["mUSD"],
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
                 "metaData": { "N": "USDT yVault", "CN": "USDT", "DN": "USDT" },
                 "active": true
             }
@@ -182,13 +182,22 @@
                 "endBlock": null,
                 "abiVersion": "551353c",
                 "tag": "Strategy",
-                "tokens": ["DAI"],
-                "protocols": ["CRV"],
-                "protocolsDisplayName": ["CRV"],
+                "tokens": [
+                    "DAI",
+                    "MUSD"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex"
+                ],
                 "metaData": {
                     "N": "CRV",
-                    "DN": "CRV - Frax",
-                    "DY": 106000
+                    "DN": "3CRV - mUSD",
+                    "DY": 80000
                 },
                 "active": true
             }
@@ -231,13 +240,22 @@
                 "endBlock": null,
                 "abiVersion": "551353c",
                 "tag": "Strategy",
-                "tokens": ["oUSD"],
-                "protocols": ["CRV"],
-                "protocolsDisplayName": ["CRV"],
+                "tokens": [
+                    "USDC",
+                    "OUSD"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex"
+                ],
                 "metaData": {
                     "N": "CRV",
-                    "DN": "CRV - oUSD",
-                    "DY": 98500
+                    "DN": "3CRV - oUSD",
+                    "DY": 81400
                 },
                 "active": true
             }
@@ -276,10 +294,23 @@
                 "endBlock": null,
                 "abiVersion": "551353c",
                 "tag": "Strategy",
-                "tokens": ["mUSD"],
-                "protocols": ["CRV"],
-                "protocolsDisplayName": ["CRV"],
-                "metaData": { "N": "CRV", "DN": "CRV - mUSUD", "DY": 45343 },
+                "tokens": [
+                    "USDT",
+                    "FRAX"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex"
+                ],
+                "metaData": {
+                    "N": "Curve",
+                    "DN": "3CRV - Frax",
+                    "DY": 82000
+                },
                 "active": true
             }
         ],
