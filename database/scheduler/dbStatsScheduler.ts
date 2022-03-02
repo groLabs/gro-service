@@ -114,7 +114,7 @@ const startDbStatsJobs = async () => {
     groStatsJob();
     priceCheckJob();
     tokenPriceJob();
-    vestingBonusJob();
+    //vestingBonusJob();
 }
 
 export {
