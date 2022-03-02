@@ -2,11 +2,15 @@ import BN from 'bignumber.js';
 import { ethers } from 'ethers';
 import { getFilterEvents } from '../../common/logFilter';
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
-import { ContractCallError, ParameterError } from '../../common/error';
+import { ContractCallError } from '../../common/error';
 import { CONTRACT_ASSET_DECIMAL, div } from '../../common/digitalUtil';
 import { MESSAGE_TYPES } from '../../common/discord/discordService';
 import { getConfig } from '../../common/configUtil';
-import { getTransactions, getTransaction } from './generatePersonTransaction';
+import {
+    appendEventTimestamp,
+    organizeFailedTransactions,
+    organizeTransactions,
+} from './generatePersonTransaction';
 import { shortAccount } from '../../common/digitalUtil';
 import { AppendGTokenMintOrBurnAmountToLog } from '../common/tool';
 import { getAccountFailTransactions } from '../handler/failedTransactionHandler';
@@ -301,6 +305,7 @@ async function getDepositHistories(account) {
 
     // handle gtoken mint amount
     await AppendGTokenMintOrBurnAmountToLog(logs);
+    await appendEventTimestamp(logs, provider);
 
     const result = { groVault: [], powerD: [] };
     if (!(logs as any).length) return result;
@@ -349,6 +354,7 @@ async function getWithdrawHistories(account) {
 
     // handle gtoken burn amount
     await AppendGTokenMintOrBurnAmountToLog(logs);
+    await appendEventTimestamp(logs, provider);
 
     const result = { groVault: [], powerD: [] };
     if (!(logs as any).length) return result;
@@ -539,6 +545,8 @@ async function getGroVaultTransferHistories(account) {
         log.coin_amount = log.args[2].toString();
         transferOut.push(log);
     });
+    await appendEventTimestamp(transferIn, provider);
+    await appendEventTimestamp(transferOut, provider);
     return { deposit: transferIn, withdraw: transferOut };
 }
 
@@ -562,6 +570,8 @@ async function getPowerDTransferHistories(account) {
         log.coin_amount = log.args[2].toString();
         transferOut.push(log);
     });
+    await appendEventTimestamp(transferIn, provider);
+    await appendEventTimestamp(transferOut, provider);
     return { deposit: transferIn, withdraw: transferOut };
 }
 
@@ -668,12 +678,12 @@ async function getApprovalHistories(account) {
             gtokenAproval.push(transactionHash);
         }
         result.push({
+            blockNumber,
+            transactionHash,
             transaction: 'approval',
             token: tokenSymbol,
-            hash: transactionHash,
             spender: args[1],
             coin_amount: div(args[2], new BN(10).pow(decimal), 2),
-            block_number: blockNumber,
         });
         if (isGTokenFlag) {
             usdAmoutPromise.push(getGTokenUSDAmount(address, args[2]));
@@ -697,75 +707,14 @@ async function getApprovalHistories(account) {
         );
     });
     for (let i = 0; i < result.length; i += 1) {
-        result[i].usd_amount = div(
+        result[i].amount = div(
             usdAmoutResult[i],
             new BN(10).pow(usdAmountDecimals[i]),
             2
         );
     }
+    await appendEventTimestamp(result, provider);
     return { approvalEvents: result, gtokenApprovalTxn: gtokenAproval };
-}
-
-async function parseVaultTransferFromLogs(logs, gtokenApprovaltxns) {
-    const transferIn = [];
-    const transferOut = [];
-    const { deposit, withdraw } = logs;
-    const groVaultFactors = {};
-    deposit.forEach((log) => {
-        // skip mint gtoken
-        if (log.args[0] === ZERO_ADDRESS) return;
-        if (isGTokenTransferFromStaker(log)) return;
-        if (gtokenApprovaltxns.includes(log.transactionHash)) {
-            transferIn.push(log);
-            groVaultFactors[`${log.blockNumber}`] = 0;
-        }
-    });
-
-    withdraw.forEach((log) => {
-        // skip burn gtoken
-        if (log.args[1] === ZERO_ADDRESS) return;
-        if (isGTokenTransferToStaker(log)) return;
-        if (gtokenApprovaltxns.includes(log.transactionHash)) {
-            transferOut.push(log);
-            groVaultFactors[`${log.blockNumber}`] = 0;
-        }
-    });
-
-    // handle vault's refactor
-    const blockNumbers = Object.keys(groVaultFactors);
-    const factorPromises = [];
-    for (let i = 0; i < blockNumbers.length; i += 1) {
-        factorPromises.push(
-            getLatestGroVault().factor({
-                blockTag: parseInt(blockNumbers[i], 10),
-            })
-        );
-    }
-    const factorPromiseResult = await Promise.all(factorPromises);
-    for (let i = 0; i < blockNumbers.length; i += 1) {
-        const blockNumber = blockNumbers[i];
-        groVaultFactors[blockNumber] = factorPromiseResult[i];
-    }
-
-    transferIn.forEach((log) => {
-        const factor = groVaultFactors[`${log.blockNumber}`];
-        log.amount = new BN(log.args[2].toString())
-            .multipliedBy(CONTRACT_ASSET_DECIMAL)
-            .div(new BN(factor.toString()));
-        log.coin_amount = log.args[2].toString();
-    });
-    transferOut.forEach((log) => {
-        const factor = groVaultFactors[`${log.blockNumber}`];
-        log.amount = new BN(log.args[2].toString())
-            .multipliedBy(CONTRACT_ASSET_DECIMAL)
-            .div(new BN(factor.toString()));
-        log.coin_amount = log.args[2].toString();
-    });
-
-    return {
-        deposit: transferIn,
-        withdraw: transferOut,
-    };
 }
 
 async function getTransactionHistories(account) {
@@ -774,21 +723,22 @@ async function getTransactionHistories(account) {
     promises.push(getPowerDTransferHistories(account));
     promises.push(getDepositHistories(account));
     promises.push(getWithdrawHistories(account));
-    const result = await Promise.all(promises);
-    const powerD = result[1];
-    const depositLogs = result[2];
-    const groVault = result[0];
-    const withdrawLogs = result[3];
+    promises.push(getApprovalHistories(account));
+    const [
+        groVaultTransferEvents,
+        pwrdTransferEvents,
+        depositEvents,
+        withdrawEvents,
+        approvalEvents,
+    ] = await Promise.all(promises);
 
-    groVault.deposit.push(...depositLogs.groVault);
-    powerD.deposit.push(...depositLogs.powerD);
-
-    groVault.withdraw.push(...withdrawLogs.groVault);
-    powerD.withdraw.push(...withdrawLogs.powerD);
-
-    const approval = await getApprovalHistories(account);
-
-    return { groVault, powerD, approval: approval.approvalEvents };
+    return {
+        groVaultTransferEvents,
+        pwrdTransferEvents,
+        depositEvents,
+        withdrawEvents,
+        approvalEvents: approvalEvents.approvalEvents,
+    };
 }
 
 async function getCombinedGROBalance(account) {
@@ -856,7 +806,13 @@ async function ethereumPersonalStats(account) {
         promises.push(getGVTBalanceOnStaker(account));
 
         const results = await Promise.all(promises);
-        const data = results[0];
+        const {
+            groVaultTransferEvents,
+            pwrdTransferEvents,
+            depositEvents,
+            withdrawEvents,
+            approvalEvents,
+        } = results[0];
         const pwrdBalanceInToken = new BN(results[1].toString());
         const gvtBalanceInToken = new BN(results[2].toString());
         const pwrdBalanceInStaker = new BN(results[3].toString());
@@ -864,18 +820,56 @@ async function ethereumPersonalStats(account) {
         const pwrdBalance = pwrdBalanceInToken.plus(pwrdBalanceInStaker);
         const gvtBalance = gvtBalanceInToken.plus(gvtBalanceInStaker);
 
-        // logger.info(`${account} historical: ${JSON.stringify(data)}`);
-        const { groVault, powerD, approval } = data;
-        const failTransactions = await getAccountFailTransactions(account);
-        const transactions = await getTransactions(groVault, powerD, provider);
-        const transaction = await getTransaction(
-            transactions,
-            approval,
-            failTransactions,
-            provider
+        const groVault = { deposit: [], withdraw: [] };
+        const powerD = { deposit: [], withdraw: [] };
+        groVault.deposit.push(
+            ...groVaultTransferEvents.deposit,
+            ...depositEvents.groVault
         );
+        powerD.deposit.push(
+            ...pwrdTransferEvents.deposit,
+            ...depositEvents.powerD
+        );
+        groVault.withdraw.push(
+            ...groVaultTransferEvents.withdraw,
+            ...withdrawEvents.groVault
+        );
+        powerD.withdraw.push(
+            ...pwrdTransferEvents.withdraw,
+            ...withdrawEvents.powerD
+        );
+        const failTransactions = await getAccountFailTransactions(account);
 
-        result.transaction = transaction;
+        result.transaction.deposits = [
+            ...organizeTransactions(depositEvents.groVault, false, 'GVT'),
+            ...organizeTransactions(depositEvents.powerD, false, 'PWRD'),
+        ];
+        result.transaction.withdrawals = [
+            ...organizeTransactions(withdrawEvents.groVault, false, 'GVT'),
+            ...organizeTransactions(withdrawEvents.powerD, false, 'PWRD'),
+        ];
+        result.transaction.transfers_in = [
+            ...organizeTransactions(
+                groVaultTransferEvents.deposit,
+                false,
+                'GVT'
+            ),
+            ...organizeTransactions(pwrdTransferEvents.deposit, false, 'PWRD'),
+        ];
+        result.transaction.transfers_out = [
+            ...organizeTransactions(
+                groVaultTransferEvents.withdraw,
+                false,
+                'GVT'
+            ),
+            ...organizeTransactions(pwrdTransferEvents.withdraw, false, 'PWRD'),
+        ];
+        result.transaction.approvals = organizeTransactions(
+            approvalEvents,
+            true
+        );
+        result.transaction.failures =
+            organizeFailedTransactions(failTransactions);
         const airdrops = await getAllAirdropResults(
             account,
             latestBlock.number
@@ -894,20 +888,20 @@ async function ethereumPersonalStats(account) {
         // calculate groVault deposit & withdraw
         let groVaultDepositAmount = new BN(0);
         let groVaultWithdrawAmount = new BN(0);
-        data.groVault.deposit.forEach((log) => {
+        groVault.deposit.forEach((log) => {
             groVaultDepositAmount = groVaultDepositAmount.plus(log.amount);
         });
-        data.groVault.withdraw.forEach((log) => {
+        groVault.withdraw.forEach((log) => {
             groVaultWithdrawAmount = groVaultWithdrawAmount.plus(log.amount);
         });
 
         // calcuate powerd deposti & withdraw
         let powerDDepositAmount = new BN(0);
         let powerDWithdrawAmount = new BN(0);
-        data.powerD.deposit.forEach((log) => {
+        powerD.deposit.forEach((log) => {
             powerDDepositAmount = powerDDepositAmount.plus(log.amount);
         });
-        data.powerD.withdraw.forEach((log) => {
+        powerD.withdraw.forEach((log) => {
             powerDWithdrawAmount = powerDWithdrawAmount.plus(log.amount);
         });
         // amount_added
