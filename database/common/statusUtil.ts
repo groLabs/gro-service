@@ -6,6 +6,7 @@ const {
     getPowerD: getPWRD,
     // getGroDAO: getGRO,
     getUSDCeVault,
+    getGroVesting,
     getContractInfoHistory,
 } = require('../common/contractUtil');
 import {
@@ -64,6 +65,8 @@ const status = async (targetDate, targetTime, targetBlock) => {
     const totalAssetsGVTparsed = parseAmount(totalAssetsGVT, Base.D18);
     const totalSupplyGVT = await getGVT().totalSupply({ blockTag: block });
     const totalSupplyGVTparsed = parseAmount(totalSupplyGVT, Base.D18);
+    const factorGVT = await getGVT().factor({ blockTag: block });
+    const factoGVTrParser = parseAmount(factorGVT, Base.D18);
 
     // PWRD data
     const pricePWRD = parseAmount(await getPWRD().getPricePerShare({ blockTag: block }), Base.D18);
@@ -71,6 +74,8 @@ const status = async (targetDate, targetTime, targetBlock) => {
     const totalAssetsPWRDparsed = parseAmount(totalAssetsPWRD, Base.D18);
     const totalSupplyPWRD = await getPWRD().totalSupply({ blockTag: block });
     const totalSupplyPWRDparsed = parseAmount(totalSupplyPWRD, Base.D18);
+    const factorPWRD = await getPWRD().factor({ blockTag: block });
+    const factoPWRDrParser = parseAmount(factorPWRD, Base.D18);
 
     // GRO data
     // const totalSupplyGRO = await getGRO().totalSupply({ blockTag: block });
@@ -83,10 +88,12 @@ const status = async (targetDate, targetTime, targetBlock) => {
     console.log(`price x share: ${priceGVT}`);
     console.log(`total shares: ${totalSupplyGVTparsed.toLocaleString()} [ ${totalSupplyGVTparsed} ${totalSupplyGVT.toString()} ]`);
     console.log(`total assets: $ ${totalAssetsGVTparsed.toLocaleString()} [ ${totalAssetsGVTparsed} ${totalAssetsGVT.toString()} ]`);
+    console.log(`factor: ${factoGVTrParser}`);
     console.log(`----PWRD-----------------`);
     console.log(`price x share: ${pricePWRD}`);
     console.log(`total shares: ${totalSupplyPWRDparsed.toLocaleString()} [ ${totalSupplyPWRDparsed} ${totalSupplyPWRD.toString()} ]`);
     console.log(`total assets: $ ${totalAssetsPWRDparsed.toLocaleString()} [ ${totalAssetsPWRDparsed} ${totalAssetsPWRD.toString()} ]`);
+    console.log(`factor: ${factoPWRDrParser}`);
     console.log(`----GRO------------------`);
     // console.log(`total shares: ${totalSupplyGROparsed.toLocaleString()} [ ${totalSupplyGROparsed} ${totalSupplyGRO.toString()} ]`);
     console.log('before')
@@ -170,8 +177,23 @@ const setDbStatus = async (featureId: number, statusId: number) => {
     }
 }
 
+const vesting = async (
+    account: string,
+    block: number,
+) => {
+    try {
+        const groVesting = await getGroVesting().vestingBalance(account, { blockTag: block });
+        console.log('vesting Balance:', groVesting.toString());
+        const groVested = await getGroVesting().vestedBalance(account, { blockTag: block });
+        console.log('vested Balance:', groVested.toString());
+    } catch (err) {
+        console.log('Error in statusUtil.ts-vesting():', err);
+    }
+}
+
 export {
     status,
+    vesting,
     isContract,
     getDbStatus,
     setDbStatus,

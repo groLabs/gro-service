@@ -12,6 +12,7 @@ import { etlTokenPrice } from './etl/etlTokenPrice';
 import { dumpTable } from './common/pgUtil';
 //import { runTest } from './caller/multiCaller';
 import {
+    vesting,
     getDbStatus,
     setDbStatus
 } from './common/statusUtil';
@@ -60,7 +61,7 @@ import { QUERY_SUCCESS } from './constants';
                             params[2],              // end date
                             parseInt(params[3]),    // network (1: Ethereum, 2: Avalanche, 100: All)
                             parseInt(params[4]))    // load type (1: Transfers, 2: Approvals, 100: All)
-                        } else {
+                    } else {
                         console.log('Wrong parameters for personal stats ETL - e.g.: personalStatsETL 28/06/2021 29/06/2021 100 100');
                     }
                     break;
@@ -141,6 +142,16 @@ import { QUERY_SUCCESS } from './constants';
                             params[3]);     // block
                     } else {
                         console.log(`Wrong parameters for status - e.g.: status 15/11/2021 15:00:00 ""`);
+                    }
+                    break;
+                case 'vesting':
+                    if (params.length === 3) {
+                        await loadContractInfoFromRegistry();
+                        await vesting(
+                            params[1],              // address
+                            parseInt(params[2]));   // block
+                    } else {
+                        console.log(`Wrong parameters for vesting - e.g.: vesting 0xef0905745ce28ebe1ded7004146132fbfba548ba 14319666`);
                     }
                     break;
                 case 'getDbStatus':
