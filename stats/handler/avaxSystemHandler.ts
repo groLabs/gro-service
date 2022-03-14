@@ -139,6 +139,7 @@ const RISK_FREE_RATE = BigNumber.from(2400);
 
 const BLOCKS_OF_3DAYS = 130000;
 const BLOCKS_OF_12HOURS = 21600;
+const BLOCKS_OF_7DAYS = 300000;
 
 let START_TIME_STAMP = []
 let START_BLOCK = []
@@ -173,7 +174,7 @@ function getLatestAVAXContract(adapaterType) {
 
 async function getBlockNumberTimestamp(blockNumber) {
     if (!blockNumberTimestamp[blockNumber]) {
-        logger.info(`AVAX: Append timestamp for blockNumber ${blockNumber}`);
+        // logger.info(`AVAX: Append timestamp for blockNumber ${blockNumber}`);
         const blockObject = await provider.getBlock(parseInt(blockNumber, 10));
         blockNumberTimestamp[blockNumber] = `${blockObject.timestamp}`;
     }
@@ -223,10 +224,10 @@ async function getPositionOpenEvents(ahStrategy, startBlock, endBlock) {
             timestamp: item.timestamp,
         };
         positionsOpened[`${item.args[0]}`] = openInfo;
-        console.log(`positionId ${item.args[0]}`);
-        console.log(`price ${item.args[1]}`);
-        console.log(`collateralSize ${item.args[2]}`);
-        console.log(`debts ${item.args[3]}`);
+        // console.log(`positionId ${item.args[0]}`);
+        // console.log(`price ${item.args[1]}`);
+        // console.log(`collateralSize ${item.args[2]}`);
+        // console.log(`debts ${item.args[3]}`);
     });
     return positionsOpened;
 }
@@ -248,9 +249,9 @@ async function getLogPositionClosedEvents(ahStrategy, startBlock, endBlock) {
             timestamp: item.timestamp,
         };
         positionsClosed[`${item.args[0]}`] = closeInfo;
-        console.log(`positionId ${item.args[0]}`);
-        console.log(`wantRecieved ${item.args[1]}`);
-        console.log(`price ${item.args[2]}`);
+        // console.log(`positionId ${item.args[0]}`);
+        // console.log(`wantRecieved ${item.args[1]}`);
+        // console.log(`price ${item.args[2]}`);
     });
     return positionsClosed;
 }
@@ -1004,9 +1005,9 @@ async function calculateVaultUnlockedReturn(
 
     let vaultReturn3Days = vaultReturn;
 
-    if (endBlock - BLOCKS_OF_12HOURS > startBlock) {
-        const blockNumber12hoursAgo = endBlock - BLOCKS_OF_12HOURS;
-        const TWELVE_HOURS_SECONDS = '43200';
+    if (endBlock - BLOCKS_OF_7DAYS > startBlock) {
+        const blockNumber12hoursAgo = endBlock - BLOCKS_OF_7DAYS;
+        const SEVEN_DAYS_SECONDS = '604800';
         const block12hoursAgo = await provider.getBlock(blockNumber12hoursAgo);
         logger.info(`block.timestamp 12hours ago ${block12hoursAgo.timestamp}`);
 
@@ -1018,11 +1019,11 @@ async function calculateVaultUnlockedReturn(
                            .dividedBy(new BN(open12hoursAgoPricePerShare.toString()))
                            .minus(new BN('1'))
                            .multipliedBy(new BN('31556926'))
-                           .dividedBy(new BN(TWELVE_HOURS_SECONDS))
+                           .dividedBy(new BN(SEVEN_DAYS_SECONDS))
         vaultReturn3Days = BigNumber.from(vaultReturn3Days.multipliedBy(new BN(SHARE_DECIMAL.toString())).integerValue().toString())
 
             logger.info(
-            `~~~~ unlocked 12hours vaultIndex ${vaultIndex} ${duration} ${blockNumber12hoursAgo} closePricePerShare ${closePricePerShare} open12hoursagoPricePerShare ${open12hoursAgoPricePerShare}`
+            `~~~~ unlocked 7days vaultIndex ${vaultIndex} ${duration} ${blockNumber12hoursAgo} closePricePerShare ${closePricePerShare} open12hoursagoPricePerShare ${open12hoursAgoPricePerShare}`
         );
     }
 
@@ -1150,7 +1151,7 @@ async function generateVaultData(
         labsVaultData.all_time_apy = vaultReturn;
         labsVaultData.last3d_apy = vaultReturn3Days;
     }
-    const startBlock = 9000000;
+    const startBlock = block.number - 700000;
     // const startBlock = 7408960;
     logger.info('openEvents');
     const openEvents = await getPositionOpenEvents(
@@ -1383,7 +1384,7 @@ async function getAvaxSystemStats() {
     };
     const allVaultsPromise = [];
     for (
-        let vaultIndex = 0;
+        let vaultIndex = 9;
         vaultIndex < latestVaults.length;
         vaultIndex += 1
     ) {
