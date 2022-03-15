@@ -221,7 +221,9 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": { "N": "3CRV" },
+            "metaData": {
+                "N": "3CRV"
+            },
             "active": true
         }
     ],
@@ -261,9 +263,9 @@
             "endBlock": 10633479,
             "abiVersion": "3c80e58",
             "tag": "Vault",
-            "tokens": [],
-            "protocols": [],
-            "protocolsDisplayName": [],
+            "tokens": ["Frax"],
+            "protocols": ["Frax"],
+            "protocolsDisplayName": ["Frax"],
             "metaData": {},
             "active": false
         },
@@ -277,8 +279,13 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": { "N": "DAI yVault", "CN": "DAI", "DN": "DAI" },
-            "active": true
+            "metaData": {
+                "N": "DAI yVault",
+                "CN": "DAI",
+                "DN": "DAI"
+            },
+            "active": true,
+            "contractName": "DAIVaultAdaptor"
         }
     ],
     "USDCVault": [
@@ -333,8 +340,13 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": { "N": "USDC yVault", "CN": "USDC", "DN": "USDC" },
-            "active": true
+            "metaData": {
+                "N": "USDC yVault",
+                "CN": "USDC",
+                "DN": "USDC"
+            },
+            "active": true,
+            "contractName": "USDCVaultAdaptor"
         }
     ],
     "USDTVault": [
@@ -389,8 +401,13 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": { "N": "USDT yVault", "CN": "USDT", "DN": "USDT" },
-            "active": true
+            "metaData": {
+                "N": "USDT yVault",
+                "CN": "USDT",
+                "DN": "USDT"
+            },
+            "active": true,
+            "contractName": "USDTVaultAdaptor"
         }
     ],
     "DepositHandler": [
@@ -515,15 +532,16 @@
             "endBlock": null,
             "abiVersion": "551353c",
             "tag": "Strategy",
-            "tokens": ["DAI"],
-            "protocols": ["CRV"],
-            "protocolsDisplayName": ["CRV"],
+            "tokens": ["DAI", "MUSD"],
+            "protocols": ["Curve", "Convex"],
+            "protocolsDisplayName": ["Curve", "Convex"],
             "metaData": {
                 "N": "CRV",
-                "DN": "CRV - Frax",
-                "DY": 106000
+                "DN": "3CRV - mUSD",
+                "DY": 80000
             },
-            "active": true
+            "active": true,
+            "contractName": "DAIPrimary"
         }
     ],
     "DAISecondary": [
@@ -544,7 +562,7 @@
             "address": "0xDe70653B9414b0B39b3126cd2656f1978031B87c",
             "deployedBlock": 10631080,
             "startBlock": 10633479,
-            "endBlock": 11909990,
+            "endBlock": null,
             "abiVersion": "551353c",
             "tag": "Strategy",
             "tokens": ["DAI"],
@@ -554,9 +572,11 @@
                 "N": "Cream",
                 "DN": "CREAM - DAI",
                 "DY": 41334,
-                "PDN": { "2": "CREAM" }
+                "PDN": {
+                    "2": "CREAM"
+                }
             },
-            "active": false
+            "active": true
         }
     ],
     "USDCPrimary": [
@@ -588,7 +608,7 @@
                 "DN": "Lev Comp - USDC",
                 "DY": 98500
             },
-            "active": true
+            "active": false
         },
         {
             "address": "0x328e885c9EA407846979220035dbabA51A82238c",
@@ -597,15 +617,16 @@
             "endBlock": null,
             "abiVersion": "551353c",
             "tag": "Strategy",
-            "tokens": ["oUSD"],
-            "protocols": ["CRV"],
-            "protocolsDisplayName": ["CRV"],
+            "tokens": ["USDC", "OUSD"],
+            "protocols": ["Curve", "Convex"],
+            "protocolsDisplayName": ["Curve", "Convex"],
             "metaData": {
                 "N": "CRV",
-                "DN": "CRV - oUSD",
-                "DY": 98500
+                "DN": "3CRV - oUSD",
+                "DY": 81400
             },
-            "active": true
+            "active": true,
+            "contractName": "USDCPrimary"
         }
     ],
     "USDCSecondary": [
@@ -626,7 +647,7 @@
             "address": "0xa9e756eA4f82670C482c197883CA77CAD8606240",
             "deployedBlock": 10631080,
             "startBlock": 10633479,
-            "endBlock": 11909991,
+            "endBlock": null,
             "abiVersion": "551353c",
             "tag": "Strategy",
             "tokens": ["USDC"],
@@ -636,9 +657,11 @@
                 "N": "Cream",
                 "DN": "CREAM - USDC",
                 "DY": 49956,
-                "PDN": { "2": "CREAM" }
+                "PDN": {
+                    "2": "CREAM"
+                }
             },
-            "active": false
+            "active": true
         }
     ],
     "USDTPrimary": [
@@ -665,8 +688,12 @@
             "tokens": ["USDT"],
             "protocols": ["Idle", "Compound", "Aave"],
             "protocolsDisplayName": ["Idle", "Compound", "Aave"],
-            "metaData": { "N": "Idle", "DN": "Idle - USDT", "DY": 45343 },
-            "active": true
+            "metaData": {
+                "N": "Idle",
+                "DN": "Idle - USDT",
+                "DY": 45343
+            },
+            "active": false
         },
         {
             "address": "0xaaD7AAb0Be0FD2110938B8c6259c1Ae36673566c",
@@ -675,11 +702,16 @@
             "endBlock": null,
             "abiVersion": "551353c",
             "tag": "Strategy",
-            "tokens": ["mUSD"],
-            "protocols": ["CRV"],
-            "protocolsDisplayName": ["CRV"],
-            "metaData": { "N": "CRV", "DN": "CRV - mUSUD", "DY": 45343 },
-            "active": true
+            "tokens": ["USDT", "FRAX"],
+            "protocols": ["Curve", "Convex"],
+            "protocolsDisplayName": ["Curve", "Convex"],
+            "metaData": {
+                "N": "Curve",
+                "DN": "3CRV - Frax",
+                "DY": 82000
+            },
+            "active": true,
+            "contractName": "USDTPrimary"
         }
     ],
     "USDTSecondary": [
@@ -700,7 +732,7 @@
             "address": "0x294b4c8C709b0e2C72B2E74ebb50341c60b26A2E",
             "deployedBlock": 10631080,
             "startBlock": 10633479,
-            "endBlock": 11909992,
+            "endBlock": null,
             "abiVersion": "551353c",
             "tag": "Strategy",
             "tokens": ["USDT"],
@@ -710,9 +742,11 @@
                 "N": "Cream",
                 "DN": "CREAM - USDT",
                 "DY": 49513,
-                "PDN": { "2": "CREAM" }
+                "PDN": {
+                    "2": "CREAM"
+                }
             },
-            "active": false
+            "active": true
         }
     ],
     "BalancerWeightedPool": [
@@ -727,7 +761,8 @@
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {},
-            "active": true
+            "active": true,
+            "contractName": "BalancerWeightedPool"
         }
     ],
     "TokenCounter": [
@@ -742,14 +777,15 @@
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {},
-            "active": true
+            "active": true,
+            "contractName": "TokenCounter"
         }
     ],
     "GroDAOVesting": [
         {
-            "address": "0xA123740cddf7A7a82967C6E799358331cD95c716",
-            "deployedBlock": 11220036,
-            "startBlock": 11220036,
+            "address": "0x9ed28e703843270f9C05Eb8d41A58d1c250DE7a0",
+            "deployedBlock": 11938192,
+            "startBlock": 11938192,
             "endBlock": null,
             "abiVersion": "fa8e260",
             "tag": "Vesting",
@@ -757,14 +793,15 @@
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {},
-            "active": true
+            "active": true,
+            "contractName": "GroDAOVesting"
         }
     ],
     "GroVesting": [
         {
-            "address": "0x8aed279452BF307d51cECc6ef09Fb51C02c095AF",
-            "deployedBlock": 11623034,
-            "startBlock": 11623034,
+            "address": "0xb12ecfbBD72827cB23c8785f36d62B37a7999f2e",
+            "deployedBlock": 11938936,
+            "startBlock": 11938936,
             "endBlock": null,
             "abiVersion": "fa8e260",
             "tag": "Vesting",
@@ -772,12 +809,13 @@
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {},
-            "active": true
+            "active": true,
+            "contractName": "GroVesting"
         }
     ],
     "GroDAOToken": [
         {
-            "address": "0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7",
+            "address": "0x9892fFf05B42AdC940C251cA879D912Dfa94c731",
             "deployedBlock": 11115277,
             "startBlock": 11115277,
             "abiVersion": "fa8e260",
@@ -786,7 +824,56 @@
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {},
-            "active": true
+            "active": true,
+            "contractName": "GroDAOToken"
+        }
+    ],
+    "GroHodler": [
+        {
+            "address": "0x842d01A2Fcb11e05Bfab5e86B75056CA1e1Ddd46",
+            "deployedBlock": 11938938,
+            "startBlock": 11938938,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true,
+            "contractName": "GroHodler"
+        }
+    ],
+    "LPTokenStakerV1": [
+        {
+            "address": "0x960B4287040092804672431595348a09bE1f58D9",
+            "deployedBlock": 11938261,
+            "startBlock": 11938261,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true,
+            "contractName": "LPTokenStakerV1"
+        }
+    ],
+    "LPTokenStakerV2": [
+        {
+            "address": "0xBDD6433D47deCaE546966de9F89B2B5A44dF1E3A",
+            "deployedBlock": 11938890,
+            "startBlock": 11938890,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true,
+            "contractName": "LPTokenStakerV2"
         }
     ],
     "VotingAggregator": [
@@ -801,7 +888,8 @@
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {},
-            "active": true
+            "active": true,
+            "contractName": "VotingAggregator"
         }
     ],
     "AVAXDAIVault": [
@@ -820,7 +908,8 @@
                 "DN": "Gro Labs DAI.e AVAX Vault",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXDAIVault"
         }
     ],
     "AVAXUSDCVault": [
@@ -839,7 +928,8 @@
                 "DN": "Gro Labs USDC.e AVAX Vault",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDCVault"
         }
     ],
     "AVAXUSDTVault": [
@@ -858,7 +948,8 @@
                 "DN": "Gro Labs USDT.e AVAX Vault",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDTVault"
         }
     ],
     "AVAXDAIVault_v1_5": [
@@ -877,7 +968,8 @@
                 "DN": "Gro Labs DAI.e AVAX Vault v1.5",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXDAIVault_v1_5"
         }
     ],
     "AVAXUSDCVault_v1_5": [
@@ -896,7 +988,8 @@
                 "DN": "Gro Labs USDC.e AVAX Vault v1.5",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDCVault_v1_5"
         }
     ],
     "AVAXUSDTVault_v1_5": [
@@ -915,7 +1008,8 @@
                 "DN": "Gro Labs USDT.e AVAX Vault v1.5",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDTVault_v1_5"
         }
     ],
     "AVAXDAIVault_v1_6": [
@@ -934,7 +1028,8 @@
                 "DN": "Gro Labs DAI.e AVAX Vault v1.6",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXDAIVault_v1_6"
         }
     ],
     "AVAXUSDCVault_v1_6": [
@@ -953,7 +1048,8 @@
                 "DN": "Gro Labs USDC.e AVAX Vault v1.6",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDCVault_v1_6"
         }
     ],
     "AVAXUSDTVault_v1_6": [
@@ -972,7 +1068,8 @@
                 "DN": "Gro Labs USDT.e AVAX Vault v1.6",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDTVault_v1_6"
         }
     ],
     "AVAXDAIVault_v1_7": [
@@ -991,7 +1088,8 @@
                 "DN": "Gro Labs DAI.e AVAX Vault v1.7",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXDAIVault_v1_7"
         }
     ],
     "AVAXUSDCVault_v1_7": [
@@ -1010,7 +1108,8 @@
                 "DN": "Gro Labs USDC.e AVAX Vault v1.7",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDCVault_v1_7"
         }
     ],
     "AVAXUSDTVault_v1_7": [
@@ -1029,7 +1128,8 @@
                 "DN": "Gro Labs USDT.e AVAX Vault v1.7",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDTVault_v1_7"
         }
     ],
     "AVAXDAIStrategy": [
@@ -1061,7 +1161,8 @@
                 "DN": "DAI.e AH",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXDAIStrategy"
         }
     ],
     "AVAXUSDCStrategy": [
@@ -1093,7 +1194,8 @@
                 "DN": "USDC.e AH",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDCStrategy"
         }
     ],
     "AVAXUSDTStrategy": [
@@ -1125,7 +1227,8 @@
                 "DN": "USDT.e AH",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDTStrategy"
         }
     ],
     "AVAXDAIStrategy_v1_5": [
@@ -1143,7 +1246,8 @@
                 "DN": "DAI.e AH v1.5",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXDAIStrategy_v1_5"
         }
     ],
     "AVAXUSDCStrategy_v1_5": [
@@ -1161,7 +1265,8 @@
                 "DN": "USDC.e AH v1.5",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDCStrategy_v1_5"
         }
     ],
     "AVAXUSDTStrategy_v1_5": [
@@ -1179,7 +1284,8 @@
                 "DN": "USDT.e AH v1.5",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDTStrategy_v1_5"
         }
     ],
     "AVAXDAIStrategy_v1_6": [
@@ -1197,7 +1303,8 @@
                 "DN": "DAI.e AH v1.6",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXDAIStrategy_v1_6"
         }
     ],
     "AVAXUSDCStrategy_v1_6": [
@@ -1215,7 +1322,8 @@
                 "DN": "USDC.e AH v1.6",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDCStrategy_v1_6"
         }
     ],
     "AVAXUSDTStrategy_v1_6": [
@@ -1233,7 +1341,8 @@
                 "DN": "USDT.e AH v1.6",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDTStrategy_v1_6"
         }
     ],
     "AVAXDAIStrategy_v1_7": [
@@ -1251,7 +1360,8 @@
                 "DN": "DAI.e AH v1.7",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXDAIStrategy_v1_7"
         }
     ],
     "AVAXUSDCStrategy_v1_7": [
@@ -1269,7 +1379,8 @@
                 "DN": "USDC.e AH v1.7",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDCStrategy_v1_7"
         }
     ],
     "AVAXUSDTStrategy_v1_7": [
@@ -1287,7 +1398,8 @@
                 "DN": "USDT.e AH v1.7",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDTStrategy_v1_7"
         }
     ],
     "AVAXBouncer": [
@@ -1302,7 +1414,8 @@
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {},
-            "active": true
+            "active": true,
+            "contractName": "AVAXBouncer"
         }
     ]
 }

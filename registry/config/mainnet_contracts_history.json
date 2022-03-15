@@ -364,7 +364,9 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": { "N": "3CRV" },
+            "metaData": {
+                "N": "3CRV"
+            },
             "active": true
         }
     ],
@@ -407,7 +409,11 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": { "N": "DAI yVault", "CN": "DAI", "DN": "DAI" },
+            "metaData": {
+                "N": "DAI yVault",
+                "CN": "DAI",
+                "DN": "DAI"
+            },
             "active": false
         },
         {
@@ -433,7 +439,11 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": { "N": "DAI yVault", "CN": "DAI", "DN": "DAI" },
+            "metaData": {
+                "N": "DAI yVault",
+                "CN": "DAI",
+                "DN": "DAI"
+            },
             "active": true
         }
     ],
@@ -502,7 +512,11 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": { "N": "USDC yVault", "CN": "USDC", "DN": "USDC" },
+            "metaData": {
+                "N": "USDC yVault",
+                "CN": "USDC",
+                "DN": "USDC"
+            },
             "active": true
         }
     ],
@@ -571,7 +585,11 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": { "N": "USDT yVault", "CN": "USDT", "DN": "USDT" },
+            "metaData": {
+                "N": "USDT yVault",
+                "CN": "USDT",
+                "DN": "USDT"
+            },
             "active": true
         }
     ],
@@ -640,7 +658,11 @@
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
-            "metaData": { "N": "Curve yVault", "CN": "3CRV", "DN": "3CRVUSDx" },
+            "metaData": {
+                "N": "Curve yVault",
+                "CN": "3CRV",
+                "DN": "3CRVUSDx"
+            },
             "active": true
         }
     ],
@@ -823,6 +845,24 @@
                 "DY": 106000
             },
             "active": true
+        },
+        {
+            "address": "0xDea436e15B40E7B707A7002A749f416dFE5B383F",
+            "deployedBlock": 14300356,
+            "startBlock": 14300356,
+            "endBlock": null,
+            "abiVersion": "ce7b149",
+            "tag": "Strategy",
+            "tokens": ["DAI", "FRAX"],
+            "protocols": ["Curve", "Convex"],
+            "protocolsDisplayName": ["Curve", "Convex", "Frax"],
+            "metaData": {
+                "N": "Convex XPool Dai primary",
+                "DN": "Convex-FRAX-3CRV",
+                "DY": 60000
+            },
+            "active": true,
+            "contractName": "DAIPrimary"
         }
     ],
     "DAISecondary": [
@@ -852,10 +892,47 @@
             "metaData": {
                 "N": "Cream",
                 "DN": "CREAM - DAI",
-                "PDN": { "2": "CREAM" },
+                "PDN": {
+                    "2": "CREAM"
+                },
                 "DY": 41334
             },
             "active": true
+        },
+        {
+            "address": "0x870D9594CDDDdF39e049192E5c3135273f0f4c94",
+            "deployedBlock": 12832421,
+            "startBlock": 12836674,
+            "endBlock": null,
+            "abiVersion": "ce7b149",
+            "tag": "Strategy",
+            "tokens": ["DAI", "MUSD"],
+            "protocols": ["Curve", "Convex"],
+            "protocolsDisplayName": ["Curve", "Convex"],
+            "metaData": {
+                "N": "CRV",
+                "DN": "3CRV - mUSD",
+                "DY": 80000
+            },
+            "active": true
+        },
+        {
+            "address": "0x4d5b5376Cbcc001bb4F8930208828Ab87D121dA8",
+            "deployedBlock": 14300367,
+            "startBlock": 14300367,
+            "endBlock": null,
+            "abiVersion": "ce7b149",
+            "tag": "Strategy",
+            "tokens": ["DAI", "MUSD"],
+            "protocols": ["Curve", "Convex"],
+            "protocolsDisplayName": ["Curve", "Convex", "mStable"],
+            "metaData": {
+                "N": "Convex XPool Dai secondary",
+                "DN": "Convex-mUSD-3CRV",
+                "DY": 60000
+            },
+            "active": true,
+            "contractName": "DAISecondary"
         }
     ],
     "USDCPrimary": [
@@ -914,6 +991,24 @@
                 "DY": 98500
             },
             "active": true
+        },
+        {
+            "address": "0x8b335D3E266389Ae08A2F22b01D33813d40ED8Fd",
+            "deployedBlock": 14300371,
+            "startBlock": 14300371,
+            "endBlock": null,
+            "abiVersion": "ce7b149",
+            "tag": "Strategy",
+            "tokens": ["USDC", "MIM"],
+            "protocols": ["Curve", "Convex"],
+            "protocolsDisplayName": ["Curve", "Convex"],
+            "metaData": {
+                "N": "Convex XPool USDC",
+                "DN": "Convex-MIM-3CRV",
+                "DY": 110000
+            },
+            "active": true,
+            "contractName": "USDCPrimary"
         }
     ],
     "USDCSecondary": [
@@ -953,7 +1048,11 @@
             "tokens": ["USDC"],
             "protocols": ["Aave"],
             "protocolsDisplayName": ["Aave"],
-            "metaData": { "N": "Aave", "DN": "Aave - USDC", "DY": 49956 },
+            "metaData": {
+                "N": "Aave",
+                "DN": "Aave - USDC",
+                "DY": 49956
+            },
             "active": true
         }
     ],
@@ -994,8 +1093,30 @@
             "tokens": ["USDT"],
             "protocols": ["Idle", "Compound", "Aave"],
             "protocolsDisplayName": ["Idle", "Compound", "Aave"],
-            "metaData": { "N": "Idle", "DN": "Idle - USDT", "DY": 45343 },
+            "metaData": {
+                "N": "Idle",
+                "DN": "Idle - USDT",
+                "DY": 45343
+            },
             "active": true
+        },
+        {
+            "address": "0xDE5a25415C637b52d59Ef980b29a5fDa8dC3C70B",
+            "deployedBlock": 14300374,
+            "startBlock": 14300374,
+            "endBlock": null,
+            "abiVersion": "ce7b149",
+            "tag": "Strategy",
+            "tokens": ["USDT", "UST"],
+            "protocols": ["Curve", "Convex"],
+            "protocolsDisplayName": ["Curve", "Convex"],
+            "metaData": {
+                "N": "Convex XPool USDT",
+                "DN": "Convex-UST-wormhole-3CRV",
+                "DY": 110000
+            },
+            "active": true,
+            "contractName": "USDTPrimary"
         }
     ],
     "USDTSecondary": [
@@ -1035,7 +1156,11 @@
             "tokens": ["USDT"],
             "protocols": ["Aave"],
             "protocolsDisplayName": ["Aave"],
-            "metaData": { "N": "Aave", "DN": "Aave - USDT", "DY": 49513 },
+            "metaData": {
+                "N": "Aave",
+                "DN": "Aave - USDT",
+                "DY": 49513
+            },
             "active": true
         }
     ],
@@ -1089,7 +1214,11 @@
             "tokens": ["FRAX"],
             "protocols": ["Curve", "Yearn", "Convex"],
             "protocolsDisplayName": ["Curve", "Yearn", "Convex"],
-            "metaData": { "N": "XPool", "DN": "Curve - XPool", "DY": 117589 },
+            "metaData": {
+                "N": "XPool",
+                "DN": "Curve - XPool",
+                "DY": 117589
+            },
             "active": true
         }
     ],
@@ -1123,6 +1252,67 @@
             "active": true
         }
     ],
+    "GroHodler": [
+        {
+            "address": "0xEf10eac205817A88C6d504d02481053E85A8F927",
+            "deployedBlock": 13405194,
+            "startBlock": 13405194,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        },
+        {
+            "address": "0x8b4A30c8884ca4AfF1E4c82Cce79802a63E61397",
+            "deployedBlock": 13405194,
+            "startBlock": 13405194,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true,
+            "contractName": "GroHodler"
+        }
+    ],
+    "LPTokenStakerV1": [
+        {
+            "address": "0x001C249c09090D79Dc350A286247479F08c7aaD7",
+            "deployedBlock": 13326459,
+            "startBlock": 13326459,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true,
+            "contractName": "LPTokenStakerV1"
+        }
+    ],
+    "LPTokenStakerV2": [
+        {
+            "address": "0x2E32bAd45a1C29c1EA27cf4dD588DF9e68ED376C",
+            "deployedBlock": 14268645,
+            "startBlock": 14268775,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true,
+            "contractName": "LPTokenStakerV2"
+        }
+    ],
     "GroDAOVesting": [
         {
             "address": "0x63d96236fD0e1c395D3E464a38F46B1adca247DE",
@@ -1140,30 +1330,31 @@
     ],
     "GroVesting": [
         {
-            "address": "0x8aed279452BF307d51cECc6ef09Fb51C02c095AF",
-            "deployedBlock": 11623034,
-            "startBlock": 11623034,
-            "endBlock": 13405101,
-            "abiVersion": "fa8e260",
-            "tag": "Governance",
-            "tokens": [],
-            "protocols": [],
-            "protocolsDisplayName": [],
-            "metaData": {},
-            "active": false
-        },
-        {
             "address": "0xA28693bf01Dc261887b238646Bb9636cB3a3730B",
             "deployedBlock": 13405101,
             "startBlock": 13405101,
             "endBlock": null,
             "abiVersion": "fa8e260",
-            "tag": "Governance",
+            "tag": "Vesting",
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {},
             "active": true
+        },
+        {
+            "address": "0x748218256AfE0A19a88EBEB2E0C5Ce86d2178360",
+            "deployedBlock": 14268701,
+            "startBlock": 14268760,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true,
+            "contractName": "GroVesting"
         }
     ],
     "GroDAOToken": [
@@ -1188,12 +1379,26 @@
             "startBlock": 13548959,
             "endBlock": null,
             "abiVersion": "fa8e260",
-            "tag": "Governance",
+            "tag": "Vesting",
             "tokens": [],
             "protocols": [],
             "protocolsDisplayName": [],
             "metaData": {},
             "active": true
+        },
+        {
+            "address": "0x519A27636e13d177e5C50aaF758B72dE9360651c",
+            "deployedBlock": 14268740,
+            "startBlock": 14268756,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true,
+            "contractName": "VotingAggregator"
         }
     ],
     "AVAXDAIVault": [
@@ -1358,141 +1563,6 @@
             "active": true
         }
     ],
-    "AVAXDAIStrategy": [
-        {
-            "address": "0x4c7EA5b8032C5Ea82DdF617DAc7972c70E0c0478",
-            "deployedBlock": 7727050,
-            "startBlock": 7727050,
-            "endBlock": null,
-            "abiVersion": "c3aca46",
-            "tag": "AVAX",
-            "tokens": [],
-            "protocols": [],
-            "protocolsDisplayName": [],
-            "metaData": { "N": "ah_DAI.e_strat", "DN": "DAI.e AH" },
-            "active": true
-        }
-    ],
-    "AVAXUSDCStrategy": [
-        {
-            "address": "0x247AF6E106549033d3a65354fC3A72FF3794FA99",
-            "deployedBlock": 7726462,
-            "startBlock": 7726462,
-            "endBlock": null,
-            "abiVersion": "c3aca46",
-            "tag": "AVAX",
-            "tokens": [],
-            "protocols": [],
-            "protocolsDisplayName": [],
-            "metaData": { "N": "ah_USDC.e_strat", "DN": "USDC.e AH" },
-            "active": true
-        }
-    ],
-    "AVAXUSDTStrategy": [
-        {
-            "address": "0x94a7c3419504ceA9FbA06eE739717B236Ada0638",
-            "deployedBlock": 7726836,
-            "startBlock": 7726836,
-            "endBlock": null,
-            "abiVersion": "c3aca46",
-            "tag": "AVAX",
-            "tokens": [],
-            "protocols": [],
-            "protocolsDisplayName": [],
-            "metaData": { "N": "ah_USDT.e_strat", "DN": "USDT.e AH" },
-            "active": true
-        }
-    ],
-    "AVAXDAIStrategy_v1_5": [
-        {
-            "address": "0xE0d6EFf0F64dA98B2c0e47102d59709B24cFc76f",
-            "deployedBlock": 8207662,
-            "startBlock": 8207662,
-            "endBlock": null,
-            "abiVersion": "c3aca46",
-            "tag": "AVAX",
-            "tokens": [],
-            "protocols": [],
-            "protocolsDisplayName": [],
-            "metaData": { "N": "ah_DAI.e_strat_v1_5", "DN": "DAI.e AH v1.5" },
-            "active": true
-        }
-    ],
-    "AVAXUSDCStrategy_v1_5": [
-        {
-            "address": "0x45Fa601854326DE028B982Df9839a27d22f36344",
-            "deployedBlock": 8207320,
-            "startBlock": 8207320,
-            "endBlock": null,
-            "abiVersion": "c3aca46",
-            "tag": "AVAX",
-            "tokens": [],
-            "protocols": [],
-            "protocolsDisplayName": [],
-            "metaData": { "N": "ah_USDC.e_strat_v1_5", "DN": "USDC.e AH v1.5" },
-            "active": true
-        }
-    ],
-    "AVAXUSDTStrategy_v1_5": [
-        {
-            "address": "0xB29380360A44a7630f404C7609114e48Fde0DDEE",
-            "deployedBlock": 8207474,
-            "startBlock": 8207474,
-            "endBlock": null,
-            "abiVersion": "c3aca46",
-            "tag": "AVAX",
-            "tokens": [],
-            "protocols": [],
-            "protocolsDisplayName": [],
-            "metaData": { "N": "ah_USDT.e_strat_v1_5", "DN": "USDT.e AH v1.5" },
-            "active": true
-        }
-    ],
-    "AVAXDAIStrategy_v1_6": [
-        {
-            "address": "0xb7A4ED26dA881196C3da388b46CD290Fd92Aacc8",
-            "deployedBlock": 9149656,
-            "startBlock": 9149656,
-            "endBlock": null,
-            "abiVersion": "c3aca46",
-            "tag": "AVAX",
-            "tokens": [],
-            "protocols": [],
-            "protocolsDisplayName": [],
-            "metaData": { "N": "ah_DAI.e_strat_v1_6", "DN": "DAI.e AH v1.6" },
-            "active": true
-        }
-    ],
-    "AVAXUSDCStrategy_v1_6": [
-        {
-            "address": "0x21dA4b3b6738adb122dedbfA722Cdab6Fa29D4AC",
-            "deployedBlock": 9149128,
-            "startBlock": 9149128,
-            "endBlock": null,
-            "abiVersion": "c3aca46",
-            "tag": "AVAX",
-            "tokens": [],
-            "protocols": [],
-            "protocolsDisplayName": [],
-            "metaData": { "N": "ah_USDC.e_strat_v1_6", "DN": "USDC.e AH v1.6" },
-            "active": true
-        }
-    ],
-    "AVAXUSDTStrategy_v1_6": [
-        {
-            "address": "0x9889D8CdcDF4F5a0f30378C909A8930cF0FED2F4",
-            "deployedBlock": 9149599,
-            "startBlock": 9149599,
-            "endBlock": null,
-            "abiVersion": "c3aca46",
-            "tag": "AVAX",
-            "tokens": [],
-            "protocols": [],
-            "protocolsDisplayName": [],
-            "metaData": { "N": "ah_USDT.e_strat_v1_6", "DN": "USDT.e AH v1.6" },
-            "active": true
-        }
-    ],
     "AVAXDAIVault_v1_7": [
         {
             "address": "0x6063597B9356B246E706Fd6A48C780F897e3ef55",
@@ -1509,7 +1579,8 @@
                 "DN": "Gro Labs DAI.e AVAX Vault v1.7",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXDAIVault_v1_7"
         }
     ],
     "AVAXUSDCVault_v1_7": [
@@ -1528,7 +1599,8 @@
                 "DN": "Gro Labs USDC.e AVAX Vault v1.7",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDCVault_v1_7"
         }
     ],
     "AVAXUSDTVault_v1_7": [
@@ -1547,14 +1619,177 @@
                 "DN": "Gro Labs USDT.e AVAX Vault v1.7",
                 "DY": 117589
             },
+            "active": true,
+            "contractName": "AVAXUSDTVault_v1_7"
+        }
+    ],
+    "AVAXDAIStrategy": [
+        {
+            "address": "0x4c7EA5b8032C5Ea82DdF617DAc7972c70E0c0478",
+            "deployedBlock": 7727050,
+            "startBlock": 7727050,
+            "endBlock": null,
+            "abiVersion": "c3aca46",
+            "tag": "AVAX",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_DAI.e_strat",
+                "DN": "DAI.e AH"
+            },
+            "active": true
+        }
+    ],
+    "AVAXUSDCStrategy": [
+        {
+            "address": "0x247AF6E106549033d3a65354fC3A72FF3794FA99",
+            "deployedBlock": 7726462,
+            "startBlock": 7726462,
+            "endBlock": null,
+            "abiVersion": "c3aca46",
+            "tag": "AVAX",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_USDC.e_strat",
+                "DN": "USDC.e AH"
+            },
+            "active": true
+        }
+    ],
+    "AVAXUSDTStrategy": [
+        {
+            "address": "0x94a7c3419504ceA9FbA06eE739717B236Ada0638",
+            "deployedBlock": 7726836,
+            "startBlock": 7726836,
+            "endBlock": null,
+            "abiVersion": "c3aca46",
+            "tag": "AVAX",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_USDT.e_strat",
+                "DN": "USDT.e AH"
+            },
+            "active": true
+        }
+    ],
+    "AVAXDAIStrategy_v1_5": [
+        {
+            "address": "0xE0d6EFf0F64dA98B2c0e47102d59709B24cFc76f",
+            "deployedBlock": 8207662,
+            "startBlock": 8207662,
+            "endBlock": null,
+            "abiVersion": "c3aca46",
+            "tag": "AVAX",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_DAI.e_strat_v1_5",
+                "DN": "DAI.e AH v1.5"
+            },
+            "active": true
+        }
+    ],
+    "AVAXUSDCStrategy_v1_5": [
+        {
+            "address": "0x45Fa601854326DE028B982Df9839a27d22f36344",
+            "deployedBlock": 8207320,
+            "startBlock": 8207320,
+            "endBlock": null,
+            "abiVersion": "c3aca46",
+            "tag": "AVAX",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_USDC.e_strat_v1_5",
+                "DN": "USDC.e AH v1.5"
+            },
+            "active": true
+        }
+    ],
+    "AVAXUSDTStrategy_v1_5": [
+        {
+            "address": "0xB29380360A44a7630f404C7609114e48Fde0DDEE",
+            "deployedBlock": 8207474,
+            "startBlock": 8207474,
+            "endBlock": null,
+            "abiVersion": "c3aca46",
+            "tag": "AVAX",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_USDT.e_strat_v1_5",
+                "DN": "USDT.e AH v1.5"
+            },
+            "active": true
+        }
+    ],
+    "AVAXDAIStrategy_v1_6": [
+        {
+            "address": "0xb7A4ED26dA881196C3da388b46CD290Fd92Aacc8",
+            "deployedBlock": 9149656,
+            "startBlock": 9149656,
+            "endBlock": null,
+            "abiVersion": "c3aca46",
+            "tag": "AVAX",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_DAI.e_strat_v1_6",
+                "DN": "DAI.e AH v1.6"
+            },
+            "active": true
+        }
+    ],
+    "AVAXUSDCStrategy_v1_6": [
+        {
+            "address": "0x21dA4b3b6738adb122dedbfA722Cdab6Fa29D4AC",
+            "deployedBlock": 9149128,
+            "startBlock": 9149128,
+            "endBlock": null,
+            "abiVersion": "c3aca46",
+            "tag": "AVAX",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_USDC.e_strat_v1_6",
+                "DN": "USDC.e AH v1.6"
+            },
+            "active": true
+        }
+    ],
+    "AVAXUSDTStrategy_v1_6": [
+        {
+            "address": "0x9889D8CdcDF4F5a0f30378C909A8930cF0FED2F4",
+            "deployedBlock": 9149599,
+            "startBlock": 9149599,
+            "endBlock": null,
+            "abiVersion": "c3aca46",
+            "tag": "AVAX",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_USDT.e_strat_v1_6",
+                "DN": "USDT.e AH v1.6"
+            },
             "active": true
         }
     ],
     "AVAXDAIStrategy_v1_7": [
         {
             "address": "0x670EA3f675a332D561d5a9ECaa16c097Ac0b0ba5",
-            "deployedBlock": 10364128 ,
-            "startBlock": 10364128 ,
+            "deployedBlock": 10364128,
+            "startBlock": 10364128,
             "abiVersion": "6270d2c",
             "tag": "AVAX",
             "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
@@ -1565,7 +1800,8 @@
                 "DN": "DAI.e AH v1.7",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXDAIStrategy_v1_7"
         }
     ],
     "AVAXUSDCStrategy_v1_7": [
@@ -1583,7 +1819,8 @@
                 "DN": "USDC.e AH v1.7",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDCStrategy_v1_7"
         }
     ],
     "AVAXUSDTStrategy_v1_7": [
@@ -1601,7 +1838,8 @@
                 "DN": "USDT.e AH v1.7",
                 "DY": 117589
             },
-            "active": true
+            "active": true,
+            "contractName": "AVAXUSDTStrategy_v1_7"
         }
     ],
     "AVAXBouncer": [
