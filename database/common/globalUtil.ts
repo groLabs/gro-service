@@ -24,11 +24,13 @@ const provider = getAlchemyRpcProvider(providerKey);
 const scanner = new BlocksScanner(provider);
 // AVAX config
 import { ethers } from 'ethers';
-// const rpcURL: any =
-//     getConfig('blockchain.avalanche_rpc_url', false) ||
-//     'https://api.avax.network/ext/bc/C/rpc';
-const rpcURL = 'https://api.avax.network/ext/bc/C/rpc';
-const providerAVAX = new ethers.providers.JsonRpcProvider(rpcURL);
+const rpcURL = 'https://nd-353-879-524.p2pify.com/ext/bc/C/rpc';
+
+const providerAVAX = new ethers.providers.JsonRpcProvider({
+    url: rpcURL,
+    user: getConfig('blockchain.avax_api_keys.username'),
+    password: getConfig('blockchain.avax_api_keys.password'),
+});
 const scannerAvax = new BlocksScanner(providerAVAX);
 
 

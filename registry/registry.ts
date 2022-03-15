@@ -16,11 +16,13 @@ const registryAddress = getConfig('registry_address', false) as
     | string
     | undefined;
 
-const rpcURL =
-    getConfig('blockchain.avalanche_rpc_url', false) ||
-    'https://api.avax.network/ext/bc/C/rpc';
+const rpcURL = 'https://nd-353-879-524.p2pify.com/ext/bc/C/rpc';
 
-const provider = new ethers.providers.JsonRpcProvider(rpcURL);
+const provider = new ethers.providers.JsonRpcProvider({
+    url: rpcURL,
+    user: getConfig('blockchain.avax_api_keys.username'),
+    password: getConfig('blockchain.avax_api_keys.password'),
+});
 const ethererumProvider = getAlchemyRpcProvider();
 
 let registry;

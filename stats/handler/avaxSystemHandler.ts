@@ -14,11 +14,13 @@ const logger = require('../statsLogger');
 
 const network = getConfig('blockchain.network') as string;
 
-const rpccURL =
-    getConfig('avalanche.rpc_url', false) ||
-    'https://api.avax.network/ext/bc/C/rpc';
+const rpcURL = 'https://nd-353-879-524.p2pify.com/ext/bc/C/rpc';
 
-const provider = new ethers.providers.JsonRpcProvider(rpccURL);
+const provider = new ethers.providers.JsonRpcProvider({
+    url: rpcURL,
+    user: getConfig('blockchain.avax_api_keys.username'),
+    password: getConfig('blockchain.avax_api_keys.password'),
+});
 const blockNumberTimestamp = {};
 const WAVAX = '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7';
 
