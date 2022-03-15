@@ -13,7 +13,12 @@ export const airdrop = {
     start_block: 14268737,
     folder: '../airdrop',
     gas_pwrd: 'airdrop1_result.csv',
-    files: [],
+    files: [
+        'airdrop-7-proofs.json',
+        'airdrop-8-proofs.json',
+        'airdrop-9-proofs.json',
+        'airdrop-10-proofs.json',
+    ],
 };
 export const gro_gate = {
     folder: '../grogate',
