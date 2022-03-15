@@ -25,12 +25,6 @@ const currentLiveVaults = {
     USDTLiveVault: ContractNames.AVAXUSDTVault_v1_7,
 };
 
-const vaultsVersion = {
-    DAI: '_v1_7',
-    USDC: '_v1_7',
-    USDT: '_v1_7',
-};
-
 const groGateFileFolder = groGateConfig.folder;
 const groGateFiles = groGateConfig.files || [];
 
@@ -213,18 +207,15 @@ function fullupSingleVault(
         allowance = userAllowance;
     }
     allowance = BigNumber.from(allowance);
-    dataSource[
-        `gro${vaultType}.e_vault${vaultsVersion[vaultType]}`
-    ].remaining_allowance = allowance.toString();
+    dataSource[`gro${vaultType}.e_vault`].remaining_allowance =
+        allowance.toString();
 
     const distBaseAllowance = BigNumber.from(baseAllowance);
-    dataSource[
-        `gro${vaultType}.e_vault${vaultsVersion[vaultType]}`
-    ].base_allowance = distBaseAllowance.toString();
+    dataSource[`gro${vaultType}.e_vault`].base_allowance =
+        distBaseAllowance.toString();
 
-    dataSource[
-        `gro${vaultType}.e_vault${vaultsVersion[vaultType]}`
-    ].base_allowance_claimed = userClaimed.toString();
+    dataSource[`gro${vaultType}.e_vault`].base_allowance_claimed =
+        userClaimed.toString();
 
     return allowance;
 }
@@ -257,9 +248,10 @@ async function getAccountAllowance(account, provider) {
         root: '',
         root_matched: false,
     };
-    result[`groDAI.e_vault${vaultsVersion.DAI}`] = { ...DEFAULT_GRO_STABLE };
-    result[`groUSDC.e_vault${vaultsVersion.USDC}`] = { ...DEFAULT_GRO_STABLE };
-    result[`groUSDT.e_vault${vaultsVersion.USDT}`] = { ...DEFAULT_GRO_STABLE };
+    // to do
+    result['groDAI.e_vault'] = { ...DEFAULT_GRO_STABLE };
+    result['groUSDC.e_vault'] = { ...DEFAULT_GRO_STABLE };
+    result['groUSDT.e_vault'] = { ...DEFAULT_GRO_STABLE };
 
     try {
         const { baseAllowance, userAllowance, userClaimed } = await prepareData(
@@ -297,15 +289,9 @@ async function getAccountAllowance(account, provider) {
                     result.proofs = proof;
                 }
                 if (amount) {
-                    result[
-                        `groDAI.e_vault${vaultsVersion.DAI}`
-                    ].claimable_allowance = amount;
-                    result[
-                        `groUSDC.e_vault${vaultsVersion.USDC}`
-                    ].claimable_allowance = amount;
-                    result[
-                        `groUSDT.e_vault${vaultsVersion.USDT}`
-                    ].claimable_allowance = amount;
+                    result['groDAI.e_vault'].claimable_allowance = amount;
+                    result['groUSDC.e_vault'].claimable_allowance = amount;
+                    result['groUSDT.e_vault'].claimable_allowance = amount;
                 }
 
                 const claimedAmounts = await getBuncerClaimedAmount(
@@ -313,7 +299,7 @@ async function getAccountAllowance(account, provider) {
                     provider
                 );
                 const daiAllowance = fulledClaimableAndAllowance(
-                    `groDAI.e_vault${vaultsVersion.DAI}`,
+                    'groDAI.e_vault',
                     result,
                     claimedAmounts[0],
                     amount,
@@ -322,7 +308,7 @@ async function getAccountAllowance(account, provider) {
                     userAllowance[0]
                 );
                 const usdcAllowance = fulledClaimableAndAllowance(
-                    `groUSDC.e_vault${vaultsVersion.USDT}`,
+                    'groUSDC.e_vault',
                     result,
                     claimedAmounts[1],
                     amount,
@@ -331,7 +317,7 @@ async function getAccountAllowance(account, provider) {
                     userAllowance[1]
                 );
                 const usdtAllowance = fulledClaimableAndAllowance(
-                    `groUSDT.e_vault${vaultsVersion.USDT}`,
+                    'groUSDT.e_vault',
                     result,
                     claimedAmounts[2],
                     amount,

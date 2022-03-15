@@ -339,7 +339,14 @@ async function getHandlerEvents(
 
     const resultLogs = [];
     for (let i = 0; i < logs.length; i += 1) {
-        resultLogs.push(...logs[i].data);
+        if (logs[i].status === 200) {
+            resultLogs.push(...logs[i].data);
+        } else {
+            logger.error(logs[i].data);
+            throw new ContractCallError(
+                `Filter ${contractName}'s ${eventName} failed.`
+            );
+        }
     }
     return resultLogs;
 }
