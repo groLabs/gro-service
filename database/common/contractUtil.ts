@@ -153,6 +153,11 @@ const getDAIeVault_1_7 = () => {
         .contract;
 }
 
+const getGroVesting = () => {
+    return getLatestSystemContract(ContractNames.GroVesting, getProviderKey())
+    .contract;
+}
+
 const getContractInfoHistory = async (
     contractName: string,
     block: number,
@@ -236,5 +241,6 @@ export {
     getUSDCeVault_1_7,
     getUSDTeVault_1_7,
     getDAIeVault_1_7,
+    getGroVesting,
     getContractInfoHistory,
 };
