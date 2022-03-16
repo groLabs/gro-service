@@ -74,6 +74,7 @@ function readLocalContractConfig() {
         const latestContractInfo = contractHistory[contractHistory.length - 1];
         const contractAddress = latestContractInfo.address;
         latestContractsAddress[contractName] = latestContractInfo;
+        latestContractInfo.contractName = contractName;
         latestContractsAddressByAddress[contractAddress] = latestContractInfo;
     }
 
