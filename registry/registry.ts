@@ -16,13 +16,23 @@ const registryAddress = getConfig('registry_address', false) as
     | string
     | undefined;
 
-const rpcURL = 'https://nd-353-879-524.p2pify.com/ext/bc/C/rpc';
+const rpcURL =
+    getConfig('blockchain.avalanche_rpc_url', false) ||
+    'https://nd-353-879-524.p2pify.com/ext/bc/C/rpc';
 
-const provider = new ethers.providers.JsonRpcProvider({
-    url: rpcURL,
-    user: getConfig('blockchain.avax_api_keys.username'),
-    password: getConfig('blockchain.avax_api_keys.password'),
-});
+let provider;
+if (process.env.NODE_ENV === 'mainnet') {
+    provider = new ethers.providers.JsonRpcProvider({
+        url: rpcURL,
+        user: getConfig('blockchain.avax_api_keys.username'),
+        password: getConfig('blockchain.avax_api_keys.password'),
+    });
+} else {
+    provider = new ethers.providers.JsonRpcProvider({
+        url: rpcURL,
+    });
+}
+
 const ethererumProvider = getAlchemyRpcProvider();
 
 let registry;
