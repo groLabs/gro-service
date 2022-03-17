@@ -203,23 +203,6 @@ async function getCurveStrategyStats(vault, vaultTotalAsset, blockTag) {
     return strategies;
 }
 
-// async function getCurveVaultStats(blockTag) {
-//     const curveVault = getLatestSystemContract(
-//         ContractNames.CRVVaultAdaptor
-//     ).contract;
-//     const vaultTotalAsset = await curveVault.totalAssets(blockTag);
-//     const assetUsd = await getUsdValueForLP(vaultTotalAsset, blockTag);
-//     const strategyStats = await getCurveStrategyStats(
-//         curveVault,
-//         vaultTotalAsset,
-//         blockTag
-//     );
-//     return {
-//         name: 'Curve yVault',
-//         amount: assetUsd,
-//         strategies: strategyStats,
-//     };
-// }
 
 async function getStrategiesStats(
     vault,
@@ -370,45 +353,7 @@ async function getPrepareCalculation(systemStats, blockTag) {
     return systemState;
 }
 
-async function getMegaExposureStats(blockTag, systemStats) {
-    logger.info(`getMegaExposureStats blockTag : ${JSON.stringify(blockTag)}`);
-    const exposureProtocol = [];
-    const exposureStableCoin = [];
-    const vaultsStats = systemStats.vault;
-    const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
-    const { vaultsAddress: adapterAddresses, contracts: vaultStrategies } =
-        vaultAndStrateyInfo;
-    for (let i = 0; i < vaultsStats.length; i += 1) {
-        const vault = vaultsStats[i];
-        const { contract: vaultAdaptor, contractInfo: vaultAdaptorInfo } =
-            vaultStrategies[adapterAddresses[i]];
-        console.log(
-            `vault index ${i} ${JSON.stringify(vaultAdaptorInfo)} protocol ${
-                vaultAdaptorInfo.protocols[0]
-            } tokens ${vaultAdaptorInfo.tokens[0]}`
-        );
-        exposureProtocol.push({
-            name: vaultAdaptorInfo.protocols[0],
-            display_name: vaultAdaptorInfo.protocolsDisplayName[0],
-            concentration: vault.share,
-        });
-        exposureStableCoin.push({
-            name: vaultAdaptorInfo.tokens[0],
-            display_name: vaultAdaptorInfo.tokens[0],
-            concentration: vault.share,
-        });
-    }
-    const exposureStats = {
-        stablecoins: exposureStableCoin,
-        protocols: exposureProtocol,
-    };
-    return exposureStats;
-}
-
 async function getExposureStats(blockTag, systemStats) {
-    const { contract: exposure } = getLatestSystemContract(
-        ContractNames.exposure
-    );
     logger.info(`getExposureStats blockTag : ${JSON.stringify(blockTag)}`);
     const stableCoins = await getLatestStableCoins(providerKey);
     const { contract: bouy } = await getLatestSystemContract(
@@ -432,23 +377,10 @@ async function getExposureStats(blockTag, systemStats) {
     const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
     const { vaultsAddress: adapterAddresses, contracts: vaultStrategies } =
         vaultAndStrateyInfo;
-    const { contractInfo: adaptorInfo } = vaultStrategies[adapterAddresses[0]];
-    logger.info(`check protocols length ${adaptorInfo.protocols.length}`);
-    if (adaptorInfo.protocols.length > 0) {
-        return getMegaExposureStats(blockTag, systemStats);
-    }
-
-    const riskResult = await exposure.getExactRiskExposure(preCal, blockTag);
-    const exposureStableCoin = riskResult[0].map((concentration, i) => ({
-        name: stableCoins[i],
-        display_name: stableCoins[i],
-        concentration: convertToSharePercentDecimal(concentration),
-    }));
+    const exposureStableCoin = [];
     const exposureProtocol = [];
     const protocols = [];
     const vaultsStats = systemStats.vault;
-    let fraxStrategyShare = BigNumber.from(0);
-
     for (let i = 0; i < vaultsStats.length; i += 1) {
         const vault = vaultsStats[i];
         const { strategies } = vaultStrategies[adapterAddresses[i]].vault;
@@ -488,16 +420,24 @@ async function getExposureStats(blockTag, systemStats) {
             }
         }
     }
-    // curve's stable coin
-    const curveVaultIndex = adapterAddresses.length - 1;
+    // major stable coin exposure => reserves + metapool exposure
+    let metaPoolConcentration = ZERO;
+    exposureProtocol.forEach((item) => {
+        if (item.name === 'Curve') {
+            metaPoolConcentration = item.concentration;
+            logger.info(`curve ${metaPoolConcentration} ${item.concentration}`);
+        }
+    });
 
-    // exposureProtocol.forEach((item) => {
-    //     if (item.name === 'Curve') {
-    //         item.concentration = vaultsStats[3].share;
-    //         logger.info(`curve ${vaultsStats[3].share} ${item.concentration}`);
-    //     }
-    //     logger.info(`exposureProtocol ${item.name} ${item.concentration}`);
-    // });
+    for (let i = 0; i < vaultsStats.length; i += 1) {
+        const { reserves } = vaultsStats[i];
+        exposureStableCoin.push({
+            name: stableCoins[i],
+            display_name: stableCoins[i],
+            concentration: reserves.share.add(metaPoolConcentration),
+        });
+    }
+
     const exposureStats = {
         stablecoins: exposureStableCoin,
         protocols: exposureProtocol,
