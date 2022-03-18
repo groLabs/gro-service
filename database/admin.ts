@@ -10,6 +10,7 @@ import { getHistoricalAPY } from './handler/historicalAPY';
 import { loadUserBalances } from './loader/loadUserBalances';
 import { etlTokenPrice } from './etl/etlTokenPrice';
 import { dumpTable } from './common/pgUtil';
+import { getMigrateEvents } from './listener/getMigrationEvents';
 //import { runTest } from './caller/multiCaller';
 import {
     vesting,
@@ -239,6 +240,10 @@ import { QUERY_SUCCESS } from './constants';
         // await loadUserBalances2('26/10/2021', '26/10/2021', null);
         // await loadUserBalances2('26/10/2021', '26/10/2021', '0xa31f8afd785EC32df8Df77Ab83978E49Cc0349Ac');
         // await loadTokenPrice('27/10/2021');
+
+        // Retrieve migrate user events from LPTokenStakerV2
+        // await loadContractInfoFromRegistry();
+        // await getMigrateEvents(14268645, 14403332);
 
         process.exit(0);
     } catch (err) {
