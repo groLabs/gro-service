@@ -28,6 +28,8 @@ const scanner = new BlocksScanner(provider);
 const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
 const SECONDS_IN_YEAR = BigNumber.from(31536000);
 const WEEKS_IN_YEAR = BigNumber.from(52);
+const MIN_HARVEST_DAYS = 5;
+const MAX_HARVEST_DAYS = 15;
 
 // config
 const launchBlock = getConfig('blockchain.start_block');
@@ -112,16 +114,19 @@ async function getAssetsChangedEvents(vault, strategy, startBlock, endBlock) {
     );
     const endHarvest = reverseHarvestedEvents[0];
     const blockInfo = await provider.getBlock(endHarvest.blockNumber);
-    const block3DaysAgo = await searchBlockDaysAgo(blockInfo.timestamp, 3);
+    const blockDaysAgo = await searchBlockDaysAgo(
+        blockInfo.timestamp,
+        MIN_HARVEST_DAYS
+    );
     let startHarvestIndex = -1;
     for (let i = 0; i < reverseHarvestedEvents.length; i += 1) {
-        if (reverseHarvestedEvents[i].blockNumber <= block3DaysAgo.block) {
+        if (reverseHarvestedEvents[i].blockNumber <= blockDaysAgo.block) {
             startHarvestIndex = i;
             break;
         }
     }
     if (startHarvestIndex < 0) {
-        logger.info('could find harvest before 3days ago');
+        logger.info(`could find harvest before ${MIN_HARVEST_DAYS} days ago`);
         return assetChangedBlock;
     }
 
@@ -382,7 +387,10 @@ async function getCurrentApy() {
         .startOf('day');
     logger.info(`startOfUTCToday ${startOfUTCToday}`);
 
-    const blockStart = await searchBlockDaysAgo(latestBlock.timestamp, 10);
+    const blockStart = await searchBlockDaysAgo(
+        latestBlock.timestamp,
+        MAX_HARVEST_DAYS
+    );
     if (blockStart.block < launchBlock) {
         blockStart.number = launchBlock;
         blockStart.timestamp = await getTimestampByBlockNumber(
