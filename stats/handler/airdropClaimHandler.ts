@@ -38,8 +38,7 @@ async function getAirdropClaimEvents(
     await appendEventTimestamp(logs, provider);
     const transactions = {};
     logs.forEach((item) => {
-        transactions[`${item.args[1]}`] = [item.transactionHash];
-        console.log(transactions[`${item.args[1]}`]);
+        transactions[`${item.args[2]}`] = [item.transactionHash];
     });
     return transactions;
 }

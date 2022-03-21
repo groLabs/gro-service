@@ -4,7 +4,10 @@ import fs from 'fs';
 import path from 'path';
 import { ethers } from 'ethers';
 import { getConfig } from '../../common/configUtil';
-import { getAirdropClaimEvents, getAirdropClaimed } from '../handler/airdropClaimHandler';
+import {
+    getAirdropClaimEvents,
+    getAirdropClaimed,
+} from '../handler/airdropClaimHandler';
 
 const logger = require('../statsLogger');
 
@@ -86,9 +89,9 @@ async function getGasRefundResult(account, currentTimestamp) {
     if (accountAirdrop) {
         result = { ...airdropFirstDefaultValue };
         result.amount = `${new BN(accountAirdrop.amount).toFormat(2)}`;
-        result.amount_to_claim = new BN(accountAirdrop.amount).multipliedBy(
-            DECIMAL
-        ).toString();
+        result.amount_to_claim = new BN(accountAirdrop.amount)
+            .multipliedBy(DECIMAL)
+            .toString();
         result.participated = 'true';
         result.claimed = 'true';
     }
@@ -125,12 +128,11 @@ async function getAirdropResultWithProof(
     result.token = token;
     result.launch_ts = timestamp;
     result.merkle_root_index = merkleIndex.toString();
-    result.claimable = claimable;
     result.expiry_ts = expiryTimestamp;
     const isExpired = expired(currentTimestamp, result.expiry_ts);
     result.expired = isExpired;
     if (accountAirdrop) {
-        // result = { ...airdropDefaultValue };
+        result.claimable = 'true';
         const { amount, proof } = accountAirdrop;
         const amountBn = new BN(amount);
         if (!amountBn.isZero()) {
@@ -185,7 +187,4 @@ async function getAllAirdropResults(address, endBlock) {
     return airdrops;
 }
 
-export {
-    updateOGAirdropFile,
-    getAllAirdropResults,
-};
+export { updateOGAirdropFile, getAllAirdropResults };
