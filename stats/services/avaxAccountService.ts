@@ -17,16 +17,11 @@ import {
     getTransferHistories,
     getAvaxApprovalEvents,
 } from './common';
+import { getAvaxFullNodeRpcProvider } from '../../common/chainUtil';
 
 const logger = require('../statsLogger');
 
-const rpcURL = 'https://nd-353-879-524.p2pify.com/ext/bc/C/rpc';
-
-const provider = new ethers.providers.JsonRpcProvider({
-    url: rpcURL,
-    user: getConfig('blockchain.avax_api_keys.username'),
-    password: getConfig('blockchain.avax_api_keys.password'),
-});
+const provider = getAvaxFullNodeRpcProvider();
 
 const blockNumberTimestamp = {};
 const accountVaultHistories = {};
