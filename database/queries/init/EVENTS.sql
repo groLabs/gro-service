@@ -1,0 +1,90 @@
+CREATE TABLE gro."EVENT_APPROVALS" (
+    "event_id" CHARACTER VARYING (256) NOT NULL,
+    "owner" CHARACTER VARYING (42) NULL,
+    "spender" CHARACTER VARYING (42) NULL,
+    "value" NUMERIC (20, 8) NULL,
+    "token_id" SMALLINT NULL,
+    "version_id" SMALLINT NULL,
+    "creation_date" TIMESTAMP (6) NULL,
+    CONSTRAINT "EVENT_APPROVALS_pkey" PRIMARY KEY (event_id) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EVENT_APPROVALS" OWNER to postgres;
+
+CREATE TABLE gro."EVENT_CLAIMS" (
+    "event_id" CHARACTER VARYING (256) NOT NULL,
+    "from" CHARACTER VARYING (42) NULL,
+    "pid" SMALLINT NULL,
+    "vest" BOOLEAN NULL,
+    "tranche_id" NUMERIC (20, 8) NULL,
+    "amount" NUMERIC (20, 8) NULL,
+    "creation_date" TIMESTAMP (6) NULL,
+    CONSTRAINT "EVENT_CLAIMS_pkey" PRIMARY KEY (event_id) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EVENT_CLAIMS" OWNER to postgres;
+
+CREATE TABLE gro."EVENT_DEPOSITS" (
+    "event_id" CHARACTER VARYING (256) NOT NULL,
+    "from" CHARACTER VARYING (42) NULL,
+    "referral" CHARACTER VARYING (42) NULL,
+    "pid" SMALLINT NULL,
+    "token_id" SMALLINT NULL,
+    "version_id" SMALLINT NULL,
+    "allowance" NUMERIC (20, 8) NULL,
+    "amount1" NUMERIC (20, 8) NULL,
+    "amount2" NUMERIC (20, 8) NULL,
+    "amount3" NUMERIC (20, 8) NULL,
+    "value" NUMERIC (20, 8) NULL,
+    "creation_date" TIMESTAMP (6) NULL,
+    CONSTRAINT "EVENT_DEPOSITS_pkey" PRIMARY KEY (event_id) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EVENT_DEPOSITS" OWNER to postgres;
+
+CREATE TABLE gro."EVENT_MASTER" (
+    "block_number" INTEGER NOT NULL,
+    "network_id" INTEGER NOT NULL,
+    "tx_hash" CHARACTER VARYING (66) NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "log_name" CHARACTER VARYING (255) NOT NULL,
+    "event_id" CHARACTER VARYING (256) NULL,
+    CONSTRAINT "EVENT_MASTER_pkey" PRIMARY KEY (
+        block_number,
+        network_id,
+        tx_hash,
+        contract_address,
+        log_name
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EVENT_MASTER" OWNER to postgres;
+
+CREATE TABLE gro."EVENT_MULTI_WITHDRAWALS" (
+    "event_id" CHARACTER VARYING (256) NOT NULL,
+    "from" CHARACTER VARYING (42) NULL,
+    "referral" CHARACTER VARYING (42) NULL,
+    "balanced" BOOLEAN NULL,
+    "all" BOOLEAN NULL,
+    "pid" INTEGER [] NULL,
+    "deductUsd" NUMERIC (20, 8) [] NULL,
+    "returnUsd" NUMERIC (20, 8) NULL,
+    "lpAmount" NUMERIC (20, 8) NULL,
+    "amounts" NUMERIC (20, 8) [] NULL,
+    "creation_date" TIMESTAMP (6) NULL,
+    CONSTRAINT "EVENT_MULTI_WITHDRAWALS_pkey" PRIMARY KEY (event_id) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EVENT_MULTI_WITHDRAWALS" OWNER to postgres;
+
+CREATE TABLE gro."EVENT_MULTI_CLAIMS" (
+    "event_id" CHARACTER VARYING (256) NOT NULL,
+    "from" CHARACTER VARYING (42) NULL,
+    "pids" INTEGER [] NULL,
+    "vest" BOOLEAN NULL,
+    "amount" NUMERIC (20, 8) [] NULL,
+    "creation_date" TIMESTAMP (6) NULL,
+    CONSTRAINT "EVENT_MULTI_CLAIMS_pkey" PRIMARY KEY (event_id) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EVENT_MULTI_CLAIMS" OWNER to postgres;
