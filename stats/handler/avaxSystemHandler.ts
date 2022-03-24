@@ -1151,7 +1151,7 @@ async function generateVaultData(
         labsVaultData.all_time_apy = vaultReturn;
         labsVaultData.last3d_apy = vaultReturn3Days;
     }
-    const startBlock = block.number - 700000;
+    const startBlock = block.number - 1400000;
     // const startBlock = 7408960;
     logger.info('openEvents');
     const openEvents = await getPositionOpenEvents(
