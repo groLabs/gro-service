@@ -92,15 +92,11 @@ async function checkStrategyChange(blockTag) {
         const vaultStrategy = await getStrategies();
         const latestContractInfo = getLatestContractsAddressByAddress();
         const yearnVaults = await getLatestYearnVaults();
-        const emergencyThreshold = BigNumber.from(2500);
-        const criticalThreshold = BigNumber.from(2000);
-        const warningThreshold = BigNumber.from(1500);
+        const emergencyThreshold = BigNumber.from(20000);
+        const criticalThreshold = BigNumber.from(10000);
+        const warningThreshold = BigNumber.from(5000);
         // not check curve strategy
-        for (
-            let vaultIndex = 0;
-            vaultIndex < vaults.length;
-            vaultIndex += 1
-        ) {
+        for (let vaultIndex = 0; vaultIndex < vaults.length; vaultIndex += 1) {
             const { strategies } = vaultStrategy[vaultIndex];
             for (
                 let strategyIndex = 0;
@@ -202,7 +198,6 @@ async function getCurveStrategyStats(vault, vaultTotalAsset, blockTag) {
     });
     return strategies;
 }
-
 
 async function getStrategiesStats(
     vault,
@@ -478,12 +473,12 @@ async function getTvlStats(blockTag) {
 
 async function getSystemStats(totalAssetsUsd, blockTag) {
     logger.info('check strategy expected return');
-    await checkStrategyChange(blockTag);
+    // await checkStrategyChange(blockTag);
     logger.info('SystemStats');
     const vaultAndStrateyInfo = await getLatestVaultsAndStrategies(providerKey);
     const { contracts: vaultAdaptersInfo } = vaultAndStrateyInfo;
     const vaults = await getLatestVaultAdapters();
-    const lifeGuardStats = await getLifeguardStats(blockTag) as any;
+    const lifeGuardStats = (await getLifeguardStats(blockTag)) as any;
     lifeGuardStats.share = calculateSharePercent(
         lifeGuardStats.amount,
         totalAssetsUsd
