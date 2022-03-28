@@ -153,6 +153,40 @@ function getInfuraRpcProvider(providerKey) {
     return result;
 }
 
+function getAvaxArchivedNodeRpcProvider() {
+    let result = rpcProviders['avax_archived_node'];
+    if (!result) {
+        const { url, user, password } = getConfig(
+            'blockchain.avax_api_keys.archived_node'
+        );
+        result = new ethers.providers.JsonRpcProvider({
+            url,
+            user,
+            password,
+        });
+        rpcProviders['avax_archived_node'] = result;
+        logger.info(`Create a new avax_archived_node rpc provider.`);
+    }
+    return result;
+}
+
+function getAvaxFullNodeRpcProvider() {
+    let result = rpcProviders['avax_full_node'];
+    if (!result) {
+        const { url, user, password } = getConfig(
+            'blockchain.avax_api_keys.full_node'
+        );
+        result = new ethers.providers.JsonRpcProvider({
+            url,
+            user,
+            password,
+        });
+        rpcProviders['avax_full_node'] = result;
+        logger.info(`Create a new avax_full_node rpc provider.`);
+    }
+    return result;
+}
+
 function getTransactionProvider(providerKey) {
     let provider;
     if (needPrivateTransaction && network === 'mainnet') {
@@ -386,6 +420,8 @@ async function getTimestampByBlockNumber(blockNumber, provider) {
 export {
     getInfuraRpcProvider,
     getAlchemyRpcProvider,
+    getAvaxFullNodeRpcProvider,
+    getAvaxArchivedNodeRpcProvider,
     getTransactionProvider,
     getWalletNonceManager,
     syncManagerNonce,

@@ -1,7 +1,10 @@
 import fs from 'fs';
 import { ethers } from 'ethers';
 import { getConfig } from '../common/configUtil';
-import { getAlchemyRpcProvider } from '../common/chainUtil';
+import {
+    getAlchemyRpcProvider,
+    getAvaxFullNodeRpcProvider,
+} from '../common/chainUtil';
 import { SettingError } from '../common/error';
 const registryABI = require('./Registry.json');
 const erc20ABI = require('../abi/ERC20.json');
@@ -16,24 +19,15 @@ const registryAddress = getConfig('registry_address', false) as
     | string
     | undefined;
 
-const rpcURL =
-    getConfig('blockchain.avalanche_rpc_url', false) ||
-    'https://nd-353-879-524.p2pify.com/ext/bc/C/rpc';
-
+// mainnet registry contract is in avalanche chain
+// ropsten registry contract is in ropsten chain
+const ethererumProvider = getAlchemyRpcProvider();
 let provider;
 if (process.env.NODE_ENV === 'mainnet') {
-    provider = new ethers.providers.JsonRpcProvider({
-        url: rpcURL,
-        user: getConfig('blockchain.avax_api_keys.username'),
-        password: getConfig('blockchain.avax_api_keys.password'),
-    });
+    provider = getAvaxFullNodeRpcProvider();
 } else {
-    provider = new ethers.providers.JsonRpcProvider({
-        url: rpcURL,
-    });
+    provider = ethererumProvider;
 }
-
-const ethererumProvider = getAlchemyRpcProvider();
 
 let registry;
 if (registryAddress) {

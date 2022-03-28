@@ -9,18 +9,14 @@ import erc20ABI from '../../contract/abis/ERC20.json';
 import { getConfig } from '../../common/configUtil';
 import { getLatestSystemContractOnAVAX } from '../common/contractStorage';
 import { getEvents } from '../../common/logFilter';
+import { getAvaxArchivedNodeRpcProvider } from '../../common/chainUtil';
 
 const logger = require('../statsLogger');
 
 const network = getConfig('blockchain.network') as string;
 
-const rpcURL = 'https://nd-353-879-524.p2pify.com/ext/bc/C/rpc';
+const provider = getAvaxArchivedNodeRpcProvider();
 
-const provider = new ethers.providers.JsonRpcProvider({
-    url: rpcURL,
-    user: getConfig('blockchain.avax_api_keys.username'),
-    password: getConfig('blockchain.avax_api_keys.password'),
-});
 const blockNumberTimestamp = {};
 const WAVAX = '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7';
 
@@ -141,8 +137,8 @@ const BLOCKS_OF_3DAYS = 130000;
 const BLOCKS_OF_12HOURS = 21600;
 const BLOCKS_OF_7DAYS = 300000;
 
-let START_TIME_STAMP = []
-let START_BLOCK = []
+let START_TIME_STAMP = [];
+let START_BLOCK = [];
 if (network === 'ropsten') {
     START_TIME_STAMP = [
         1638707119, 1638549778, 1638549778, 1639664984, 1639664984, 1639664984,
@@ -152,7 +148,6 @@ if (network === 'ropsten') {
         7838860, 7759709, 7759709, 8317127, 8317127, 8317127, 9402752, 9402752,
         9402752, 10002948, 10002948, 10002948,
     ];
-
 } else {
     START_TIME_STAMP = [
         1638707119, 1638549778, 1638549778, 1639664984, 1639664984, 1639664984,
@@ -162,7 +157,6 @@ if (network === 'ropsten') {
         7838860, 7759709, 7759709, 8317127, 8317127, 8317127, 9402752, 9402752,
         9402752, 10364128, 10364128, 10364128,
     ];
-
 }
 
 const providerKey = 'stats_gro';
@@ -1011,18 +1005,27 @@ async function calculateVaultUnlockedReturn(
         const block12hoursAgo = await provider.getBlock(blockNumber12hoursAgo);
         logger.info(`block.timestamp 12hours ago ${block12hoursAgo.timestamp}`);
 
-        const open12hoursAgoPricePerShare = await vaultAdapter.getPricePerShare({
-            blockTag: blockNumber12hoursAgo,
-        });
-        const duration = BigNumber.from(endTimestamp - block12hoursAgo.timestamp);
+        const open12hoursAgoPricePerShare = await vaultAdapter.getPricePerShare(
+            {
+                blockTag: blockNumber12hoursAgo,
+            }
+        );
+        const duration = BigNumber.from(
+            endTimestamp - block12hoursAgo.timestamp
+        );
         vaultReturn3Days = new BN(closePricePerShare.toString())
-                           .dividedBy(new BN(open12hoursAgoPricePerShare.toString()))
-                           .minus(new BN('1'))
-                           .multipliedBy(new BN('31556926'))
-                           .dividedBy(new BN(SEVEN_DAYS_SECONDS))
-        vaultReturn3Days = BigNumber.from(vaultReturn3Days.multipliedBy(new BN(SHARE_DECIMAL.toString())).integerValue().toString())
+            .dividedBy(new BN(open12hoursAgoPricePerShare.toString()))
+            .minus(new BN('1'))
+            .multipliedBy(new BN('31556926'))
+            .dividedBy(new BN(SEVEN_DAYS_SECONDS));
+        vaultReturn3Days = BigNumber.from(
+            vaultReturn3Days
+                .multipliedBy(new BN(SHARE_DECIMAL.toString()))
+                .integerValue()
+                .toString()
+        );
 
-            logger.info(
+        logger.info(
             `~~~~ unlocked 7days vaultIndex ${vaultIndex} ${duration} ${blockNumber12hoursAgo} closePricePerShare ${closePricePerShare} open12hoursagoPricePerShare ${open12hoursAgoPricePerShare}`
         );
     }

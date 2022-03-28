@@ -34,8 +34,16 @@ export const blockchain = {
     start_timestamp: 1624827717,
     avax_launch_timestamp: 1638483222,
     avax_api_keys: {
-        username: process.env.AVAX_API_USERNAME,
-        password: process.env.AVAX_API_PASSWORD,
+        full_node: {
+            url: process.env.AVAX_FULL_NODE_URL,
+            user: process.env.AVAX_FULL_NODE_USER,
+            password: process.env.AVAX_FULL_NODE_PASSWORD,
+        },
+        archived_node: {
+            url: process.env.AVAX_ARCHIVED_NODE_URL,
+            user: process.env.AVAX_ARCHIVED_NODE_USER,
+            password: process.env.AVAX_ARCHIVED_NODE_PASSWORD,
+        },
     },
     alchemy_api_keys: {
         default: process.env[`ALCHEMY_KEY_${process.env.BOT_ENV}`],
