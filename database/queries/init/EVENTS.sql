@@ -1,15 +1,12 @@
 CREATE TABLE gro."EV_TRANSACTIONS" (
+    "transaction_id" CHARACTER VARYING (256) NOT NULL,
     "block_number" INTEGER NOT NULL,
     "network_id" INTEGER NOT NULL,
     "tx_hash" CHARACTER VARYING (66) NOT NULL,
-    "uncled" BOOLEAN NOT NULL,
-    "block_hash" CHARACTER VARYING (66) NULL,
-    "transaction_id" CHARACTER VARYING (256) NULL,
+    "block_hash" CHARACTER VARYING (66) NOT NULL,
+    "uncled" BOOLEAN NULL,
     CONSTRAINT "EV_TRANSACTIONS_pkey" PRIMARY KEY (
-        block_number,
-        network_id,
-        tx_hash,
-        uncled
+        transaction_id
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
@@ -154,7 +151,7 @@ CREATE TABLE gro."EV_MULTI_WITHDRAWALS" (
     "pids" INTEGER [] NULL,
     "amounts" NUMERIC (20, 8) [] NULL,
     "value" NUMERIC (20, 8) [] NULL,
-    "token_id" SMALLINT NULL,
+    "token_id" SMALLINT [] NULL,
     "creation_date" TIMESTAMP (6) NULL,
     CONSTRAINT "EV_MULTI_WITHDRAWALS_pkey" PRIMARY KEY (
         log_index,
