@@ -29,7 +29,7 @@ const PERCENT_DECIMAL = BigNumber.from(10).pow(BigNumber.from(6));
 const SECONDS_IN_YEAR = BigNumber.from(31536000);
 const WEEKS_IN_YEAR = BigNumber.from(52);
 const MIN_HARVEST_DAYS = 7;
-const MAX_HARVEST_DAYS = 15;
+const MAX_HARVEST_DAYS = 30;
 
 // config
 const launchBlock = getConfig('blockchain.start_block');
