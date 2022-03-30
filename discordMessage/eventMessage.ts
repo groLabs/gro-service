@@ -6,7 +6,7 @@ const botEnv = process.env.BOT_ENV?.toLowerCase();
 /* eslint-disable import/no-dynamic-require */
 const logger = require(`../${botEnv}/${botEnv}Logger`);
 
-function depositEventMessage(content) {
+function depositEventMessage(content, stats) {
     content.forEach((log) => {
         const msg = `\nGToken: ${log.gtoken}\nAccount: ${log.account}\nBlockNumer: ${log.blockNumber}\nTransactionHash: ${log.transactionHash}\nReferral: ${log.referral}\nUsdAmount: ${log.usdAmount}\nDAI: ${log.tokens[0]}\nUSDC: ${log.tokens[1]}\nUSDT: ${log.tokens[2]}`;
         const account = shortAccount(log.account);
@@ -27,7 +27,15 @@ function depositEventMessage(content) {
                 log.tokens[2],
                 6,
                 2
-            )} USDT -> ${formatNumber(log.gtokenAmount, 18, 2)} ${log.gtoken})`,
+            )} USDT -> ${formatNumber(log.gtokenAmount, 18, 2)} ${
+                log.gtoken
+            })\n${MESSAGE_EMOJI.Vault} **$${stats.gvtTvl}** TVL, **${
+                stats.gvtApy
+            }%** APY\n${MESSAGE_EMOJI.PWRD} **$${stats.pwrdTvl} ** TVL, **${
+                stats.pwrdApy
+            }%** APY\n${MESSAGE_EMOJI.company}**$${stats.totalTvl}** TVL, **${
+                stats.utilRatio
+            }%** Utilization\n`,
             urls: [
                 {
                     label: account,
@@ -39,7 +47,7 @@ function depositEventMessage(content) {
     });
 }
 
-function withdrawEventMessage(content) {
+function withdrawEventMessage(content, stats) {
     // Send withdraw message
     content.forEach((log) => {
         const msg = `\nGToken: ${log.gtoken}\nAccount: ${
@@ -69,7 +77,13 @@ function withdrawEventMessage(content) {
                 log.tokens[1],
                 6,
                 2
-            )} USDC ${formatNumber(log.tokens[2], 6, 2)} USDT)`,
+            )} USDC ${formatNumber(log.tokens[2], 6, 2)} USDT)\n${
+                MESSAGE_EMOJI.Vault
+            } **$${stats.gvtTvl}** TVL, **${stats.gvtApy}%** APY\n${
+                MESSAGE_EMOJI.PWRD
+            } **$${stats.pwrdTvl} ** TVL, **${stats.pwrdApy}%** APY\n${
+                MESSAGE_EMOJI.company
+            }**$${stats.totalTvl}** TVL, **${stats.utilRatio}%** Utilization\n`,
             urls: [
                 {
                     label: account,

@@ -2,6 +2,7 @@ import fs from 'fs';
 import config from 'config';
 import dayjs from 'dayjs';
 import { BigNumber } from 'ethers';
+import BN from 'bignumber.js';
 import { getFilterEvents } from '../../common/logFilter';
 import { ContractCallError } from '../../common/error';
 import { MESSAGE_TYPES } from '../../common/discord/discordService';
@@ -17,6 +18,7 @@ import {
 import { AppendGTokenMintOrBurnAmountToLog } from '../common/tool';
 import { getLatestSystemContract } from '../common/contractStorage';
 import { ContractNames } from '../../registry/registry';
+import { getGroStatsMcContent } from '../services/statsService';
 
 const logger = require('../statsLogger');
 
@@ -356,6 +358,31 @@ async function getGTokenAsset(gtoken, blockNumber) {
     return result;
 }
 
+async function getGroStatsInfo() {
+    const groStatsMc = await getGroStatsMcContent();
+    let { pwrd: pwrdApy, gvt: gvtApy } = groStatsMc.mainnet.apy.last7d;
+    let {
+        pwrd: pwrdTvl,
+        gvt: gvtTvl,
+        total: totalTvl,
+        util_ratio: utilRatio,
+    } = groStatsMc.mainnet.tvl;
+    const PERCENTAGE = new BN(100);
+    const MILLION = new BN(1000000);
+    // :Vault: $25.21mn TVL, 9.83% APY
+    // :PWRD: $13.92mn TVL, 4.05% APY
+    // :GRO: $39.13mn TVL,  55.23% Utilization
+    const result = {
+        pwrdApy: new BN(pwrdApy).multipliedBy(PERCENTAGE).toFixed(2),
+        gvtApy: new BN(gvtApy).multipliedBy(PERCENTAGE).toFixed(2),
+        pwrdTvl: new BN(pwrdTvl).dividedBy(MILLION).toFixed(2),
+        gvtTvl: new BN(gvtTvl).dividedBy(MILLION).toFixed(2),
+        totalTvl: new BN(totalTvl).dividedBy(MILLION).toFixed(2),
+        utilRatio: new BN(utilRatio).multipliedBy(PERCENTAGE).toFixed(2),
+    };
+    return result;
+}
+
 async function generateDepositAndWithdrawReport(fromBlock, toBlock) {
     logger.info(`Start to get event from block:${fromBlock} to ${toBlock}`);
     const depositEventResult = await generateDepositReport(fromBlock, toBlock);
@@ -363,9 +390,10 @@ async function generateDepositAndWithdrawReport(fromBlock, toBlock) {
         fromBlock,
         toBlock
     );
-    depositEventMessage(depositEventResult.items);
+    const stats = await getGroStatsInfo();
+    depositEventMessage(depositEventResult.items, stats);
 
-    withdrawEventMessage(withdrawEventResult.items);
+    withdrawEventMessage(withdrawEventResult.items, stats);
     await checkTvlChange(
         fromBlock,
         toBlock,

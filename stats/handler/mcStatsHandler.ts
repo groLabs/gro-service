@@ -152,8 +152,6 @@ async function generateGroStatsMcFile() {
         upperBoostApy: gvtBoostApy.upper,
         lowerBoostApy: gvtBoostApy.lower,
     };
-    // const statsFilename = `${statsDir}/gro-stats-${latestBlock.timestamp}.json`;
-    // fs.writeFileSync(statsFilename, JSON.stringify(stats));
     const argentStatsFilename = `${statsDir}/argent-stats-${latestBlock.timestamp}.json`;
     fs.writeFileSync(
         argentStatsFilename,
@@ -164,23 +162,17 @@ async function generateGroStatsMcFile() {
         externalStatsFilename,
         JSON.stringify(formatExternalResponse(stats))
     );
-    // const latestFilename = {
-    //     filename: statsFilename,
-    //     argentFilename: argentStatsFilename,
-    //     externalFilename: externalStatsFilename,
-    // };
-    // fs.writeFileSync(statsLatest, JSON.stringify(latestFilename));
     logger.info(
         `Power Dollar:${stats.tvl.pwrd} Gro Vault:${stats.tvl.gvt} TotalAssets:${stats.tvl.total} Utilization Ratio:${stats.tvl.util_ratio}`
     );
-    apyStatsMessage({
-        vaultTVL: tvl.gvt,
-        vaultApy: apy.last7d.gvt,
-        pwrdTVL: tvl.pwrd,
-        pwrdApy: apy.last7d.pwrd,
-        total: tvl.total,
-        utilRatio: tvl.util_ratio,
-    });
+    // apyStatsMessage({
+    //     vaultTVL: tvl.gvt,
+    //     vaultApy: apy.last7d.gvt,
+    //     pwrdTVL: tvl.pwrd,
+    //     pwrdApy: apy.last7d.pwrd,
+    //     total: tvl.total,
+    //     utilRatio: tvl.util_ratio,
+    // });
 
     const avaxSystem = await getAvaxSystemStats();
     const mcTotals = {
@@ -235,13 +227,22 @@ async function generateGroStatsMcFile() {
     );
 
     // add closed vaults stats
-    formattedAvaxSystem.labs_vault = [...stopped_lab_vaults, ...formattedAvaxSystem.labs_vault];
-    formattedAvaxSystem.labs_vault[0].amount = formattedAvaxSystem.tvl['groDAI.e_vault'];
-    formattedAvaxSystem.labs_vault[0].reserves.amount = formattedAvaxSystem.tvl['groDAI.e_vault'];
-    formattedAvaxSystem.labs_vault[1].amount = formattedAvaxSystem.tvl['groUSDC.e_vault'];
-    formattedAvaxSystem.labs_vault[1].reserves.amount = formattedAvaxSystem.tvl['groUSDC.e_vault'];
-    formattedAvaxSystem.labs_vault[2].amount = formattedAvaxSystem.tvl['groUSDT.e_vault'];
-    formattedAvaxSystem.labs_vault[2].reserves.amount = formattedAvaxSystem.tvl['groUSDT.e_vault'];
+    formattedAvaxSystem.labs_vault = [
+        ...stopped_lab_vaults,
+        ...formattedAvaxSystem.labs_vault,
+    ];
+    formattedAvaxSystem.labs_vault[0].amount =
+        formattedAvaxSystem.tvl['groDAI.e_vault'];
+    formattedAvaxSystem.labs_vault[0].reserves.amount =
+        formattedAvaxSystem.tvl['groDAI.e_vault'];
+    formattedAvaxSystem.labs_vault[1].amount =
+        formattedAvaxSystem.tvl['groUSDC.e_vault'];
+    formattedAvaxSystem.labs_vault[1].reserves.amount =
+        formattedAvaxSystem.tvl['groUSDC.e_vault'];
+    formattedAvaxSystem.labs_vault[2].amount =
+        formattedAvaxSystem.tvl['groUSDT.e_vault'];
+    formattedAvaxSystem.labs_vault[2].reserves.amount =
+        formattedAvaxSystem.tvl['groUSDT.e_vault'];
 
     const groStatsMultiChain = {
         current_timestamp: latestBlock.timestamp.toString(),
@@ -254,7 +255,6 @@ async function generateGroStatsMcFile() {
     fs.writeFileSync(statsMcFilename, JSON.stringify(groStatsMultiChain));
 
     const latestFilenames = {
-        // filename: statsFilename,
         mcFilename: statsMcFilename,
         argentFilename: argentStatsFilename,
         externalFilename: externalStatsFilename,
