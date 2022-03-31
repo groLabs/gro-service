@@ -29,13 +29,13 @@ function depositEventMessage(content, stats) {
                 2
             )} USDT -> ${formatNumber(log.gtokenAmount, 18, 2)} ${
                 log.gtoken
-            })\n${MESSAGE_EMOJI.Vault} **$${stats.gvtTvl}** TVL, **${
+            })\n${MESSAGE_EMOJI.Vault} **$${stats.gvtTvl}**mn TVL, **${
                 stats.gvtApy
-            }%** APY\n${MESSAGE_EMOJI.PWRD} **$${stats.pwrdTvl} ** TVL, **${
+            }%** APY\n${MESSAGE_EMOJI.PWRD} **$${stats.pwrdTvl}**mn TVL, **${
                 stats.pwrdApy
-            }%** APY\n${MESSAGE_EMOJI.company}**$${stats.totalTvl}** TVL, **${
-                stats.utilRatio
-            }%** Utilization\n`,
+            }%** APY\n${MESSAGE_EMOJI.company} **$${
+                stats.totalTvl
+            }**mn TVL, **${stats.utilRatio}%** Utilization\n`,
             urls: [
                 {
                     label: account,
@@ -79,11 +79,13 @@ function withdrawEventMessage(content, stats) {
                 2
             )} USDC ${formatNumber(log.tokens[2], 6, 2)} USDT)\n${
                 MESSAGE_EMOJI.Vault
-            } **$${stats.gvtTvl}** TVL, **${stats.gvtApy}%** APY\n${
+            } **$${stats.gvtTvl}**mn TVL, **${stats.gvtApy}%** APY\n${
                 MESSAGE_EMOJI.PWRD
-            } **$${stats.pwrdTvl} ** TVL, **${stats.pwrdApy}%** APY\n${
+            } **$${stats.pwrdTvl}**mn TVL, **${stats.pwrdApy}%** APY\n${
                 MESSAGE_EMOJI.company
-            }**$${stats.totalTvl}** TVL, **${stats.utilRatio}%** Utilization\n`,
+            } **$${stats.totalTvl}**mn TVL, **${
+                stats.utilRatio
+            }%** Utilization\n`,
             urls: [
                 {
                     label: account,

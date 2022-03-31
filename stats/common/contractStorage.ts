@@ -5,15 +5,18 @@ import {
 } from '../../registry/contracts';
 import { ContractABIMapping } from '../../registry/registry';
 import { getLatestContractsAddress } from '../../registry/registryLoader';
+import { getConfig } from '../../common/configUtil';
 
 const logger = require('../statsLogger');
 
 const latestSystemContracts = {};
 const latestContractsOnAVAX = {};
+const latestContractsOnAVAXArchived = {};
 const latestVaultStrategyContracts = {};
 const latestStableCoins = {};
 const historyContractsInstance = {};
 const contractCallFailedCount = { personalStats: 0, personalMCStats: 0 };
+const avaxFullNodeURL = getConfig('blockchain.avax_api_keys.full_node.url');
 
 function newContract(contractName, contractInfo, providerOrWallet) {
     const contractAddress = contractInfo.address.toLowerCase();
@@ -52,7 +55,11 @@ function getLatestSystemContractOnAVAX(contractName, providerOrWallet) {
             providerOrWallet
         );
     }
-    return latestContractsOnAVAX[contractName];
+    // avalanche chain need to support full_node and archived_node
+    // create new contract here to connect to different provider
+    const { contract, contractInfo } = latestContractsOnAVAX[contractName];
+    const contractWithSpecifiedProvider = contract.connect(providerOrWallet);
+    return { contract: contractWithSpecifiedProvider, contractInfo };
 }
 
 async function getLatestVaultsAndStrategies(providerKey) {
