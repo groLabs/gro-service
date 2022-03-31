@@ -113,6 +113,46 @@ CREATE TABLE gro."EV_TRANSFERS" (
 
 ALTER TABLE gro."EV_TRANSFERS" OWNER to postgres;
 
+CREATE TABLE gro."EV_PNL_STRATEGY_REPORTED"
+(
+   log_index           INTEGER NOT NULL,
+   transaction_id      CHARACTER VARYING (256) NOT NULL,
+   contract_address    CHARACTER VARYING (42) NOT NULL,
+   log_name            CHARACTER VARYING (255) NULL,
+   strategy            CHARACTER VARYING (42) NULL,
+   gain                NUMERIC (20, 8) NULL,
+   loss                NUMERIC (20, 8) NULL,
+   "debtPaid"          NUMERIC (20, 8) NULL,
+   "totalGain"         NUMERIC (20, 8) NULL,
+   "totalLoss"         NUMERIC (20, 8) NULL,
+   "totalDebt"         NUMERIC (20, 8) NULL,
+   "debtAdded"         NUMERIC (20, 8) NULL,
+   "debtRatio"         NUMERIC (20, 8) NULL,
+   creation_date       TIMESTAMP (6) NULL,
+   CONSTRAINT "EV_PNL_STRATEGY_REPORTED_pkey" PRIMARY KEY
+      (log_index, transaction_id, contract_address)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+)
+WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_PNL_STRATEGY_REPORTED" OWNER to postgres;
+
+CREATE TABLE gro."EV_PNL_NEW_RELEASE_FACTOR"
+(
+   log_index           INTEGER NOT NULL,
+   transaction_id      CHARACTER VARYING (256) NOT NULL,
+   contract_address    CHARACTER VARYING (42) NOT NULL,
+   log_name            CHARACTER VARYING (255) NULL,
+   factor              NUMERIC (20, 8) NULL,
+   creation_date       TIMESTAMP (6) NULL,
+   CONSTRAINT "EV_PNL_NEW_RELEASE_FACTOR_pkey" PRIMARY KEY
+      (log_index, transaction_id, contract_address)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+)
+WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_PNL_NEW_RELEASE_FACTOR" OWNER to postgres;
+
 CREATE TABLE gro."EV_WITHDRAWALS" (
     "log_index" INTEGER NOT NULL,
     "transaction_id" CHARACTER VARYING (256) NOT NULL,
@@ -124,7 +164,7 @@ CREATE TABLE gro."EV_WITHDRAWALS" (
     "amount2" NUMERIC (20, 8) NULL,
     "amount3" NUMERIC (20, 8) NULL,
     "value" NUMERIC (20, 8) NULL,
-    "referral" BOOLEAN NULL,
+    "referral" CHARACTER VARYING (42) NULL,
     "balanced" BOOLEAN NULL,
     "all" BOOLEAN NULL,
     "deductUsd" NUMERIC (20, 8) NULL,
