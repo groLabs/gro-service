@@ -1399,6 +1399,19 @@
             "metaData": {},
             "active": true,
             "contractName": "VotingAggregator"
+        },
+        {
+            "address": "0x156d9aaD5975Ec9Aa9E2C621F408C8469D0D6953",
+            "deployedBlock": 14463997,
+            "startBlock": 14463997,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
         }
     ],
     "AVAXDAIVault": [

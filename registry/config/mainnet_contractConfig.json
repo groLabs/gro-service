@@ -145,6 +145,19 @@
                 "protocolsDisplayName": [],
                 "metaData": {},
                 "active": true
+            },
+            {
+                "address": "0x156d9aaD5975Ec9Aa9E2C621F408C8469D0D6953",
+                "deployedBlock": 14463997,
+                "startBlock": 14463997,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
             }
         ],
         "LPTokenStakerV1": [
@@ -335,15 +348,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "DAI"
-                ],
-                "protocols": [
-                    "Compound"
-                ],
-                "protocolsDisplayName": [
-                    "Compound"
-                ],
+                "tokens": ["DAI"],
+                "protocols": ["Compound"],
+                "protocolsDisplayName": ["Compound"],
                 "metaData": {
                     "N": "Lev Comp",
                     "DN": "Lev Comp - DAI",
@@ -358,19 +365,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "DAI",
-                    "FRAX"
-                ],
-                "protocols": [
-                    "Curve",
-                    "Convex"
-                ],
-                "protocolsDisplayName": [
-                    "Curve",
-                    "Convex",
-                    "Frax"
-                ],
+                "tokens": ["DAI", "FRAX"],
+                "protocols": ["Curve", "Convex"],
+                "protocolsDisplayName": ["Curve", "Convex", "Frax"],
                 "metaData": {
                     "N": "Convex XPool Dai primary",
                     "DN": "Convex-FRAX-3CRV",
@@ -400,15 +397,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "DAI"
-                ],
-                "protocols": [
-                    "Cream"
-                ],
-                "protocolsDisplayName": [
-                    "CREAM"
-                ],
+                "tokens": ["DAI"],
+                "protocols": ["Cream"],
+                "protocolsDisplayName": ["CREAM"],
                 "metaData": {
                     "N": "Cream",
                     "DN": "CREAM - DAI",
@@ -426,18 +417,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "DAI",
-                    "MUSD"
-                ],
-                "protocols": [
-                    "Curve",
-                    "Convex"
-                ],
-                "protocolsDisplayName": [
-                    "Curve",
-                    "Convex"
-                ],
+                "tokens": ["DAI", "MUSD"],
+                "protocols": ["Curve", "Convex"],
+                "protocolsDisplayName": ["Curve", "Convex"],
                 "metaData": {
                     "N": "CRV",
                     "DN": "3CRV - mUSD",
@@ -452,19 +434,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "DAI",
-                    "MUSD"
-                ],
-                "protocols": [
-                    "Curve",
-                    "Convex"
-                ],
-                "protocolsDisplayName": [
-                    "Curve",
-                    "Convex",
-                    "mStable"
-                ],
+                "tokens": ["DAI", "MUSD"],
+                "protocols": ["Curve", "Convex"],
+                "protocolsDisplayName": ["Curve", "Convex", "mStable"],
                 "metaData": {
                     "N": "Convex XPool Dai secondary",
                     "DN": "Convex-mUSD-3CRV",
@@ -520,15 +492,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDC"
-                ],
-                "protocols": [
-                    "Compound"
-                ],
-                "protocolsDisplayName": [
-                    "Compound"
-                ],
+                "tokens": ["USDC"],
+                "protocols": ["Compound"],
+                "protocolsDisplayName": ["Compound"],
                 "metaData": {
                     "N": "Lev Comp",
                     "DN": "Lev Comp - USDC",
@@ -543,18 +509,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDC",
-                    "MIM"
-                ],
-                "protocols": [
-                    "Curve",
-                    "Convex"
-                ],
-                "protocolsDisplayName": [
-                    "Curve",
-                    "Convex"
-                ],
+                "tokens": ["USDC", "MIM"],
+                "protocols": ["Curve", "Convex"],
+                "protocolsDisplayName": ["Curve", "Convex"],
                 "metaData": {
                     "N": "Convex XPool USDC",
                     "DN": "Convex-MIM-3CRV",
@@ -597,19 +554,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDT"
-                ],
-                "protocols": [
-                    "Idle",
-                    "Compound",
-                    "Aave"
-                ],
-                "protocolsDisplayName": [
-                    "Idle",
-                    "Compound",
-                    "Aave"
-                ],
+                "tokens": ["USDT"],
+                "protocols": ["Idle", "Compound", "Aave"],
+                "protocolsDisplayName": ["Idle", "Compound", "Aave"],
                 "metaData": {
                     "N": "Idle",
                     "DN": "Idle - USDT",
@@ -624,18 +571,9 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": [
-                    "USDT",
-                    "UST"
-                ],
-                "protocols": [
-                    "Curve",
-                    "Convex"
-                ],
-                "protocolsDisplayName": [
-                    "Curve",
-                    "Convex"
-                ],
+                "tokens": ["USDT", "UST"],
+                "protocols": ["Curve", "Convex"],
+                "protocolsDisplayName": ["Curve", "Convex"],
                 "metaData": {
                     "N": "Convex XPool USDT",
                     "DN": "Convex-UST-wormhole-3CRV",

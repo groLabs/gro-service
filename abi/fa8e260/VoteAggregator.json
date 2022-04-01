@@ -1,23 +1,36 @@
 [
     {
         "inputs": [
-            { "internalType": "address", "name": "gro", "type": "address" },
             {
                 "internalType": "address",
-                "name": "mainVesting",
+                "name": "_gro",
                 "type": "address"
             },
             {
                 "internalType": "address",
-                "name": "empVesting",
+                "name": "_mainVesting",
                 "type": "address"
             },
             {
                 "internalType": "address",
-                "name": "invVesting",
+                "name": "_empVesting",
                 "type": "address"
             },
-            { "internalType": "address", "name": "staker", "type": "address" }
+            {
+                "internalType": "address",
+                "name": "_invVesting",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_stakerOld",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_stakerNew",
+                "type": "address"
+            }
         ],
         "stateMutability": "nonpayable",
         "type": "constructor"
@@ -103,12 +116,38 @@
         "inputs": [
             {
                 "indexed": false,
+                "internalType": "address",
+                "name": "newVesting",
+                "type": "address"
+            }
+        ],
+        "name": "LogSetEmpVesting",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
                 "internalType": "uint256",
                 "name": "newWeight",
                 "type": "uint256"
             }
         ],
         "name": "LogSetGroWeight",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "newVesting",
+                "type": "address"
+            }
+        ],
+        "name": "LogSetInvVesting",
         "type": "event"
     },
     {
@@ -134,6 +173,45 @@
             }
         ],
         "name": "LogSetLPPool",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "newVesting",
+                "type": "address"
+            }
+        ],
+        "name": "LogSetMainVesting",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "staker",
+                "type": "address"
+            }
+        ],
+        "name": "LogSetNewStaker",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "staker",
+                "type": "address"
+            }
+        ],
+        "name": "LogSetOldStaker",
         "type": "event"
     },
     {
@@ -182,45 +260,10 @@
     },
     {
         "inputs": [],
-        "name": "EMP_VESTINGS",
-        "outputs": [
-            {
-                "internalType": "contract IGROBaseVesting",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
         "name": "GRO",
         "outputs": [
-            { "internalType": "contract IERC20", "name": "", "type": "address" }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "INV_VESTINGS",
-        "outputs": [
             {
-                "internalType": "contract IGROBaseVesting",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "MAIN_VESTING",
-        "outputs": [
-            {
-                "internalType": "contract IGROVesting",
+                "internalType": "contract IERC20",
                 "name": "",
                 "type": "address"
             }
@@ -232,19 +275,10 @@
         "inputs": [],
         "name": "SINGLE_GRO_POOL_ID",
         "outputs": [
-            { "internalType": "uint256", "name": "", "type": "uint256" }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "STAKER",
-        "outputs": [
             {
-                "internalType": "contract IGROStaker",
+                "internalType": "uint256",
                 "name": "",
-                "type": "address"
+                "type": "uint256"
             }
         ],
         "stateMutability": "view",
@@ -252,7 +286,11 @@
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "pool", "type": "address" },
+            {
+                "internalType": "address",
+                "name": "pool",
+                "type": "address"
+            },
             {
                 "internalType": "uint256[]",
                 "name": "weights",
@@ -271,7 +309,11 @@
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "pool", "type": "address" },
+            {
+                "internalType": "address",
+                "name": "pool",
+                "type": "address"
+            },
             {
                 "internalType": "uint256[]",
                 "name": "weights",
@@ -290,7 +332,11 @@
     },
     {
         "inputs": [
-            { "internalType": "uint256", "name": "", "type": "uint256" }
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
         ],
         "name": "balV2Pools",
         "outputs": [
@@ -305,33 +351,70 @@
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "account", "type": "address" }
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
         ],
         "name": "balanceOf",
         "outputs": [
-            { "internalType": "uint256", "name": "value", "type": "uint256" }
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "account", "type": "address" }
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
         ],
         "name": "calculateBalWeight",
         "outputs": [
-            { "internalType": "uint256", "name": "balValue", "type": "uint256" }
+            {
+                "internalType": "uint256",
+                "name": "balValue",
+                "type": "uint256"
+            }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "account", "type": "address" }
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
         ],
         "name": "calculateUniWeight",
         "outputs": [
-            { "internalType": "uint256", "name": "uniValue", "type": "uint256" }
+            {
+                "internalType": "uint256",
+                "name": "uniValue",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "empVesting",
+        "outputs": [
+            {
+                "internalType": "contract IGROBaseVesting",
+                "name": "",
+                "type": "address"
+            }
         ],
         "stateMutability": "view",
         "type": "function"
@@ -351,11 +434,19 @@
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "pool", "type": "address" }
+            {
+                "internalType": "address",
+                "name": "pool",
+                "type": "address"
+            }
         ],
         "name": "getLPWeights",
         "outputs": [
-            { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+            {
+                "internalType": "uint256[]",
+                "name": "",
+                "type": "uint256[]"
+            }
         ],
         "stateMutability": "view",
         "type": "function"
@@ -375,22 +466,38 @@
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "vesting", "type": "address" }
+            {
+                "internalType": "address",
+                "name": "vesting",
+                "type": "address"
+            }
         ],
         "name": "getVestingWeights",
         "outputs": [
-            { "internalType": "uint256[2]", "name": "", "type": "uint256[2]" }
+            {
+                "internalType": "uint256[2]",
+                "name": "",
+                "type": "uint256[2]"
+            }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "", "type": "address" }
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
         ],
         "name": "groPools",
         "outputs": [
-            { "internalType": "uint256", "name": "", "type": "uint256" }
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
         ],
         "stateMutability": "view",
         "type": "function"
@@ -399,19 +506,61 @@
         "inputs": [],
         "name": "groWeight",
         "outputs": [
-            { "internalType": "uint256", "name": "", "type": "uint256" }
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "invVesting",
+        "outputs": [
+            {
+                "internalType": "contract IGROBaseVesting",
+                "name": "",
+                "type": "address"
+            }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "", "type": "address" },
-            { "internalType": "uint256", "name": "", "type": "uint256" }
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
         ],
         "name": "lpWeights",
         "outputs": [
-            { "internalType": "uint256", "name": "", "type": "uint256" }
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "mainVesting",
+        "outputs": [
+            {
+                "internalType": "contract IGROVesting",
+                "name": "",
+                "type": "address"
+            }
         ],
         "stateMutability": "view",
         "type": "function"
@@ -420,14 +569,22 @@
         "inputs": [],
         "name": "owner",
         "outputs": [
-            { "internalType": "address", "name": "", "type": "address" }
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "pool", "type": "address" }
+            {
+                "internalType": "address",
+                "name": "pool",
+                "type": "address"
+            }
         ],
         "name": "removeBalV2Pool",
         "outputs": [],
@@ -436,7 +593,11 @@
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "pool", "type": "address" }
+            {
+                "internalType": "address",
+                "name": "pool",
+                "type": "address"
+            }
         ],
         "name": "removeUniV2Pool",
         "outputs": [],
@@ -452,7 +613,24 @@
     },
     {
         "inputs": [
-            { "internalType": "uint256", "name": "weight", "type": "uint256" }
+            {
+                "internalType": "address",
+                "name": "newVesting",
+                "type": "address"
+            }
+        ],
+        "name": "setEmpVesting",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "weight",
+                "type": "uint256"
+            }
         ],
         "name": "setGroWeight",
         "outputs": [],
@@ -461,7 +639,24 @@
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "pool", "type": "address" },
+            {
+                "internalType": "address",
+                "name": "newVesting",
+                "type": "address"
+            }
+        ],
+        "name": "setInvVesting",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "pool",
+                "type": "address"
+            },
             {
                 "internalType": "uint256[]",
                 "name": "weights",
@@ -480,7 +675,50 @@
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "vesting", "type": "address" },
+            {
+                "internalType": "address",
+                "name": "newVesting",
+                "type": "address"
+            }
+        ],
+        "name": "setMainVesting",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "staker",
+                "type": "address"
+            }
+        ],
+        "name": "setNewStaker",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "staker",
+                "type": "address"
+            }
+        ],
+        "name": "setOldStaker",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "vesting",
+                "type": "address"
+            },
             {
                 "internalType": "uint256",
                 "name": "lockedWeight",
@@ -498,8 +736,38 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "stakerNew",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "stakerOld",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
-            { "internalType": "address", "name": "newOwner", "type": "address" }
+            {
+                "internalType": "address",
+                "name": "newOwner",
+                "type": "address"
+            }
         ],
         "name": "transferOwnership",
         "outputs": [],
@@ -508,7 +776,11 @@
     },
     {
         "inputs": [
-            { "internalType": "uint256", "name": "", "type": "uint256" }
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
         ],
         "name": "uniV2Pools",
         "outputs": [
@@ -523,12 +795,24 @@
     },
     {
         "inputs": [
-            { "internalType": "address", "name": "", "type": "address" },
-            { "internalType": "uint256", "name": "", "type": "uint256" }
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
         ],
         "name": "vestingWeights",
         "outputs": [
-            { "internalType": "uint256", "name": "", "type": "uint256" }
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
         ],
         "stateMutability": "view",
         "type": "function"
