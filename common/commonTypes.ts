@@ -2,6 +2,7 @@ export interface EventInfo {
     address?: string;
     blockNumber?: any;
     transactionHash?: string;
+    logIndex?: number;
     name?: string | undefined;
     signature?: string | undefined;
     topic?: string | undefined;

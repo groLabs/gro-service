@@ -25,6 +25,7 @@ async function getFilterEvents(
                 address: log.address,
                 blockNumber: log.blockNumber,
                 transactionHash: log.transactionHash,
+                logIndex: log.logIndex,
             };
             const parseResult = contractInterface.parseLog(log);
             eventInfo.name = parseResult.name;
@@ -59,6 +60,7 @@ async function getEvents(
                 address: log.address,
                 blockNumber: log.blockNumber,
                 transactionHash: log.transactionHash,
+                logIndex: log.logIndex,
             };
             const parseResult = contractInterface.parseLog(log);
             eventInfo.name = parseResult.name;
@@ -88,6 +90,7 @@ async function getSimpleFilterEvents(filter, providerKey) {
             address: log.address,
             blockNumber: log.blockNumber,
             transactionHash: log.transactionHash,
+            logIndex: log.logIndex,
         };
         logs.push(eventInfo);
     });
