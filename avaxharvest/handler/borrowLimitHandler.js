@@ -102,7 +102,7 @@ async function setBorrowLimit(vault) {
             });
             if (safeAvaxOneMinAgo.gte(AH_CREDIT)) {
                 logger.info(
-                    `No need update borrowLimit. available ${available} availableOneMinAgo ${availableOneMinAgo} AH_CREDIT ${AH_CREDIT}`
+                    `No need update borrowLimit. safeAvax ${safeAvax} safeAvaxOneMinAgo ${safeAvaxOneMinAgo} AH_CREDIT ${AH_CREDIT}`
                 );
                 return;
             }
