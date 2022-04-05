@@ -11,7 +11,6 @@ import { loadUserBalances } from './loader/loadUserBalances';
 import { etlTokenPrice } from './etl/etlTokenPrice';
 import { dumpTable } from './common/pgUtil';
 import { getMigrateEvents } from './listener/getMigrationEvents';
-//import { runTest } from './caller/multiCaller';
 import {
     vesting,
     getDbStatus,
@@ -25,7 +24,7 @@ import {
 import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/airdrop4handler';
 import { QUERY_SUCCESS } from './constants';
 
-
+import { etlStateful } from './etl/etlStateful';
 
 
 (async () => {
@@ -244,6 +243,9 @@ import { QUERY_SUCCESS } from './constants';
         // Retrieve migrate user events from LPTokenStakerV2
         // await loadContractInfoFromRegistry();
         // await getMigrateEvents(14268645, 14403332);
+
+        await loadContractInfoFromRegistry();
+        await etlStateful();
 
         process.exit(0);
     } catch (err) {

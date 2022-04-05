@@ -1,3 +1,4 @@
+// 1-off requirement to retrieve all users who migrated into the LPTokenStakerV2
 import moment from 'moment';
 import { ethers } from 'ethers';
 import { getEvents } from '../../common/logFilter';
@@ -49,7 +50,7 @@ const getMigrateEvents = async (
             );
             return errorObj(`Error while retrieving claim events: ${event.data}`);
         } else {
-            console.log('Total records ->',event.data.length);
+            console.log('Total records ->', event.data.length);
             const currentFile = `${statsDir}/migrations.csv`;
             const header = `block,timestamp,date,tx_hash,event,contract_address,user_address,gas_used,cumulative_gas_used,effective_gas_price,fee_wei,fee_eth\r\n`;
             fs.appendFileSync(currentFile, header);
@@ -67,7 +68,7 @@ const getMigrateEvents = async (
                     getBlockData(event.data[i].blockNumber)
                 ]);
 
-
+                // Dump data into a file
                 const log1 = `${event.data[i].blockNumber},${block.timestamp},${moment.unix(block.timestamp).utc()},${event.data[i].transactionHash},${event.data[i].name}`;
                 const log2 = `,${event.data[i].address},${event.data[i].args[0]}`;
                 const tx = `,${txReceipt.gasUsed},${txReceipt.cumulativeGasUsed},${txReceipt.effectiveGasPrice}`;

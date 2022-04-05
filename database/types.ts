@@ -68,6 +68,17 @@ enum TokenId {
     DAI = 9,
 }
 
+enum EventName {
+    UNKNOWN = 'unknown',
+    DEPOSIT_HANDLER = 'LogNewDeposit',
+    DEPOSIT_MK2 = 'LogDeposit',
+    DEPOSIT_STAKER = 'LogDeposit',
+    WITHDRAWAL_HANDLER = 'LogNewWithdrawal',
+    WITHDRAWAL_MK2 = 'LogWithdrawal',
+    WITHDRAWAL_STAKER = 'LogWithdraw',
+    TRANSFER = 'Transfer',
+}
+
 enum Bool {
     FALSE = 0,
     TRUE = 1,
@@ -148,6 +159,7 @@ export {
     Transfer,
     LoadType,
     TokenName,
+    EventName,
     NetworkId,
     SqlCommand,
     ReturnType,
