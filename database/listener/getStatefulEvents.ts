@@ -36,7 +36,7 @@ const getStatefulEvents = async (
             eventType,
             fromBlock,
             toBlock,
-            [null, null],
+            //[null, null],
         );
 
         const event: EventResult = await getEvents(

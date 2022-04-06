@@ -144,6 +144,22 @@ const eventParser = (
                     tranche_id: null,
                     amount: parseAmount(log.args.amount, Base.D18),
                 }
+            } else if (eventName === EV.LogStrategyReported && contractName.includes('Vault_v1_7')) {
+                payload = {
+                    strategy: log.args.strategy,
+                    gain: parseAmount(log.args.gain, Base.D18),
+                    loss: parseAmount(log.args.loss, Base.D18),
+                    debtPaid: parseAmount(log.args.debtPaid, Base.D18),
+                    totalGain: parseAmount(log.args.totalGain, Base.D18),
+                    totalLoss: parseAmount(log.args.totalLoss, Base.D18),
+                    totalDebt: parseAmount(log.args.totalDebt, Base.D18),
+                    debtAdded: parseAmount(log.args.debtAdded, Base.D18),
+                    debtRatio: parseInt(log.args.debtRatio.toString()),
+                }
+            } else if (eventName === EV.LogNewReleaseFactor && contractName.includes('Vault_v1_7')) {
+                payload = {
+                    factor: parseAmount(log.args.factor, Base.D18), //TODO: TBC
+                }
             } else {
                 showError(
                     'statefulParser.ts->eventParser()',

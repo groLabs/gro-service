@@ -80,6 +80,8 @@ enum EventName {
     LogClaim = 'LogClaim',
     LogBonusClaimed = 'LogBonusClaimed',
     LogMultiClaim = 'LogMultiClaim',
+    LogStrategyReported = 'LogStrategyReported',
+    LogNewReleaseFactor = 'LogNewReleaseFactor',
 }
 
 enum Bool {

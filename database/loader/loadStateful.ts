@@ -86,6 +86,12 @@ const loadStateful = async (
                         case EV.LogBonusClaimed:
                             res = await query('insert_ev_claims.sql', events[i]);
                             break;
+                        case EV.LogStrategyReported:
+                            res = await query('insert_ev_strategy_reported.sql', events[i]);
+                            break;
+                        case EV.LogNewReleaseFactor:
+                            res = await query('insert_ev_new_release_factor.sql', events[i]);
+                            break;
                         default:
                             showError(
                                 'loadStateful.ts->loadStateful()',

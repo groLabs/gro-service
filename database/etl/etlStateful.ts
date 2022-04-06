@@ -25,46 +25,46 @@ const etlStateful = async () => {
         // const lastBlock = res.rows[0].last_block;
         // if (lastBlock) {
 
-        /*
-                await loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogNewDeposit,
-                    ContractNames.depositHandler,
-                    14300828,
-                    14300829
-                );
-        
-                await loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogDeposit,
-                    ContractNames.LPTokenStakerV2,
-                    14400716,
-                    14400718
-                );
-        
-                await loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogNewWithdrawal,
-                    ContractNames.withdrawHandler,
-                    14401090,
-                    14401092
-                );
-        
-                await loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.Transfer,
-                    ContractNames.GroDAOToken,
-                    14410135,
-                    14410137
-                );
-        
-                await loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.Approval,
-                    ContractNames.groVault,
-                    14528165,
-                    14528175
-                );
+/*
+        await loadStateful(
+            getNetwork(GN.ETHEREUM).id,
+            EV.LogNewDeposit,
+            ContractNames.depositHandler,
+            14300828,
+            14300829
+        );
+
+        await loadStateful(
+            getNetwork(GN.ETHEREUM).id,
+            EV.LogDeposit,
+            ContractNames.LPTokenStakerV2,
+            14400716,
+            14400718
+        );
+
+        await loadStateful(
+            getNetwork(GN.ETHEREUM).id,
+            EV.LogNewWithdrawal,
+            ContractNames.withdrawHandler,
+            14401090,
+            14401092
+        );
+
+        await loadStateful(
+            getNetwork(GN.ETHEREUM).id,
+            EV.Transfer,
+            ContractNames.GroDAOToken,
+            14410135,
+            14410137
+        );
+
+        await loadStateful(
+            getNetwork(GN.ETHEREUM).id,
+            EV.Approval,
+            ContractNames.groVault,
+            14528165,
+            14528175
+        );
 
         await loadStateful(
             getNetwork(GN.ETHEREUM).id,
@@ -105,8 +105,6 @@ const etlStateful = async () => {
             12028040,
             12028042,
         );
-        */
-
 
         await loadStateful(
             getNetwork(GN.AVALANCHE).id,
@@ -116,9 +114,23 @@ const etlStateful = async () => {
             10908844,
         );
 
+        await loadStateful(
+            getNetwork(GN.AVALANCHE).id,
+            EV.LogStrategyReported,
+            ContractNames.AVAXDAIVault_v1_7,
+            13064027,
+            13064029,
+        );
+*/
+        await loadStateful(
+            getNetwork(GN.AVALANCHE).id,
+            EV.LogNewReleaseFactor,
+            ContractNames.AVAXDAIVault_v1_7,
+            10364122 ,
+            13064029,
+        );
 
 
-        
 
 
         //     } else {
