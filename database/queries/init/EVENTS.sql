@@ -40,7 +40,7 @@ CREATE TABLE gro."EV_CLAIMS" (
     "contract_address" CHARACTER VARYING (42) NOT NULL,
     "log_name" CHARACTER VARYING (42) NULL,
     "from" CHARACTER VARYING (42) NULL,
-    "pid" SMALLINT NULL,
+    "pids" INTEGER [] NULL,
     "vest" BOOLEAN NULL,
     "tranche_id" NUMERIC (20, 8) NULL,
     "amount" NUMERIC (20, 8) NULL,
@@ -54,24 +54,24 @@ CREATE TABLE gro."EV_CLAIMS" (
 
 ALTER TABLE gro."EV_CLAIMS" OWNER to postgres;
 
-CREATE TABLE gro."EV_MULTI_CLAIMS" (
-    "log_index" INTEGER NOT NULL,
-    "transaction_id" CHARACTER VARYING (66) NOT NULL,
-    "contract_address" CHARACTER VARYING (42) NOT NULL,
-    "log_name" CHARACTER VARYING (42) NULL,
-    "from" CHARACTER VARYING (42) NULL,
-    "pids" INTEGER [] NULL,
-    "vest" BOOLEAN NULL,
-    "amounts" NUMERIC (20, 8) [] NULL,
-    "creation_date" TIMESTAMP (6) NULL,
-    CONSTRAINT "EV_MULTI_CLAIMS_pkey" PRIMARY KEY (
-        "log_index",
-        "transaction_id",
-        "contract_address"
-    ) NOT DEFERRABLE INITIALLY IMMEDIATE
-) WITH (OIDS = FALSE);
+-- CREATE TABLE gro."EV_MULTI_CLAIMS" (
+--     "log_index" INTEGER NOT NULL,
+--     "transaction_id" CHARACTER VARYING (66) NOT NULL,
+--     "contract_address" CHARACTER VARYING (42) NOT NULL,
+--     "log_name" CHARACTER VARYING (42) NULL,
+--     "from" CHARACTER VARYING (42) NULL,
+--     "pids" INTEGER [] NULL,
+--     "vest" BOOLEAN NULL,
+--     "amounts" NUMERIC (20, 8) [] NULL,
+--     "creation_date" TIMESTAMP (6) NULL,
+--     CONSTRAINT "EV_MULTI_CLAIMS_pkey" PRIMARY KEY (
+--         "log_index",
+--         "transaction_id",
+--         "contract_address"
+--     ) NOT DEFERRABLE INITIALLY IMMEDIATE
+-- ) WITH (OIDS = FALSE);
 
-ALTER TABLE gro."EV_MULTI_CLAIMS" OWNER to postgres;
+-- ALTER TABLE gro."EV_MULTI_CLAIMS" OWNER to postgres;
 
 CREATE TABLE gro."EV_DEPOSITS" (
     "log_index" INTEGER NOT NULL,
