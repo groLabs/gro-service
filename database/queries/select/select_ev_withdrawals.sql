@@ -1,0 +1,21 @@
+SELECT "log_index",
+    "transaction_id",
+    "contract_address",
+    "log_name",
+    "from",
+    "pid",
+    "amount1",
+    "amount2",
+    "amount3",
+    "value",
+    "referral",
+    "balanced",
+    "all",
+    "deductUsd",
+    "lpAmount",
+    "allowance",
+    "totalLoss",
+    "token_id",
+    "creation_date"
+FROM gro."EV_WITHDRAWALS"
+WHERE "from" = $1
