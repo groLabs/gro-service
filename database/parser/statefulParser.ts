@@ -19,7 +19,6 @@ import {
 
 
 const eventParser = (
-    networkId: NetworkId,
     logs: any,
     eventName: string,
     contractName: string
@@ -69,6 +68,15 @@ const eventParser = (
                     amount2: 0,
                     amount3: 0,
                     value: parseAmount(log.args._amount, Base.D18),
+                }
+                // Multi-withdrawals from LPTokenStakerV2 in ETH
+            } else if (eventName === EV.LogMultiWithdraw && contractName === CN.LPTokenStakerV2) {
+                const pids = log.args.pids.map((pid: number) => parseInt(pid.toString()));
+                const amounts = log.args.amounts.map((amount: number) => parseAmount(amount, Base.D18));
+                payload = {
+                    from: log.args.user,
+                    pids: pids,
+                    amounts: amounts,
                 }
                 // Withdrawals from Handler in ETH
             } else if (eventName === EV.LogNewWithdrawal && contractName === CN.withdrawHandler) {
@@ -188,7 +196,7 @@ const eventParser = (
                 block_number: log.blockNumber,
                 block_timestamp: log.blockTimestamp,
                 block_date: log.blockDate,
-                network_id: networkId,
+                network_id: log.networkId,
                 tx_hash: log.transactionHash,
                 block_hash: log.blockHash,
                 uncled: false,  //TODO

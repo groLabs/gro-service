@@ -40,7 +40,6 @@ const loadStateful = async (
             let rows_tx = 0;
 
             const result: ICall = eventParser(
-                networkId,
                 events.data,
                 eventName,
                 contractName,
@@ -74,6 +73,9 @@ const loadStateful = async (
                         case EV.LogWithdrawal:
                         case EV.LogNewWithdrawal:
                             res = await query('insert_ev_withdrawals.sql', events[i]);
+                            break;
+                        case EV.LogMultiWithdraw:
+                            res = await query('insert_ev_multi_withdrawals.sql', events[i]);
                             break;
                         case EV.Transfer:
                             res = await query('insert_ev_transfers.sql', events[i]);

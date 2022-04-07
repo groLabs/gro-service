@@ -77,30 +77,18 @@ const getStatefulEvents = async (
                         getBlockData(log.blockNumber)
                     ]);
 
-                // const [
-                //     tx,
-                //     block
-                // ] = await Promise.all([
-                //     getProvider()
-                //         .getTransactionReceipt(log.transactionHash)
-                //         .catch((err) => {
-                //             showError('getStatefulEvents.ts->getStatefulEvents()', err);
-                //         }),
-                //     getBlockData(log.blockNumber)
-                // ]);
-
                 //console.log('log:', log);
                 //console.log('tx:', tx);
                 //console.log('block:', block);
 
                 const transactionId = soliditySha3(
                     { type: 'uint96', value: log.blockNumber },       // block number
-                    { type: 'uint96', value: '1' },                   // network id
+                    { type: 'uint96', value: networkId.toString() },  // network id
                     { type: 'string', value: log.transactionHash },   // tx hash
                     { type: 'string', value: tx.blockHash },          // block hash
                 );
 
-                log.networkId = 1;  //TODO
+                log.networkId = networkId;
                 log.transactionId = transactionId;
                 log.blockHash = tx.blockHash;
                 log.blockTimestamp = block.timestamp;

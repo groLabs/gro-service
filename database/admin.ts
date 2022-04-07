@@ -23,6 +23,7 @@ import {
 } from './common/statusUtil';
 import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/airdrop4handler';
 import { QUERY_SUCCESS } from './constants';
+import { GlobalNetwork as GN} from './types';
 
 import { etlStateful } from './etl/etlStateful';
 
@@ -188,6 +189,16 @@ import { etlStateful } from './etl/etlStateful';
                         console.log(`Wrong parameters for vestingBonusETL - e.g. vestingBonusETL`);
                     }
                     break;
+                // case 'loadStateful':
+                //     await loadContractInfoFromRegistry();
+                //     if (params.length === 2) {
+                //         await etlVestingBonus(
+                //             parseInt(params[1])      // isETL (0: false / 1: true)
+                //         );
+                //     } else {
+                //         console.log(`Wrong parameters for vestingBonusETL - e.g. vestingBonusETL`);
+                //     }
+                //     break;
                 default:
                     console.log(`Unknown parameter/s: ${params}`);
                     break;
@@ -245,7 +256,7 @@ import { etlStateful } from './etl/etlStateful';
         // await getMigrateEvents(14268645, 14403332);
 
         await loadContractInfoFromRegistry();
-        await etlStateful();
+        await etlStateful(GN.UNKNOWN, 'from', 'to');
 
         process.exit(0);
     } catch (err) {

@@ -75,6 +75,7 @@ enum EventName {
     LogNewWithdrawal = 'LogNewWithdrawal',
     LogWithdrawal = 'LogWithdrawal',
     LogWithdraw = 'LogWithdraw',
+    LogMultiWithdraw = 'LogMultiWithdraw',
     Transfer = 'Transfer',
     Approval = 'Approval',
     LogClaim = 'LogClaim',

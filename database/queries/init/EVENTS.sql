@@ -195,8 +195,7 @@ CREATE TABLE gro."EV_MULTI_WITHDRAWALS" (
     "from" CHARACTER VARYING (42) NULL,
     "pids" INTEGER [] NULL,
     "amounts" NUMERIC (20, 8) [] NULL,
-    "value" NUMERIC (20, 8) [] NULL,
-    "token_id" SMALLINT [] NULL,
+    "value" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) NULL,
     CONSTRAINT "EV_MULTI_WITHDRAWALS_pkey" PRIMARY KEY (
         "log_index",

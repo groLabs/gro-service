@@ -5,7 +5,6 @@ SELECT "log_index",
     "from",
     "pids",
     "amounts",
-    "value",
-    "token_id" "creation_date"
+    "creation_date"
 FROM gro."EV_MULTI_WITHDRAWALS"
 WHERE "from" = $1
