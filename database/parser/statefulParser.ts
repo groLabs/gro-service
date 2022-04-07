@@ -3,8 +3,9 @@ import { ICall } from '../interfaces/ICall';
 import { showError, } from '../handler/logHandler';
 import { ContractNames as CN } from '../../registry/registry';
 import {
+    MAX_NUMBER,
     QUERY_ERROR,
-    QUERY_SUCCESS
+    QUERY_SUCCESS,
 } from '../constants';
 import {
     Base,
@@ -38,35 +39,35 @@ const eventParser = (
                     pid: null,
                     token_id: log.args.pwrd ? TokenId.PWRD : TokenId.GVT,
                     allowance: null,
-                    amount1: parseAmount(log.args.tokens[0], Base.D6),
+                    amount1: parseAmount(log.args.tokens[0], Base.D18),
                     amount2: parseAmount(log.args.tokens[1], Base.D18),
-                    amount3: parseAmount(log.args.tokens[2], Base.D6),
+                    amount3: parseAmount(log.args.tokens[2], Base.D18),
                     value: parseAmount(log.args[3], Base.D18),
                 }
                 // Deposits from LPTokenStaker in ETH
             } else if (eventName === EV.LogDeposit && contractName === CN.LPTokenStakerV2) {
                 payload = {
                     from: log.args.user,
-                    referral: '',
+                    referral: null,
                     pid: parseInt(log.args.pid.toString()),
                     token_id: TokenId.GRO,
                     allowance: null,
                     amount1: parseAmount(log.args.amount, Base.D18),
-                    amount2: 0,
-                    amount3: 0,
-                    value: 0,   //TODO
+                    amount2: null,
+                    amount3: null,
+                    value: null,   //TODO
                 }
                 // Deposits from Vaults in AVAX
             } else if (eventName === EV.LogDeposit && contractName.includes('Vault_v1_7')) { //TODO: other vaults?
                 payload = {
                     from: log.args.from,
-                    referral: '',
+                    referral: null,
                     pid: null,
                     token_id: 6, // TODO
                     allowance: parseAmount(log.args.allowance, Base.D18),
                     amount1: parseAmount(log.args.shares, Base.D18),
-                    amount2: 0,
-                    amount3: 0,
+                    amount2: null,
+                    amount3: null,
                     value: parseAmount(log.args._amount, Base.D18),
                 }
                 // Multi-withdrawals from LPTokenStakerV2 in ETH
@@ -102,14 +103,14 @@ const eventParser = (
                     from: log.args.from,
                     pid: null,
                     amount1: parseAmount(log.args.shares, Base.D18),
-                    amount2: 0,
-                    amount3: 0,
+                    amount2: null,
+                    amount3: null,
                     value: parseAmount(log.args.value, Base.D18),
-                    referral: '',
+                    referral: null,
                     balanced: false,
                     all: false,
-                    deductUsd: 0,
-                    lpAmount: 0,
+                    deductUsd: null,
+                    lpAmount: null,
                     allowance: parseAmount(log.args.allowance, Base.D18),
                     totalLoss: parseAmount(log.args.totalLoss, Base.D18),
                     token_id: 6, // TODO
@@ -124,10 +125,11 @@ const eventParser = (
                 }
                 // Approvals in ETH
             } else if (eventName === EV.Approval) {
+                const value = parseAmount(log.args.value, Base.D18);
                 payload = {
                     owner: log.args.owner,
                     spender: log.args.spender,
-                    value: parseAmount(log.args.value, Base.D18), // TODO: if above MAX, set -1
+                    value: (value < MAX_NUMBER) ? value : -1,
                     token_id: 3, // TODO: based on contract name
                 }
                 // Claims from Hodler in ETH

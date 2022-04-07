@@ -24,8 +24,7 @@ const loadStateful = async (
     contractName: string,
     fromBlock: number,
     toBlock: number
-
-) => {
+): Promise<boolean> => {
     try {
         const events = await getStatefulEvents(
             networkId,
@@ -99,14 +98,15 @@ const loadStateful = async (
                                 'loadStateful.ts->loadStateful()',
                                 `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`
                             );
-                            return;
+                            return false;
                     }
                     if (res.status === QUERY_ERROR) {
+                        const tx = (transactions[i][5]) ? `in tx: ${transactions[i][5]}` : '';
                         showError(
                             'loadStateful.ts->loadStateful()',
-                            `Error while insterting <${eventName}> events for contract <${contractName}>`
+                            `Error while insterting <${eventName}> events for contract <${contractName}> ${tx}`
                         );
-                        return;
+                        return false;
                     }
                     rows_ev += res.rowCount;
 
@@ -117,7 +117,7 @@ const loadStateful = async (
                             'loadStateful.ts->loadStateful()',
                             `Error while insterting transaction/s linked to event <${eventName}>`
                         );
-                        return;
+                        return false;
                     }
                     rows_tx += res2.rowCount;
                 }
@@ -132,9 +132,12 @@ const loadStateful = async (
                 'loadStateful.ts->loadStateful()',
                 `Error while retrieving <${eventName}> events for contract <${contractName}>`
             );
+            return false;
         }
+        return true;
     } catch (err) {
         showError('loadStateful.ts->loadStateful()', err);
+        return false;
     }
 }
 

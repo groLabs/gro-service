@@ -23,9 +23,9 @@ import {
 } from './common/statusUtil';
 import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/airdrop4handler';
 import { QUERY_SUCCESS } from './constants';
-import { GlobalNetwork as GN} from './types';
+import { GlobalNetwork as GN } from './types';
 
-import { etlStateful } from './etl/etlStateful';
+import { etlListener } from './etl/etlStateful';
 
 
 (async () => {
@@ -256,7 +256,8 @@ import { etlStateful } from './etl/etlStateful';
         // await getMigrateEvents(14268645, 14403332);
 
         await loadContractInfoFromRegistry();
-        await etlStateful(GN.UNKNOWN, 'from', 'to');
+        //await etlListener(GN.ETHEREUM, 14524648, 14539648, 14524648);
+        await etlListener(GN.AVALANCHE, 13037781, 13117781, 13037781);
 
         process.exit(0);
     } catch (err) {
