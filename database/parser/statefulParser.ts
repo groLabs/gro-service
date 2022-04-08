@@ -11,7 +11,6 @@ import {
 import {
     Base,
     TokenId,
-    NetworkId,
     EventName as EV,
 } from '../types';
 import {
@@ -86,9 +85,9 @@ const eventParser = (
                 payload = {
                     from: log.args.user,
                     pid: null,
-                    amount1: parseAmount(log.args.tokenAmounts[0], Base.D6),
+                    amount1: parseAmount(log.args.tokenAmounts[0], Base.D18),
                     amount2: parseAmount(log.args.tokenAmounts[1], Base.D18),
-                    amount3: parseAmount(log.args.tokenAmounts[2], Base.D6),
+                    amount3: parseAmount(log.args.tokenAmounts[2], Base.D18),
                     value: parseAmount(log.args.returnUsd, Base.D18),
                     referral: log.args.referral,
                     balanced: log.args.balanced,

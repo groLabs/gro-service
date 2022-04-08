@@ -12,10 +12,74 @@ import {
 import {
     LISTENER_BLOCKS_ETH,
     LISTENER_BLOCKS_AVAX,
-} from '../constants'
+} from '../constants';
+import {
+    checkDateRange,
+    findBlockByDate,
+    findBlockByDateAvax,
+} from '../common/globalUtil';
+import { generateDateRange } from '../common/personalUtil';
 
 
-const etlListener = async (
+const etlStatefulByDate = async (
+    globalNetwork: GN,
+    _fromDate: string,
+    _toDate: string,
+) => {
+    try {
+        let fromBlock;
+        let toBlock;
+
+        if (checkDateRange(_fromDate, _toDate)) {
+
+            // Calc dates to be processed
+            const dates = generateDateRange(_fromDate, _toDate);
+            const fromDate = dates[0].clone();
+            const toDate = dates[dates.length - 1]
+                .utc()
+                .clone()
+                .add(23, 'hours')
+                .add(59, 'seconds')
+                .add(59, 'minutes');
+
+            if (globalNetwork === GN.ETHEREUM) {
+                [fromBlock, toBlock] = await Promise.all([
+                    findBlockByDate(fromDate, true),
+                    findBlockByDate(toDate, false),
+                ]);
+            } else if (globalNetwork === GN.AVALANCHE) {
+                [fromBlock, toBlock] = await Promise.all([
+                    findBlockByDateAvax(fromDate, true),
+                    findBlockByDateAvax(toDate, false),
+                ]);
+            } else {
+                showError(
+                    'etlStateful.ts->etlStatefulByDate()',
+                    'Only Ethereum or Avalanche can be processed'
+                );
+                return false;
+            }
+
+            return await etlStatefulByBlock(
+                globalNetwork,
+                fromBlock.block,
+                toBlock.block,
+                fromBlock.block,
+                // fromBlock,
+                // toBlock,
+                // fromBlock,
+            );
+
+        } else
+            return false;
+
+    } catch (err) {
+        showError('etlStateful.ts->etlStatefulByDate()', err);
+        return false;
+    }
+}
+
+const etlStatefulByBlock = async (
     globalNetwork: GN,
     from: number,
     to: number,
@@ -23,168 +87,176 @@ const etlListener = async (
 ): Promise<boolean> => {
     try {
 
-        const LISTENER_BATCH = (globalNetwork === GN.ETHEREUM)
-            ? LISTENER_BLOCKS_ETH
-            : (globalNetwork === GN.AVALANCHE) 
-                ? LISTENER_BLOCKS_AVAX
-                : 0;
+        if (from > 0 && to > 0) {
 
-        if (LISTENER_BATCH === 0) {
-            showError(
-                'etlStateful.ts->etlStateful()',
-                'Only Ethereum or Avalanche can be processed'
-            );
-            return false;
-        }
+            const LISTENER_BATCH = (globalNetwork === GN.ETHEREUM)
+                ? LISTENER_BLOCKS_ETH
+                : (globalNetwork === GN.AVALANCHE)
+                    ? LISTENER_BLOCKS_AVAX
+                    : 0;
 
-        const newOffset = (offset + LISTENER_BATCH >= to)
-            ? to
-            : offset + LISTENER_BATCH;
+            if (LISTENER_BATCH === 0) {
+                showError(
+                    'etlStateful.ts->etlStatefulByBlock()',
+                    'Only Ethereum or Avalanche can be processed'
+                );
+                return false;
+            }
 
-        const network = (globalNetwork === GN.ALL)
-            ? 'Ethereum & Avalanche'
-            : (globalNetwork === GN.ETHEREUM)
+            const newOffset = (offset + LISTENER_BATCH >= to)
+                ? to
+                : offset + LISTENER_BATCH;
+
+            const network = (globalNetwork === GN.ETHEREUM)
                 ? 'Ethereum'
                 : (globalNetwork === GN.AVALANCHE)
                     ? 'Avalanche'
                     : 'Unknown network';
 
-        showInfo(`--==> Looking for events from blocks <${from}> to <${newOffset}> in ${network} <==--`);
+            showInfo(`--==> Looking for events from blocks <${from}> to <${newOffset}> in ${network} <==--`);
 
-        let result = [];
+            let result = [];
 
-        if (globalNetwork === GN.ETHEREUM) {
-            result.push(
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogNewDeposit,
-                    CN.depositHandler,
-                    from,
-                    newOffset
-                ),
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogDeposit,
-                    CN.LPTokenStakerV2,
-                    from,
-                    newOffset
-                ),
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogNewWithdrawal,
-                    CN.withdrawHandler,
-                    from,
-                    newOffset
-                ),
-                //Not tested yet (no data available)
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogMultiWithdraw,
-                    CN.LPTokenStakerV2,
-                    from,
-                    newOffset
-                ),
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.Transfer,
-                    CN.GroDAOToken,
-                    from,
-                    newOffset
-                ),
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.Approval,
-                    CN.groVault,
-                    from,
-                    newOffset
-                ),
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogBonusClaimed,
-                    CN.GroHodler,
-                    from,
-                    newOffset
-                ),
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogClaim,
-                    CN.LPTokenStakerV2,
-                    from,
-                    newOffset
-                ),
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogMultiClaim,
-                    CN.LPTokenStakerV2,
-                    from,
-                    newOffset
-                ),
-            );
-        }
+            if (globalNetwork === GN.ETHEREUM) {
+                result.push(
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogNewDeposit,
+                        CN.depositHandler,
+                        from,
+                        newOffset
+                    ),
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogDeposit,
+                        CN.LPTokenStakerV2,
+                        from,
+                        newOffset
+                    ),
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogNewWithdrawal,
+                        CN.withdrawHandler,
+                        from,
+                        newOffset
+                    ),
+                    //Not tested yet (no data available)
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogMultiWithdraw,
+                        CN.LPTokenStakerV2,
+                        from,
+                        newOffset
+                    ),
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.Transfer,
+                        CN.GroDAOToken,
+                        from,
+                        newOffset
+                    ),
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.Approval,
+                        CN.groVault,
+                        from,
+                        newOffset
+                    ),
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogBonusClaimed,
+                        CN.GroHodler,
+                        from,
+                        newOffset
+                    ),
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogClaim,
+                        CN.LPTokenStakerV2,
+                        from,
+                        newOffset
+                    ),
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogMultiClaim,
+                        CN.LPTokenStakerV2,
+                        from,
+                        newOffset
+                    ),
+                );
+            }
 
-        if (globalNetwork === GN.AVALANCHE) {
-            result.push(
-                loadStateful(
-                    getNetwork(GN.AVALANCHE).id,
-                    EV.LogDeposit,
-                    CN.AVAXDAIVault_v1_7,
-                    from,
-                    newOffset,
-                ),
-                loadStateful(
-                    getNetwork(GN.AVALANCHE).id,
-                    EV.LogWithdrawal,
-                    CN.AVAXDAIVault_v1_7,
-                    from,
-                    newOffset,
-                ),
-                loadStateful(
-                    getNetwork(GN.AVALANCHE).id,
-                    EV.Transfer,
-                    CN.AVAXDAIVault_v1_7,
-                    from,
-                    newOffset,
-                ),
-                loadStateful(
-                    getNetwork(GN.AVALANCHE).id,
-                    EV.LogStrategyReported,
-                    CN.AVAXDAIVault_v1_7,
-                    from,
-                    newOffset,
-                ),
-                loadStateful(
-                    getNetwork(GN.AVALANCHE).id,
-                    EV.LogNewReleaseFactor,
-                    CN.AVAXDAIVault_v1_7,
-                    from,
-                    newOffset,
-                )
-            );
-        }
+            if (globalNetwork === GN.AVALANCHE) {
+                result.push(
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.LogDeposit,
+                        CN.AVAXDAIVault_v1_7,
+                        from,
+                        newOffset,
+                    ),
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.LogWithdrawal,
+                        CN.AVAXDAIVault_v1_7,
+                        from,
+                        newOffset,
+                    ),
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.Transfer,
+                        CN.AVAXDAIVault_v1_7,
+                        from,
+                        newOffset,
+                    ),
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.LogStrategyReported,
+                        CN.AVAXDAIVault_v1_7,
+                        from,
+                        newOffset,
+                    ),
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.LogNewReleaseFactor,
+                        CN.AVAXDAIVault_v1_7,
+                        from,
+                        newOffset,
+                    )
+                );
+            }
 
-        const res = await Promise.all(result);
+            const res = await Promise.all(result);
 
-        if (res.every(Boolean)) {
-            showInfo(`Events from blocks <${from}> to <${newOffset}> for ${network} successfully processed`);
+            if (res.every(Boolean)) {
+                showInfo(`Events from blocks <${from}> to <${newOffset}> for ${network} successfully processed`);
+            } else {
+                showError(
+                    'etlStateful.ts->etlStatefulByBlock()',
+                    'Error/s found during ETL for events'
+                );
+                return false;
+            }
+
+            return (newOffset >= to)
+                ? true
+                : etlStatefulByBlock(globalNetwork, newOffset, to, newOffset);
+
         } else {
             showError(
-                'etlStateful.ts->etlStateful()',
-                'Error/s found during ETL for events'
+                'etlStateful.ts->etlStatefulByBlock()',
+                `Blocks can't be processed (from: ${from} to: ${to})`
             );
             return false;
         }
-
-        return (newOffset >= to)
-            ? true
-            : etlListener(globalNetwork, newOffset, to, newOffset);
-
     } catch (err) {
-        showError('etlStateful.ts->etlStateful()', err);
+        showError('etlStateful.ts->etlStatefulByBlock()', err);
         return false;
     }
 }
 
 
 export {
-    etlListener,
+    etlStatefulByDate,
+    etlStatefulByBlock,
 }

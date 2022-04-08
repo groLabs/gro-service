@@ -119,8 +119,9 @@ const checkDateRange = (_fromDate, _toDate) => {
 /// @notice Finds the block number given a date
 /// @param  scanDate Target timestamp
 /// @param  after True if timestamp is after the date; False otherwise
-/// @dev    When looking for a block at 23:59:59 on day X, parameter 'after' should be set fo 'false'
+/// @dev    - When looking for a block at 23:59:59 on day X, parameter 'after' should be set fo 'false'
 ///         in order to ensure the block falls into date X and not X+1
+///         - Use after=true for 'from' dates and after=false for 'to' dates
 /// @return Block number for a given date
 const findBlockByDate = async (scanDate, after = true) => {
     try {

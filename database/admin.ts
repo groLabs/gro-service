@@ -25,7 +25,7 @@ import { airdrop4Handler, airdrop4HandlerV2, checkPosition } from './handler/air
 import { QUERY_SUCCESS } from './constants';
 import { GlobalNetwork as GN } from './types';
 
-import { etlListener } from './etl/etlStateful';
+import { etlStatefulByBlock, etlStatefulByDate } from './etl/etlStateful';
 
 
 (async () => {
@@ -256,8 +256,11 @@ import { etlListener } from './etl/etlStateful';
         // await getMigrateEvents(14268645, 14403332);
 
         await loadContractInfoFromRegistry();
-        //await etlListener(GN.ETHEREUM, 14524648, 14539648, 14524648);
-        await etlListener(GN.AVALANCHE, 13037781, 13117781, 13037781);
+        //await etlStatefulByBlock(GN.ETHEREUM, 14524648, 14539648, 14524648);
+        //await etlStatefulByBlock(GN.AVALANCHE, 13037781, 13117781, 13037781);
+        //await etlStatefulByBlock(GN.AVALANCHE, 13141722, 13141723, 13141722); //lily, check sha3
+        await etlStatefulByDate(GN.ETHEREUM, '06/04/2022', '07/04/2022');
+         
 
         process.exit(0);
     } catch (err) {
