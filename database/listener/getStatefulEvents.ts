@@ -5,10 +5,7 @@ import { getEvents } from '../../common/logFilter';
 import { getLatestContractEventFilter, } from '../../common/filterGenerateTool';
 import { EventResult } from '../../common/commonTypes';
 import { ICall } from '../interfaces/ICall';
-import {
-    NetworkId,
-    NetworkName,
-} from '../types';
+import { NetworkId } from '../types';
 import {
     showInfo,
     showError,
@@ -86,10 +83,6 @@ const getStatefulEvents = async (
                         getBlockData(log.blockNumber)
                     ]);
 
-                //console.log('log:', log);
-                //console.log('tx:', tx);
-                //console.log('block:', block);
-
                 const transactionId = soliditySha3(
                     { type: 'uint96', value: log.blockNumber },       // block number
                     { type: 'uint96', value: networkId.toString() },  // network id
@@ -102,8 +95,6 @@ const getStatefulEvents = async (
                 log.blockHash = tx.blockHash;
                 log.blockTimestamp = block.timestamp;
                 log.blockDate = moment.unix(block.timestamp).utc();
-
-                //console.log('loguito:', log);
             }
         }
 

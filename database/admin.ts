@@ -186,19 +186,36 @@ import { etlStatefulByBlock, etlStatefulByDate } from './etl/etlStateful';
                             parseInt(params[1])      // isETL (0: false / 1: true)
                         );
                     } else {
-                        console.log(`Wrong parameters for vestingBonusETL - e.g. vestingBonusETL`);
+                        console.log(`Wrong parameters for vestingBonusETL - e.g. vestingBonusETL 1`);
                     }
                     break;
-                // case 'loadStateful':
-                //     await loadContractInfoFromRegistry();
-                //     if (params.length === 2) {
-                //         await etlVestingBonus(
-                //             parseInt(params[1])      // isETL (0: false / 1: true)
-                //         );
-                //     } else {
-                //         console.log(`Wrong parameters for vestingBonusETL - e.g. vestingBonusETL`);
-                //     }
-                //     break;
+                case 'etlStatefulByBlock':
+                    await loadContractInfoFromRegistry();
+                    if (params.length === 4) {
+                        const fromBlock = parseInt(params[2]);
+                        const toBlock = parseInt(params[3]);
+                        await etlStatefulByBlock(
+                            parseInt(params[1]),    // network (1: Ethereum, 2: Avalanche)
+                            fromBlock,              // from block
+                            toBlock,                // to block
+                            fromBlock,              // offset (always from block)
+                        );
+                    } else {
+                        console.log(`Wrong parameters for etlStatefulByBlock - e.g. etlStatefulByBlock 1 14524648 14539648`);
+                    }
+                    break;
+                case 'etlStatefulByDate':
+                    await loadContractInfoFromRegistry();
+                    if (params.length === 4) {
+                        await etlStatefulByDate(
+                            parseInt(params[1]),    // network (1: Ethereum, 2: Avalanche)
+                            params[2],              // start date ('DD/MM/YYYY')
+                            params[3],              // end date ('DD/MM/YYYY')
+                        );
+                    } else {
+                        console.log(`Wrong parameters for etlStatefulByDate - e.g. etlStatefulByDate 1 08/05/2022 08/06/2022`);
+                    }
+                    break;
                 default:
                     console.log(`Unknown parameter/s: ${params}`);
                     break;
@@ -255,12 +272,13 @@ import { etlStatefulByBlock, etlStatefulByDate } from './etl/etlStateful';
         // await loadContractInfoFromRegistry();
         // await getMigrateEvents(14268645, 14403332);
 
+        // Testing etlStateful
         await loadContractInfoFromRegistry();
         //await etlStatefulByBlock(GN.ETHEREUM, 14524648, 14539648, 14524648);
         //await etlStatefulByBlock(GN.AVALANCHE, 13037781, 13117781, 13037781);
         //await etlStatefulByBlock(GN.AVALANCHE, 13141722, 13141723, 13141722); //lily, check sha3
         await etlStatefulByDate(GN.ETHEREUM, '06/04/2022', '07/04/2022');
-         
+
 
         process.exit(0);
     } catch (err) {
