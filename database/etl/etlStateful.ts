@@ -49,7 +49,7 @@ const etlListener = async (
                     ? 'Avalanche'
                     : 'Unknown network';
 
-        showInfo(`Looking for events from blocks <${from}> to <${newOffset}> in ${network}`);
+        showInfo(`--==> Looking for events from blocks <${from}> to <${newOffset}> in ${network} <==--`);
 
         let result = [];
 

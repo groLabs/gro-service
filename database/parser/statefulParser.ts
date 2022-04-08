@@ -2,6 +2,7 @@ import moment from 'moment';
 import { ICall } from '../interfaces/ICall';
 import { showError, } from '../handler/logHandler';
 import { ContractNames as CN } from '../../registry/registry';
+import { getTokenIdByContractName } from '../common/statefulUtil';
 import {
     MAX_NUMBER,
     QUERY_ERROR,
@@ -17,6 +18,7 @@ import {
     errorObj,
     parseAmount
 } from '../common/globalUtil';
+
 
 
 const eventParser = (
@@ -63,7 +65,7 @@ const eventParser = (
                     from: log.args.from,
                     referral: null,
                     pid: null,
-                    token_id: 6, // TODO
+                    token_id: getTokenIdByContractName(contractName),
                     allowance: parseAmount(log.args.allowance, Base.D18),
                     amount1: parseAmount(log.args.shares, Base.D18),
                     amount2: null,
@@ -113,7 +115,7 @@ const eventParser = (
                     lpAmount: null,
                     allowance: parseAmount(log.args.allowance, Base.D18),
                     totalLoss: parseAmount(log.args.totalLoss, Base.D18),
-                    token_id: 6, // TODO
+                    token_id: getTokenIdByContractName(contractName),
                 }
                 // Transfers in ETH
             } else if (eventName === EV.Transfer) {
@@ -154,6 +156,7 @@ const eventParser = (
                     tranche_id: null,
                     amount: parseAmount(log.args.amount, Base.D18),
                 }
+                // Strategy reported in AVAX
             } else if (eventName === EV.LogStrategyReported && contractName.includes('Vault_v1_7')) {
                 payload = {
                     strategy: log.args.strategy,
@@ -166,6 +169,7 @@ const eventParser = (
                     debtAdded: parseAmount(log.args.debtAdded, Base.D18),
                     debtRatio: parseInt(log.args.debtRatio.toString()),
                 }
+                // Release factor in AVAX
             } else if (eventName === EV.LogNewReleaseFactor && contractName.includes('Vault_v1_7')) {
                 payload = {
                     factor: parseAmount(log.args.factor, Base.D18), //TODO: TBC

@@ -3,23 +3,28 @@ import moment from 'moment';
 import { soliditySha3 } from 'web3-utils';
 import { getEvents } from '../../common/logFilter';
 import { getLatestContractEventFilter, } from '../../common/filterGenerateTool';
-import { showError } from '../handler/logHandler';
 import { EventResult } from '../../common/commonTypes';
 import { ICall } from '../interfaces/ICall';
+import {
+    NetworkId,
+    NetworkName,
+} from '../types';
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 import {
     QUERY_ERROR,
     QUERY_SUCCESS
 } from '../constants';
 import {
+    isPlural,
     errorObj,
     getProvider,
     getProviderAvax,
-} from '../common/globalUtil';
-import {
     getBlockData,
     getBlockDataAvax,
 } from '../common/globalUtil';
-import { NetworkId } from '../types';
 
 
 const getStatefulEvents = async (
@@ -55,7 +60,11 @@ const getStatefulEvents = async (
             let tx;
             let block;
 
-            for (let i = 0; i < event.data.length; i++) {
+            const numEvents = event.data.length;
+
+            showInfo(`Processing ${numEvents} <${eventType}> event${isPlural(numEvents)} for contract <${contractName}>`);
+
+            for (let i = 0; i < numEvents; i++) {
 
                 const log = event.data[i];
 

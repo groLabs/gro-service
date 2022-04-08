@@ -56,7 +56,7 @@ const loadStateful = async (
 
                 //console.log('params:', events, 'params2', transactions);
 
-                showInfo(`Processing ${events.length} <${eventName}> event${isPlural(rows_ev)} for contract <${contractName}>`);
+                //showInfo(`Processing ${events.length} <${eventName}> event${isPlural(rows_ev)} for contract <${contractName}>`);
 
                 for (let i = 0; i < events.length; i++) {
 
