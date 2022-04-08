@@ -77,6 +77,7 @@ const etlStatefulByDate = async (
 }
 
 // @dev: Event <LogNewReleaseFactor> is not applicable for Labs 1.0
+// TODO: start from genesis blocks when block < genesis
 const etlStatefulByBlock = async (
     globalNetwork: GN,
     from: number,
@@ -185,72 +186,61 @@ const etlStatefulByBlock = async (
             }
 
             if (globalNetwork === GN.AVALANCHE) {
+
+                const vaults = [
+                    CN.AVAXDAIVault,
+                    CN.AVAXUSDCVault,
+                    CN.AVAXUSDTVault,
+                    CN.AVAXDAIVault_v1_7,
+                    CN.AVAXUSDCVault_v1_7,
+                    CN.AVAXUSDTVault_v1_7,
+                ];
+
                 result.push(
-                    // Labs 1.0
-                    loadStateful(
-                        getNetwork(GN.AVALANCHE).id,
-                        EV.LogDeposit,
-                        CN.AVAXDAIVault,
-                        from,
-                        newOffset,
-                    ),
-                    loadStateful(
-                        getNetwork(GN.AVALANCHE).id,
-                        EV.LogWithdrawal,
-                        CN.AVAXDAIVault,
-                        from,
-                        newOffset,
-                    ),
-                    loadStateful(
-                        getNetwork(GN.AVALANCHE).id,
-                        EV.Transfer,
-                        CN.AVAXDAIVault,
-                        from,
-                        newOffset,
-                    ),
-                    loadStateful(
-                        getNetwork(GN.AVALANCHE).id,
-                        EV.LogStrategyReported,
-                        CN.AVAXDAIVault,
-                        from,
-                        newOffset,
-                    ),
-                    // Labs 1.8 (coded as 1.7)
-                    // loadStateful(
-                    //     getNetwork(GN.AVALANCHE).id,
-                    //     EV.LogDeposit,
-                    //     CN.AVAXDAIVault_v1_7,
-                    //     from,
-                    //     newOffset,
-                    // ),
-                    // loadStateful(
-                    //     getNetwork(GN.AVALANCHE).id,
-                    //     EV.LogWithdrawal,
-                    //     CN.AVAXDAIVault_v1_7,
-                    //     from,
-                    //     newOffset,
-                    // ),
-                    // loadStateful(
-                    //     getNetwork(GN.AVALANCHE).id,
-                    //     EV.Transfer,
-                    //     CN.AVAXDAIVault_v1_7,
-                    //     from,
-                    //     newOffset,
-                    // ),
-                    // loadStateful(
-                    //     getNetwork(GN.AVALANCHE).id,
-                    //     EV.LogStrategyReported,
-                    //     CN.AVAXDAIVault_v1_7,
-                    //     from,
-                    //     newOffset,
-                    // ),
-                    // loadStateful(
-                    //     getNetwork(GN.AVALANCHE).id,
-                    //     EV.LogNewReleaseFactor,
-                    //     CN.AVAXDAIVault_v1_7,
-                    //     from,
-                    //     newOffset,
-                    // ),
+                    ...vaults.map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.LogDeposit,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...vaults.map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.LogWithdrawal,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...vaults.map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.Transfer,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...vaults.map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.LogStrategyReported,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...[
+                        CN.AVAXDAIVault_v1_7,
+                        CN.AVAXUSDCVault_v1_7,
+                        CN.AVAXUSDTVault_v1_7,
+                    ].map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.LogNewReleaseFactor,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
                 );
             }
 

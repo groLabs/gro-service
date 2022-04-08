@@ -33,7 +33,10 @@ const eventParser = (
         for (const log of logs) {
 
             // Deposits from Handler in ETH
-            if (eventName === EV.LogNewDeposit && contractName === CN.depositHandler) {
+            if (
+                eventName === EV.LogNewDeposit
+                && contractName === CN.depositHandler
+            ) {
                 payload = {
                     from: log.args.user,
                     referral: log.args.referral,
@@ -46,7 +49,10 @@ const eventParser = (
                     value: parseAmount(log.args[3], Base.D18),
                 }
                 // Deposits from LPTokenStaker in ETH
-            } else if (eventName === EV.LogDeposit && contractName === CN.LPTokenStakerV2) {
+            } else if (
+                eventName === EV.LogDeposit
+                && contractName === CN.LPTokenStakerV2
+            ) {
                 payload = {
                     from: log.args.user,
                     referral: null,
@@ -59,7 +65,11 @@ const eventParser = (
                     value: null,   //TODO
                 }
                 // Deposits from Vaults in AVAX
-            } else if (eventName === EV.LogDeposit && contractName.includes('Vault_v1_7')) { //TODO: other vaults?
+            } else if (
+                eventName === EV.LogDeposit
+                && contractName.includes('AVAX')
+                && contractName.includes('Vault')
+            ) {
                 payload = {
                     from: log.args.from,
                     referral: null,
@@ -72,7 +82,10 @@ const eventParser = (
                     value: parseAmount(log.args._amount, Base.D18),
                 }
                 // Multi-withdrawals from LPTokenStakerV2 in ETH
-            } else if (eventName === EV.LogMultiWithdraw && contractName === CN.LPTokenStakerV2) {
+            } else if (
+                eventName === EV.LogMultiWithdraw
+                && contractName === CN.LPTokenStakerV2
+            ) {
                 const pids = log.args.pids.map((pid: number) => parseInt(pid.toString()));
                 const amounts = log.args.amounts.map((amount: number) => parseAmount(amount, Base.D18));
                 payload = {
@@ -81,7 +94,10 @@ const eventParser = (
                     amounts: amounts,
                 }
                 // Withdrawals from Handler in ETH
-            } else if (eventName === EV.LogNewWithdrawal && contractName === CN.withdrawHandler) {
+            } else if (
+                eventName === EV.LogNewWithdrawal
+                && contractName === CN.withdrawHandler
+            ) {
                 payload = {
                     from: log.args.user,
                     pid: null,
@@ -99,7 +115,11 @@ const eventParser = (
                     token_id: log.args.pwrd ? 2 : 1,
                 }
                 // Withdrawals from Vaults in AVAX
-            } else if (eventName === EV.LogWithdrawal && contractName.includes('Vault_v1_7')) {
+            } else if (
+                eventName === EV.LogWithdrawal
+                && contractName.includes('AVAX')
+                && contractName.includes('Vault')
+            ) {
                 payload = {
                     from: log.args.from,
                     pid: null,
@@ -134,7 +154,10 @@ const eventParser = (
                     token_id: 3, // TODO: based on contract name
                 }
                 // Claims from Hodler in ETH
-            } else if (eventName === EV.LogBonusClaimed && contractName === CN.GroHodler) {
+            } else if (
+                eventName === EV.LogBonusClaimed
+                && contractName === CN.GroHodler
+            ) {
                 payload = {
                     from: log.args.user,
                     pid: null,
@@ -143,8 +166,10 @@ const eventParser = (
                     amount: parseAmount(log.args.amount, Base.D18),
                 }
                 // Claims from LPTokenStakerV2 in ETH
-            } else if ((eventName === EV.LogClaim || eventName === EV.LogMultiClaim)
-                && contractName === CN.LPTokenStakerV2) {
+            } else if (
+                (eventName === EV.LogClaim || eventName === EV.LogMultiClaim)
+                && contractName === CN.LPTokenStakerV2
+            ) {
                 const pids = (eventName === EV.LogClaim)
                     ? [parseInt(log.args.pid.toString())]
                     : log.args.pids.map((pid: number) => parseInt(pid.toString()));
@@ -156,7 +181,11 @@ const eventParser = (
                     amount: parseAmount(log.args.amount, Base.D18),
                 }
                 // Strategy reported in AVAX
-            } else if (eventName === EV.LogStrategyReported && contractName.includes('Vault_v1_7')) {
+            } else if (
+                eventName === EV.LogStrategyReported
+                && contractName.includes('AVAX')
+                && contractName.includes('Vault')
+            ) {
                 payload = {
                     strategy: log.args.strategy,
                     gain: parseAmount(log.args.gain, Base.D18),
@@ -169,7 +198,11 @@ const eventParser = (
                     debtRatio: parseInt(log.args.debtRatio.toString()),
                 }
                 // Release factor in AVAX
-            } else if (eventName === EV.LogNewReleaseFactor && contractName.includes('Vault_v1_7')) {
+            } else if (
+                eventName === EV.LogNewReleaseFactor
+                && contractName.includes('AVAX')
+                && contractName.includes('Vault')
+            ) {
                 payload = {
                     factor: parseAmount(log.args.factor, Base.D18), //TODO: TBC
                 }
@@ -182,7 +215,6 @@ const eventParser = (
                     status: QUERY_ERROR,
                     data: null
                 }
-
             }
 
             const timestamp = moment.utc();
