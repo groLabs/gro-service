@@ -197,7 +197,7 @@ function starStatsJobs() {
     generateStatsFile();
     removeStatsFile();
     depositWithdrawEventScheduler();
-    EventSummaryScheduler();
+    // EventSummaryScheduler();
     botLiveCheckScheduler();
 }
 
