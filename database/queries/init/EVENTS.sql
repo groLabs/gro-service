@@ -131,6 +131,8 @@ CREATE TABLE gro."EV_PNL_STRATEGY_REPORTED"
    "totalDebt"         NUMERIC (20, 8) NULL,
    "debtAdded"         NUMERIC (20, 8) NULL,
    "debtRatio"         NUMERIC (20, 8) NULL,
+   "lockedProfit",     NUMERIC (20, 8) NULL,
+   "totalAssets",      NUMERIC (20, 8) NULL,
    "creation_date"     TIMESTAMP (6) NULL,
    CONSTRAINT "EV_PNL_STRATEGY_REPORTED_pkey" PRIMARY KEY (
        "log_index",
