@@ -25,13 +25,34 @@ INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
 VALUES (3, 'gro', 'Gro DAO Token', now()::timestamp);
 
 INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (4, 'groUSDC.e_vault', 'USDC.e Leveraged Yield', now()::timestamp);
+VALUES (4, 'groUSDC.e_vault', 'Gro USDC.e Leveraged Yield', now()::timestamp);
 
 INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (5, 'groUSDT.e_vault', 'USDT.e Leveraged Yield', now()::timestamp);
+VALUES (5, 'groUSDT.e_vault', 'Gro USDT.e Leveraged Yield', now()::timestamp);
 
 INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (6, 'groDAI.e_vault', 'DAI.e Leveraged Yield', now()::timestamp);
+VALUES (6, 'groDAI.e_vault', 'Gro DAI.e Leveraged Yield', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (7, 'usdc', 'USD Coin', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (8, 'usdt', 'USD Tether', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (9, 'dai', 'DAI', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (10, 'usd', 'USD', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (11, 'usdc.e', 'USDC.e', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (12, 'usdt.e', 'USDT.e', now()::timestamp);
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
+VALUES (13, 'dai.e', 'DAI.e', now()::timestamp);
 
 /****************************************************
                     MD_TRANSFERS 

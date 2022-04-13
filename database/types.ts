@@ -38,7 +38,7 @@ enum SqlCommand {
     SELECT = 'select',
     TRUNCATE = 'truncate',
     UPDATE = 'update',
-    VIEW = 'view', // TODO: To be deleted, not used
+    VIEW = 'view',
 }
 
 enum TokenName {
@@ -52,6 +52,10 @@ enum TokenName {
     USDC = 'usdc',
     USDT = 'usdt',
     DAI = 'dai',
+    USD = 'usd',
+    usdc_e = 'usdc_e',
+    usdt_e = 'usdt_e',
+    dai_e = 'dai_e',
 }
 
 // Must be aligned with table MD_TOKENS
