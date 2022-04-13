@@ -19,7 +19,6 @@ import {
 } from '../common/globalUtil';
 
 
-
 const eventParser = (
     logs: any,
     eventName: string,
@@ -70,16 +69,20 @@ const eventParser = (
                 && contractName.includes('AVAX')
                 && contractName.includes('Vault')
             ) {
+                const base = contractName.includes('DAI')
+                ? Base.D18
+                : Base.D6;
+
                 payload = {
                     from: log.args.from,
                     referral: null,
                     pid: null,
                     token_id: getTokenIdByContractName(contractName),
-                    allowance: parseAmount(log.args.allowance, Base.D18),
-                    amount1: parseAmount(log.args.shares, Base.D18),
+                    allowance: parseAmount(log.args.allowance, base),
+                    amount1: parseAmount(log.args.shares, base),
                     amount2: null,
                     amount3: null,
-                    value: parseAmount(log.args._amount, Base.D18),
+                    value: parseAmount(log.args._amount, base),
                 }
                 // Multi-withdrawals from LPTokenStakerV2 in ETH
             } else if (
@@ -186,16 +189,20 @@ const eventParser = (
                 && contractName.includes('AVAX')
                 && contractName.includes('Vault')
             ) {
+                const base = contractName.includes('DAI')
+                    ? Base.D18
+                    : Base.D6;
+
                 payload = {
                     strategy: log.args.strategy,
-                    gain: parseAmount(log.args.gain, Base.D18),
-                    loss: parseAmount(log.args.loss, Base.D18),
-                    debtPaid: parseAmount(log.args.debtPaid, Base.D18),
-                    totalGain: parseAmount(log.args.totalGain, Base.D18),
-                    totalLoss: parseAmount(log.args.totalLoss, Base.D18),
-                    totalDebt: parseAmount(log.args.totalDebt, Base.D18),
-                    debtAdded: parseAmount(log.args.debtAdded, Base.D18),
-                    debtRatio: parseInt(log.args.debtRatio.toString()),
+                    gain: parseAmount(log.args.gain, base),
+                    loss: parseAmount(log.args.loss, base),
+                    debtPaid: parseAmount(log.args.debtPaid, base),
+                    totalGain: parseAmount(log.args.totalGain, base),
+                    totalLoss: parseAmount(log.args.totalLoss, base),
+                    totalDebt: parseAmount(log.args.totalDebt, base),
+                    debtAdded: parseAmount(log.args.debtAdded, base),
+                    debtRatio: parseAmount(log.args.debtRatio, base),
                 }
                 // Release factor in AVAX
             } else if (
@@ -204,7 +211,7 @@ const eventParser = (
                 && contractName.includes('Vault')
             ) {
                 payload = {
-                    factor: parseAmount(log.args.factor, Base.D18), //TODO: TBC
+                    factor: parseAmount(log.args.factor, Base.D18)
                 }
             } else {
                 showError(

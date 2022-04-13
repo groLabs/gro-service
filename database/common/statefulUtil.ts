@@ -9,17 +9,17 @@ const getTokenIdByContractName = (
         case CN.AVAXDAIVault_v1_5:
         case CN.AVAXDAIVault_v1_6:
         case CN.AVAXDAIVault_v1_7:
-            return TokenId.DAI;
+            return TokenId.groDAI_e;
         case CN.AVAXUSDCVault:
         case CN.AVAXUSDCVault_v1_5:
         case CN.AVAXUSDCVault_v1_6:
         case CN.AVAXUSDCVault_v1_7:
-            return TokenId.USDC;
+            return TokenId.groUSDC_e;
         case CN.AVAXUSDTVault:
         case CN.AVAXUSDTVault_v1_5:
         case CN.AVAXUSDTVault_v1_6:
         case CN.AVAXUSDTVault_v1_7:
-            return TokenId.USDT;
+            return TokenId.groUSDT_e;
         case CN.LPTokenStakerV1:
         case CN.LPTokenStakerV2:
             return TokenId.GRO;
