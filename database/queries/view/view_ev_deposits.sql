@@ -6,6 +6,7 @@ SELECT d."log_index" AS "log_index",
     tx."network_id" AS "network_id",
     tx."block_number" AS "block_number",
     tx."block_timestamp" AS "block_timestamp",
+    tx."block_date" AS "block_date",
     coalesce(tx."uncled", false) AS "uncled",
     d."token_id" AS "token_id",
     coalesce(tok."name", 'unknown') AS "token_name",
@@ -21,5 +22,5 @@ SELECT d."log_index" AS "log_index",
     coalesce(d."amount3", 0) AS "amount3",
     coalesce(d."value", 0) AS "value"
 FROM gro."EV_DEPOSITS" d
-    LEFT JOIN gro."EV_TRANSACTIONS" tx ON dep."transaction_id" = tx."transaction_id"
-    LEFT JOIN gro."MD_TOKENS" tok ON dep."token_id" = tok."token_id";
+    LEFT JOIN gro."EV_TRANSACTIONS" tx ON d."transaction_id" = tx."transaction_id"
+    LEFT JOIN gro."MD_TOKENS" tok ON d."token_id" = tok."token_id";
