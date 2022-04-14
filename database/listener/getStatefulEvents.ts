@@ -1,8 +1,14 @@
 // Retrieve events for the new Listener stateful method
 import moment from 'moment';
 import { soliditySha3 } from 'web3-utils';
-import { getEvents } from '../../common/logFilter';
-import { getLatestContractEventFilter, } from '../../common/filterGenerateTool';
+import { 
+    getEvents,
+    getFilterEvents,
+} from '../../common/logFilter';
+import { 
+    getLatestContractEventFilter,
+    getContractHistoryEventFilters,
+} from '../../common/filterGenerateTool';
 import { EventResult } from '../../common/commonTypes';
 import { ICall } from '../interfaces/ICall';
 import { NetworkId } from '../types';
@@ -32,7 +38,10 @@ const getStatefulEvents = async (
     toBlock: any,
 ): Promise<ICall> => {
     try {
+        // TODO: should be contract history rather than latest contract
+        
         const filter = getLatestContractEventFilter(
+        //const filters = getContractHistoryEventFilters(
             'default',
             contractName,
             eventType,
@@ -41,7 +50,8 @@ const getStatefulEvents = async (
             //[null, null],
         );
 
-        const event: EventResult = await getEvents(
+        //const event: EventResult = await getEvents(
+        const event = await getFilterEvents(
             filter.filter,
             filter.interface,
             (networkId === NetworkId.AVALANCHE) ? getProviderAvax() : getProvider(),

@@ -11,8 +11,7 @@ INSERT INTO gro."EV_DEPOSITS" (
         "amount1",
         "amount2",
         "amount3",
-        "value",
-        "creation_date"
+        "value"
     )
 VALUES (
         $1,
@@ -27,6 +26,5 @@ VALUES (
         $10,
         $11,
         $12,
-        $13,
-        $14
+        $13
     ) ON CONFLICT ON CONSTRAINT "EV_DEPOSITS_pkey" DO NOTHING;

@@ -7,7 +7,7 @@ CREATE TABLE gro."EV_TRANSACTIONS" (
     "tx_hash" CHARACTER VARYING (66) NOT NULL,
     "block_hash" CHARACTER VARYING (66) NOT NULL,
     "uncled" BOOLEAN NULL,
-    "creation_date" TIMESTAMP (6) NULL,
+    "creation_date" TIMESTAMP (6) DEFAULT NOW(),
     CONSTRAINT "EV_TRANSACTIONS_pkey" PRIMARY KEY (
         "transaction_id"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
@@ -24,7 +24,7 @@ CREATE TABLE gro."EV_APPROVALS" (
     "spender" CHARACTER VARYING (42) NULL,
     "value" NUMERIC (20, 8) NULL,
     "token_id" SMALLINT NULL,
-    "creation_date" TIMESTAMP (6) NULL,
+    "creation_date" TIMESTAMP (6) DEFAULT NOW(),
     CONSTRAINT "EV_APPROVALS_pkey" PRIMARY KEY (
         "log_index",
         "transaction_id",
@@ -44,7 +44,7 @@ CREATE TABLE gro."EV_CLAIMS" (
     "vest" BOOLEAN NULL,
     "tranche_id" NUMERIC (20, 8) NULL,
     "amount" NUMERIC (20, 8) NULL,
-    "creation_date" TIMESTAMP (6) NULL,
+    "creation_date" TIMESTAMP (6) DEFAULT NOW(),
     CONSTRAINT "EV_CLAIMS_pkey" PRIMARY KEY (
         "log_index",
         "transaction_id",
@@ -63,7 +63,7 @@ ALTER TABLE gro."EV_CLAIMS" OWNER to postgres;
 --     "pids" INTEGER [] NULL,
 --     "vest" BOOLEAN NULL,
 --     "amounts" NUMERIC (20, 8) [] NULL,
---     "creation_date" TIMESTAMP (6) NULL,
+--     "creation_date" TIMESTAMP (6) DEFAULT NOW(),
 --     CONSTRAINT "EV_MULTI_CLAIMS_pkey" PRIMARY KEY (
 --         "log_index",
 --         "transaction_id",
@@ -87,7 +87,7 @@ CREATE TABLE gro."EV_DEPOSITS" (
     "amount2" NUMERIC (20, 8) NULL,
     "amount3" NUMERIC (20, 8) NULL,
     "value" NUMERIC (20, 8) NULL,
-    "creation_date" TIMESTAMP (6) NULL,
+    "creation_date" TIMESTAMP (6) DEFAULT NOW(),
     CONSTRAINT "EV_DEPOSITS_pkey" PRIMARY KEY (
         "log_index",
         "transaction_id",
@@ -106,7 +106,7 @@ CREATE TABLE gro."EV_TRANSFERS" (
     "to" CHARACTER VARYING (42) NULL,
     "token_id" SMALLINT NULL,
     "value" NUMERIC (20, 8) NULL,
-    "creation_date" TIMESTAMP (6) NULL,
+    "creation_date" TIMESTAMP (6) DEFAULT NOW(),
     CONSTRAINT "EV_TRANSFERS_pkey" PRIMARY KEY (
         "log_index",
         "transaction_id",
@@ -131,9 +131,9 @@ CREATE TABLE gro."EV_PNL_STRATEGY_REPORTED"
    "totalDebt"         NUMERIC (20, 8) NULL,
    "debtAdded"         NUMERIC (20, 8) NULL,
    "debtRatio"         NUMERIC (20, 8) NULL,
-   "lockedProfit",     NUMERIC (20, 8) NULL,
-   "totalAssets",      NUMERIC (20, 8) NULL,
-   "creation_date"     TIMESTAMP (6) NULL,
+   "lockedProfit"      NUMERIC (20, 8) NULL,
+   "totalAssets"       NUMERIC (20, 8) NULL,
+   "creation_date"     TIMESTAMP (6) DEFAULT NOW(),
    CONSTRAINT "EV_PNL_STRATEGY_REPORTED_pkey" PRIMARY KEY (
        "log_index",
        "transaction_id",
@@ -150,7 +150,7 @@ CREATE TABLE gro."EV_PNL_NEW_RELEASE_FACTOR"
    "contract_address"  CHARACTER VARYING (42) NOT NULL,
    "log_name"          CHARACTER VARYING (255) NULL,
    "factor"            NUMERIC (20, 8) NULL,
-   "creation_date"     TIMESTAMP (6) NULL,
+   "creation_date"     TIMESTAMP (6) DEFAULT NOW(),
    CONSTRAINT "EV_PNL_NEW_RELEASE_FACTOR_pkey" PRIMARY KEY (
        "log_index",
        "transaction_id",
@@ -179,7 +179,7 @@ CREATE TABLE gro."EV_WITHDRAWALS" (
     "allowance" NUMERIC (20, 8) NULL,
     "totalLoss" NUMERIC (20, 8) NULL,
     "token_id" SMALLINT NULL,
-    "creation_date" TIMESTAMP (6) NULL,
+    "creation_date" TIMESTAMP (6) DEFAULT NOW(),
     CONSTRAINT "EV_WITHDRAWALS_pkey" PRIMARY KEY (
         "log_index",
         "transaction_id",
@@ -198,7 +198,7 @@ CREATE TABLE gro."EV_MULTI_WITHDRAWALS" (
     "pids" INTEGER [] NULL,
     "amounts" NUMERIC (20, 8) [] NULL,
     "value" NUMERIC (20, 8) NULL,
-    "creation_date" TIMESTAMP (6) NULL,
+    "creation_date" TIMESTAMP (6) DEFAULT NOW(),
     CONSTRAINT "EV_MULTI_WITHDRAWALS_pkey" PRIMARY KEY (
         "log_index",
         "transaction_id",

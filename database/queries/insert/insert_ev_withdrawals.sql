@@ -16,8 +16,7 @@ INSERT INTO gro."EV_WITHDRAWALS" (
         "lpAmount",
         "allowance",
         "totalLoss",
-        "token_id",
-        "creation_date"
+        "token_id"
     )
 VALUES (
         $1,
@@ -37,6 +36,5 @@ VALUES (
         $15,
         $16,
         $17,
-        $18,
-        $19
+        $18
     ) ON CONFLICT ON CONSTRAINT "EV_WITHDRAWALS_pkey" DO NOTHING;

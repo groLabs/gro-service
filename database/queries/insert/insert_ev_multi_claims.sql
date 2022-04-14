@@ -6,8 +6,7 @@ INSERT INTO gro."EV_MULTI_CLAIMS" (
         "from",
         "pids",
         "vest",
-        "amounts",
-        "creation_date"
+        "amounts"
     )
 VALUES (
         $1,
@@ -17,6 +16,5 @@ VALUES (
         $5,
         $6,
         $7,
-        $8,
-        $9
+        $8
     ) ON CONFLICT ON CONSTRAINT "EV_MULTI_CLAIMS_pkey" DO NOTHING;

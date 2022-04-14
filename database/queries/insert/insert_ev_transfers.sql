@@ -6,8 +6,7 @@ INSERT INTO gro."EV_TRANSFERS" (
         "from",
         "to",
         "token_id",
-        "value",
-        "creation_date"
+        "value"
     )
 VALUES (
         $1,
@@ -17,6 +16,5 @@ VALUES (
         $5,
         $6,
         $7,
-        $8,
-        $9
+        $8
     ) ON CONFLICT ON CONSTRAINT "EV_TRANSFERS_pkey" DO NOTHING;

@@ -6,8 +6,7 @@ INSERT INTO gro."EV_TRANSACTIONS" (
         "network_id",
         "tx_hash",
         "block_hash",
-        "uncled",
-        "creation_date"
+        "uncled"
     )
 VALUES (
         $1,
@@ -17,6 +16,5 @@ VALUES (
         $5,
         $6,
         $7,
-        $8,
-        $9
+        $8
     ) ON CONFLICT ON CONSTRAINT "EV_TRANSACTIONS_pkey" DO NOTHING;

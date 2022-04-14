@@ -7,8 +7,7 @@ INSERT INTO gro."EV_CLAIMS" (
         "pids",
         "vest",
         "tranche_id",
-        "amount",
-        "creation_date"
+        "amount"
     )
 VALUES (
         $1,
@@ -19,6 +18,5 @@ VALUES (
         $6,
         $7,
         $8,
-        $9,
-        $10
+        $9
     ) ON CONFLICT ON CONSTRAINT "EV_CLAIMS_pkey" DO NOTHING;

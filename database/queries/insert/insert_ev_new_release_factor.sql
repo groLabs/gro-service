@@ -3,14 +3,12 @@ INSERT INTO gro."EV_PNL_NEW_RELEASE_FACTOR" (
         "transaction_id",
         "contract_address",
         "log_name",
-        "factor",
-        "creation_date"
+        "factor"
     )
 VALUES (
         $1,
         $2,
         $3,
         $4,
-        $5,
-        $6
+        $5
     ) ON CONFLICT ON CONSTRAINT "EV_PNL_NEW_RELEASE_FACTOR_pkey" DO NOTHING;

@@ -123,20 +123,24 @@ const eventParser = (
                 && contractName.includes('AVAX')
                 && contractName.includes('Vault')
             ) {
+                const base = contractName.includes('DAI')
+                ? Base.D18
+                : Base.D6;
+                
                 payload = {
                     from: log.args.from,
                     pid: null,
-                    amount1: parseAmount(log.args.shares, Base.D18),
+                    amount1: parseAmount(log.args.shares, base),
                     amount2: null,
                     amount3: null,
-                    value: parseAmount(log.args.value, Base.D18),
+                    value: parseAmount(log.args.value, base),
                     referral: null,
-                    balanced: false,
-                    all: false,
+                    balanced: null,
+                    all: null,
                     deductUsd: null,
                     lpAmount: null,
-                    allowance: parseAmount(log.args.allowance, Base.D18),
-                    totalLoss: parseAmount(log.args.totalLoss, Base.D18),
+                    allowance: parseAmount(log.args.allowance, base),
+                    totalLoss: parseAmount(log.args.totalLoss, base),
                     token_id: getTokenIdByContractName(contractName),
                 }
                 // Transfers in ETH
@@ -144,7 +148,7 @@ const eventParser = (
                 payload = {
                     from: log.args.from,
                     to: log.args.to,
-                    token_id: 3, // TODO: based on contract name
+                    token_id: getTokenIdByContractName(contractName),
                     value: parseAmount(log.args.value, Base.D18),
                 }
                 // Approvals in ETH
@@ -154,7 +158,7 @@ const eventParser = (
                     owner: log.args.owner,
                     spender: log.args.spender,
                     value: (value < MAX_NUMBER) ? value : -1,
-                    token_id: 3, // TODO: based on contract name
+                    token_id: getTokenIdByContractName(contractName),
                 }
                 // Claims from Hodler in ETH
             } else if (
