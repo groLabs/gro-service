@@ -40,6 +40,7 @@ CREATE TABLE gro."EV_CLAIMS" (
     "contract_address" CHARACTER VARYING (42) NOT NULL,
     "log_name" CHARACTER VARYING (42) NULL,
     "from" CHARACTER VARYING (42) NULL,
+    "token_id" SMALLINT NULL,
     "pids" INTEGER [] NULL,
     "vest" BOOLEAN NULL,
     "tranche_id" NUMERIC (20, 8) NULL,

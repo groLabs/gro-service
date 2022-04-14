@@ -42,11 +42,12 @@ const eventParser = (
                     pid: null,
                     token_id: log.args.pwrd ? TokenId.PWRD : TokenId.GVT,
                     allowance: null,
-                    amount1: parseAmount(log.args.tokens[0], Base.D18),
-                    amount2: parseAmount(log.args.tokens[1], Base.D18),
-                    amount3: parseAmount(log.args.tokens[2], Base.D18),
+                    amount1: parseAmount(log.args.tokens[0], Base.D18), // DAI
+                    amount2: parseAmount(log.args.tokens[1], Base.D6),  // USDC
+                    amount3: parseAmount(log.args.tokens[2], Base.D6),  // USDT
                     value: parseAmount(log.args[3], Base.D18),
                 }
+                // TODO: what about LPTokenStakerV1 for IDL?
                 // Deposits from LPTokenStaker in ETH
             } else if (
                 eventName === EV.LogDeposit
@@ -70,8 +71,8 @@ const eventParser = (
                 && contractName.includes('Vault')
             ) {
                 const base = contractName.includes('DAI')
-                ? Base.D18
-                : Base.D6;
+                    ? Base.D18
+                    : Base.D6;
 
                 payload = {
                     from: log.args.from,
@@ -91,6 +92,7 @@ const eventParser = (
             ) {
                 const pids = log.args.pids.map((pid: number) => parseInt(pid.toString()));
                 const amounts = log.args.amounts.map((amount: number) => parseAmount(amount, Base.D18));
+
                 payload = {
                     from: log.args.user,
                     pids: pids,
@@ -105,17 +107,17 @@ const eventParser = (
                     from: log.args.user,
                     pid: null,
                     amount1: parseAmount(log.args.tokenAmounts[0], Base.D18),
-                    amount2: parseAmount(log.args.tokenAmounts[1], Base.D18),
-                    amount3: parseAmount(log.args.tokenAmounts[2], Base.D18),
+                    amount2: parseAmount(log.args.tokenAmounts[1], Base.D6),
+                    amount3: parseAmount(log.args.tokenAmounts[2], Base.D6),
                     value: parseAmount(log.args.returnUsd, Base.D18),
                     referral: log.args.referral,
                     balanced: log.args.balanced,
                     all: log.args.all,
                     deductUsd: parseAmount(log.args.deductUsd, Base.D18),
-                    lpAmount: parseAmount(log.args.lpAmount, Base.D18),
+                    lpAmount: parseAmount(log.args.lpAmount, Base.D18), // TODO: depends on stable?
                     allowance: null,
                     totalLoss: null,
-                    token_id: log.args.pwrd ? 2 : 1,
+                    token_id: log.args.pwrd ? TokenId.PWRD : TokenId.GVT,
                 }
                 // Withdrawals from Vaults in AVAX
             } else if (
@@ -124,9 +126,9 @@ const eventParser = (
                 && contractName.includes('Vault')
             ) {
                 const base = contractName.includes('DAI')
-                ? Base.D18
-                : Base.D6;
-                
+                    ? Base.D18
+                    : Base.D6;
+
                 payload = {
                     from: log.args.from,
                     pid: null,
@@ -167,6 +169,7 @@ const eventParser = (
             ) {
                 payload = {
                     from: log.args.user,
+                    token_id: TokenId.GRO,
                     pid: null,
                     vest: log.args.vest,
                     tranche_id: null,
@@ -180,8 +183,10 @@ const eventParser = (
                 const pids = (eventName === EV.LogClaim)
                     ? [parseInt(log.args.pid.toString())]
                     : log.args.pids.map((pid: number) => parseInt(pid.toString()));
+
                 payload = {
                     from: log.args.user,
+                    token_id: TokenId.GRO,
                     pids: pids,
                     vest: log.args.vest,
                     tranche_id: null,
@@ -228,15 +233,12 @@ const eventParser = (
                 }
             }
 
-            const timestamp = moment.utc();
-
             events.push({
                 log_index: log.logIndex,
                 transaction_id: log.transactionId,
                 contract_address: log.address,
                 log_name: log.name,
                 ...payload,
-                creation_date: timestamp,
             });
 
             transactions.push({
@@ -248,7 +250,6 @@ const eventParser = (
                 tx_hash: log.transactionHash,
                 block_hash: log.blockHash,
                 uncled: false,  //TODO
-                creation_date: timestamp,
             });
         }
 

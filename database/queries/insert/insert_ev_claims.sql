@@ -4,6 +4,7 @@ INSERT INTO gro."EV_CLAIMS" (
         "contract_address",
         "log_name",
         "from",
+        "token_id",
         "pids",
         "vest",
         "tranche_id",
@@ -18,5 +19,6 @@ VALUES (
         $6,
         $7,
         $8,
-        $9
+        $9,
+        $10
     ) ON CONFLICT ON CONSTRAINT "EV_CLAIMS_pkey" DO NOTHING;
