@@ -117,6 +117,13 @@ const etlStatefulByBlock = async (
             let result = [];
 
             if (globalNetwork === GN.ETHEREUM) {
+
+                const groTokenContracts = [
+                    CN.powerD,
+                    CN.groVault,
+                    CN.GroDAOToken,
+                ];
+
                 result.push(
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
@@ -140,27 +147,29 @@ const etlStatefulByBlock = async (
                         newOffset
                     ),
                     //Not tested yet (no data available)
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogMultiWithdraw,
-                        CN.LPTokenStakerV2,
-                        from,
-                        newOffset
-                    ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.Transfer,
-                        CN.GroDAOToken,
-                        from,
-                        newOffset
-                    ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.Approval,
-                        CN.groVault,
-                        from,
-                        newOffset
-                    ),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogMultiWithdraw,
+                    //     CN.LPTokenStakerV2,
+                    //     from,
+                    //     newOffset
+                    // ),
+                    ...groTokenContracts.map((groTokenContract) =>
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            groTokenContract,
+                            from,
+                            newOffset,
+                        )),
+                    ...groTokenContracts.map((groTokenContract) =>
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Approval,
+                            groTokenContract,
+                            from,
+                            newOffset,
+                        )),
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
                         EV.LogBonusClaimed,

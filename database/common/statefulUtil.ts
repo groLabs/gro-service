@@ -5,6 +5,14 @@ const getTokenIdByContractName = (
     contractName: string,
 ): TokenId => {
     switch (contractName) {
+        case CN.powerD:
+            return TokenId.PWRD;
+        case CN.groVault:
+            return TokenId.GVT;
+        case CN.GroDAOToken:
+        case CN.LPTokenStakerV1:
+        case CN.LPTokenStakerV2:
+            return TokenId.GRO;
         case CN.AVAXDAIVault:
         case CN.AVAXDAIVault_v1_5:
         case CN.AVAXDAIVault_v1_6:
@@ -20,9 +28,6 @@ const getTokenIdByContractName = (
         case CN.AVAXUSDTVault_v1_6:
         case CN.AVAXUSDTVault_v1_7:
             return TokenId.groUSDT_e;
-        case CN.LPTokenStakerV1:
-        case CN.LPTokenStakerV2:
-            return TokenId.GRO;
         default:
             return TokenId.UNKNOWN;
     }

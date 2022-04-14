@@ -50,8 +50,8 @@ const getStatefulEvents = async (
             //[null, null],
         );
 
-        //const event: EventResult = await getEvents(
-        const event = await getFilterEvents(
+        const event: EventResult = await getEvents(
+        //const event = await getFilterEvents(
             filter.filter,
             filter.interface,
             (networkId === NetworkId.AVALANCHE) ? getProviderAvax() : getProvider(),
