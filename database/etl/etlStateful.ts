@@ -77,7 +77,7 @@ const etlStatefulByDate = async (
 }
 
 // @dev: Event <LogNewReleaseFactor> is not applicable for Labs 1.0
-// TODO: start from genesis blocks when block < genesis
+// TODO: document function
 const etlStatefulByBlock = async (
     globalNetwork: GN,
     from: number,
@@ -132,6 +132,7 @@ const etlStatefulByBlock = async (
                         from,
                         newOffset
                     ),
+                    /*
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
                         EV.LogDeposit,
@@ -191,6 +192,7 @@ const etlStatefulByBlock = async (
                         from,
                         newOffset
                     ),
+                    */
                 );
             }
 

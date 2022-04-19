@@ -9,7 +9,7 @@ CREATE TABLE gro."CORE_PRICE" (
     "address" CHARACTER VARYING (42) NULL,
     "round_id" INTEGER NULL,
     "updated_at" INTEGER NULL,
-    "creation_date" TIMESTAMP (6) NULL,
+    "creation_date" TIMESTAMP (6) DEFAULT NOW(),
     CONSTRAINT "CORE_PRICE_pkey" PRIMARY KEY (
         "log_index",
         "transaction_id",

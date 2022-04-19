@@ -49,7 +49,7 @@ const getStatefulEvents = async (
             toBlock,
             //[null, null],
         );
-
+console.log('filters:', filter);
         const event: EventResult = await getEvents(
         //const event = await getFilterEvents(
             filter.filter,
