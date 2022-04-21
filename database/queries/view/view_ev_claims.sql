@@ -2,6 +2,7 @@ CREATE VIEW gro."V_EV_CLAIMS" AS
 SELECT c."log_index" AS "log_index",
     c."transaction_id" AS "transaction_id",
     c."contract_address" AS "contract_address",
+    c."vault_address" AS "vault_address",
     c."log_name" AS "log_name",
     tx."network_id" AS "network_id",
     tx."block_number" AS "block_number",

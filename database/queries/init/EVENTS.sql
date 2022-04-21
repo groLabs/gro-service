@@ -38,6 +38,7 @@ CREATE TABLE gro."EV_CLAIMS" (
     "log_index" INTEGER NOT NULL,
     "transaction_id" CHARACTER VARYING (256) NOT NULL,
     "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "vault_address" CHARACTER VARYING (42) NULL,
     "log_name" CHARACTER VARYING (42) NULL,
     "from" CHARACTER VARYING (42) NULL,
     "token_id" SMALLINT NULL,
@@ -134,6 +135,7 @@ CREATE TABLE gro."EV_PNL_STRATEGY_REPORTED"
    "debtRatio"         NUMERIC (20, 8) NULL,
    "lockedProfit"      NUMERIC (20, 8) NULL,
    "totalAssets"       NUMERIC (20, 8) NULL,
+   "totalSupply"       NUMERIC (20, 8) NULL,
    "creation_date"     TIMESTAMP (6) DEFAULT NOW(),
    CONSTRAINT "EV_PNL_STRATEGY_REPORTED_pkey" PRIMARY KEY (
        "log_index",
