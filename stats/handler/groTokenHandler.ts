@@ -935,7 +935,7 @@ const getBalancerGroWethStats = async (
                 feeApy: ZERO,
                 rewardApy: ZERO,
                 unstaked: ZERO,
-                poolIncentive: BigNumber.from('139300000000000000'),
+                // poolIncentive: BigNumber.from('139300000000000000'),
             };
 
         // Pull data from Balancer v2 subgraph
@@ -960,7 +960,7 @@ const getBalancerGroWethStats = async (
                 feeApy: 'NA',
                 rewardApy: 'NA',
                 unstaked: 'NA',
-                poolIncentive: 'NA',
+                // poolIncentive: 'NA',
             };
         } else {
             pools = res.pools[0];
@@ -1030,15 +1030,15 @@ const getBalancerGroWethStats = async (
             block24hAgo
         );
         const feeApy = groWethFees.mul(YEAR).mul(ONE).div(tvlBN);
-        const balPrice = await getCoingeckoPrice('balancer');
-        const balRewardPerWeek = BigNumber.from(pool5Config.bal_per_week);
-        const balApy = balPrice
-            .mul(WEEKS_PER_YEAR)
-            .mul(balRewardPerWeek)
-            .mul(ONE)
-            .div(tvlBN);
-        logger.info(`balPrice ${balPrice} balApy ${balApy}`);
-        const totalAPY = feeApy.add(tokenApy).add(rewardApy).add(balApy);
+        // const balPrice = await getCoingeckoPrice('balancer');
+        // const balRewardPerWeek = BigNumber.from(pool5Config.bal_per_week);
+        // const balApy = balPrice
+        //     .mul(WEEKS_PER_YEAR)
+        //     .mul(balRewardPerWeek)
+        //     .mul(ONE)
+        //     .div(tvlBN);
+        // logger.info(`balPrice ${balPrice} balApy ${balApy}`);
+        const totalAPY = feeApy.add(tokenApy).add(rewardApy);
 
         const metaPoolInfo = {
             tvl: tvlBN,
@@ -1051,7 +1051,7 @@ const getBalancerGroWethStats = async (
             feeApy: feeApy,
             rewardApy: rewardApy,
             unstaked: unstaked,
-            poolIncentive: balApy,
+            // poolIncentive: balApy,
         };
         return metaPoolInfo;
     } catch (err) {
@@ -1075,10 +1075,16 @@ async function getGvtApy(currentApy, latestBlock) {
         latestBlock
     );
 
-    const tokenApy = (poolSingleGvtStats.tokenApy as BigNumber).toString()
+    const tokenApy = (poolSingleGvtStats.tokenApy as BigNumber).toString();
 
-    return { upper: printPercent(new BN(tokenApy)), lower: printPercent(new BN(tokenApy).times(new BN(await fetchInstantUnlockPercentange())))}
-
+    return {
+        upper: printPercent(new BN(tokenApy)),
+        lower: printPercent(
+            new BN(tokenApy).times(
+                new BN(await fetchInstantUnlockPercentange())
+            )
+        ),
+    };
 }
 
 async function getPwrdApy(currentApy, latestBlock) {
@@ -1095,10 +1101,16 @@ async function getPwrdApy(currentApy, latestBlock) {
         latestBlock
     );
 
-    const tokenApy = (poolSinglePwrdStats.tokenApy as BigNumber).toString()
+    const tokenApy = (poolSinglePwrdStats.tokenApy as BigNumber).toString();
 
-    return { upper: printPercent(new BN(tokenApy)), lower: printPercent(new BN(tokenApy).times(new BN(await fetchInstantUnlockPercentange())))}
-
+    return {
+        upper: printPercent(new BN(tokenApy)),
+        lower: printPercent(
+            new BN(tokenApy).times(
+                new BN(await fetchInstantUnlockPercentange())
+            )
+        ),
+    };
 }
 
 async function getPools(currentApy, latestBlock) {
@@ -1325,7 +1337,7 @@ async function getPools(currentApy, latestBlock) {
             tvl: isNaN(poolBalancerGroWethStats.tvl)
                 ? NAH
                 : printUsd(poolBalancerGroWethStats.tvl),
-                //@ts-ignore
+            //@ts-ignore
             tvl_staked: isNaN(poolBalancerGroWethStats.tvlStaked)
                 ? NAH
                 : printUsd(poolBalancerGroWethStats.tvlStaked),
@@ -1337,30 +1349,24 @@ async function getPools(currentApy, latestBlock) {
             lp_usd_price: isNaN(poolBalancerGroWethStats.lpPrice)
                 ? NAH
                 : printUsd(poolBalancerGroWethStats.lpPrice),
-            pool_incentive_token: 'bal',
+            // pool_incentive_token: 'bal',
             apy: {
                 current: {
                     //@ts-ignore
                     total: isNaN(poolBalancerGroWethStats.totalApy)
                         ? NAH
                         : printPercent(poolBalancerGroWethStats.totalApy),
-                        //@ts-ignore
+                    //@ts-ignore
                     token: isNaN(poolBalancerGroWethStats.tokenApy)
                         ? NAH
                         : printPercent(poolBalancerGroWethStats.tokenApy),
-                        //@ts-ignore
+                    //@ts-ignore
                     pool_fees: isNaN(poolBalancerGroWethStats.feeApy)
                         ? NAH
                         : printPercent(poolBalancerGroWethStats.feeApy),
                     reward: isNaN(poolBalancerGroWethStats.rewardApy)
                         ? NAH
                         : printPercent(poolBalancerGroWethStats.rewardApy),
-                    pool_incentive: isNaN(
-                        //@ts-ignore
-                        poolBalancerGroWethStats.poolIncentive
-                    )
-                        ? NAH
-                        : printPercent(poolBalancerGroWethStats.poolIncentive),
                 },
             },
         },
