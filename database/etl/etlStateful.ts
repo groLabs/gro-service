@@ -132,7 +132,6 @@ const etlStatefulByBlock = async (
                         from,
                         newOffset
                     ),
-                    /*
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
                         EV.LogDeposit,
@@ -192,7 +191,6 @@ const etlStatefulByBlock = async (
                         from,
                         newOffset
                     ),
-                    */
                 );
             }
 
