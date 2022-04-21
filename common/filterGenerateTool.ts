@@ -8,6 +8,10 @@ import {
 import { newLatestContract, newContract } from '../registry/contracts';
 import { getAlchemyRpcProvider } from './chainUtil';
 
+const botEnv = process.env.BOT_ENV.toLowerCase();
+// eslint-disable-next-line import/no-dynamic-require
+const logger = require(`../${botEnv}/${botEnv}Logger`);
+
 const stableCoins = [];
 const contractStorage = {};
 const erc20ABI = require('../abi/ERC20.json');
@@ -57,6 +61,57 @@ function getContractHistoryEventFilters(
         const filter = contract.filters[eventName](...filterParams);
         filter.fromBlock = fromBlock;
         filter.toBlock = toBlock;
+        filters.push({ filter, interface: contract.interface });
+    }
+    return filters;
+}
+
+function getValidContractHistoryEventFilters(
+    providerKey = 'default',
+    contractName: string,
+    eventName: string,
+    fromBlock: number,
+    toBlock: number,
+    filterParams = []
+) {
+    const filters = [];
+    if (fromBlock > toBlock) {
+        logger.error(
+            `fromBlock:${fromBlock} must bigger than toBlock:${toBlock}`
+        );
+        return filters;
+    }
+    const contractHistory = getContractsHistory()[contractName];
+    for (let i = 0; i < contractHistory.length; i += 1) {
+        let _toBlock = toBlock;
+        let _fromBlock = fromBlock;
+        const contractInfo = contractHistory[i];
+        const { startBlock, endBlock } = contractInfo;
+        if (startBlock > _toBlock) {
+            logger.info(
+                `skip contract filter for startBlock > toBlock : ${JSON.stringify(
+                    contractInfo
+                )}`
+            );
+            continue;
+        }
+        if (endBlock && endBlock < fromBlock) {
+            logger.info(
+                `skip contract filter for endBlock < fromBlock : ${JSON.stringify(
+                    contractInfo
+                )}`
+            );
+            continue;
+        }
+        const contract = getContract(contractName, contractInfo, providerKey);
+        _fromBlock = startBlock > _fromBlock ? startBlock : _fromBlock;
+        if (endBlock) {
+            _toBlock = endBlock > _toBlock ? _toBlock : endBlock;
+        }
+
+        const filter = contract.filters[eventName](...filterParams);
+        filter.fromBlock = _fromBlock;
+        filter.toBlock = _toBlock;
         filters.push({ filter, interface: contract.interface });
     }
     return filters;
@@ -140,5 +195,6 @@ async function getCoinApprovalFilters(
 export {
     getLatestContractEventFilter,
     getContractHistoryEventFilters,
+    getValidContractHistoryEventFilters,
     getCoinApprovalFilters,
 };
