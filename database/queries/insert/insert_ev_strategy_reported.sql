@@ -11,7 +11,10 @@ INSERT INTO gro."EV_PNL_STRATEGY_REPORTED" (
         "totalLoss",
         "totalDebt",
         "debtAdded",
-        "debtRatio"
+        "debtRatio",
+        "lockedProfit",
+        "totalAssets",
+        "totalSupply"
     )
 VALUES (
         $1,
@@ -26,5 +29,8 @@ VALUES (
         $10,
         $11,
         $12,
-        $13
+        $13,
+        $14,
+        $15,
+        $16
     ) ON CONFLICT ON CONSTRAINT "EV_PNL_STRATEGY_REPORTED_pkey" DO NOTHING;

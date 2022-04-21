@@ -18,6 +18,7 @@ SELECT sr."log_index" AS "log_index",
     coalesce(sr."debtAdded", 0) AS "debtAdded",
     coalesce(sr."debtRatio", 0) AS "debtRatio",
     coalesce(sr."lockedProfit", 0) AS "lockedProfit",
-    coalesce(sr."totalAssets", 0) AS "totalAssets"
+    coalesce(sr."totalAssets", 0) AS "totalAssets",
+    coalesce(sr."totalSupply", 0) AS "totalSupply"
 FROM gro."EV_PNL_STRATEGY_REPORTED" sr
     LEFT JOIN gro."EV_TRANSACTIONS" tx ON sr."transaction_id" = tx."transaction_id"

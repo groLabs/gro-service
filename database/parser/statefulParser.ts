@@ -1,4 +1,3 @@
-import moment from 'moment';
 import { ICall } from '../interfaces/ICall';
 import { showError, } from '../handler/logHandler';
 import { ContractNames as CN } from '../../registry/registry';
@@ -17,13 +16,15 @@ import {
     errorObj,
     parseAmount
 } from '../common/globalUtil';
+import { getVaultFromContractName } from '../common/contractUtil';
 
 
-const eventParser = (
+
+const eventParser = async (
     logs: any,
     eventName: string,
     contractName: string
-): ICall => {
+): Promise<ICall> => {
     try {
         let payload = {};
         const events = [];
@@ -202,6 +203,16 @@ const eventParser = (
                     ? Base.D18
                     : Base.D6;
 
+                const [
+                    lockedProfit,
+                    totalAssets,
+                    totalSupply,
+                ] = await getExtraDataFromVaults(
+                    log.blockNumber,
+                    base,
+                    contractName,
+                );
+
                 payload = {
                     strategy: log.args.strategy,
                     gain: parseAmount(log.args.gain, base),
@@ -211,7 +222,10 @@ const eventParser = (
                     totalLoss: parseAmount(log.args.totalLoss, base),
                     totalDebt: parseAmount(log.args.totalDebt, base),
                     debtAdded: parseAmount(log.args.debtAdded, base),
-                    debtRatio: parseAmount(log.args.debtRatio, base),
+                    debtRatio: parseAmount(log.args.debtRatio, base) * 100, //TBC
+                    lockedProfit: lockedProfit,
+                    totalAssets: totalAssets,
+                    totalSupply: totalSupply,
                 }
                 // Release factor in AVAX
             } else if (
@@ -266,6 +280,53 @@ const eventParser = (
         showError('statefulParser.ts->eventParser()', err);
         return errorObj(err);
     }
+}
+
+//@dev: vaults 1.0 do not have lockedProfit
+const getExtraDataFromVaults = async (
+    blockNumber: number,
+    base: Base,
+    contractName: string
+) => {
+    try {
+        const sc = getVaultFromContractName(contractName);
+
+        const isVault1_0 = (
+            contractName === CN.AVAXDAIVault
+            || contractName === CN.AVAXUSDCVault
+            || contractName === CN.AVAXUSDTVault)
+            ? true
+            : false;
+
+        const [
+            _lockedProfit,
+            _totalAssets,
+            _totalSupply,
+        ] = await Promise.all([
+            !isVault1_0
+                ? sc.lockedProfit({ blockTag: blockNumber })
+                : true,
+            sc.totalAssets({ blockTag: blockNumber }),
+            sc.totalSupply({ blockTag: blockNumber }),
+        ]);
+
+        const lockedProfit = !isVault1_0
+            ? parseAmount(_lockedProfit, base)
+            : null;
+        const totalAssets = parseAmount(_totalAssets, base);
+        const totalSupply = parseAmount(_totalSupply, base);
+
+
+        return [
+            lockedProfit,
+            totalAssets,
+            totalSupply,
+        ];
+    } catch (err) {
+        showError('statefulParser.ts->getExtraDataFromVaults()', err);
+        return [null, null, null];
+    }
+
 }
 
 export {

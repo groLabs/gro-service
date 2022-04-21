@@ -47,7 +47,7 @@ const loadStateful = async (
                 let rows_ev = 0;
                 let rows_tx = 0;
     
-                const result: ICall = eventParser(
+                const result: ICall = await eventParser(
                     events.data,
                     eventName,
                     contractName,

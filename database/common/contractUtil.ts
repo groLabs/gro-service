@@ -4,7 +4,8 @@ import {
     getProvider,
     getProviderKey,
     getProviderAvax,
-    errorObj
+    errorObj,
+    parseAmount,
 } from './globalUtil';
 import {
     ContractNames,
@@ -19,6 +20,7 @@ import {
 } from '../handler/logHandler';
 import { ICall } from '../interfaces/ICall';
 import { QUERY_SUCCESS } from '../constants';
+
 
 const stableCoins = [];
 const stableCoinsInfo: any = {};
@@ -155,13 +157,63 @@ const getDAIeVault_1_7 = () => {
 
 const getGroVesting = () => {
     return getLatestSystemContract(ContractNames.GroVesting, getProviderKey())
-    .contract;
+        .contract;
+}
+
+const getVaultFromContractName = (contractName: string) => {
+    try {
+        let sc;
+        switch (contractName) {
+            case ContractNames.AVAXDAIVault:
+                sc = getDAIeVault();
+                break;
+            case ContractNames.AVAXUSDCVault:
+                sc = getUSDCeVault();
+                break;
+            case ContractNames.AVAXUSDTVault:
+                sc = getUSDTeVault();
+                break;
+            case ContractNames.AVAXDAIVault_v1_5:
+                sc = getDAIeVault_1_5();
+                break;
+            case ContractNames.AVAXUSDCVault_v1_5:
+                sc = getUSDCeVault_1_5();
+                break;
+            case ContractNames.AVAXUSDTVault_v1_5:
+                sc = getUSDTeVault_1_5();
+                break;
+            case ContractNames.AVAXDAIVault_v1_6:
+                sc = getDAIeVault_1_6();
+                break;
+            case ContractNames.AVAXUSDCVault_v1_6:
+                sc = getUSDCeVault_1_6();
+                break;
+            case ContractNames.AVAXUSDTVault_v1_6:
+                sc = getUSDTeVault_1_6();
+                break;
+            case ContractNames.AVAXDAIVault_v1_7:
+                sc = getDAIeVault_1_7();
+                break;
+            case ContractNames.AVAXUSDCVault_v1_7:
+                sc = getUSDCeVault_1_7();
+                break;
+            case ContractNames.AVAXUSDTVault_v1_7:
+                sc = getUSDTeVault_1_7();
+                break;
+            default:
+                return null;
+        }
+        return sc;
+    } catch (err) {
+        showError('contractUtil.ts->getVaultFromContractName()', err);
+        return null;
+    }
 }
 
 const getContractInfoHistory = async (
     contractName: string,
     block: number,
-) : Promise<ICall> => {
+): Promise<ICall> => {
     const contracts = await getContractHistory(contractName);
     for (const contract of contracts) {
         const endBlock = (contract.endBlock == null || isNaN(contract.endBlock))
@@ -174,7 +226,7 @@ const getContractInfoHistory = async (
             }
     }
     const errMsg = `Contract <${contractName}> not found for block ${block}`
-    showError('contractUtil.ts->getContractInfoHistory()',errMsg);
+    showError('contractUtil.ts->getContractInfoHistory()', errMsg);
     return errorObj(errMsg);
 }
 
@@ -243,4 +295,5 @@ export {
     getDAIeVault_1_7,
     getGroVesting,
     getContractInfoHistory,
+    getVaultFromContractName,
 };
