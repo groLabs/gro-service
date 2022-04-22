@@ -658,6 +658,7 @@ async function avaxPersonalStats(account) {
             'USDT.e',
             6
         );
+        await new Promise((resolve) => setTimeout(resolve, 500)); // to avoid data inconsistencies(unfinalized data)
         const daiVaultEvents3 = await singleVaultEvents(
             account,
             ContractNames.AVAXDAIVault_v1_7,
