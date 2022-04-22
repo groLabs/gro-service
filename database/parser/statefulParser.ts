@@ -148,15 +148,26 @@ const eventParser = async (
                 }
                 // Transfers in ETH
             } else if (eventName === EV.Transfer) {
+
+                const base = contractName.includes('USD')
+                    ? Base.D6
+                    : Base.D18;
+
                 payload = {
                     from: log.args.from,
                     to: log.args.to,
                     token_id: getTokenIdByContractName(contractName),
-                    value: parseAmount(log.args.value, Base.D18),
+                    value: parseAmount(log.args.value, base),
                 }
                 // Approvals in ETH
             } else if (eventName === EV.Approval) {
-                const value = parseAmount(log.args.value, Base.D18);
+
+                const base = contractName.includes('USD')
+                    ? Base.D6
+                    : Base.D18;
+
+                const value = parseAmount(log.args.value, base);
+
                 payload = {
                     owner: log.args.owner,
                     spender: log.args.spender,
@@ -206,7 +217,6 @@ const eventParser = async (
                 const [
                     lockedProfit,
                     totalAssets,
-                    totalSupply,
                 ] = await getExtraDataFromVaults(
                     log.blockNumber,
                     base,
@@ -225,7 +235,6 @@ const eventParser = async (
                     debtRatio: parseAmount(log.args.debtRatio, base) * 100, //TBC
                     lockedProfit: lockedProfit,
                     totalAssets: totalAssets,
-                    totalSupply: totalSupply,
                 }
                 // Release factor in AVAX
             } else if (
@@ -301,26 +310,22 @@ const getExtraDataFromVaults = async (
         const [
             _lockedProfit,
             _totalAssets,
-            _totalSupply,
         ] = await Promise.all([
             !isVault1_0
                 ? sc.lockedProfit({ blockTag: blockNumber })
                 : true,
             sc.totalAssets({ blockTag: blockNumber }),
-            sc.totalSupply({ blockTag: blockNumber }),
         ]);
 
         const lockedProfit = !isVault1_0
             ? parseAmount(_lockedProfit, base)
             : null;
         const totalAssets = parseAmount(_totalAssets, base);
-        const totalSupply = parseAmount(_totalSupply, base);
 
 
         return [
             lockedProfit,
             totalAssets,
-            totalSupply,
         ];
     } catch (err) {
         showError('statefulParser.ts->getExtraDataFromVaults()', err);

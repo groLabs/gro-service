@@ -201,6 +201,10 @@ const getVaultFromContractName = (contractName: string) => {
                 sc = getUSDTeVault_1_7();
                 break;
             default:
+                showError(
+                    'contractUtil.ts->getVaultFromContractName()',
+                    'Vault name not found'
+                );
                 return null;
         }
         return sc;

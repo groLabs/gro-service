@@ -1,4 +1,4 @@
-CREATE VIEW gro."V_EV_TRANSERS" AS
+CREATE VIEW gro."V_EV_TRANSFERS" AS
 SELECT t."log_index" AS "log_index",
     t."transaction_id" AS "transaction_id",
     t."contract_address" AS "contract_address",
