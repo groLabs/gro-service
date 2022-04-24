@@ -21,11 +21,17 @@ import {
 import { generateDateRange } from '../common/personalUtil';
 
 
+/// @notice Determine blocks to be processed based on start and end dates
+///         and then call function etlStatefulByBlock()
+/// @param  globalNetwork The blockchain network (1: Ethereum, 2: Avalanche)
+/// @param  _fromDate The start date to process blocks in format 'DD/MM/YYYY'
+/// @param  _toDdate The end date to process blocks in format 'DD/MM/YYYY'
+/// @return True if no exceptions found; false otherwise
 const etlStatefulByDate = async (
     globalNetwork: GN,
     _fromDate: string,
     _toDate: string,
-) => {
+): Promise<boolean> => {
     try {
         let fromBlock;
         let toBlock;
@@ -76,8 +82,15 @@ const etlStatefulByDate = async (
     }
 }
 
-// @dev: Event <LogNewReleaseFactor> is not applicable for Labs 1.0
-// TODO: document function
+/// @notice Load events for the given network and from/to blocks
+/// @dev    Event <LogNewReleaseFactor> is not applicable for Labs 1.0
+/// @dev    Load is split in N batches through iterative calls, where N is
+///         defined in constants->LISTENER_BLOCKS_ETH or LISTENER_BLOCKS_AVAX
+/// @param  globalNetwork The blockchain network (1: Ethereum, 2: Avalanche)
+/// @param  from The start block to load events
+/// @param  to The end block to load events
+/// @param  offset The offset to track the amount of iterations
+/// @return True if no exceptions found; false otherwise
 const etlStatefulByBlock = async (
     globalNetwork: GN,
     from: number,
@@ -85,7 +98,6 @@ const etlStatefulByBlock = async (
     offset: number,
 ): Promise<boolean> => {
     try {
-
         if (from > 0 && to > 0) {
 
             const LISTENER_BATCH = (globalNetwork === GN.ETHEREUM)
@@ -281,7 +293,6 @@ const etlStatefulByBlock = async (
         return false;
     }
 }
-
 
 export {
     etlStatefulByDate,

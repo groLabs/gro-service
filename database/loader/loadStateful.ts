@@ -19,6 +19,13 @@ import {
 } from '../types';
 
 
+/// @notice Load events into the database
+/// @param  networkId The blockchain identifier
+/// @param  eventName The event name
+/// @param  contractName The contract name
+/// @param  _fromBlock The start block to load events
+/// @param  toBlock The end block to load events
+/// @return True if no exceptions found; false otherwise
 const loadStateful = async (
     networkId: NetworkId,
     eventName: EV,
@@ -67,8 +74,6 @@ const loadStateful = async (
     
                         let res;
     
-                        //TODO : move to a function
-    
                         // Insert events into the DB
                         switch (eventName) {
                             case EV.LogDeposit:
@@ -111,7 +116,7 @@ const loadStateful = async (
                             const tx = (transactions[i][5]) ? `in tx: ${transactions[i][5]}` : '';
                             showError(
                                 'loadStateful.ts->loadStateful()',
-                                `Error while insterting <${eventName}> events for contract <${contractName}> ${tx}`
+                                `Error while inserting <${eventName}> events for contract <${contractName}> ${tx}`
                             );
                             return false;
                         }
@@ -122,7 +127,7 @@ const loadStateful = async (
                         if (res2.status === QUERY_ERROR) {
                             showError(
                                 'loadStateful.ts->loadStateful()',
-                                `Error while insterting transaction/s linked to event <${eventName}>`
+                                `Error while inserting transaction/s linked to event <${eventName}>`
                             );
                             return false;
                         }

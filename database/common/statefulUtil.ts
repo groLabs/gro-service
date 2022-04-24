@@ -2,7 +2,9 @@ import { ContractNames as CN } from '../../registry/registry';
 import { TokenId } from '../types';
 
 
-//TODO: document function
+/// @notice Determine token identifier based on contract name
+/// @param  contractName The contract name
+/// @return token identifier
 const getTokenIdByContractName = (
     contractName: string,
 ): TokenId => {

@@ -24,27 +24,34 @@ import {
 } from '../common/globalUtil';
 
 
+/// @notice Create event filters and retrieve events and related transactions given 
+///         a network, event name, contract name and range of blocks
+/// @param  networkId The blockchain network identifier
+/// @param  eventName The event name
+/// @param  contractName The contract name
+/// @param  fromBlock The start block to listen for events
+/// @param  toBlock The end block to listen for events
+/// @return An array of raw events
 const getStatefulEvents = async (
     networkId: NetworkId,
-    eventType: string,
+    eventName: string,
     contractName: string,
     fromBlock: number,
     toBlock: any,
 ): Promise<ICall> => {
     try {
 
-        //console.log('contractName:', contractName, 'eventType:', eventType, 'fromBlock:', fromBlock, 'toBlock:', toBlock);
+        //console.log('contractName:', contractName, 'eventName:', eventName, 'fromBlock:', fromBlock, 'toBlock:', toBlock);
 
         const filters = getValidContractHistoryEventFilters(
             'default',
             contractName,
-            eventType,
+            eventName,
             fromBlock,
             toBlock,
-            //[null, null],
         );
 
-        //console.log('filters:', filters);
+        // console.log('filters:', filters);
 
         let event: EventResult;
         for (const filter of filters) {
@@ -67,7 +74,7 @@ const getStatefulEvents = async (
 
             const numEvents = event.data.length;
 
-            showInfo(`Processing ${numEvents} <${eventType}> event${isPlural(numEvents)} for contract <${contractName}>`);
+            showInfo(`Processing ${numEvents} <${eventName}> event${isPlural(numEvents)} for contract <${contractName}>`);
 
             for (let i = 0; i < numEvents; i++) {
 

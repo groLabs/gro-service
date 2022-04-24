@@ -70,6 +70,10 @@ enum TokenId {
     USDC = 7,
     USDT = 8,
     DAI = 9,
+    USD = 10,
+    USDC_e = 11,
+    USDT_e = 12,
+    DAI_e = 13,
 }
 
 enum EventName {
@@ -104,7 +108,7 @@ enum ReturnType {
     arrUINT_arrUINT_arrarrUINT = 5,
 }
 
-// Base 10**6 or 10**18
+// Base 1e6 or 1e18
 enum Base {
     D6 = 0,
     D18 = 1,

@@ -23,19 +23,19 @@ WITH
     ),
     factor AS (
         SELECT rf."contract_address" AS "contract_address",
-            rf.factor AS "factor"
+            rf."factor" AS "factor"
         FROM gro."V_EV_PNL_NEW_RELEASE_FACTOR" rf
             JOIN max_block_factor max_rf ON rf."block_number" = max_rf."block_number"
             AND rf."contract_address" = max_rf."contract_address"
     ),
     transfers AS (
-        SELECT contract_address,
+        SELECT "contract_address" AS "contract_address",
             SUM("value") AS "value"
         FROM gro."V_EV_TRANSFERS"
         WHERE "from" = '0x0000000000000000000000000000000000000000'
         GROUP BY 1
         UNION ALL
-        SELECT contract_address,
+        SELECT "contract_address" AS "contract_address",
             - SUM("value") AS "value"
         FROM gro."V_EV_TRANSFERS"
         WHERE "to" = '0x0000000000000000000000000000000000000000'

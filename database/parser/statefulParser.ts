@@ -19,7 +19,12 @@ import {
 import { getVaultFromContractName } from '../common/contractUtil';
 
 
-
+/// @notice Parse transactions and events according to the DB model
+/// @param  logs An array of raw events data
+/// @param  eventName The event name
+/// @param  contractName The contract name
+/// @return An object with two arrays: parsed transactions and parsed events
+///         ready to be inserted into the DB
 const eventParser = async (
     logs: any,
     eventName: string,
@@ -272,11 +277,9 @@ const eventParser = async (
                 network_id: log.networkId,
                 tx_hash: log.transactionHash,
                 block_hash: log.blockHash,
-                uncled: false,  //TODO
+                uncled: false,  //TODO-TBC
             });
         }
-
-        // console.log(`parsed events:`, events);
 
         return {
             status: QUERY_SUCCESS,
@@ -322,7 +325,6 @@ const getExtraDataFromVaults = async (
             : null;
         const totalAssets = parseAmount(_totalAssets, base);
 
-
         return [
             lockedProfit,
             totalAssets,
@@ -331,7 +333,6 @@ const getExtraDataFromVaults = async (
         showError('statefulParser.ts->getExtraDataFromVaults()', err);
         return [null, null, null];
     }
-
 }
 
 export {

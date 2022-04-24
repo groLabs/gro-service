@@ -12,10 +12,20 @@ const ERROR_OBJ = {
     fromBlock: -1,
 }
 
-//@notice:  Determine if data needs to be loaded depending on the date of SC deployments
-//@return:  isDeployed: false / fromBlock: -1 -> error
-//          isDeployed: false / fromBlock: >0 -> block range out of genesis block (no load required)
-//          isDeployed: true / fromBlock: >0 -> block range within genesis block (load required)
+///@notice  Determine if data needs to be loaded depending on the date of SC deployment
+///@param   contractName The contract name
+///@param   eventName The event name
+///@param   fromBlock The start block to load events
+///@param   toBlock The end block to load events
+///@return  isDeployed: true if block range falls into a contract deployment; false otherwise
+///         fromBlock: 
+///         - if the <from> block is before a contract deployment but the <to> block if after the
+///         contract deployment, the deployment block will be returned.
+///         - If the <from> block is after a contract deployment, the same <from> block will be returned
+///         Possible return combinations:
+///         - isDeployed: false / fromBlock: -1 -> error
+///         - isDeployed: false / fromBlock: >0 -> block range out of genesis block (no load required)
+///         - isDeployed: true  / fromBlock: >0 -> block range within genesis block (load required)
 const isContractDeployed = async (
     contractName: string,
     eventName: EV,
@@ -69,7 +79,7 @@ const isContractDeployed = async (
     }
 }
 
-//@return:  first startBlock from a contract history
+///@return:  first startBlock from a contract history
 const getStartBlock = async (contractName: string): Promise<number> => {
     const contracts = await getContractHistory(contractName);
     if (contracts.length > 0) {
