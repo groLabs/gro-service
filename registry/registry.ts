@@ -98,6 +98,9 @@ const ContractNames = {
     AVAXUSDCStrategy_v1_7: 'AVAXUSDCStrategy_v1_7',
     AVAXUSDTStrategy_v1_7: 'AVAXUSDTStrategy_v1_7',
     AVAXBouncer: 'AVAXBouncer',
+    Chainlink_aggr_usdc: 'Chainlink_aggr_usdc',
+    Chainlink_aggr_usdt: 'Chainlink_aggr_usdt',
+    Chainlink_aggr_dai: 'Chainlink_aggr_dai',
 };
 
 const ContractABIMapping = {};
@@ -166,6 +169,9 @@ ContractABIMapping[ContractNames.AVAXDAIStrategy_v1_7] = 'AHv2FarmerDai';
 ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_7] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_7] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXBouncer] = 'Bouncer';
+ContractABIMapping[ContractNames.Chainlink_aggr_usdc] = 'ChainlinkOffchainAggregator';
+ContractABIMapping[ContractNames.Chainlink_aggr_usdt] = 'ChainlinkOffchainAggregator';
+ContractABIMapping[ContractNames.Chainlink_aggr_dai] = 'ChainlinkOffchainAggregator';
 
 function readLocalContractConfig(isReload = false) {
     if (isReload || !localContractConfig) {

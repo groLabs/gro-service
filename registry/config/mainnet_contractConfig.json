@@ -60,7 +60,11 @@
         "AVAXDAIStrategy_v1_7",
         "AVAXUSDCStrategy_v1_7",
         "AVAXUSDTStrategy_v1_7",
-        "AVAXBouncer"
+        "AVAXBouncer",
+        "Chainlink_aggr_usdc",
+        "Chainlink_aggr_usdt",
+        "Chainlink_aggr_dai"
+
     ],
     "contractHistories": {
         "GroHodler": [
@@ -615,6 +619,51 @@
                     "DN": "Convex-UST-wormhole-3CRV",
                     "DY": 110000
                 },
+                "active": true
+            }
+        ],
+        "Chainlink_aggr_usdt": [
+            {
+                "address": "0xb8AEB9160385fa2D1B63B5E88351238593ba0127",
+                "deployedBlock": 2657380,
+                "startBlock": 2657380,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "AVAX",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "Chainlink_aggr_usdc": [
+            {
+                "address": "0xfBd998938f8f7210eEC3D1e12E80A10972F02aEd",
+                "deployedBlock": 2713386,
+                "startBlock": 2713386,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "AVAX",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "Chainlink_aggr_dai": [
+            {
+                "address": "0xCC4633a1a85d553623bAC7945Bd87CFad6E6a8c8",
+                "deployedBlock": 2657404,
+                "startBlock": 2657404,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "AVAX",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
                 "active": true
             }
         ]
