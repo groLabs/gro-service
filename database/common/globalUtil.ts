@@ -46,7 +46,13 @@ const parseAmount = (
     return parseFloat(
         div(
             amount,
-            base === Base.D18 ? new BN(10).pow(18) : new BN(10).pow(6),
+            base === Base.D18
+                ? new BN(10).pow(18)
+                : base === Base.D6
+                    ? new BN(10).pow(6)
+                    : base === Base.D8
+                        ? new BN(10).pow(8)
+                        : new BN(10).pow(1),
             amountDecimal
         )
     );

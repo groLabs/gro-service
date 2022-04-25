@@ -217,6 +217,12 @@ const etlStatefulByBlock = async (
                     CN.AVAXUSDTVault_v1_7,
                 ];
 
+                const oracles = [
+                    CN.Chainlink_aggr_usdc,
+                    CN.Chainlink_aggr_usdt,
+                    CN.Chainlink_aggr_dai,
+                ];
+
                 result.push(
                     ...vaults.map((vault) =>
                         loadStateful(
@@ -259,6 +265,14 @@ const etlStatefulByBlock = async (
                             getNetwork(GN.AVALANCHE).id,
                             EV.LogNewReleaseFactor,
                             vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...oracles.map((oracle) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.AnswerUpdated,
+                            oracle,
                             from,
                             newOffset,
                         )),

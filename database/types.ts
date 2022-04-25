@@ -91,6 +91,7 @@ enum EventName {
     LogMultiClaim = 'LogMultiClaim',
     LogStrategyReported = 'LogStrategyReported',
     LogNewReleaseFactor = 'LogNewReleaseFactor',
+    AnswerUpdated = 'AnswerUpdated',
 }
 
 enum Bool {
@@ -112,6 +113,7 @@ enum ReturnType {
 enum Base {
     D6 = 0,
     D18 = 1,
+    D8 = 2,
 }
 
 // For AVAX ETL

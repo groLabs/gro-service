@@ -250,6 +250,25 @@ const eventParser = async (
                 payload = {
                     factor: parseAmount(log.args.factor, Base.D18)
                 }
+                // Chainlink price in AVAX
+            } else if (eventName === EV.AnswerUpdated) {
+
+                const token1_id =
+                    (contractName === CN.Chainlink_aggr_dai)
+                        ? TokenId.DAI_e
+                        : (contractName === CN.Chainlink_aggr_usdc)
+                            ? TokenId.USDC_e
+                            : (contractName === CN.Chainlink_aggr_usdt)
+                                ? TokenId.USDT_e
+                                : TokenId.UNKNOWN;
+
+                payload = {
+                    token1_id: token1_id,
+                    token2_id: TokenId.USD,
+                    price: parseAmount(log.args.current, Base.D8),
+                    round_id: parseInt(log.args.roundId.toString()),
+                    updated_at: parseInt(log.args.updatedAt.toString()),
+                }
             } else {
                 showError(
                     'statefulParser.ts->eventParser()',
