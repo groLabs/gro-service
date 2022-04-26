@@ -60,7 +60,10 @@
         "AVAXBouncer",
         "Chainlink_aggr_usdc",
         "Chainlink_aggr_usdt",
-        "Chainlink_aggr_dai"
+        "Chainlink_aggr_dai",
+        "DAI_e",
+        "USDC_e",
+        "USDT_e"
     ],
     "contractHistories": {
         "DAIVaultAdaptor": [
@@ -1098,6 +1101,51 @@
                 "address": "0xCC4633a1a85d553623bAC7945Bd87CFad6E6a8c8",
                 "deployedBlock": 2657404,
                 "startBlock": 2657404,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "AVAX",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "DAI_e": [
+            {
+                "address": "0xd586E7F844cEa2F87f50152665BCbc2C279D8d70",
+                "deployedBlock": 2749892,
+                "startBlock": 2749892,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "AVAX",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "USDC_e": [
+            {
+                "address": "0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664",
+                "deployedBlock": 3311254,
+                "startBlock": 3311254,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "AVAX",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "USDT_e": [
+            {
+                "address": "0xc7198437980c041c805A1EDcbA50c1Ce5db95118",
+                "deployedBlock": 2749893,
+                "startBlock": 2749893,
                 "endBlock": null,
                 "abiVersion": "6270d2c",
                 "tag": "AVAX",
