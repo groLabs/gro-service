@@ -7,7 +7,6 @@ SELECT a."log_index" AS "log_index",
     tx."block_number" AS "block_number",
     tx."block_timestamp" AS "block_timestamp",
     tx."block_date" AS "block_date",
-    coalesce(tx."uncled", false) AS "uncled",
     a."token_id" AS "token_id",
     coalesce(tok."name", 'unknown') AS "token_name",
     a."owner" AS "owner",
@@ -15,4 +14,5 @@ SELECT a."log_index" AS "log_index",
     coalesce(a."value", 0) AS "value"
 FROM gro."EV_APPROVALS" a
     LEFT JOIN gro."EV_TRANSACTIONS" tx ON a."transaction_id" = tx."transaction_id"
+    AND tx."uncled" = false
     LEFT JOIN gro."MD_TOKENS" tok ON a."token_id" = tok."token_id";

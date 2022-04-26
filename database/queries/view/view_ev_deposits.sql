@@ -23,4 +23,5 @@ SELECT d."log_index" AS "log_index",
     coalesce(d."value", 0) AS "value"
 FROM gro."EV_DEPOSITS" d
     LEFT JOIN gro."EV_TRANSACTIONS" tx ON d."transaction_id" = tx."transaction_id"
+    AND tx."uncled" = false
     LEFT JOIN gro."MD_TOKENS" tok ON d."token_id" = tok."token_id";

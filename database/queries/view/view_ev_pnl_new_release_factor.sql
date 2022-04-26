@@ -7,7 +7,7 @@ SELECT rf."log_index" AS "log_index",
     tx."block_number" AS "block_number",
     tx."block_timestamp" AS "block_timestamp",
     tx."block_date" AS "block_date",
-    coalesce(tx."uncled", false) AS "uncled",
-    coalesce(rf."factor",0) AS "factor"
+    coalesce(rf."factor", 0) AS "factor"
 FROM gro."EV_PNL_NEW_RELEASE_FACTOR" rf
     LEFT JOIN gro."EV_TRANSACTIONS" tx ON rf."transaction_id" = tx."transaction_id"
+    AND tx."uncled" = false;

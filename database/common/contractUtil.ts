@@ -5,12 +5,11 @@ import {
     getProviderKey,
     getProviderAvax,
     errorObj,
-    parseAmount,
 } from './globalUtil';
 import {
     ContractNames,
     ContractABIMapping,
-    getContractHistory,  // testing
+    getContractHistory,
 } from '../../registry/registry';
 import { newSystemLatestContracts } from '../../registry/contracts';
 import { getLatestContractsAddress } from '../../registry/registryLoader';

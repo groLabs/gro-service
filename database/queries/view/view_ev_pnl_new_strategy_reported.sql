@@ -7,7 +7,6 @@ SELECT sr."log_index" AS "log_index",
     tx."block_number" AS "block_number",
     tx."block_timestamp" AS "block_timestamp",
     tx."block_date" AS "block_date",
-    coalesce(tx."uncled", false) AS "uncled",
     sr."strategy" AS "strategy",
     coalesce(sr."gain", 0) AS "gain",
     coalesce(sr."loss", 0) AS "loss",
@@ -21,3 +20,4 @@ SELECT sr."log_index" AS "log_index",
     coalesce(sr."totalAssets", 0) AS "totalAssets"
 FROM gro."EV_PNL_STRATEGY_REPORTED" sr
     LEFT JOIN gro."EV_TRANSACTIONS" tx ON sr."transaction_id" = tx."transaction_id"
+    AND tx."uncled" = false;

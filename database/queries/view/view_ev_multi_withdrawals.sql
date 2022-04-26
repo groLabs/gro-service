@@ -15,4 +15,5 @@ SELECT mw."log_index" AS "log_index",
     mw."amounts" AS "amounts"
 FROM gro."EV_MULTI_WITHDRAWALS" mw
     LEFT JOIN gro."EV_TRANSACTIONS" tx ON mw."transaction_id" = tx."transaction_id"
+    AND tx."uncled" = false
     LEFT JOIN gro."MD_TOKENS" tok ON tok."token_id" = 3;

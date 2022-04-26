@@ -151,7 +151,7 @@ const eventParser = async (
                     totalLoss: parseAmount(log.args.totalLoss, base),
                     token_id: getTokenIdByContractName(contractName),
                 }
-                // Transfers in ETH
+                // Transfers in ETH & AVAX
             } else if (eventName === EV.Transfer) {
 
                 const base = contractName.includes('USD')
@@ -164,7 +164,7 @@ const eventParser = async (
                     token_id: getTokenIdByContractName(contractName),
                     value: parseAmount(log.args.value, base),
                 }
-                // Approvals in ETH
+                // Approvals in ETH & AVAX
             } else if (eventName === EV.Approval) {
 
                 const base = contractName.includes('USD')

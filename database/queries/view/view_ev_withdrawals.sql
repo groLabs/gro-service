@@ -28,4 +28,5 @@ SELECT w."log_index" AS "log_index",
     coalesce(w."totalLoss", 0) AS "totalLoss"
 FROM gro."EV_WITHDRAWALS" w
     LEFT JOIN gro."EV_TRANSACTIONS" tx ON w."transaction_id" = tx."transaction_id"
+    AND tx."uncled" = false
     LEFT JOIN gro."MD_TOKENS" tok ON w."token_id" = tok."token_id";
