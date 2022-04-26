@@ -31,6 +31,7 @@ import {
 /// @param  contractName The contract name
 /// @param  fromBlock The start block to listen for events
 /// @param  toBlock The end block to listen for events
+/// @param  filter The filter to apply when retrieving events (only used in approval events)
 /// @return An array of raw events
 const getStatefulEvents = async (
     networkId: NetworkId,
@@ -38,6 +39,7 @@ const getStatefulEvents = async (
     contractName: string,
     fromBlock: number,
     toBlock: any,
+    filter = [],
 ): Promise<ICall> => {
     try {
 
@@ -49,9 +51,10 @@ const getStatefulEvents = async (
             eventName,
             fromBlock,
             toBlock,
+            filter
         );
 
-        // console.log('filters:', filters);
+        //console.log('filters:', filters);
 
         let event: EventResult;
         for (const filter of filters) {

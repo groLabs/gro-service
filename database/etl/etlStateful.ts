@@ -243,6 +243,14 @@ const etlStatefulByBlock = async (
                     ...vaults.map((vault) =>
                         loadStateful(
                             getNetwork(GN.AVALANCHE).id,
+                            EV.Approval,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...vaults.map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
                             EV.Transfer,
                             vault,
                             from,

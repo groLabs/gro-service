@@ -1,10 +1,11 @@
 import { ContractNames as CN } from '../../registry/registry';
-import { TokenId } from '../types';
+import { getLatestContractsAddress } from '../../registry/registryLoader';
+import { TokenId, NetworkId } from '../types';
 
 
 /// @notice Determine token identifier based on contract name
 /// @param  contractName The contract name
-/// @return token identifier
+/// @return token identifier [aligned with table MD_TOKENS and types.ts]
 const getTokenIdByContractName = (
     contractName: string,
 ): TokenId => {
@@ -18,26 +19,47 @@ const getTokenIdByContractName = (
         case CN.LPTokenStakerV2:
             return TokenId.GRO;
         case CN.AVAXDAIVault:
-        case CN.AVAXDAIVault_v1_5:
-        case CN.AVAXDAIVault_v1_6:
-        case CN.AVAXDAIVault_v1_7:
             return TokenId.groDAI_e;
+        case CN.AVAXDAIVault_v1_7:
+            return TokenId.groDAI_e_1_8;
         case CN.AVAXUSDCVault:
-        case CN.AVAXUSDCVault_v1_5:
-        case CN.AVAXUSDCVault_v1_6:
-        case CN.AVAXUSDCVault_v1_7:
             return TokenId.groUSDC_e;
+        case CN.AVAXUSDCVault_v1_7:
+            return TokenId.groUSDC_e_1_8;
         case CN.AVAXUSDTVault:
-        case CN.AVAXUSDTVault_v1_5:
-        case CN.AVAXUSDTVault_v1_6:
-        case CN.AVAXUSDTVault_v1_7:
             return TokenId.groUSDT_e;
+        case CN.AVAXUSDTVault_v1_7:
+            return TokenId.groUSDT_e_1_8;
         default:
             return TokenId.UNKNOWN;
     }
 }
 
-export {
-    getTokenIdByContractName,
+/// @param  networkId The blockchain identifier
+/// @param  contractName The contract name
+/// @return Stablecoin name associated with a contract name (eg. USDC.e for groUSDC.e)
+const getStableContractNames = (
+    networkId: number,
+    contractName: string
+) => {
+    //TODO: try-catch
+
+    if (networkId === NetworkId.AVALANCHE) {
+        if (contractName.includes('USDC')) {
+            return [CN.USDC_e];
+        } else if (contractName.includes('USDT')) {
+            return [CN.USDT_e];
+        } else if (contractName.includes('DAI')) {
+            return [CN.DAI_e];
+        }
+    } else if (networkId === NetworkId.MAINNET) {
+        return ['unknown']; //TODO
+    } else {
+        return ['unknown']; //TODO
+    }
 }
 
+export {
+    getTokenIdByContractName,
+    getStableContractNames,
+}
