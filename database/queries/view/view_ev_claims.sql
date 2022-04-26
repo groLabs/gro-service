@@ -1,6 +1,7 @@
 CREATE VIEW gro."V_EV_CLAIMS" AS
 SELECT c."log_index" AS "log_index",
     c."transaction_id" AS "transaction_id",
+    tx."tx_hash" AS "transaction_hash",
     c."contract_address" AS "contract_address",
     c."vault_address" AS "vault_address",
     c."log_name" AS "log_name",

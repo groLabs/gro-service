@@ -1,6 +1,7 @@
 CREATE VIEW gro."V_EV_TRANSFERS" AS
 SELECT t."log_index" AS "log_index",
     t."transaction_id" AS "transaction_id",
+    tx."tx_hash" AS "transaction_hash",
     t."contract_address" AS "contract_address",
     t."log_name" AS "log_name",
     tx."network_id" AS "network_id",

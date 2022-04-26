@@ -1,6 +1,7 @@
 CREATE VIEW gro."V_EV_PNL_STRATEGY_REPORTED" AS
 SELECT sr."log_index" AS "log_index",
     sr."transaction_id" AS "transaction_id",
+    tx."tx_hash" AS "transaction_hash",
     sr."contract_address" AS "contract_address",
     sr."log_name" AS "log_name",
     tx."network_id" AS "network_id",

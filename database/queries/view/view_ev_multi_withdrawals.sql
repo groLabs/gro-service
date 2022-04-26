@@ -1,6 +1,7 @@
 CREATE VIEW gro."V_EV_MULTI_WITHDRAWALS" AS
 SELECT mw."log_index" AS "log_index",
     mw."transaction_id" AS "transaction_id",
+    tx."tx_hash" AS "transaction_hash",
     mw."contract_address" AS "contract_address",
     mw."log_name" AS "log_name",
     tx."network_id" AS "network_id",

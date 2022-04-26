@@ -1,6 +1,7 @@
 CREATE VIEW gro."V_CORE_PRICE" AS
 SELECT p."log_index" AS "log_index",
     p."transaction_id" AS "transaction_id",
+    tx."tx_hash" AS "transaction_hash",
     p."contract_address" AS "contract_address",
     p."log_name" AS "log_name",
     tx."network_id" AS "network_id",
