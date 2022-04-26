@@ -6,53 +6,77 @@ CREATE TABLE gro."MD_TOKENS" (
     "token_id" SMALLINT NOT NULL,
     "name" CHARACTER VARYING (255) NOT NULL,
     "description" CHARACTER VARYING (255) NULL,
-    "creation_date" TIMESTAMP(6) WITHOUT TIME ZONE,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE  DEFAULT NOW(),
     CONSTRAINT "MD_TOKENS_pkey" PRIMARY KEY ("token_id")
 ) TABLESPACE pg_default;
 
 ALTER TABLE gro."MD_TOKENS" OWNER to postgres;
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (0, 'unknown', 'Unknown token', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (0, 'unknown', 'Unknown token');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (1, 'pwrd', 'Rebasing stablecoin, native token of Gro protocol', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (1, 'pwrd', 'Rebasing stablecoin, native token of Gro protocol');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (2, 'gvt', 'Non-rebasing token, native token of Gro protocol', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (2, 'gvt', 'Non-rebasing token, native token of Gro protocol');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (3, 'gro', 'Gro DAO Token', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (3, 'gro', 'Gro DAO Token');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (4, 'groUSDC.e_vault', 'Gro USDC.e Leveraged Yield', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (4, 'groUSDC.e_vault v1.0', 'Gro USDC.e Leveraged Yield v1.0');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (5, 'groUSDT.e_vault', 'Gro USDT.e Leveraged Yield', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (5, 'groUSDT.e_vault v1.0', 'Gro USDT.e Leveraged Yield v1.0');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (6, 'groDAI.e_vault', 'Gro DAI.e Leveraged Yield', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (6, 'groDAI.e_vault v1.0', 'Gro DAI.e Leveraged Yield v1.0');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (7, 'usdc', 'USD Coin', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (7, 'usdc', 'USD Coin');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (8, 'usdt', 'USD Tether', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (8, 'usdt', 'USD Tether');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (9, 'dai', 'DAI', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (9, 'dai', 'DAI');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (10, 'usd', 'USD', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (10, 'usd', 'USD');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (11, 'usdc.e', 'USDC.e', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (11, 'usdc.e', 'USDC.e');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (12, 'usdt.e', 'USDT.e', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (12, 'usdt.e', 'USDT.e');
 
-INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "creation_date")
-VALUES (13, 'dai.e', 'DAI.e', now()::timestamp);
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (13, 'dai.e', 'DAI.e');
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (14, 'groUSDC.e_vault v1.8', 'Gro USDC.e Leveraged Yield v1.8');
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (15, 'groUSDT.e_vault v1.8', 'Gro USDT.e Leveraged Yield v1.8');
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (16, 'groDAI.e_vault v1.8', 'Gro DAI.e Leveraged Yield v1.8');
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (17, 'groUSDC.e_vault v1.9 internal ', 'Gro USDC.e Leveraged Yield v1.9 Internal');
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (18, 'groUSDT.e_vault v1.9 internal', 'Gro USDT.e Leveraged Yield v1.9 Internal');
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (19, 'groDAI.e_vault v1.9 internal', 'Gro DAI.e Leveraged Yield v1.9 Internal');
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (20, 'avax', 'Avalanche');
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description")
+VALUES (21, 'wavax', 'Wrapped Avax');
 
 /****************************************************
                     MD_TRANSFERS 

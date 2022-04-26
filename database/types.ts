@@ -56,6 +56,14 @@ enum TokenName {
     usdc_e = 'usdc_e',
     usdt_e = 'usdt_e',
     dai_e = 'dai_e',
+    groUSDC_e_1_8 = 'gro_usdc_e_1_8',
+    groUSDT_e_1_8 = 'gro_usdt_e_1_8',
+    groDAI_e_1_8 = 'gro_dai_e_1_8',
+    groUSDC_e_1_9_int = 'gro_usdc_e_1_9_int',
+    groUSDT_e_1_9_int = 'gro_usdt_e_1_9_int',
+    groDAI_e_1_9_int = 'gro_dai_e_1_9_int',
+    avax = 'avax',
+    wavax = 'wavax',
 }
 
 // Must be aligned with table MD_TOKENS
@@ -74,6 +82,14 @@ enum TokenId {
     USDC_e = 11,
     USDT_e = 12,
     DAI_e = 13,
+    groUSDC_e_1_8 = 14,
+    groUSDT_e_1_8 = 15,
+    groDAI_e_1_8 = 16,
+    groUSDC_e_1_9_int = 17,
+    groUSDT_e_1_9_int = 18,
+    groDAI_e_1_9_int = 19,
+    avax = 20,
+    wavax = 21,
 }
 
 enum EventName {
