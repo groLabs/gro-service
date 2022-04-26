@@ -6,7 +6,7 @@ CREATE TABLE gro."EV_TRANSACTIONS" (
     "network_id" INTEGER NOT NULL,
     "tx_hash" CHARACTER VARYING (66) NOT NULL,
     "block_hash" CHARACTER VARYING (66) NOT NULL,
-    "uncled" BOOLEAN NULL,
+    "uncled" BOOLEAN NULL DEFAULT FALSE,
     "creation_date" TIMESTAMP (6) DEFAULT NOW(),
     CONSTRAINT "EV_TRANSACTIONS_pkey" PRIMARY KEY (
         "transaction_id"

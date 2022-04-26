@@ -15,7 +15,7 @@ SELECT p."log_index" AS "log_index",
     p."round_id",
     p."updated_at"
 FROM gro."CORE_PRICE" p
-    LEFT JOIN gro."EV_TRANSACTIONS" tx ON p."transaction_id" = tx."transaction_id"
+    LEFT JOIN gro."V_EV_TRANSACTIONS" tx ON p."transaction_id" = tx."transaction_id"
     AND tx."uncled" = false
     LEFT JOIN gro."MD_TOKENS" tok_1 ON p."token1_id" = tok_1."token_id"
     LEFT JOIN gro."MD_TOKENS" tok_2 ON p."token2_id" = tok_2."token_id";
