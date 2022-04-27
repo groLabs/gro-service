@@ -30,6 +30,12 @@ const getTokenIdByContractName = (
             return TokenId.groUSDT_e;
         case CN.AVAXUSDTVault_v1_7:
             return TokenId.groUSDT_e_1_8;
+        case CN.USDC_e:
+            return TokenId.USDC_e;
+        case CN.USDT_e:
+            return TokenId.USDT_e;
+        case CN.DAI_e:
+            return TokenId.DAI_e;
         default:
             return TokenId.UNKNOWN;
     }

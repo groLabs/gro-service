@@ -87,9 +87,19 @@ const loadStateful = async (
 
                         for (let i = 0; i < events.length; i++) {
 
-                            let res;
+                            // STEP 1: Insert transactions into the DB
+                            const res2 = await query('insert_ev_transactions.sql', transactions[i]);
+                            if (res2.status === QUERY_ERROR) {
+                                showError(
+                                    'loadStateful.ts->loadStateful()',
+                                    `Error while inserting transaction/s linked to event <${eventName}>`
+                                );
+                                return false;
+                            }
+                            rows_tx += res2.rowCount;
 
-                            // Insert events into the DB
+                            // STEP 2: Insert events into the DB
+                            let res;
                             switch (eventName) {
                                 case EV.LogDeposit:
                                 case EV.LogNewDeposit:
@@ -139,17 +149,6 @@ const loadStateful = async (
                                 return false;
                             }
                             rows_ev += res.rowCount;
-
-                            // Insert transactions into the DB
-                            const res2 = await query('insert_ev_transactions.sql', transactions[i]);
-                            if (res2.status === QUERY_ERROR) {
-                                showError(
-                                    'loadStateful.ts->loadStateful()',
-                                    `Error while inserting transaction/s linked to event <${eventName}>`
-                                );
-                                return false;
-                            }
-                            rows_tx += res2.rowCount;
                         }
 
                         if (rows_ev > 0)
