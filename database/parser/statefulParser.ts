@@ -81,15 +81,11 @@ const eventParser = async (
                     : Base.D6;
 
                 payload = {
-                    from: log.args.from,
-                    referral: null,
-                    pid: null,
                     token_id: getTokenIdByContractName(contractName),
+                    from: log.args.from,
+                    amount: parseAmount(log.args._amount, base),
+                    shares: parseAmount(log.args.shares, base),
                     allowance: parseAmount(log.args.allowance, base),
-                    amount1: parseAmount(log.args.shares, base),
-                    amount2: null,
-                    amount3: null,
-                    value: parseAmount(log.args._amount, base),
                 }
                 // Multi-withdrawals from LPTokenStakerV2 in ETH
             } else if (
@@ -136,20 +132,12 @@ const eventParser = async (
                     : Base.D6;
 
                 payload = {
-                    from: log.args.from,
-                    pid: null,
-                    amount1: parseAmount(log.args.shares, base),
-                    amount2: null,
-                    amount3: null,
-                    value: parseAmount(log.args.value, base),
-                    referral: null,
-                    balanced: null,
-                    all: null,
-                    deductUsd: null,
-                    lpAmount: null,
-                    allowance: parseAmount(log.args.allowance, base),
-                    totalLoss: parseAmount(log.args.totalLoss, base),
                     token_id: getTokenIdByContractName(contractName),
+                    from: log.args.from,
+                    value: parseAmount(log.args.value, base),
+                    shares: parseAmount(log.args.shares, base),
+                    totalLoss: parseAmount(log.args.totalLoss, base),
+                    allowance: parseAmount(log.args.allowance, base),
                 }
                 // Transfers in ETH & AVAX
             } else if (eventName === EV.Transfer) {
@@ -159,9 +147,9 @@ const eventParser = async (
                     : Base.D18;
 
                 payload = {
+                    token_id: getTokenIdByContractName(contractName),
                     from: log.args.from,
                     to: log.args.to,
-                    token_id: getTokenIdByContractName(contractName),
                     value: parseAmount(log.args.value, base),
                 }
                 // Approvals in ETH & AVAX
@@ -174,10 +162,10 @@ const eventParser = async (
                 const value = parseAmount(log.args.value, base);
 
                 payload = {
+                    token_id: getTokenIdByContractName(contractName),
                     owner: log.args.owner,
                     spender: log.args.spender,
                     value: (value < MAX_NUMBER) ? value : -1,
-                    token_id: getTokenIdByContractName(contractName),
                 }
                 // Claims from Hodler in ETH
             } else if (
@@ -232,14 +220,14 @@ const eventParser = async (
                     strategy: log.args.strategy,
                     gain: parseAmount(log.args.gain, base),
                     loss: parseAmount(log.args.loss, base),
-                    debtPaid: parseAmount(log.args.debtPaid, base),
-                    totalGain: parseAmount(log.args.totalGain, base),
-                    totalLoss: parseAmount(log.args.totalLoss, base),
-                    totalDebt: parseAmount(log.args.totalDebt, base),
-                    debtAdded: parseAmount(log.args.debtAdded, base),
-                    debtRatio: parseAmount(log.args.debtRatio, base) * 100, //TBC
-                    lockedProfit: lockedProfit,
-                    totalAssets: totalAssets,
+                    debt_paid: parseAmount(log.args.debtPaid, base),
+                    total_gain: parseAmount(log.args.totalGain, base),
+                    total_loss: parseAmount(log.args.totalLoss, base),
+                    total_debt: parseAmount(log.args.totalDebt, base),
+                    debt_added: parseAmount(log.args.debtAdded, base),
+                    debt_ratio: parseAmount(log.args.debtRatio, base) * 100, //TBC
+                    locked_profit: lockedProfit,
+                    total_assets: totalAssets,
                 }
                 // Release factor in AVAX
             } else if (
@@ -281,9 +269,10 @@ const eventParser = async (
             }
 
             events.push({
-                log_index: log.logIndex,
                 transaction_id: log.transactionId,
+                log_index: log.logIndex,
                 contract_address: log.address,
+                block_timestamp: log.blockTimestamp,
                 log_name: log.name,
                 ...payload,
             });

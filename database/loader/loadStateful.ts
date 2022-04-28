@@ -101,14 +101,16 @@ const loadStateful = async (
                             // STEP 2: Insert events into the DB
                             let res;
                             switch (eventName) {
+                                //TODO: split ETH & AVAX
                                 case EV.LogDeposit:
                                 case EV.LogNewDeposit:
-                                    res = await query('insert_ev_deposits.sql', events[i]);
+                                    res = await query('insert_ev_lab_deposits.sql', events[i]);
                                     break;
+                                //TODO: split ETH & AVAX
                                 case EV.LogWithdraw:
                                 case EV.LogWithdrawal:
                                 case EV.LogNewWithdrawal:
-                                    res = await query('insert_ev_withdrawals.sql', events[i]);
+                                    res = await query('insert_ev_lab_withdrawals.sql', events[i]);
                                     break;
                                 case EV.LogMultiWithdraw:
                                     res = await query('insert_ev_multi_withdrawals.sql', events[i]);
@@ -125,10 +127,10 @@ const loadStateful = async (
                                     res = await query('insert_ev_claims.sql', events[i]);
                                     break;
                                 case EV.LogStrategyReported:
-                                    res = await query('insert_ev_strategy_reported.sql', events[i]);
+                                    res = await query('insert_ev_lab_strategy_reported.sql', events[i]);
                                     break;
                                 case EV.LogNewReleaseFactor:
-                                    res = await query('insert_ev_new_release_factor.sql', events[i]);
+                                    res = await query('insert_ev_lab_new_release_factor.sql', events[i]);
                                     break;
                                 case EV.AnswerUpdated:
                                     res = await query('insert_ev_price.sql', events[i]);
