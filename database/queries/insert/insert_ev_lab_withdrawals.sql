@@ -1,4 +1,4 @@
-INSERT INTO gro."EV_TRANSFERS" (
+INSERT INTO gro."EV_LAB_WITHDRAWALS" (
         "transaction_id",
         "log_index",
         "contract_address",
@@ -6,8 +6,10 @@ INSERT INTO gro."EV_TRANSFERS" (
         "log_name",
         "token_id",
         "from",
-        "to",
-        "value"
+        "value",
+        "shares",
+        "total_loss",
+        "allowance"
     )
 VALUES (
         $1,
@@ -18,5 +20,7 @@ VALUES (
         $6,
         $7,
         $8,
-        $9
-    ) ON CONFLICT ON CONSTRAINT "EV_TRANSFERS_pkey" DO NOTHING;
+        $9,
+        $10,
+        $11
+    ) ON CONFLICT ON CONSTRAINT "EV_LAB_WITHDRAWALS_pkey" DO NOTHING;

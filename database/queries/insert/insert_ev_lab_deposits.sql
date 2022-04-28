@@ -1,14 +1,14 @@
-INSERT INTO gro."EV_PRICE" (
+INSERT INTO gro."EV_LAB_DEPOSITS" (
         "transaction_id",
         "log_index",
         "contract_address",
         "block_timestamp",
         "log_name",
-        "token1_id",
-        "token2_id",
-        "price",
-        "round_id",
-        "updated_at"
+        "token_id",
+        "from",
+        "amount",
+        "shares",
+        "allowance"
     )
 VALUES (
         $1,
@@ -21,4 +21,4 @@ VALUES (
         $8,
         $9,
         $10
-    ) ON CONFLICT ON CONSTRAINT "EV_PRICE_pkey" DO NOTHING;
+    ) ON CONFLICT ON CONSTRAINT "EV_LAB_DEPOSITS_pkey" DO NOTHING;

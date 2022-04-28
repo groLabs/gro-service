@@ -6,7 +6,7 @@ INSERT INTO gro."EV_TRANSACTIONS" (
         "network_id",
         "tx_hash",
         "block_hash",
-        "uncled"
+        "uncle_block"
     )
 VALUES (
         $1,

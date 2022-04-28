@@ -1,12 +1,13 @@
 INSERT INTO gro."EV_APPROVALS" (
-        "log_index",
         "transaction_id",
+        "log_index",
         "contract_address",
+        "block_timestamp",
         "log_name",
+        "token_id",
         "owner",
         "spender",
-        "value",
-        "token_id"
+        "value"
     )
 VALUES (
         $1,
@@ -16,5 +17,6 @@ VALUES (
         $5,
         $6,
         $7,
-        $8
+        $8,
+        $9
     ) ON CONFLICT ON CONSTRAINT "EV_APPROVALS_pkey" DO NOTHING;
