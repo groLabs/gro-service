@@ -167,6 +167,16 @@ const eventParser = async (
                     spender: log.args.spender,
                     value: (value < MAX_NUMBER) ? value : -1,
                 }
+                // Claims from Bouncer in AVAX
+            } else if (
+                eventName === EV.LogClaim
+                && contractName === CN.AVAXBouncer
+            ) {
+                payload = {
+                    account: log.args.account,
+                    vault: log.args.vault,
+                    amount: parseInt(log.args.amount.toString())
+                }
                 // Claims from Hodler in ETH
             } else if (
                 eventName === EV.LogBonusClaimed

@@ -284,6 +284,13 @@ const etlStatefulByBlock = async (
                             from,
                             newOffset,
                         )),
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.LogClaim,
+                        CN.AVAXBouncer,
+                        from,
+                        newOffset,
+                    ),
                 );
             }
 

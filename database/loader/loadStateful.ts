@@ -121,10 +121,11 @@ const loadStateful = async (
                                 case EV.Approval:
                                     res = await query('insert_ev_approvals.sql', events[i]);
                                     break;
+                                //TODO: split ETH & AVAX
                                 case EV.LogClaim:
                                 case EV.LogMultiClaim:
                                 case EV.LogBonusClaimed:
-                                    res = await query('insert_ev_claims.sql', events[i]);
+                                    res = await query('insert_ev_lab_claims.sql', events[i]);
                                     break;
                                 case EV.LogStrategyReported:
                                     res = await query('insert_ev_lab_strategy_reported.sql', events[i]);
