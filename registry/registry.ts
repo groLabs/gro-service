@@ -103,7 +103,10 @@ const ContractNames = {
     Chainlink_aggr_dai: 'Chainlink_aggr_dai',
     DAI_e: "DAI_e",
     USDC_e: "USDC_e",
-    USDT_e: "USDT_e"
+    USDT_e: "USDT_e",
+    AVAXDAIVault_v1_9_internal: "AVAXDAIVault_v1_9_internal",
+    AVAXUSDCVault_v1_9_internal: "AVAXUSDCVault_v1_9_internal",
+    AVAXUSDTVault_v1_9_internal: "AVAXUSDTVault_v1_9_internal"
 };
 
 const ContractABIMapping = {};
@@ -162,6 +165,9 @@ ContractABIMapping[ContractNames.AVAXUSDTVault_v1_6] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXDAIVault_v1_7] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXUSDCVault_v1_7] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXUSDTVault_v1_7] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXDAIVault_v1_9_internal] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXUSDCVault_v1_9_internal] = 'VaultAdaptorMK2';
+ContractABIMapping[ContractNames.AVAXUSDTVault_v1_9_internal] = 'VaultAdaptorMK2';
 ContractABIMapping[ContractNames.AVAXDAIStrategy_v1_5] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_5] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_5] = 'AHv2Farmer';

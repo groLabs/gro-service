@@ -60,6 +60,9 @@
         "AVAXDAIStrategy_v1_7",
         "AVAXUSDCStrategy_v1_7",
         "AVAXUSDTStrategy_v1_7",
+        "AVAXDAIVault_v1_9_internal",
+        "AVAXUSDCVault_v1_9_internal",
+        "AVAXUSDTVault_v1_9_internal",
         "AVAXBouncer",
         "Chainlink_aggr_usdc",
         "Chainlink_aggr_usdt",
@@ -248,6 +251,63 @@
                 "metaData": {
                     "N": "groUSDT.e_vault_v1_7",
                     "DN": "Gro Labs USDT.e AVAX Vault v1.7",
+                    "DY": 117589
+                },
+                "active": true
+            }
+        ],
+        "AVAXDAIVault_v1_9_internal": [
+            {
+                "address": "0x7b2f293B2164c70834C134Dc6bA61e6B6119f0b5",
+                "deployedBlock": 12832304,
+                "startBlock": 12832304,
+                "abiVersion": "6270d2c",
+                "endBlock": null,
+                "tag": "AVAX",
+                "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {
+                    "N": "AVAXDAIVault_v1_9_internal",
+                    "DN": "Internal Gro Labs DAI.e AVAX Vault v1.9",
+                    "DY": 117589
+                },
+                "active": true
+            }
+        ],
+        "AVAXUSDCVault_v1_9_internal": [
+            {
+                "address": "0x6FfF1e1140034897f5b370b931Fbd7e4970FE130",
+                "deployedBlock": 12831855,
+                "startBlock": 12831855,
+                "abiVersion": "6270d2c",
+                "endBlock": null,
+                "tag": "AVAX",
+                "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {
+                    "N": "AVAXUSDCVault_v1_9_internal",
+                    "DN": "Internal Gro Labs USDC.e AVAX Vault v1.9",
+                    "DY": 117589
+                },
+                "active": true
+            }
+        ],
+        "AVAXUSDTVault_v1_9_internal": [
+            {
+                "address": "0xcc20CE15425A89614bD7a3B539a3c966FA7fFBC2",
+                "deployedBlock": 12832088,
+                "startBlock": 12832088,
+                "abiVersion": "6270d2c",
+                "endBlock": null,
+                "tag": "AVAX",
+                "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {
+                    "N": "AVAXUSDTVault_v1_9_internal",
+                    "DN": "Internal Gro Labs USDT.e AVAX Vault v1.9",
                     "DY": 117589
                 },
                 "active": true

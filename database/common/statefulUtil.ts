@@ -22,14 +22,20 @@ const getTokenIdByContractName = (
             return TokenId.groDAI_e;
         case CN.AVAXDAIVault_v1_7:
             return TokenId.groDAI_e_1_8;
+        case CN.AVAXDAIVault_v1_9_internal:
+            return TokenId.groDAI_e_1_9_int;
         case CN.AVAXUSDCVault:
             return TokenId.groUSDC_e;
         case CN.AVAXUSDCVault_v1_7:
             return TokenId.groUSDC_e_1_8;
+        case CN.AVAXUSDCVault_v1_9_internal:
+            return TokenId.groUSDC_e_1_9_int;
         case CN.AVAXUSDTVault:
             return TokenId.groUSDT_e;
         case CN.AVAXUSDTVault_v1_7:
             return TokenId.groUSDT_e_1_8;
+        case CN.AVAXUSDTVault_v1_9_internal:
+            return TokenId.groUSDT_e_1_9_int;
         case CN.USDC_e:
             return TokenId.USDC_e;
         case CN.USDT_e:

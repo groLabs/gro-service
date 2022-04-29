@@ -215,6 +215,9 @@ const etlStatefulByBlock = async (
                     CN.AVAXDAIVault_v1_7,
                     CN.AVAXUSDCVault_v1_7,
                     CN.AVAXUSDTVault_v1_7,
+                    CN.AVAXDAIVault_v1_9_internal,
+                    CN.AVAXUSDCVault_v1_9_internal,
+                    CN.AVAXUSDTVault_v1_9_internal,
                 ];
 
                 const oracles = [
