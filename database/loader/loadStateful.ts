@@ -43,6 +43,9 @@ const loadStateful = async (
             fromBlock
         } = await isContractDeployed(_contractName, eventName, _fromBlock, toBlock);
 
+        if (fromBlock < 0)
+            return false;
+
         if (isDeployed) {
 
             const isApproval = (eventName === EV.Approval) ? true : false;

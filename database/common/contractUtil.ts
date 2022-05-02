@@ -154,6 +154,21 @@ const getDAIeVault_1_7 = () => {
         .contract;
 }
 
+const getUSDCeVault_1_9_internal = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_9_internal, getProviderAvax())
+        .contract;
+}
+
+const getUSDTeVault_1_9_internal = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_9_internal, getProviderAvax())
+        .contract;
+}
+
+const getDAIeVault_1_9_internal = () => {
+    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_9_internal, getProviderAvax())
+        .contract;
+}
+
 const getGroVesting = () => {
     return getLatestSystemContract(ContractNames.GroVesting, getProviderKey())
         .contract;
@@ -198,6 +213,15 @@ const getVaultFromContractName = (contractName: string) => {
                 break;
             case ContractNames.AVAXUSDTVault_v1_7:
                 sc = getUSDTeVault_1_7();
+                break;
+            case ContractNames.AVAXDAIVault_v1_9_internal:
+                sc = getDAIeVault_1_9_internal();
+                break;
+            case ContractNames.AVAXUSDCVault_v1_9_internal:
+                sc = getUSDCeVault_1_9_internal();
+                break;
+            case ContractNames.AVAXUSDTVault_v1_9_internal:
+                sc = getUSDTeVault_1_9_internal();
                 break;
             default:
                 showError(
@@ -296,6 +320,9 @@ export {
     getUSDCeVault_1_7,
     getUSDTeVault_1_7,
     getDAIeVault_1_7,
+    getUSDCeVault_1_9_internal,
+    getUSDTeVault_1_9_internal,
+    getDAIeVault_1_9_internal,
     getGroVesting,
     getContractInfoHistory,
     getVaultFromContractName,
