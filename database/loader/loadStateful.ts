@@ -91,15 +91,17 @@ const loadStateful = async (
                         for (let i = 0; i < events.length; i++) {
 
                             // STEP 1: Insert transactions into the DB
-                            const res2 = await query('insert_ev_transactions.sql', transactions[i]);
-                            if (res2.status === QUERY_ERROR) {
-                                showError(
-                                    'loadStateful.ts->loadStateful()',
-                                    `Error while inserting transaction/s linked to event <${eventName}>`
-                                );
-                                return false;
+                            if (transactions[i]) {
+                                const res2 = await query('insert_ev_transactions.sql', transactions[i]);
+                                if (res2.status === QUERY_ERROR) {
+                                    showError(
+                                        'loadStateful.ts->loadStateful()',
+                                        `Error while inserting transaction/s linked to event <${eventName}>`
+                                    );
+                                    return false;
+                                }
+                                rows_tx += res2.rowCount;
                             }
-                            rows_tx += res2.rowCount;
 
                             // STEP 2: Insert events into the DB
                             let res;
@@ -139,6 +141,15 @@ const loadStateful = async (
                                 case EV.AnswerUpdated:
                                     res = await query('insert_ev_price.sql', events[i]);
                                     break;
+                                case EV.LogNewPositionOpened:
+                                    res = await query('insert_ev_ah_position_opened.sql', events[i]);
+                                    break;
+                                case EV.LogPositionClosed:
+                                    res = await query('insert_ev_ah_position_closed.sql', events[i]);
+                                    break;
+                                case EV.LogPositionAdjusted:
+                                    res = await query('insert_ev_ah_position_adjusted.sql', events[i]);
+                                    break;
                                 default:
                                     showError(
                                         'loadStateful.ts->loadStateful()',
@@ -161,6 +172,8 @@ const loadStateful = async (
                             showInfo(`Added ${rows_ev} <${eventName}> event${isPlural(rows_ev)} for contract <${contractName}>`);
                         if (rows_tx > 0)
                             showInfo(`Added ${rows_tx} transaction${isPlural(rows_tx)} linked to <${eventName}> event`);
+                    } else {
+                        return false;
                     }
                 } else {
                     showError(

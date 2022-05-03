@@ -108,6 +108,9 @@ enum EventName {
     LogStrategyReported = 'LogStrategyReported',
     LogNewReleaseFactor = 'LogNewReleaseFactor',
     AnswerUpdated = 'AnswerUpdated',
+    LogNewPositionOpened = 'LogNewPositionOpened',
+    LogPositionClosed = 'LogPositionClosed',
+    LogPositionAdjusted = 'LogPositionAdjusted',
 }
 
 enum Bool {

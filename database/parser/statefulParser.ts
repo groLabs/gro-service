@@ -37,6 +37,8 @@ const eventParser = async (
 
         for (const log of logs) {
 
+            //TODO: split between ETH & AVAX: make two different files?
+
             // Deposits from Handler in ETH
             if (
                 eventName === EV.LogNewDeposit
@@ -248,6 +250,53 @@ const eventParser = async (
                 payload = {
                     factor: parseAmount(log.args.factor, Base.D18)
                 }
+                // AH position opened
+            } else if (
+                eventName === EV.LogNewPositionOpened
+            ) {
+                const base = contractName.includes('USD')
+                    ? Base.D6
+                    : Base.D18;
+
+                events.push({
+                    position_id: parseInt(log.args.positionId.toString()),
+                    contract_address: log.address,
+                    log_name: log.name,
+                    amount: log.args.price.map((amount: number) => parseAmount(amount, base)),
+                    collateral_size: parseAmount(log.args.collateralSize, base),
+                });
+                // AH position closed
+            } else if (
+                eventName === EV.LogPositionClosed
+            ) {
+                const base = contractName.includes('USD')
+                    ? Base.D6
+                    : Base.D18;
+
+                events.push({
+                    position_id: parseInt(log.args.positionId.toString()),
+                    contract_address: log.address,
+                    log_name: log.name,
+                    amount: log.args.price.map((amount: number) => parseAmount(amount, base)),
+                    want_received: parseAmount(log.args.wantRecieved, base),
+                });
+                // AH position adjusted
+            } else if (
+                eventName === EV.LogPositionAdjusted
+            ) {
+                const base = contractName.includes('USD')
+                    ? Base.D6
+                    : Base.D18;
+
+                events.push({
+                    position_id: parseInt(log.args.positionId.toString()),
+                    salt: log.transactionId,
+                    contract_address: log.address,
+                    log_name: log.name,
+                    amount: log.args.amounts.map((amount: number) => parseAmount(amount, base)),
+                    collateral_size: parseAmount(log.args.collateralSize, base),
+                    withdrawal: log.args.withdrawal,
+                });
                 // Chainlink price in AVAX
             } else if (eventName === EV.AnswerUpdated) {
 
@@ -278,25 +327,32 @@ const eventParser = async (
                 }
             }
 
-            events.push({
-                transaction_id: log.transactionId,
-                log_index: log.logIndex,
-                contract_address: log.address,
-                block_timestamp: log.blockTimestamp,
-                log_name: log.name,
-                ...payload,
-            });
+            if (eventName !== EV.LogPositionAdjusted
+                && eventName !== EV.LogNewPositionOpened
+                && eventName !== EV.LogPositionClosed
+            ) {
 
-            transactions.push({
-                transaction_id: log.transactionId,
-                block_number: log.blockNumber,
-                block_timestamp: log.blockTimestamp,
-                block_date: log.blockDate,
-                network_id: log.networkId,
-                tx_hash: log.transactionHash,
-                block_hash: log.blockHash,
-                uncled: false,  //TODO-TBC
-            });
+                events.push({
+                    transaction_id: log.transactionId,
+                    log_index: log.logIndex,
+                    contract_address: log.address,
+                    block_timestamp: log.blockTimestamp,
+                    log_name: log.name,
+                    ...payload,
+                });
+
+                transactions.push({
+                    transaction_id: log.transactionId,
+                    block_number: log.blockNumber,
+                    block_timestamp: log.blockTimestamp,
+                    block_date: log.blockDate,
+                    network_id: log.networkId,
+                    tx_hash: log.transactionHash,
+                    block_hash: log.blockHash,
+                    uncled: false,  //TODO-TBC
+                });
+            }
+
         }
 
         return {
