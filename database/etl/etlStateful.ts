@@ -146,13 +146,6 @@ const etlStatefulByBlock = async (
                     ),
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
-                        EV.LogDeposit,
-                        CN.LPTokenStakerV2,
-                        from,
-                        newOffset
-                    ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
                         EV.LogNewWithdrawal,
                         CN.withdrawHandler,
                         from,
@@ -191,6 +184,13 @@ const etlStatefulByBlock = async (
                     ),
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
+                        EV.LogDeposit,
+                        CN.LPTokenStakerV2,
+                        from,
+                        newOffset
+                    ),
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
                         EV.LogClaim,
                         CN.LPTokenStakerV2,
                         from,
@@ -209,15 +209,15 @@ const etlStatefulByBlock = async (
             if (globalNetwork === GN.AVALANCHE) {
 
                 const vaults = [
-                    CN.AVAXDAIVault,
-                    CN.AVAXUSDCVault,
-                    CN.AVAXUSDTVault,
+                    // CN.AVAXDAIVault,
+                    // CN.AVAXUSDCVault,
+                    // CN.AVAXUSDTVault,
                     CN.AVAXDAIVault_v1_7,
                     CN.AVAXUSDCVault_v1_7,
                     CN.AVAXUSDTVault_v1_7,
-                    CN.AVAXDAIVault_v1_9_internal,
-                    CN.AVAXUSDCVault_v1_9_internal,
-                    CN.AVAXUSDTVault_v1_9_internal,
+                    // CN.AVAXDAIVault_v1_9_internal,
+                    // CN.AVAXUSDCVault_v1_9_internal,
+                    // CN.AVAXUSDTVault_v1_9_internal,
                 ];
 
                 const strategies = [
@@ -237,73 +237,73 @@ const etlStatefulByBlock = async (
                 ];
 
                 result.push(
-                    // ...vaults.map((vault) =>
-                    //     loadStateful(
-                    //         getNetwork(GN.AVALANCHE).id,
-                    //         EV.LogDeposit,
-                    //         vault,
-                    //         from,
-                    //         newOffset,
-                    //     )),
-                    // ...vaults.map((vault) =>
-                    //     loadStateful(
-                    //         getNetwork(GN.AVALANCHE).id,
-                    //         EV.LogWithdrawal,
-                    //         vault,
-                    //         from,
-                    //         newOffset,
-                    //     )),
-                    // ...vaults.map((vault) =>
-                    //     loadStateful(
-                    //         getNetwork(GN.AVALANCHE).id,
-                    //         EV.Approval,
-                    //         vault,
-                    //         from,
-                    //         newOffset,
-                    //     )),
-                    // ...vaults.map((vault) =>
-                    //     loadStateful(
-                    //         getNetwork(GN.AVALANCHE).id,
-                    //         EV.Transfer,
-                    //         vault,
-                    //         from,
-                    //         newOffset,
-                    //     )),
-                    // ...vaults.map((vault) =>
-                    //     loadStateful(
-                    //         getNetwork(GN.AVALANCHE).id,
-                    //         EV.LogStrategyReported,
-                    //         vault,
-                    //         from,
-                    //         newOffset,
-                    //     )),
-                    // ...[
-                    //     CN.AVAXDAIVault_v1_7,
-                    //     CN.AVAXUSDCVault_v1_7,
-                    //     CN.AVAXUSDTVault_v1_7,
-                    // ].map((vault) =>
-                    //     loadStateful(
-                    //         getNetwork(GN.AVALANCHE).id,
-                    //         EV.LogNewReleaseFactor,
-                    //         vault,
-                    //         from,
-                    //         newOffset,
-                    //     )),
-                    // ...oracles.map((oracle) =>
-                    //     loadStateful(
-                    //         getNetwork(GN.AVALANCHE).id,
-                    //         EV.AnswerUpdated,
-                    //         oracle,
-                    //         from,
-                    //         newOffset,
-                    //     )),
-                    // loadStateful(
-                    //     getNetwork(GN.AVALANCHE).id,
-                    //     EV.LogClaim,
-                    //     CN.AVAXBouncer,
-                    //     from,
-                    //     newOffset,
-                    // ),
+                    ...vaults.map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.LogDeposit,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...vaults.map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.LogWithdrawal,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...vaults.map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.Approval,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...vaults.map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.Transfer,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...vaults.map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.LogStrategyReported,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...[
+                        CN.AVAXDAIVault_v1_7,
+                        CN.AVAXUSDCVault_v1_7,
+                        CN.AVAXUSDTVault_v1_7,
+                    ].map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.LogNewReleaseFactor,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...oracles.map((oracle) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.AnswerUpdated,
+                            oracle,
+                            from,
+                            newOffset,
+                        )),
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.LogClaim,
+                        CN.AVAXBouncer,
+                        from,
+                        newOffset,
+                    ),
                     ...strategies.map((strategy) =>
                         loadStateful(
                             getNetwork(GN.AVALANCHE).id,
@@ -334,11 +334,11 @@ const etlStatefulByBlock = async (
             const res = await Promise.all(result);
 
             if (res.every(Boolean)) {
-                showInfo(`Events from blocks <${from}> to <${newOffset}> for ${network} successfully processed`);
+                showInfo(`Events from blocks <${from}> to <${newOffset}> for ${network} successfully processed ;)`);
             } else {
                 showError(
                     'etlStateful.ts->etlStatefulByBlock()',
-                    'Error/s found during ETL for events'
+                    'Error/s found during ETL for events :('
                 );
                 return false;
             }
@@ -350,7 +350,7 @@ const etlStatefulByBlock = async (
         } else {
             showError(
                 'etlStateful.ts->etlStatefulByBlock()',
-                `Blocks can't be processed (from: ${from} to: ${to})`
+                `Blocks can't be processed (from: ${from} to: ${to}) :(`,
             );
             return false;
         }
