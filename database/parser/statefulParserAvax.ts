@@ -138,8 +138,11 @@ const eventParserAvax = async (
                         position_id: parseInt(log.args.positionId.toString()),
                         contract_address: log.address,
                         log_name: log.name,
-                        amount: log.args.price.map((amount: number) => parseAmount(amount, base)),
-                        collateral_size: parseAmount(log.args.collateralSize, base),
+                        amount: [
+                            parseAmount(log.args.price[0], base),     // usdc, usdt or dai
+                            parseAmount(log.args.price[1], Base.D18)  // wavax
+                        ],
+                        collateral_size: parseAmount(log.args.collateralSize, Base.D18),
                     });
                     break;
                 // AH position closed
@@ -148,7 +151,10 @@ const eventParserAvax = async (
                         position_id: parseInt(log.args.positionId.toString()),
                         contract_address: log.address,
                         log_name: log.name,
-                        amount: log.args.price.map((amount: number) => parseAmount(amount, base)),
+                        amount: [
+                            parseAmount(log.args.price[0], base),     // usdc, usdt or dai
+                            parseAmount(log.args.price[1], Base.D18)  // wavax
+                        ],
                         want_received: parseAmount(log.args.wantRecieved, base),
                     });
                     break;
@@ -159,8 +165,11 @@ const eventParserAvax = async (
                         salt: log.transactionId,
                         contract_address: log.address,
                         log_name: log.name,
-                        amount: log.args.amounts.map((amount: number) => parseAmount(amount, base)),
-                        collateral_size: parseAmount(log.args.collateralSize, base),
+                        amount: [
+                            parseAmount(log.args.amounts[0], base),     // usdc, usdt or dai
+                            parseAmount(log.args.amounts[1], Base.D18)  // wavax
+                        ],
+                        collateral_size: parseAmount(log.args.collateralSize, Base.D18),
                         withdrawal: log.args.withdrawal,
                     });
                     break;
@@ -175,9 +184,9 @@ const eventParserAvax = async (
                     }
             }
 
-            if (eventName !== EV.LogPositionAdjusted
-                && eventName !== EV.LogNewPositionOpened
+            if (eventName !== EV.LogNewPositionOpened
                 && eventName !== EV.LogPositionClosed
+                && eventName !== EV.LogPositionAdjusted
             ) {
                 events.push({
                     transaction_id: log.transactionId,
