@@ -2,7 +2,7 @@ import fs from 'fs';
 import moment from 'moment';
 import { pool } from '../handler/queryHandler';
 import { getConfig } from '../../common/configUtil';
-import { TABLE_WHITELIST } from '../constants';
+import { QUERY_ERROR, QUERY_SUCCESS, TABLE_WHITELIST } from '../constants';
 import { Bool } from '../types';
 const copyTo = require('pg-copy-streams').to
 const statsDir = getConfig('stats_folder');
@@ -71,6 +71,34 @@ const dumpTable = async (
     });
 }
 
+const getMultipleResponse = (responses) => {
+    try {
+        let rows = 0;
+        for (const res of responses) {
+            if (res.status === QUERY_ERROR) {
+                return {
+                    status: QUERY_ERROR,
+                    rowCount: 0,
+                };
+            } else {
+                rows += res.rowCount;
+            }
+        }
+        return {
+            status: QUERY_SUCCESS,
+            // rowCount: rows,
+            rowCount: 1,
+        }
+    } catch (err) {
+        showError('pgUtil.ts->dumpTable()', err);
+        return {
+            status: QUERY_ERROR,
+            rowCount: 0,
+        };
+    }
+}
+
 export {
     dumpTable,
+    getMultipleResponse,
 }

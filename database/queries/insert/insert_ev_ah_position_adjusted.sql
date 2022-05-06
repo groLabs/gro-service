@@ -1,6 +1,6 @@
 INSERT INTO gro."EV_LAB_AH_POSITION_ADJUSTED" (
         "position_id",
-        "salt",
+        "transaction_hash",
         "contract_address",
         "log_name",
         "amount",
