@@ -68,8 +68,8 @@ function formatArgentResponse(stats) {
     argentStats.launch_timestamp = stats.launch_timestamp;
     argentStats.network = stats.network;
     argentStats.apy = {};
-    argentStats.apy.last7d = stats.apy.last7d;
-    argentStats.apy.current = {pwrd: stats.apy.current.pwrd, gvt: 0.12};
+    argentStats.apy.last7d = { pwrd: stats.apy.last7d.pwrd, gvt: '0.12' };
+    argentStats.apy.current = { pwrd: stats.apy.current.pwrd, gvt: '0.12' };
     argentStats.tvl = {};
     argentStats.tvl.pwrd = stats.tvl.pwrd;
     argentStats.tvl.gvt = stats.tvl.gvt;
