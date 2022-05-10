@@ -71,6 +71,7 @@ const dumpTable = async (
     });
 }
 
+// Returns rowCount = 1 when there is a new insert
 const getMultipleResponse = (responses) => {
     try {
         let rows = 0;
@@ -80,14 +81,13 @@ const getMultipleResponse = (responses) => {
                     status: QUERY_ERROR,
                     rowCount: 0,
                 };
-            } else {
+            } else if (res.rowCount > 0 && res.command === 'INSERT') {
                 rows += res.rowCount;
             }
         }
         return {
             status: QUERY_SUCCESS,
-            // rowCount: rows,
-            rowCount: 1,
+            rowCount: 1 //rows,
         }
     } catch (err) {
         showError('pgUtil.ts->dumpTable()', err);

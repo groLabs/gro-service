@@ -69,109 +69,154 @@ function getLatestSystemContractOnAVAX(contractName, providerOrWallet) {
     return latestContractsOnAVAX[contractName];
 }
 
-const getGroVault = () => {
-    return getLatestSystemContract(ContractNames.groVault, getProviderKey())
-        .contract;
-}
+const getGroVault = () =>
+    getLatestSystemContract(ContractNames.groVault, getProviderKey()).contract;
 
-const getPowerD = () => {
-    return getLatestSystemContract(ContractNames.powerD, getProviderKey())
-        .contract;
-}
+const getPowerD = () =>
+    getLatestSystemContract(ContractNames.powerD, getProviderKey()).contract;
 
-const getTokenCounter = () => {
-    return getLatestSystemContract(ContractNames.TokenCounter, getProviderKey())
-        .contract;
-}
+const getTokenCounter = () =>
+    getLatestSystemContract(ContractNames.TokenCounter, getProviderKey()).contract;
 
-const getBuoy = () => {
-    return getLatestSystemContract(ContractNames.buoy3Pool, getProviderKey())
-        .contract;
-}
+const getBuoy = () =>
+    getLatestSystemContract(ContractNames.buoy3Pool, getProviderKey()).contract;
+
 
 const getStables = async () => {
     const info = await getStableCoinsInfo();
     return info;
 }
 
-const getUSDCeVault = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault, getProviderAvax())
-        .contract;
-}
+const getGroVesting = () =>
+    getLatestSystemContract(ContractNames.GroVesting, getProviderKey()).contract;
 
-const getUSDTeVault = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault, getProviderAvax())
-        .contract;
-}
 
-const getDAIeVault = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault, getProviderAvax())
-        .contract;
-}
+// Vaults
+const getUSDCeVault = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault, getProviderAvax()).contract;
 
-const getUSDCeVault_1_5 = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_5, getProviderAvax())
-        .contract;
-}
+const getUSDTeVault = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault, getProviderAvax()).contract;
 
-const getUSDTeVault_1_5 = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_5, getProviderAvax())
-        .contract;
-}
+const getDAIeVault = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault, getProviderAvax()).contract;
 
-const getDAIeVault_1_5 = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_5, getProviderAvax())
-        .contract;
-}
+const getUSDCeVault_1_5 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_5, getProviderAvax()).contract;
 
-const getUSDCeVault_1_6 = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_6, getProviderAvax())
-        .contract;
-}
+const getUSDTeVault_1_5 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_5, getProviderAvax()).contract;
 
-const getUSDTeVault_1_6 = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_6, getProviderAvax())
-        .contract;
-}
+const getDAIeVault_1_5 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_5, getProviderAvax()).contract;
 
-const getDAIeVault_1_6 = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_6, getProviderAvax())
-        .contract;
-}
+const getUSDCeVault_1_6 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_6, getProviderAvax()).contract;
 
-const getUSDCeVault_1_7 = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_7, getProviderAvax())
-        .contract;
-}
+const getUSDTeVault_1_6 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_6, getProviderAvax()).contract;
 
-const getUSDTeVault_1_7 = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_7, getProviderAvax())
-        .contract;
-}
+const getDAIeVault_1_6 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_6, getProviderAvax()).contract;
 
-const getDAIeVault_1_7 = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_7, getProviderAvax())
-        .contract;
-}
+const getUSDCeVault_1_7 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_7, getProviderAvax()).contract;
 
-const getUSDCeVault_1_9_internal = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_9_internal, getProviderAvax())
-        .contract;
-}
+const getUSDTeVault_1_7 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_7, getProviderAvax()).contract;
 
-const getUSDTeVault_1_9_internal = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_9_internal, getProviderAvax())
-        .contract;
-}
+const getDAIeVault_1_7 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_7, getProviderAvax()).contract;
 
-const getDAIeVault_1_9_internal = () => {
-    return getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_9_internal, getProviderAvax())
-        .contract;
-}
+const getUSDCeVault_1_9_internal = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault_v1_9_internal, getProviderAvax()).contract;
 
-const getGroVesting = () => {
-    return getLatestSystemContract(ContractNames.GroVesting, getProviderKey())
-        .contract;
+const getUSDTeVault_1_9_internal = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTVault_v1_9_internal, getProviderAvax()).contract;
+
+const getDAIeVault_1_9_internal = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_9_internal, getProviderAvax()).contract;
+
+// Strategies
+const getUSDCeStrategy = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy, getProviderAvax()).contract;
+
+const getUSDTeStrategy = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy, getProviderAvax()).contract;
+
+const getDAIeStrategy = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy, getProviderAvax()).contract;
+
+const getUSDCeStrategy_1_5 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy_v1_5, getProviderAvax()).contract;
+
+const getUSDTeStrategy_1_5 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy_v1_5, getProviderAvax()).contract;
+
+const getDAIeStrategy_1_5 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_5, getProviderAvax()).contract;
+
+const getUSDCeStrategy_1_6 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy_v1_6, getProviderAvax()).contract;
+
+const getUSDTeStrategy_1_6 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy_v1_6, getProviderAvax()).contract;
+
+const getDAIeStrategy_1_6 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_6, getProviderAvax()).contract;
+
+const getUSDCeStrategy_1_7 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy_v1_7, getProviderAvax()).contract;
+
+const getUSDTeStrategy_1_7 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy_v1_7, getProviderAvax()).contract;
+
+const getDAIeStrategy_1_7 = () => 
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_7, getProviderAvax()).contract;
+
+// Stablecoins Avax
+const getDAI_e = () => getLatestSystemContract(ContractNames.DAI_e, getProviderAvax()).contract;
+const getUSDC_e = () => getLatestSystemContract(ContractNames.USDC_e, getProviderAvax()).contract;
+const getUSDT_e = () => getLatestSystemContract(ContractNames.USDT_e, getProviderAvax()).contract;
+
+const getStableFromStrategyName = (contractName: string) => {
+    try {
+        let stableAddress = '';
+        switch (contractName) {
+            case ContractNames.AVAXDAIStrategy:
+            case ContractNames.AVAXDAIStrategy_v1_5:
+            case ContractNames.AVAXDAIStrategy_v1_6:
+            case ContractNames.AVAXDAIStrategy_v1_7:
+                stableAddress = getDAI_e().address;
+                break;
+            case ContractNames.AVAXUSDCStrategy:
+            case ContractNames.AVAXUSDCStrategy_v1_5:
+            case ContractNames.AVAXUSDCStrategy_v1_6:
+            case ContractNames.AVAXUSDCStrategy_v1_7:
+                stableAddress = getUSDC_e().address;
+                break;
+            case ContractNames.AVAXUSDTStrategy:
+            case ContractNames.AVAXUSDTStrategy_v1_5:
+            case ContractNames.AVAXUSDTStrategy_v1_6:
+            case ContractNames.AVAXUSDTStrategy_v1_7:
+                stableAddress = getUSDT_e().address;
+                break;
+            default:
+                showError(
+                    'contractUtil.ts->getStableFromStrategyName()',
+                    'Strategy name not found'
+                );
+                return null;
+        }
+        return new ethers.Contract(
+            stableAddress,
+            erc20ABI,
+            getProviderAvax()
+        );
+    } catch (err) {
+        showError('contractUtil.ts->getStableFromStrategyName()', err);
+        return null;
+    }
 }
 
 const getVaultFromContractName = (contractName: string) => {
@@ -233,6 +278,60 @@ const getVaultFromContractName = (contractName: string) => {
         return sc;
     } catch (err) {
         showError('contractUtil.ts->getVaultFromContractName()', err);
+        return null;
+    }
+}
+
+const getStrategyFromContractName = (contractName: string) => {
+    try {
+        let sc;
+        switch (contractName) {
+            case ContractNames.AVAXDAIStrategy:
+                sc = getDAIeStrategy();
+                break;
+            case ContractNames.AVAXUSDCStrategy:
+                sc = getUSDCeStrategy();
+                break;
+            case ContractNames.AVAXUSDTStrategy:
+                sc = getUSDTeStrategy();
+                break;
+            case ContractNames.AVAXDAIStrategy_v1_5:
+                sc = getDAIeStrategy_1_5();
+                break;
+            case ContractNames.AVAXUSDCStrategy_v1_5:
+                sc = getUSDCeStrategy_1_5();
+                break;
+            case ContractNames.AVAXUSDTStrategy_v1_5:
+                sc = getUSDTeStrategy_1_5();
+                break;
+            case ContractNames.AVAXDAIStrategy_v1_6:
+                sc = getDAIeStrategy_1_6();
+                break;
+            case ContractNames.AVAXUSDCStrategy_v1_6:
+                sc = getUSDCeStrategy_1_6();
+                break;
+            case ContractNames.AVAXUSDTStrategy_v1_6:
+                sc = getUSDTeStrategy_1_6();
+                break;
+            case ContractNames.AVAXDAIStrategy_v1_7:
+                sc = getDAIeStrategy_1_7();
+                break;
+            case ContractNames.AVAXUSDCStrategy_v1_7:
+                sc = getUSDCeStrategy_1_7();
+                break;
+            case ContractNames.AVAXUSDTStrategy_v1_7:
+                sc = getUSDTeStrategy_1_7();
+                break;
+            default:
+                showError(
+                    'contractUtil.ts->getStrategyFromContractName()',
+                    'Strategy name not found'
+                );
+                return null;
+        }
+        return sc;
+    } catch (err) {
+        showError('contractUtil.ts->getStrategyFromContractName()', err);
         return null;
     }
 }
@@ -323,7 +422,12 @@ export {
     getUSDCeVault_1_9_internal,
     getUSDTeVault_1_9_internal,
     getDAIeVault_1_9_internal,
+    getDAI_e,
+    getUSDC_e,
+    getUSDT_e,
     getGroVesting,
     getContractInfoHistory,
     getVaultFromContractName,
+    getStableFromStrategyName,
+    getStrategyFromContractName,
 };

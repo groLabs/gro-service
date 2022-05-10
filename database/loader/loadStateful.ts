@@ -66,18 +66,20 @@ const insertAvax = async (
                 res = getMultipleResponse(resOpen);
                 break;
             case EV.LogPositionClosed:
-                const respClose = await Promise.all([
+                const resClose = await Promise.all([
                     query('update_ev_ah_positions_on_close.sql', event[0]),
                     query('insert_ev_ah_position_closed.sql', event[1]),
                 ]);
-                res = getMultipleResponse(respClose);
+                res = getMultipleResponse(resClose);
                 break;
             case EV.LogPositionAdjusted:
-                const respAdjust = await Promise.all([
-                    query('update_ev_ah_positions_on_adjust.sql', event[0]),
-                    query('insert_ev_ah_position_adjusted.sql', event[1]),
-                ]);
-                res = getMultipleResponse(respAdjust);
+                // Only update AH positions if it's a new adjust record (if already in DB, do not trigger an update on AH positions)
+                const resAdjust = await query('insert_ev_ah_position_adjusted.sql', event[1]);
+                if (resAdjust.status === QUERY_SUCCESS && resAdjust.rowCount > 0) {
+                    res = await query('update_ev_ah_positions_on_adjust.sql', event[0]);
+                } else {
+                    res = resAdjust;
+                }
                 break;
             default:
                 const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;

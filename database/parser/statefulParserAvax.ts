@@ -1,5 +1,8 @@
 import { ICall } from '../interfaces/ICall';
-import { showError } from '../handler/logHandler';
+import {
+    showInfo,
+    showError,
+} from '../handler/logHandler';
 import { ContractNames as CN } from '../../registry/registry';
 import { getTokenIdByContractName } from '../common/statefulUtil';
 import {
@@ -16,7 +19,12 @@ import {
     errorObj,
     parseAmount
 } from '../common/globalUtil';
-import { getVaultFromContractName } from '../common/contractUtil';
+import {
+    getVaultFromContractName,
+    getStableFromStrategyName,
+    getStrategyFromContractName,
+} from '../common/contractUtil';
+import { getLatestContractsAddress } from '../../registry/registryLoader';
 
 
 const eventParserAvax = async (
@@ -158,9 +166,17 @@ const eventParserAvax = async (
                     break;
                 // AH position closed
                 case EV.LogPositionClosed:
+                    const blockNumber = log.blockNumber;
+                    const [
+                        estimatedTotalAssets,
+                        balance
+                    ] = await getExtraDataForClosePosition(blockNumber, contractName);
+
+                    showInfo(`Position <${log.args.positionId.toString()}> closed -> estimatedAssets: ${parseAmount(estimatedTotalAssets, Base.D18)} - balance: ${parseAmount(balance, base)}`);
+
                     const ah_position_on_close = {
                         position_id: parseInt(log.args.positionId.toString()),
-                        want_close: -1,  //TODO
+                        want_close: parseAmount(estimatedTotalAssets, Base.D18) - parseAmount(balance, base)
                     }
                     const ah_position_close = {
                         position_id: parseInt(log.args.positionId.toString()),
@@ -179,9 +195,12 @@ const eventParserAvax = async (
                     break;
                 // AH position adjusted
                 case EV.LogPositionAdjusted:
+                    const sign = (log.args.withdrawal)
+                        ? -1
+                        : 1;
                     const ah_position_on_adjust = {
                         position_id: parseInt(log.args.positionId.toString()),
-                        want_open: parseAmount(log.args.amounts[0], base),
+                        want_open: parseAmount(log.args.amounts[0], base) * sign,
                     }
                     const ah_position_adjust = {
                         position_id: parseInt(log.args.positionId.toString()),
@@ -287,8 +306,35 @@ const getExtraDataFromVaults = async (
             totalAssets,
         ];
     } catch (err) {
-        showError('statefulParser.ts->getExtraDataFromVaults()', err);
-        return [null, null, null];
+        showError('statefulParserAvax.ts->getExtraDataFromVaults()', err);
+        return [null, null];
+    }
+}
+
+const getExtraDataForClosePosition = async (
+    blockNumber: number,
+    contractName: string
+) => {
+    try {
+        const stratContract = getStrategyFromContractName(contractName);
+        const stableContract = getStableFromStrategyName(contractName);
+        const stratAddress = stratContract.address;
+
+        const [
+            estimatedTotalAssets,
+            balance
+        ] = await Promise.all([
+            stratContract.estimatedTotalAssets({ blockTag: blockNumber - 1 }),
+            stableContract.balanceOf(stratAddress, { blockTag: blockNumber - 1 })
+        ]);
+
+        return [
+            estimatedTotalAssets,
+            balance,
+        ];
+    } catch (err) {
+        showError('statefulParserAvax.ts->getExtraDataForClosePosition()', err);
+        return [null, null];
     }
 }
 
