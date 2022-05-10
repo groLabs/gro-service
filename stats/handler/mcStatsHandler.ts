@@ -69,7 +69,7 @@ function formatArgentResponse(stats) {
     argentStats.network = stats.network;
     argentStats.apy = {};
     argentStats.apy.last7d = stats.apy.last7d;
-    argentStats.apy.current = stats.apy.current;
+    argentStats.apy.current = {pwrd: stats.apy.current.pwrd, gvt: 0.12};
     argentStats.tvl = {};
     argentStats.tvl.pwrd = stats.tvl.pwrd;
     argentStats.tvl.gvt = stats.tvl.gvt;
