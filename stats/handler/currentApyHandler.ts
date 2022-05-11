@@ -290,6 +290,9 @@ async function calcCurrentStrategyAPY(startBlock, endBlock) {
 }
 
 async function getGtokenApy(systemApy, utilRatio, hodlBonus) {
+    if (utilRatio.gt(BigNumber.from(1000000))) {
+        utilRatio = BigNumber.from(1000000);
+    }
     let y = BigNumber.from(300000).add(
         utilRatio.mul(BigNumber.from(3)).div(BigNumber.from(8))
     );
