@@ -219,6 +219,7 @@ ALTER TABLE gro."EV_LAB_AH_POSITION_OPENED" OWNER to postgres;
 
 CREATE TABLE gro."EV_LAB_AH_POSITION_CLOSED" (
     "position_id" INTEGER NOT NULL,
+    "transaction_hash" CHARACTER VARYING (66) NOT NULL,
     "block_number" INTEGER NOT NULL,
     "contract_address" CHARACTER VARYING (42) NOT NULL,
     "log_name" CHARACTER VARYING (100) NOT NULL,

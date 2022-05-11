@@ -183,6 +183,7 @@ const eventParserAvax = async (
                     ] = await getExtraDataForClosePosition(log.blockNumber, contractName);
                     const ah_position_close = {
                         position_id: parseInt(log.args.positionId.toString()),
+                        transaction_hash: log.transactionHash,
                         block_number: log.blockNumber,
                         contract_address: log.address,
                         log_name: log.name,
