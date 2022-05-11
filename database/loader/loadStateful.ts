@@ -13,7 +13,8 @@ import { isContractDeployed } from '../common/deployedUtil';
 import { getLatestContractsAddress } from '../../registry/registryLoader';
 import {
     showInfo,
-    showError
+    showError,
+    showWarning,
 } from '../handler/logHandler';
 import {
     QUERY_ERROR,
@@ -25,7 +26,8 @@ import {
 } from '../types';
 
 
-//TODO: define return type ICall
+///@dev For AH tables, if an event was already inserted, do not update AH positions table to prevent
+///     repeating the calculation for field <want_open>
 const insertAvax = async (
     eventName: string,
     contractName: string,
@@ -59,24 +61,43 @@ const insertAvax = async (
                 res = await query('insert_ev_price.sql', event);
                 break;
             case EV.LogNewPositionOpened:
-                const resOpen = await Promise.all([
-                    query('insert_ev_ah_positions.sql', event[0]),
-                    query('insert_ev_ah_position_opened.sql', event[1]),
-                ]);
-                res = getMultipleResponse(resOpen);
+                const resOpen = await query('insert_ev_ah_position_opened.sql', event[0]);
+                if (resOpen.status === QUERY_SUCCESS && resOpen.rowCount > 0) {
+                    res = await query('insert_ev_ah_positions_on_open.sql', event[1]);
+                    if (res.status === QUERY_SUCCESS && res.rowCount === 0) {
+                        showWarning(
+                            'statefulParserAvax.ts->insertAvax()',
+                            `Open position inserted into <EV_LAB_AH_POSITION_OPENED> but no record inserted into <EV_LAB_AH_POSITIONS> for tx hash ${event[0][1]}`
+                        );
+                    }
+                } else {
+                    res = resOpen;
+                }
                 break;
             case EV.LogPositionClosed:
-                const resClose = await Promise.all([
-                    query('update_ev_ah_positions_on_close.sql', event[0]),
-                    query('insert_ev_ah_position_closed.sql', event[1]),
-                ]);
-                res = getMultipleResponse(resClose);
+                const resClose = await query('insert_ev_ah_position_closed.sql', event[0]);
+                if (resClose.status === QUERY_SUCCESS && resClose.rowCount > 0) {
+                    res = await query('update_ev_ah_positions_on_close.sql', event[1]);
+                    if (res.status === QUERY_SUCCESS && res.rowCount === 0) {
+                        showWarning(
+                            'statefulParserAvax.ts->insertAvax()',
+                            `Close position inserted into <EV_LAB_AH_POSITION_CLOSED> but no record updated in <EV_LAB_AH_POSITIONS> for tx hash ${event[0][1]}`
+                        );
+                    }
+                } else {
+                    res = resClose;
+                }
                 break;
             case EV.LogPositionAdjusted:
-                // Only update AH positions if it's a new adjust record (if already in DB, do not trigger an update on AH positions)
-                const resAdjust = await query('insert_ev_ah_position_adjusted.sql', event[1]);
+                const resAdjust = await query('insert_ev_ah_position_adjusted.sql', event[0]);
                 if (resAdjust.status === QUERY_SUCCESS && resAdjust.rowCount > 0) {
-                    res = await query('update_ev_ah_positions_on_adjust.sql', event[0]);
+                    res = await query('update_ev_ah_positions_on_adjust.sql', event[1]);
+                    if (res.status === QUERY_SUCCESS && res.rowCount === 0) {
+                        showWarning(
+                            'statefulParserAvax.ts->insertAvax()',
+                            `Adjust position inserted into <EV_LAB_AH_POSITION_ADJUSTED> but no record updated in <EV_LAB_AH_POSITIONS> for tx hash ${event[0][1]}`
+                        );
+                    }
                 } else {
                     res = resAdjust;
                 }
@@ -92,7 +113,6 @@ const insertAvax = async (
     }
 }
 
-//TODO: define return type ICall
 const insertEth = async (
     eventName: string,
     contractName: string,

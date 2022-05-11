@@ -142,15 +142,9 @@ const eventParserAvax = async (
                     break;
                 // AH position opened
                 case EV.LogNewPositionOpened:
-                    const ah_position_on_open = {
-                        transaction_id: log.transactionId,
-                        position_id: parseInt(log.args.positionId.toString()),
-                        contract_address: log.address,
-                        want_open: parseAmount(log.args.price[0], base),
-                        want_close: null,
-                    }
                     const ah_position_open = {
                         position_id: parseInt(log.args.positionId.toString()),
+                        block_number: log.blockNumber,
                         contract_address: log.address,
                         log_name: log.name,
                         amount: [
@@ -159,27 +153,38 @@ const eventParserAvax = async (
                         ],
                         collateral_size: parseAmount(log.args.collateralSize, Base.D18),
                     }
+                    const ah_position_on_open = {
+                        position_id: parseInt(log.args.positionId.toString()),
+                        transaction_id: log.transactionId,
+                        block_number: log.blockNumber,
+                        contract_address: log.address,
+                        want_open: parseAmount(log.args.price[0], base),
+                        want_close: null,
+                    }
                     events.push([
+                        ah_position_open,
                         ah_position_on_open,
-                        ah_position_open
                     ]);
+                    transactions.push({
+                        transaction_id: log.transactionId,
+                        block_number: log.blockNumber,
+                        block_timestamp: log.blockTimestamp,
+                        block_date: log.blockDate,
+                        network_id: log.networkId,
+                        tx_hash: log.transactionHash,
+                        block_hash: log.blockHash,
+                        uncled: false,
+                    });
                     break;
                 // AH position closed
                 case EV.LogPositionClosed:
-                    const blockNumber = log.blockNumber;
                     const [
                         estimatedTotalAssets,
                         balance
-                    ] = await getExtraDataForClosePosition(blockNumber, contractName);
-
-                    showInfo(`Position <${log.args.positionId.toString()}> closed -> estimatedAssets: ${parseAmount(estimatedTotalAssets, Base.D18)} - balance: ${parseAmount(balance, base)}`);
-
-                    const ah_position_on_close = {
-                        position_id: parseInt(log.args.positionId.toString()),
-                        want_close: parseAmount(estimatedTotalAssets, Base.D18) - parseAmount(balance, base)
-                    }
+                    ] = await getExtraDataForClosePosition(log.blockNumber, contractName);
                     const ah_position_close = {
                         position_id: parseInt(log.args.positionId.toString()),
+                        block_number: log.blockNumber,
                         contract_address: log.address,
                         log_name: log.name,
                         amount: [
@@ -188,9 +193,14 @@ const eventParserAvax = async (
                         ],
                         want_received: parseAmount(log.args.wantRecieved, base),
                     }
+                    const ah_position_on_close = {
+                        position_id: parseInt(log.args.positionId.toString()),
+                        want_close: parseAmount(estimatedTotalAssets, Base.D18) - parseAmount(balance, base)
+                    }
+                    showInfo(`Position <${log.args.positionId.toString()}> closed -> estimatedAssets: ${parseAmount(estimatedTotalAssets, Base.D18)} - balance: ${parseAmount(balance, base)}`);
                     events.push([
+                        ah_position_close,
                         ah_position_on_close,
-                        ah_position_close
                     ]);
                     break;
                 // AH position adjusted
@@ -198,13 +208,10 @@ const eventParserAvax = async (
                     const sign = (log.args.withdrawal)
                         ? -1
                         : 1;
-                    const ah_position_on_adjust = {
-                        position_id: parseInt(log.args.positionId.toString()),
-                        want_open: parseAmount(log.args.amounts[0], base) * sign,
-                    }
                     const ah_position_adjust = {
                         position_id: parseInt(log.args.positionId.toString()),
-                        salt: log.transactionId,
+                        transaction_hash: log.transactionHash,
+                        block_number: log.blockNumber,
                         contract_address: log.address,
                         log_name: log.name,
                         amount: [
@@ -214,9 +221,13 @@ const eventParserAvax = async (
                         collateral_size: parseAmount(log.args.collateralSize, Base.D18),
                         withdrawal: log.args.withdrawal,
                     }
+                    const ah_position_on_adjust = {
+                        position_id: parseInt(log.args.positionId.toString()),
+                        want_open: parseAmount(log.args.amounts[0], base) * sign,
+                    }
                     events.push([
-                        ah_position_on_adjust,
                         ah_position_adjust,
+                        ah_position_on_adjust,
                     ]);
                     break;
                 default:
