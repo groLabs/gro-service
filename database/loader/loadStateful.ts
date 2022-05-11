@@ -1,7 +1,6 @@
 
 import { ICall } from '../interfaces/ICall';
 import { query } from '../handler/queryHandler';
-import { getMultipleResponse } from '../common/pgUtil';
 import {
     isPlural,
     errorObj

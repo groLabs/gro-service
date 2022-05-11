@@ -24,7 +24,6 @@ import {
     getStableFromStrategyName,
     getStrategyFromContractName,
 } from '../common/contractUtil';
-import { getLatestContractsAddress } from '../../registry/registryLoader';
 
 
 const eventParserAvax = async (
@@ -197,7 +196,6 @@ const eventParserAvax = async (
                         position_id: parseInt(log.args.positionId.toString()),
                         want_close: parseAmount(estimatedTotalAssets, Base.D18) - parseAmount(balance, base)
                     }
-                    showInfo(`Position <${log.args.positionId.toString()}> closed -> estimatedAssets: ${parseAmount(estimatedTotalAssets, Base.D18)} - balance: ${parseAmount(balance, base)}`);
                     events.push([
                         ah_position_close,
                         ah_position_on_close,
@@ -253,7 +251,6 @@ const eventParserAvax = async (
                     log_name: log.name,
                     ...payload,
                 });
-
                 transactions.push({
                     transaction_id: log.transactionId,
                     block_number: log.blockNumber,
@@ -322,6 +319,7 @@ const getExtraDataFromVaults = async (
     }
 }
 
+///@dev: calculation of field <want_close> for table EV_LAB_AH_POSITIONS
 const getExtraDataForClosePosition = async (
     blockNumber: number,
     contractName: string
@@ -335,7 +333,7 @@ const getExtraDataForClosePosition = async (
             estimatedTotalAssets,
             balance
         ] = await Promise.all([
-            stratContract.estimatedTotalAssets({ blockTag: blockNumber - 1 }),
+            stratContract.estimatedTotalAssets({ blockTag: blockNumber }),
             stableContract.balanceOf(stratAddress, { blockTag: blockNumber - 1 })
         ]);
 

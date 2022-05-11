@@ -71,7 +71,8 @@ const dumpTable = async (
     });
 }
 
-// Returns rowCount = 1 when there is a new insert
+///@dev: currently not used
+/*
 const getMultipleResponse = (responses) => {
     try {
         let rows = 0;
@@ -97,8 +98,9 @@ const getMultipleResponse = (responses) => {
         };
     }
 }
+*/
 
 export {
     dumpTable,
-    getMultipleResponse,
+    //getMultipleResponse,
 }
