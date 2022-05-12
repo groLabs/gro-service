@@ -41,7 +41,8 @@ const isPlural = (count: number) => (count > 1 ? 's' : '');
 
 const parseAmount = (
     amount: any, //TOOD: Bignumber
-    base: Base
+    base: Base,
+    decimals: number = amountDecimal
 ) => {
     return parseFloat(
         div(
@@ -53,7 +54,7 @@ const parseAmount = (
                     : base === Base.D8
                         ? new BN(10).pow(8)
                         : new BN(10).pow(1),
-            amountDecimal
+            decimals //amountDecimal
         )
     );
 };

@@ -48,9 +48,9 @@ const eventParserAvax = async (
                     payload = {
                         token_id: getTokenIdByContractName(contractName),
                         from: log.args.from,
-                        amount: parseAmount(log.args._amount, base),
-                        shares: parseAmount(log.args.shares, base),
-                        allowance: parseAmount(log.args.allowance, base),
+                        amount: parseAmount(log.args._amount, base, 8),
+                        shares: parseAmount(log.args.shares, base, 8),
+                        allowance: parseAmount(log.args.allowance, base, 8),
                     }
                     break;
                 // Withdrawals from Vaults
@@ -58,10 +58,10 @@ const eventParserAvax = async (
                     payload = {
                         token_id: getTokenIdByContractName(contractName),
                         from: log.args.from,
-                        value: parseAmount(log.args.value, base),
-                        shares: parseAmount(log.args.shares, base),
-                        totalLoss: parseAmount(log.args.totalLoss, base),
-                        allowance: parseAmount(log.args.allowance, base),
+                        value: parseAmount(log.args.value, base, 8),
+                        shares: parseAmount(log.args.shares, base, 8),
+                        totalLoss: parseAmount(log.args.totalLoss, base, 8),
+                        allowance: parseAmount(log.args.allowance, base, 8),
                     }
                     break;
                 // Transfers
@@ -70,12 +70,12 @@ const eventParserAvax = async (
                         token_id: getTokenIdByContractName(contractName),
                         from: log.args.from,
                         to: log.args.to,
-                        value: parseAmount(log.args.value, base),
+                        value: parseAmount(log.args.value, base, 8),
                     }
                     break;
                 // Approvals
                 case EV.Approval:
-                    const value = parseAmount(log.args.value, base);
+                    const value = parseAmount(log.args.value, base, 8);
                     payload = {
                         token_id: getTokenIdByContractName(contractName),
                         owner: log.args.owner,
@@ -103,14 +103,14 @@ const eventParserAvax = async (
                     );
                     payload = {
                         strategy: log.args.strategy,
-                        gain: parseAmount(log.args.gain, base),
-                        loss: parseAmount(log.args.loss, base),
-                        debt_paid: parseAmount(log.args.debtPaid, base),
-                        total_gain: parseAmount(log.args.totalGain, base),
-                        total_loss: parseAmount(log.args.totalLoss, base),
-                        total_debt: parseAmount(log.args.totalDebt, base),
-                        debt_added: parseAmount(log.args.debtAdded, base),
-                        debt_ratio: parseAmount(log.args.debtRatio, base) * 100, //TBC
+                        gain: parseAmount(log.args.gain, base, 8),
+                        loss: parseAmount(log.args.loss, base, 8),
+                        debt_paid: parseAmount(log.args.debtPaid, base, 8),
+                        total_gain: parseAmount(log.args.totalGain, base, 8),
+                        total_loss: parseAmount(log.args.totalLoss, base, 8),
+                        total_debt: parseAmount(log.args.totalDebt, base, 8),
+                        debt_added: parseAmount(log.args.debtAdded, base, 8),
+                        debt_ratio: parseAmount(log.args.debtRatio, base, 8) * 100, //TBC
                         locked_profit: lockedProfit,
                         total_assets: totalAssets,
                     }
@@ -118,7 +118,7 @@ const eventParserAvax = async (
                 // Release factor
                 case EV.LogNewReleaseFactor:
                     payload = {
-                        factor: parseAmount(log.args.factor, Base.D18)
+                        factor: parseAmount(log.args.factor, Base.D18, 8)
                     }
                     break;
                 // Chainlink price
@@ -134,30 +134,32 @@ const eventParserAvax = async (
                     payload = {
                         token1_id: token1_id,
                         token2_id: TokenId.USD,
-                        price: parseAmount(log.args.current, Base.D8),
+                        price: parseAmount(log.args.current, Base.D8, 8),
                         round_id: parseInt(log.args.roundId.toString()),
                         updated_at: parseInt(log.args.updatedAt.toString()),
                     }
                     break;
                 // AH position opened
                 case EV.LogNewPositionOpened:
+                    // For table EV_LAB_AH_POSITION_OPENED
                     const ah_position_open = {
                         position_id: parseInt(log.args.positionId.toString()),
                         block_number: log.blockNumber,
                         contract_address: log.address,
                         log_name: log.name,
                         amount: [
-                            parseAmount(log.args.price[0], base),     // usdc, usdt or dai
-                            parseAmount(log.args.price[1], Base.D18)  // wavax
+                            parseAmount(log.args.price[0], base, 8),    // usdc, usdt or dai
+                            parseAmount(log.args.price[1], Base.D18, 8) // wavax
                         ],
-                        collateral_size: parseAmount(log.args.collateralSize, Base.D18),
+                        collateral_size: parseAmount(log.args.collateralSize, Base.D18, 12),
                     }
+                    // For table EV_LAB_AH_POSITIONS
                     const ah_position_on_open = {
                         position_id: parseInt(log.args.positionId.toString()),
                         transaction_id: log.transactionId,
                         block_number: log.blockNumber,
                         contract_address: log.address,
-                        want_open: parseAmount(log.args.price[0], base),
+                        want_open: parseAmount(log.args.price[0], base, 8),
                         want_close: null,
                     }
                     events.push([
@@ -181,6 +183,7 @@ const eventParserAvax = async (
                         estimatedTotalAssets,
                         balance
                     ] = await getExtraDataForClosePosition(log.blockNumber, contractName);
+                    // For table EV_LAB_AH_POSITION_CLOSED
                     const ah_position_close = {
                         position_id: parseInt(log.args.positionId.toString()),
                         transaction_hash: log.transactionHash,
@@ -188,14 +191,15 @@ const eventParserAvax = async (
                         contract_address: log.address,
                         log_name: log.name,
                         amount: [
-                            parseAmount(log.args.price[0], base),     // usdc, usdt or dai
-                            parseAmount(log.args.price[1], Base.D18)  // wavax
+                            parseAmount(log.args.price[0], base, 8),    // usdc, usdt or dai
+                            parseAmount(log.args.price[1], Base.D18, 8) // wavax
                         ],
-                        want_received: parseAmount(log.args.wantRecieved, base),
+                        want_received: parseAmount(log.args.wantRecieved, base, 8),
                     }
+                    // For table EV_LAB_AH_POSITIONS
                     const ah_position_on_close = {
                         position_id: parseInt(log.args.positionId.toString()),
-                        want_close: parseAmount(estimatedTotalAssets, Base.D18) - parseAmount(balance, base)
+                        want_close: parseAmount(estimatedTotalAssets, Base.D18, 8) - parseAmount(balance, base, 8)
                     }
                     events.push([
                         ah_position_close,
@@ -207,6 +211,7 @@ const eventParserAvax = async (
                     const sign = (log.args.withdrawal)
                         ? -1
                         : 1;
+                    // For table EV_LAB_AH_POSITION_ADJUSTED
                     const ah_position_adjust = {
                         position_id: parseInt(log.args.positionId.toString()),
                         transaction_hash: log.transactionHash,
@@ -214,15 +219,16 @@ const eventParserAvax = async (
                         contract_address: log.address,
                         log_name: log.name,
                         amount: [
-                            parseAmount(log.args.amounts[0], base),     // usdc, usdt or dai
-                            parseAmount(log.args.amounts[1], Base.D18)  // wavax
+                            parseAmount(log.args.amounts[0], base, 8),      // usdc, usdt or dai
+                            parseAmount(log.args.amounts[1], Base.D18, 8)   // wavax
                         ],
-                        collateral_size: parseAmount(log.args.collateralSize, Base.D18),
+                        collateral_size: parseAmount(log.args.collateralSize, Base.D18, 12),
                         withdrawal: log.args.withdrawal,
                     }
+                    // For table EV_LAB_AH_POSITIONS
                     const ah_position_on_adjust = {
                         position_id: parseInt(log.args.positionId.toString()),
-                        want_open: parseAmount(log.args.amounts[0], base) * sign,
+                        want_open: parseAmount(log.args.amounts[0], base, 8) * sign,
                     }
                     events.push([
                         ah_position_adjust,
@@ -306,9 +312,9 @@ const getExtraDataFromVaults = async (
         ]);
 
         const lockedProfit = !isVault1_0
-            ? parseAmount(_lockedProfit, base)
+            ? parseAmount(_lockedProfit, base, 8)
             : null;
-        const totalAssets = parseAmount(_totalAssets, base);
+        const totalAssets = parseAmount(_totalAssets, base, 8);
 
         return [
             lockedProfit,
