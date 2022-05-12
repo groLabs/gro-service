@@ -21,6 +21,7 @@ FROM gro."PROTOCOL_APY" apy,
                 WHERE date("current_date") BETWEEN $1 AND $2
             ) dates
         WHERE TO_CHAR(ts."current_date", 'DD/MM/YYYY') = dates.days
+            AND "apy_current" IS NOT NULL
         GROUP BY dates.days
     ) max_ts
 WHERE apy."current_timestamp" = max_ts.ts

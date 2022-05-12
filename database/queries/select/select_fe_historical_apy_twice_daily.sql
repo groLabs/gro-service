@@ -1,4 +1,5 @@
 -- dates by parameter must follow format 'MM/DD/YYYY'
+-- limit 124: 14 datapoints per week x 3 weeks range x 2 products (pwrd & gvt)
 SELECT apy."current_timestamp",
     apy."current_date",
     apy."network_id",
@@ -12,7 +13,9 @@ SELECT apy."current_timestamp",
     apy."apy_current"
 FROM gro."PROTOCOL_APY" apy,
     (
-        SELECT PERCENTILE_DISC(0.50) WITHIN GROUP (ORDER BY ts."current_timestamp") as ts,
+        SELECT PERCENTILE_DISC(0.50) WITHIN GROUP (
+                ORDER BY ts."current_timestamp"
+            ) as ts,
             dates.days
         FROM gro."PROTOCOL_APY" ts,
             (
@@ -21,6 +24,7 @@ FROM gro."PROTOCOL_APY" apy,
                 WHERE date("current_date") BETWEEN $1 AND $2
             ) dates
         WHERE TO_CHAR(ts."current_date", 'DD/MM/YYYY') = dates.days
+            AND "apy_current" IS NOT NULL
         GROUP BY dates.days
     ) max_ts
 WHERE apy."current_timestamp" = max_ts.ts
@@ -47,7 +51,9 @@ FROM gro."PROTOCOL_APY" apy,
                 WHERE date("current_date") BETWEEN $1 AND $2
             ) dates
         WHERE TO_CHAR(ts."current_date", 'DD/MM/YYYY') = dates.days
+            AND "apy_current" IS NOT NULL
         GROUP BY dates.days
     ) min_ts
 WHERE apy."current_timestamp" = min_ts.ts
-ORDER BY "current_timestamp" DESC;
+ORDER BY "current_timestamp" DESC
+LIMIT 84;

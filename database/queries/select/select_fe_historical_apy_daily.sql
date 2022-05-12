@@ -1,4 +1,5 @@
 -- dates by parameter must follow format 'MM/DD/YYYY'
+-- limit 124: 31 data points per month x 2 months range x 2 products (pwrd & gvt)
 SELECT apy."current_timestamp",
     apy."current_date",
     apy."network_id",
@@ -21,7 +22,9 @@ FROM gro."PROTOCOL_APY" apy,
                 WHERE date("current_date") BETWEEN $1 AND $2
             ) dates
         WHERE TO_CHAR(ts."current_date", 'DD/MM/YYYY') = dates.days
+            AND "apy_current" IS NOT NULL
         GROUP BY dates.days
     ) max_ts
 WHERE apy."current_timestamp" = max_ts.ts
-ORDER BY apy."current_timestamp" DESC;
+ORDER BY apy."current_timestamp" DESC
+LIMIT 124;
