@@ -302,15 +302,25 @@ async function getGtokenApy(systemApy, utilRatio, hodlBonus) {
             BigNumber.from(2).mul(utilRatio.sub(BigNumber.from(800000)))
         );
     }
-    const pwrd2gvt = systemApy.mul(y).div(PERCENT_DECIMAL);
-    logger.info(`utilRatio ${utilRatio} ${y} ${systemApy} ${pwrd2gvt}`);
-    const pwrdApy = systemApy.sub(pwrd2gvt);
-    const gvtApy = systemApy.add(pwrd2gvt.mul(utilRatio).div(PERCENT_DECIMAL));
-    logger.info(`pwrdApy ${pwrdApy} gvtApy ${gvtApy}`);
-    return {
-        pwrd: pwrdApy.add(hodlBonus),
-        gvt: gvtApy.add(hodlBonus),
-    };
+    if (systemApy.gt(BigNumber.from(0))) {
+        const pwrd2gvt = systemApy.mul(y).div(PERCENT_DECIMAL);
+        logger.info(`utilRatio ${utilRatio} ${y} ${systemApy} ${pwrd2gvt}`);
+        const pwrdApy = systemApy.sub(pwrd2gvt);
+        const gvtApy = systemApy.add(
+            pwrd2gvt.mul(utilRatio).div(PERCENT_DECIMAL)
+        );
+        logger.info(`pwrdApy ${pwrdApy} gvtApy ${gvtApy}`);
+        return {
+            pwrd: pwrdApy.add(hodlBonus),
+            gvt: gvtApy.add(hodlBonus),
+        };
+    } else {
+        logger.info(`utilRatio ${utilRatio} ${y} ${systemApy}`);
+        return {
+            pwrd: BigNumber.from(15392),
+            gvt: systemApy.add(hodlBonus),
+        };
+    }
 }
 
 function getPnlEventFilters(latestBlock, block7DaysAgo) {
