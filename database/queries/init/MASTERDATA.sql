@@ -1,4 +1,41 @@
 /****************************************************
+                    MD_POOLS 
+ ****************************************************/
+
+CREATE TABLE gro."MD_POOLS" (
+    "pool_id" SMALLINT NOT NULL,
+    "token_ids" INTEGER [] NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "name" CHARACTER VARYING (255) NOT NULL,
+    "description" CHARACTER VARYING (255) NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT "MD_POOLS_pkey" PRIMARY KEY ("pool_id")
+) TABLESPACE pg_default;
+
+ALTER TABLE gro."MD_POOLS" OWNER to postgres;
+
+INSERT INTO gro."MD_POOLS"("pool_id", "token_ids", "contract_address", "name", "description")
+VALUES (0, '{3}', '0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7', 'single_staking_100_gro_0', 'Single-sided Gro');
+
+INSERT INTO gro."MD_POOLS"("pool_id", "token_ids", "contract_address", "name", "description")
+VALUES (1, '{3,2}', '0x2ac5bC9ddA37601EDb1A5E29699dEB0A5b67E9bB', 'uniswap_v2_5050_gro_gvt_1', 'Uniswap v2 GRO / Vault');
+
+INSERT INTO gro."MD_POOLS"("pool_id", "token_ids", "contract_address", "name", "description")
+VALUES (2, '{3,7}', '0x21C5918CcB42d20A2368bdCA8feDA0399EbfD2f6', 'uniswap_v2_5050_gro_usdc_2', 'Uniswap v2 GRO / USDC');
+
+INSERT INTO gro."MD_POOLS"("pool_id", "token_ids", "contract_address", "name", "description")
+VALUES (3, '{2}', '0x3ADb04E127b9C0a5D36094125669d4603AC52a0c', 'single_staking_100_gvt_3', 'Single-sided Vault');
+
+INSERT INTO gro."MD_POOLS"("pool_id", "token_ids", "contract_address", "name", "description")
+VALUES (4, '{1,7,8,9}', '0xbcb91E689114B9Cc865AD7871845C95241Df4105', 'curve_meta_pwrd_3crv_4', 'Curve Meta PWRD-3CRV');
+
+INSERT INTO gro."MD_POOLS"("pool_id", "token_ids", "contract_address", "name", "description")
+VALUES (5, '{3,22}', '0x702605F43471183158938C1a3e5f5A359d7b31ba', 'balancer_v2_8020_gro_weth_5', 'Balancer V2 GRO / WETH');
+
+INSERT INTO gro."MD_POOLS"("pool_id", "token_ids", "contract_address", "name", "description")
+VALUES (6, '{1}', '0xF0a93d4994B3d98Fb5e3A2F90dBc2d69073Cb86b', 'single_staking_100_pwrd_6', 'Single-sided PWRD');
+
+/****************************************************
                     MD_TOKENS 
  ****************************************************/
 
@@ -6,7 +43,7 @@ CREATE TABLE gro."MD_TOKENS" (
     "token_id" SMALLINT NOT NULL,
     "name" CHARACTER VARYING (255) NOT NULL,
     "description" CHARACTER VARYING (255) NULL,
-    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE  DEFAULT NOW(),
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     "contract_address" CHARACTER VARYING (42) NOT NULL,
     CONSTRAINT "MD_TOKENS_pkey" PRIMARY KEY ("token_id")
 ) TABLESPACE pg_default;
@@ -78,6 +115,9 @@ VALUES (20, 'avax', 'Avalanche', '0x0000000000000000000000000000000000000000');
 
 INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "contract_address")
 VALUES (21, 'wavax', 'Wrapped Avax', '0x0000000000000000000000000000000000000000');
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "contract_address")
+VALUES (22, 'weth', 'Wrapped Ether', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
 
 /****************************************************
                     MD_TRANSFERS 
