@@ -120,21 +120,10 @@ const insertEth = async (
     let res;
     switch (eventName) {
         case EV.LogNewDeposit:
-            //TODO
             res = await query('insert_ev_gro_deposits.sql', event);
             break;
         case EV.LogNewWithdrawal:
-            //TODO
             res = await query('insert_ev_gro_withdrawals.sql', event);
-            break;
-        case EV.LogNewDeposit:
-            //TODO
-            res = await query('insert_ev_dao_deposits.sql', event);
-            break;
-        case EV.LogWithdraw:
-        case EV.LogMultiWithdraw:
-            //TODO/Review
-            res = await query('insert_ev_multi_withdrawals.sql', event);
             break;
         case EV.Transfer:
             res = await query('insert_ev_transfers.sql', event);
@@ -142,11 +131,16 @@ const insertEth = async (
         case EV.Approval:
             res = await query('insert_ev_approvals.sql', event);
             break;
-        //TODO/Review
+        case EV.LogDeposit:
+            res = await query('insert_ev_staker_deposits.sql', event);
+            break;
+        case EV.LogWithdraw:
+        case EV.LogMultiWithdraw:
+            res = await query('insert_ev_staker_withdrawals.sql', event);
+            break;
         case EV.LogClaim:
         case EV.LogMultiClaim:
-        case EV.LogBonusClaimed:
-            res = await query('insert_ev_dao_claims.sql', event);
+            res = await query('insert_ev_staker_claims.sql', event);
             break;
         default:
             const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;

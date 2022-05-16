@@ -320,65 +320,62 @@ CREATE TABLE gro."EV_GRO_WITHDRAWALS" (
 
 ALTER TABLE gro."EV_GRO_WITHDRAWALS" OWNER to postgres;
 
--- DAO TABLES
+-- STAKER TABLES
 
-CREATE TABLE gro."EV_DAO_DEPOSITS" (
+CREATE TABLE gro."EV_STAKER_DEPOSITS" (
     "transaction_id" CHARACTER VARYING (256) NOT NULL,
     "log_index" INTEGER NOT NULL,
     "contract_address" CHARACTER VARYING (42) NOT NULL,
     "block_timestamp" INTEGER NULL,
     "log_name" CHARACTER VARYING (100) NOT NULL,
-    "token_id" SMALLINT NOT NULL,
     "user" CHARACTER VARYING (42) NULL,
     "pid" INTEGER NULL,
-    "amount" NUMERIC (20, 8) NULL,
+    "amount" NUMERIC (24, 12) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
-    CONSTRAINT "EV_DAO_DEPOSITS_pkey" PRIMARY KEY (
+    CONSTRAINT "EV_STAKER_DEPOSITS_pkey" PRIMARY KEY (
         "transaction_id",
         "log_index",
         "contract_address"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
-ALTER TABLE gro."EV_DAO_DEPOSITS" OWNER to postgres;
+ALTER TABLE gro."EV_STAKER_DEPOSITS" OWNER to postgres;
 
-CREATE TABLE gro."EV_DAO_WITHDRAWALS" (
+CREATE TABLE gro."EV_STAKER_WITHDRAWALS" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
     "log_index" INTEGER NOT NULL,
     "contract_address" CHARACTER VARYING (42) NOT NULL,
     "block_timestamp" INTEGER NULL,
     "log_name" CHARACTER VARYING (100) NOT NULL,
-    "token_id" SMALLINT NOT NULL,
     "user" CHARACTER VARYING (42) NULL,
     "pids" INTEGER [] NULL,
-    "amounts" NUMERIC (20, 8) [] NULL,
+    "amounts" NUMERIC (24, 12) [] NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
-    CONSTRAINT "EV_DAO_WITHDRAWALS_pkey" PRIMARY KEY (
+    CONSTRAINT "EV_STAKER_WITHDRAWALS_pkey" PRIMARY KEY (
         "transaction_id",
         "log_index",
         "contract_address"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
-ALTER TABLE gro."EV_DAO_WITHDRAWALS" OWNER to postgres;
+ALTER TABLE gro."EV_STAKER_WITHDRAWALS" OWNER to postgres;
 
-CREATE TABLE gro."EV_DAO_CLAIMS" (
+CREATE TABLE gro."EV_STAKER_CLAIMS" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
     "log_index" INTEGER NOT NULL,
     "contract_address" CHARACTER VARYING (42) NOT NULL,
     "block_timestamp" INTEGER NULL,
     "log_name" CHARACTER VARYING (100) NOT NULL,
-    "token_id" SMALLINT NOT NULL,
     "user" CHARACTER VARYING (42) NULL,
     "vest" BOOLEAN NULL,
     "pids" INTEGER [] NULL,
-    "amount" NUMERIC (20, 8) NULL,
+    "amount" NUMERIC (24, 12) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
-    CONSTRAINT "EV_DAO_CLAIMS_pkey" PRIMARY KEY (
+    CONSTRAINT "EV_STAKER_CLAIMS_pkey" PRIMARY KEY (
         "transaction_id",
         "log_index",
         "contract_address"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
-ALTER TABLE gro."EV_DAO_CLAIMS" OWNER to postgres;
+ALTER TABLE gro."EV_STAKER_CLAIMS" OWNER to postgres;

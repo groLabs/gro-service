@@ -15,8 +15,6 @@ const getTokenIdByContractName = (
         case CN.groVault:
             return TokenId.GVT;
         case CN.GroDAOToken:
-        case CN.LPTokenStakerV1:
-        case CN.LPTokenStakerV2:
             return TokenId.GRO;
         case CN.AVAXDAIVault:
             return TokenId.groDAI_e;
@@ -42,6 +40,12 @@ const getTokenIdByContractName = (
             return TokenId.USDT_e;
         case CN.DAI_e:
             return TokenId.DAI_e;
+        case CN.USDC:
+            return TokenId.USDC;
+        case CN.USDT:
+            return TokenId.USDT;
+        case CN.DAI:
+            return TokenId.DAI;
         default:
             return TokenId.UNKNOWN;
     }
@@ -55,7 +59,6 @@ const getStableContractNames = (
     contractName: string
 ) => {
     //TODO: try-catch
-
     if (networkId === NetworkId.AVALANCHE) {
         if (contractName.includes('USDC')) {
             return [CN.USDC_e];
@@ -65,7 +68,11 @@ const getStableContractNames = (
             return [CN.DAI_e];
         }
     } else if (networkId === NetworkId.MAINNET) {
-        return ['unknown']; //TODO
+        return [
+            CN.DAI,
+            CN.USDC,
+            CN.USDT,
+        ];
     } else {
         return ['unknown']; //TODO
     }

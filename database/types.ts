@@ -64,6 +64,7 @@ enum TokenName {
     groDAI_e_1_9_int = 'gro_dai_e_1_9_int',
     avax = 'avax',
     wavax = 'wavax',
+    weth = 'weth',
 }
 
 // Must be aligned with table MD_TOKENS
@@ -90,6 +91,7 @@ enum TokenId {
     groDAI_e_1_9_int = 19,
     avax = 20,
     wavax = 21,
+    weth = 22,
 }
 
 enum EventName {

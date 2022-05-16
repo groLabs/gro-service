@@ -137,6 +137,7 @@ const etlStatefulByBlock = async (
                 ];
 
                 result.push(
+                    /*
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
                         EV.LogNewDeposit,
@@ -151,6 +152,7 @@ const etlStatefulByBlock = async (
                         from,
                         newOffset
                     ),
+                    */
                     //Not tested yet (no data available)
                     // loadStateful(
                     //     getNetwork(GN.ETHEREUM).id,
@@ -159,6 +161,7 @@ const etlStatefulByBlock = async (
                     //     from,
                     //     newOffset
                     // ),
+                    /*
                     ...groTokenContracts.map((groTokenContract) =>
                         loadStateful(
                             getNetwork(GN.ETHEREUM).id,
@@ -167,6 +170,7 @@ const etlStatefulByBlock = async (
                             from,
                             newOffset,
                         )),
+                        */
                     ...groTokenContracts.map((groTokenContract) =>
                         loadStateful(
                             getNetwork(GN.ETHEREUM).id,
@@ -175,34 +179,50 @@ const etlStatefulByBlock = async (
                             from,
                             newOffset,
                         )),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogBonusClaimed,
-                        CN.GroHodler,
-                        from,
-                        newOffset
-                    ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogDeposit,
-                        CN.LPTokenStakerV2,
-                        from,
-                        newOffset
-                    ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogClaim,
-                        CN.LPTokenStakerV2,
-                        from,
-                        newOffset
-                    ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogMultiClaim,
-                        CN.LPTokenStakerV2,
-                        from,
-                        newOffset
-                    ),
+                    /*
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogBonusClaimed,
+                    CN.GroHodler,
+                    from,
+                    newOffset
+                ),
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogDeposit,
+                    CN.LPTokenStakerV2,
+                    from,
+                    newOffset
+                ),
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogClaim,
+                    CN.LPTokenStakerV2,
+                    from,
+                    newOffset
+                ),
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogMultiClaim,
+                    CN.LPTokenStakerV2,
+                    from,
+                    newOffset
+                ),
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogWithdraw,
+                    CN.LPTokenStakerV2,
+                    from,
+                    newOffset
+                ),
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogMultiWithdraw,
+                    CN.LPTokenStakerV2,
+                    from,
+                    newOffset
+                ),
+                */
                 );
             }
 
@@ -221,9 +241,9 @@ const etlStatefulByBlock = async (
                 ];
 
                 const strategies = [
-                    // CN.AVAXDAIStrategy,
-                    // CN.AVAXUSDCStrategy,
-                    // CN.AVAXUSDTStrategy,
+                    CN.AVAXDAIStrategy,
+                    CN.AVAXUSDCStrategy,
+                    CN.AVAXUSDTStrategy,
                     CN.AVAXDAIStrategy_v1_7,
                     CN.AVAXUSDCStrategy_v1_7,
                     CN.AVAXUSDTStrategy_v1_7,
@@ -253,14 +273,14 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset,
                     //     )),
-                    // ...vaults.map((vault) =>
-                    //     loadStateful(
-                    //         getNetwork(GN.AVALANCHE).id,
-                    //         EV.Approval,
-                    //         vault,
-                    //         from,
-                    //         newOffset,
-                    //     )),
+                    ...vaults.map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.Approval,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
                     // ...vaults.map((vault) =>
                     //     loadStateful(
                     //         getNetwork(GN.AVALANCHE).id,
@@ -304,30 +324,30 @@ const etlStatefulByBlock = async (
                     //     from,
                     //     newOffset,
                     // ),
-                    ...strategies.map((strategy) =>
-                        loadStateful(
-                            getNetwork(GN.AVALANCHE).id,
-                            EV.LogNewPositionOpened,
-                            strategy,
-                            from,
-                            newOffset,
-                        )),
-                    ...strategies.map((strategy) =>
-                        loadStateful(
-                            getNetwork(GN.AVALANCHE).id,
-                            EV.LogPositionAdjusted,
-                            strategy,
-                            from,
-                            newOffset,
-                        )),
-                    ...strategies.map((strategy) =>
-                        loadStateful(
-                            getNetwork(GN.AVALANCHE).id,
-                            EV.LogPositionClosed,
-                            strategy,
-                            from,
-                            newOffset,
-                        )),
+                    // ...strategies.map((strategy) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.AVALANCHE).id,
+                    //         EV.LogNewPositionOpened,
+                    //         strategy,
+                    //         from,
+                    //         newOffset,
+                    //     )),
+                    // ...strategies.map((strategy) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.AVALANCHE).id,
+                    //         EV.LogPositionAdjusted,
+                    //         strategy,
+                    //         from,
+                    //         newOffset,
+                    //     )),
+                    // ...strategies.map((strategy) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.AVALANCHE).id,
+                    //         EV.LogPositionClosed,
+                    //         strategy,
+                    //         from,
+                    //         newOffset,
+                    //     )),
                 );
             }
 

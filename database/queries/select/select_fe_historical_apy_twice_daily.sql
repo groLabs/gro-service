@@ -1,5 +1,5 @@
 -- dates by parameter must follow format 'MM/DD/YYYY'
--- limit 124: 14 datapoints per week x 3 weeks range x 2 products (pwrd & gvt)
+-- limit 84: 14 datapoints per week x 3 weeks range x 2 products (pwrd & gvt)
 SELECT apy."current_timestamp",
     apy."current_date",
     apy."network_id",

@@ -1,11 +1,11 @@
-INSERT INTO gro."EV_MULTI_CLAIMS" (
-        "log_index",
+INSERT INTO gro."EV_STAKER_WITHDRAWALS" (
         "transaction_id",
+        "log_index",
         "contract_address",
+        "block_timestamp",
         "log_name",
-        "from",
+        "user",
         "pids",
-        "vest",
         "amounts"
     )
 VALUES (
@@ -17,4 +17,4 @@ VALUES (
         $6,
         $7,
         $8
-    ) ON CONFLICT ON CONSTRAINT "EV_MULTI_CLAIMS_pkey" DO NOTHING;
+    ) ON CONFLICT ON CONSTRAINT "EV_STAKER_WITHDRAWALS_pkey" DO NOTHING;

@@ -37,48 +37,25 @@ const eventParserEth = async (
                     pid: null,
                     token_id: log.args.pwrd ? TokenId.PWRD : TokenId.GVT,
                     allowance: null,
-                    amount1: parseAmount(log.args.tokens[0], Base.D18), // DAI
-                    amount2: parseAmount(log.args.tokens[1], Base.D6),  // USDC
-                    amount3: parseAmount(log.args.tokens[2], Base.D6),  // USDT
-                    value: parseAmount(log.args[3], Base.D18),
-                }
-                // TODO: what about LPTokenStakerV1 for IDL?
-                // Deposits in LPTokenStaker
-            } else if (eventName === EV.LogDeposit) {
-                payload = {
-                    from: log.args.user,
-                    referral: null,
-                    pid: parseInt(log.args.pid.toString()),
-                    token_id: TokenId.GRO,
-                    allowance: null,
-                    amount1: parseAmount(log.args.amount, Base.D18),
-                    amount2: null,
-                    amount3: null,
-                    value: null,   //TODO
-                }
-                // Multi-withdrawals from LPTokenStakerV2 in ETH
-            } else if (eventName === EV.LogMultiWithdraw) {
-                const pids = log.args.pids.map((pid: number) => parseInt(pid.toString()));
-                const amounts = log.args.amounts.map((amount: number) => parseAmount(amount, Base.D18));
-                payload = {
-                    from: log.args.user,
-                    pids: pids,
-                    amounts: amounts,
+                    amount1: parseAmount(log.args.tokens[0], Base.D18, 8), // DAI
+                    amount2: parseAmount(log.args.tokens[1], Base.D6, 8),  // USDC
+                    amount3: parseAmount(log.args.tokens[2], Base.D6, 8),  // USDT
+                    value: parseAmount(log.args[3], Base.D18, 8),
                 }
                 // Withdrawals from Handler
             } else if (eventName === EV.LogNewWithdrawal) {
                 payload = {
                     from: log.args.user,
                     pid: null,
-                    amount1: parseAmount(log.args.tokenAmounts[0], Base.D18),
-                    amount2: parseAmount(log.args.tokenAmounts[1], Base.D6),
-                    amount3: parseAmount(log.args.tokenAmounts[2], Base.D6),
-                    value: parseAmount(log.args.returnUsd, Base.D18),
+                    amount1: parseAmount(log.args.tokenAmounts[0], Base.D18, 8),
+                    amount2: parseAmount(log.args.tokenAmounts[1], Base.D6, 8),
+                    amount3: parseAmount(log.args.tokenAmounts[2], Base.D6, 8),
+                    value: parseAmount(log.args.returnUsd, Base.D18, 8),
                     referral: log.args.referral,
                     balanced: log.args.balanced,
                     all: log.args.all,
-                    deductUsd: parseAmount(log.args.deductUsd, Base.D18),
-                    lpAmount: parseAmount(log.args.lpAmount, Base.D18), // TODO: depends on stable?
+                    deductUsd: parseAmount(log.args.deductUsd, Base.D18, 8),
+                    lpAmount: parseAmount(log.args.lpAmount, Base.D18, 8), // TODO: depends on stable?
                     allowance: null,
                     totalLoss: null,
                     token_id: log.args.pwrd ? TokenId.PWRD : TokenId.GVT,
@@ -89,17 +66,18 @@ const eventParserEth = async (
                     token_id: getTokenIdByContractName(contractName),
                     from: log.args.from,
                     to: log.args.to,
-                    value: parseAmount(log.args.value, Base.D18),
+                    value: parseAmount(log.args.value, Base.D18, 8),
                 }
                 // Approvals
             } else if (eventName === EV.Approval) {
-                const value = parseAmount(log.args.value, Base.D18);
+                const value = parseAmount(log.args.value, Base.D18, 8);
                 payload = {
                     token_id: getTokenIdByContractName(contractName),
                     owner: log.args.owner,
                     spender: log.args.spender,
                     value: (value < MAX_NUMBER) ? value : -1,
                 }
+                break;
                 // Claims from Hodler
             } else if (eventName === EV.LogBonusClaimed) {
                 payload = {
@@ -108,7 +86,36 @@ const eventParserEth = async (
                     pid: null,
                     vest: log.args.vest,
                     tranche_id: null,
-                    amount: parseAmount(log.args.amount, Base.D18),
+                    amount: parseAmount(log.args.amount, Base.D18, 8),
+                }
+                // TODO: what about LPTokenStakerV1 for IDL?
+                // Deposits in LPTokenStaker
+            } else if (eventName === EV.LogDeposit) {
+                payload = {
+                    user: log.args.user,
+                    pid: parseInt(log.args.pid.toString()),
+                    amount: parseAmount(log.args.amount, Base.D18, 12),
+                }
+                // Withdrawals from LPTokenStakerV2 in ETH
+            } else if (eventName === EV.LogWithdraw ||
+                eventName === EV.LogMultiWithdraw
+            ) {
+                let pids = [];
+                let amounts = [];
+                const multiple = (eventName === EV.LogMultiWithdraw) ? true : false;
+
+                if (multiple) {
+                    pids = log.args.pids.map((pid: number) => parseInt(pid.toString()));
+                    amounts = log.args.amounts.map((amount: number) => parseAmount(amount, Base.D18, 12));
+                } else {
+                    pids = [parseInt(log.args.pid.toString())];
+                    amounts = [parseAmount(log.args.amount, Base.D18, 12)];
+                }
+
+                payload = {
+                    user: log.args.user,
+                    pids: pids,
+                    amounts: amounts,
                 }
                 // Claims from LPTokenStakerV2
             } else if (
@@ -118,13 +125,12 @@ const eventParserEth = async (
                 const pids = (eventName === EV.LogClaim)
                     ? [parseInt(log.args.pid.toString())]
                     : log.args.pids.map((pid: number) => parseInt(pid.toString()));
+
                 payload = {
-                    from: log.args.user,
-                    token_id: TokenId.GRO,
-                    pids: pids,
+                    user: log.args.user,
                     vest: log.args.vest,
-                    tranche_id: null,
-                    amount: parseAmount(log.args.amount, Base.D18),
+                    pids: pids,
+                    amount: parseAmount(log.args.amount, Base.D18, 12),
                 }
             } else {
                 showError(
