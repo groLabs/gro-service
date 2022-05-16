@@ -2016,5 +2016,50 @@
             "metaData": {},
             "active": true
         }
+    ],
+    "DAI": [
+        {
+            "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+            "deployedBlock": 8928158,
+            "startBlock": 8928158,
+            "endBlock": null,
+            "abiVersion": "6270d2c",
+            "tag": "Other",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        }
+    ],
+    "USDC": [
+        {
+            "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            "deployedBlock": 6082465,
+            "startBlock": 6082465,
+            "endBlock": null,
+            "abiVersion": "6270d2c",
+            "tag": "Other",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        }
+    ],
+    "USDT": [
+        {
+            "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+            "deployedBlock": 4634748,
+            "startBlock": 4634748,
+            "endBlock": null,
+            "abiVersion": "6270d2c",
+            "tag": "Other",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        }
     ]
 }

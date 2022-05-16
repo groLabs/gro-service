@@ -106,7 +106,10 @@ const ContractNames = {
     USDT_e: "USDT_e",
     AVAXDAIVault_v1_9_internal: "AVAXDAIVault_v1_9_internal",
     AVAXUSDCVault_v1_9_internal: "AVAXUSDCVault_v1_9_internal",
-    AVAXUSDTVault_v1_9_internal: "AVAXUSDTVault_v1_9_internal"
+    AVAXUSDTVault_v1_9_internal: "AVAXUSDTVault_v1_9_internal",
+    DAI: "DAI",
+    USDC: "USDC",
+    USDT: "USDT"
 };
 
 const ContractABIMapping = {};
@@ -184,6 +187,9 @@ ContractABIMapping[ContractNames.Chainlink_aggr_dai] = 'ChainlinkOffchainAggrega
 ContractABIMapping[ContractNames.DAI_e] = 'DAI_e';
 ContractABIMapping[ContractNames.USDC_e] = 'USDC_e';
 ContractABIMapping[ContractNames.USDT_e] = 'USDT_e';
+ContractABIMapping[ContractNames.DAI] = 'DAI';
+ContractABIMapping[ContractNames.USDC] = 'USDC';
+ContractABIMapping[ContractNames.USDT] = 'USDT';
 
 function readLocalContractConfig(isReload = false) {
     if (isReload || !localContractConfig) {
