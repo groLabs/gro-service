@@ -9,6 +9,7 @@ import { getStableContractNames } from '../common/statefulUtil'
 import { getStatefulEvents } from '../listener/getStatefulEvents';
 import { eventParser } from '../parser/statefulParser';
 import { isContractDeployed } from '../common/deployedUtil';
+import { ContractNames as CN } from '../../registry/registry';
 import { getLatestContractsAddress } from '../../registry/registryLoader';
 import {
     showInfo,
@@ -178,22 +179,35 @@ const loadStateful = async (
         if (isDeployed) {
 
             // For approval events, retrieve all associated stablecoins
-            const isApproval = (eventName === EV.Approval) ? true : false;
-            const contractNames = isApproval
+            const isApproval = (eventName === EV.Approval)
+                ? true
+                : false;
+
+            const filter = !isApproval
+                ? []
+                : (networkId === NetworkId.AVALANCHE)
+                    ? [null, getLatestContractsAddress()[_contractName].address]
+                    : (_contractName !== CN.groVault && _contractName !== CN.powerD)
+                        ? [null, getLatestContractsAddress()[CN.depositHandler].address] // For eth, to: depositHandler
+                        : [];
+
+
+            const contractNames = (isApproval && networkId === NetworkId.AVALANCHE)
                 ? getStableContractNames(networkId, _contractName)
                 : [_contractName];
 
             for (const contractName of contractNames) {
 
+                // For approval events:
+                // AVAX: from Stablecoin to Vault
+                // ETH: from Stablecoin/GVT/PWRD to deposit handler
                 const events = await getStatefulEvents(
                     networkId,
                     eventName,
                     contractName,
                     fromBlock,
                     toBlock,
-                    isApproval
-                        ? [null, getLatestContractsAddress()[_contractName].address]
-                        : []
+                    filter
                 );
 
                 if (events.status === QUERY_SUCCESS) {

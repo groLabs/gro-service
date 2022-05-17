@@ -42,9 +42,12 @@ const getStatefulEvents = async (
     filter = [],
 ): Promise<ICall> => {
     try {
+        let events: EventResult = {
+            status: 200,
+            data: []
+        }
 
-        //console.log('contractName:', contractName, 'eventName:', eventName, 'fromBlock:', fromBlock, 'toBlock:', toBlock);
-
+        // Generate filters on all valid contract versions for a given block range
         const filters = getValidContractHistoryEventFilters(
             'default',
             contractName,
@@ -53,72 +56,71 @@ const getStatefulEvents = async (
             toBlock,
             filter
         );
-
         //console.log('filters:', filters);
 
-        let event: EventResult;
+        // Retrieve all events for every filter
         for (const filter of filters) {
-            event = await getEvents(
+            const tempEvents = await getEvents(
                 filter.filter,
                 filter.interface,
                 (networkId === NetworkId.AVALANCHE) ? getProviderAvax() : getProvider(),
             );
+            if (tempEvents.status === QUERY_ERROR) {
+                showError(
+                    'getStatefulEvents.ts->getStatefulEvents()',
+                    `Error while retrieving events: ${events.data}`
+                );
+                return errorObj(`Error while retrieving events: ${events.data}`);
+            } else if (tempEvents.data.length > 0) {
+                events.data.push(...tempEvents.data);
+            }
         }
 
-        if (event.status === QUERY_ERROR) {
-            showError(
-                'getStatefulEvents.ts->getStatefulEvents()',
-                `Error while retrieving events: ${event.data}`
+        let tx;
+        let block;
+        const numEvents = events.data.length;
+
+        showInfo(`Processing ${numEvents} <${eventName}> event${isPlural(numEvents)} for contract <${contractName}>`);
+
+        for (let i = 0; i < numEvents; i++) {
+
+            const log = events.data[i];
+
+            [tx, block] = (networkId === NetworkId.AVALANCHE)
+                ? await Promise.all([
+                    getProviderAvax()
+                        .getTransactionReceipt(log.transactionHash)
+                        .catch((err) => {
+                            showError('getStatefulEvents.ts->getStatefulEvents()', err);
+                        }),
+                    getBlockDataAvax(log.blockNumber)
+                ])
+                : await Promise.all([
+                    getProvider()
+                        .getTransactionReceipt(log.transactionHash)
+                        .catch((err) => {
+                            showError('getStatefulEvents.ts->getStatefulEvents()', err);
+                        }),
+                    getBlockData(log.blockNumber)
+                ]);
+
+            const transactionId = soliditySha3(
+                { type: 'uint96', value: log.blockNumber },       // block number
+                { type: 'uint96', value: networkId.toString() },  // network id
+                { type: 'string', value: log.transactionHash },   // tx hash
+                { type: 'string', value: tx.blockHash },          // block hash
             );
-            return errorObj(`Error while retrieving events: ${event.data}`);
-        } else {
-            let tx;
-            let block;
 
-            const numEvents = event.data.length;
-
-            showInfo(`Processing ${numEvents} <${eventName}> event${isPlural(numEvents)} for contract <${contractName}>`);
-
-            for (let i = 0; i < numEvents; i++) {
-
-                const log = event.data[i];
-
-                [tx, block] = (networkId === NetworkId.AVALANCHE)
-                    ? await Promise.all([
-                        getProviderAvax()
-                            .getTransactionReceipt(log.transactionHash)
-                            .catch((err) => {
-                                showError('getStatefulEvents.ts->getStatefulEvents()', err);
-                            }),
-                        getBlockDataAvax(log.blockNumber)
-                    ])
-                    : await Promise.all([
-                        getProvider()
-                            .getTransactionReceipt(log.transactionHash)
-                            .catch((err) => {
-                                showError('getStatefulEvents.ts->getStatefulEvents()', err);
-                            }),
-                        getBlockData(log.blockNumber)
-                    ]);
-
-                const transactionId = soliditySha3(
-                    { type: 'uint96', value: log.blockNumber },       // block number
-                    { type: 'uint96', value: networkId.toString() },  // network id
-                    { type: 'string', value: log.transactionHash },   // tx hash
-                    { type: 'string', value: tx.blockHash },          // block hash
-                );
-
-                log.networkId = networkId;
-                log.transactionId = transactionId;
-                log.blockHash = tx.blockHash;
-                log.blockTimestamp = block.timestamp;
-                log.blockDate = moment.unix(block.timestamp).utc();
-            }
+            log.networkId = networkId;
+            log.transactionId = transactionId;
+            log.blockHash = tx.blockHash;
+            log.blockTimestamp = block.timestamp;
+            log.blockDate = moment.unix(block.timestamp).utc();
         }
 
         return {
             status: QUERY_SUCCESS,
-            data: event.data,
+            data: events.data,
         };
 
     } catch (err) {

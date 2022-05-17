@@ -1,5 +1,6 @@
 import { ICall } from '../interfaces/ICall';
 import { showError } from '../handler/logHandler';
+import { ContractNames as CN } from '../../registry/registry';
 import { getTokenIdByContractName } from '../common/statefulUtil';
 import {
     MAX_NUMBER,
@@ -29,36 +30,32 @@ const eventParserEth = async (
 
         for (const log of logs) {
 
-            // Deposits in Handler
+            // Deposits into Handler
             if (eventName === EV.LogNewDeposit) {
                 payload = {
-                    from: log.args.user,
-                    referral: log.args.referral,
-                    pid: null,
                     token_id: log.args.pwrd ? TokenId.PWRD : TokenId.GVT,
-                    allowance: null,
+                    user: log.args.user,
+                    referral: log.args.referral,
+                    usdAmount: parseAmount(log.args.usdAmount, Base.D18, 8),
                     amount1: parseAmount(log.args.tokens[0], Base.D18, 8), // DAI
                     amount2: parseAmount(log.args.tokens[1], Base.D6, 8),  // USDC
                     amount3: parseAmount(log.args.tokens[2], Base.D6, 8),  // USDT
-                    value: parseAmount(log.args[3], Base.D18, 8),
+                    //pwrd: log.args.pwrd,
                 }
                 // Withdrawals from Handler
             } else if (eventName === EV.LogNewWithdrawal) {
                 payload = {
-                    from: log.args.user,
-                    pid: null,
-                    amount1: parseAmount(log.args.tokenAmounts[0], Base.D18, 8),
-                    amount2: parseAmount(log.args.tokenAmounts[1], Base.D6, 8),
-                    amount3: parseAmount(log.args.tokenAmounts[2], Base.D6, 8),
-                    value: parseAmount(log.args.returnUsd, Base.D18, 8),
+                    token_id: log.args.pwrd ? TokenId.PWRD : TokenId.GVT,
+                    user: log.args.user,
                     referral: log.args.referral,
                     balanced: log.args.balanced,
                     all: log.args.all,
                     deductUsd: parseAmount(log.args.deductUsd, Base.D18, 8),
-                    lpAmount: parseAmount(log.args.lpAmount, Base.D18, 8), // TODO: depends on stable?
-                    allowance: null,
-                    totalLoss: null,
-                    token_id: log.args.pwrd ? TokenId.PWRD : TokenId.GVT,
+                    returnUsd: parseAmount(log.args.returnUsd, Base.D18, 8),
+                    lpAmount: parseAmount(log.args.lpAmount, Base.D18, 8),
+                    amount1: parseAmount(log.args.tokenAmounts[0], Base.D18, 8),
+                    amount2: parseAmount(log.args.tokenAmounts[1], Base.D6, 8),
+                    amount3: parseAmount(log.args.tokenAmounts[2], Base.D6, 8),
                 }
                 // Transfers
             } else if (eventName === EV.Transfer) {
@@ -66,18 +63,24 @@ const eventParserEth = async (
                     token_id: getTokenIdByContractName(contractName),
                     from: log.args.from,
                     to: log.args.to,
-                    value: parseAmount(log.args.value, Base.D18, 8),
+                    value: parseAmount(log.args.value, Base.D18, 8), // TODO: depends on stable?
                 }
                 // Approvals
             } else if (eventName === EV.Approval) {
-                const value = parseAmount(log.args.value, Base.D18, 8);
+                const valueTemp = (contractName === CN.DAI)
+                    ? log.args.wad
+                    : log.args.value;
+                const value = parseAmount(valueTemp, Base.D18, 8);
                 payload = {
                     token_id: getTokenIdByContractName(contractName),
-                    owner: log.args.owner,
-                    spender: log.args.spender,
+                    owner: (contractName === CN.DAI)
+                        ? log.args.src
+                        : log.args.owner,
+                    spender: (contractName === CN.DAI)
+                        ? log.args.guy
+                        : log.args.spender,
                     value: (value < MAX_NUMBER) ? value : -1,
                 }
-                break;
                 // Claims from Hodler
             } else if (eventName === EV.LogBonusClaimed) {
                 payload = {
