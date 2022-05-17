@@ -317,7 +317,7 @@ async function getGtokenApy(systemApy, utilRatio, hodlBonus) {
     } else {
         logger.info(`utilRatio ${utilRatio} ${y} ${systemApy}`);
         return {
-            pwrd: BigNumber.from(15392),
+            pwrd: hodlBonus,
             gvt: systemApy.add(hodlBonus),
         };
     }
