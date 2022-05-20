@@ -14,3 +14,4 @@ public/
 *-audit.json
 types
 dist
+.DS_Store

@@ -2061,5 +2061,35 @@
             "metaData": {},
             "active": true
         }
+    ],
+    "UniswapV2Pair_gvt_gro": [
+        {
+            "address": "0x2ac5bC9ddA37601EDb1A5E29699dEB0A5b67E9bB",
+            "deployedBlock": 13318236,
+            "startBlock": 13318236,
+            "endBlock": null,
+            "abiVersion": "6270d2c",
+            "tag": "Other",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        }
+    ],
+    "UniswapV2Pair_gro_usdc": [
+        {
+            "address": "0x21C5918CcB42d20A2368bdCA8feDA0399EbfD2f6",
+            "deployedBlock": 13327380,
+            "startBlock": 13327380,
+            "endBlock": null,
+            "abiVersion": "6270d2c",
+            "tag": "Other",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        }
     ]
 }

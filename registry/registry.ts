@@ -109,7 +109,9 @@ const ContractNames = {
     AVAXUSDTVault_v1_9_internal: "AVAXUSDTVault_v1_9_internal",
     DAI: "DAI",
     USDC: "USDC",
-    USDT: "USDT"
+    USDT: "USDT",
+    UniswapV2Pair_gvt_gro: "UniswapV2Pair_gvt_gro",
+    UniswapV2Pair_gro_usdc: "UniswapV2Pair_gro_usdc",
 };
 
 const ContractABIMapping = {};
@@ -190,6 +192,8 @@ ContractABIMapping[ContractNames.USDT_e] = 'USDT_e';
 ContractABIMapping[ContractNames.DAI] = 'DAI';
 ContractABIMapping[ContractNames.USDC] = 'USDC';
 ContractABIMapping[ContractNames.USDT] = 'USDT';
+ContractABIMapping[ContractNames.UniswapV2Pair_gvt_gro] = 'UniswapV2Pair_gvt_gro';
+ContractABIMapping[ContractNames.UniswapV2Pair_gro_usdc] = 'UniswapV2Pair_gro_usdc';
 
 function readLocalContractConfig(isReload = false) {
     if (isReload || !localContractConfig) {

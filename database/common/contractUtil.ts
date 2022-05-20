@@ -78,14 +78,25 @@ const getPowerD = () =>
 const getTokenCounter = () =>
     getLatestSystemContract(ContractNames.TokenCounter, getProviderKey()).contract;
 
+const getGroDaoToken = () =>
+    getLatestSystemContract(ContractNames.GroDAOToken, getProviderKey()).contract;
+
 const getBuoy = () =>
     getLatestSystemContract(ContractNames.buoy3Pool, getProviderKey()).contract;
-
 
 const getStables = async () => {
     const info = await getStableCoinsInfo();
     return info;
 }
+
+const getUni2GvtGro = () =>
+    getLatestSystemContract(ContractNames.UniswapV2Pair_gvt_gro, getProviderKey()).contract;
+
+const getUni2GroUsdc = () =>
+    getLatestSystemContract(ContractNames.UniswapV2Pair_gro_usdc, getProviderKey()).contract;
+
+const getLpTokenStakerV2 = () =>
+    getLatestSystemContract(ContractNames.LPTokenStakerV2, getProviderKey()).contract;
 
 const getGroVesting = () =>
     getLatestSystemContract(ContractNames.GroVesting, getProviderKey()).contract;
@@ -171,7 +182,7 @@ const getUSDCeStrategy_1_7 = () =>
 const getUSDTeStrategy_1_7 = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy_v1_7, getProviderAvax()).contract;
 
-const getDAIeStrategy_1_7 = () => 
+const getDAIeStrategy_1_7 = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_7, getProviderAvax()).contract;
 
 // Stablecoins Avax
@@ -404,9 +415,13 @@ const getStableCoinsInfo = async () => {
 export {
     getGroVault,
     getPowerD,
+    getGroDaoToken,
     getBuoy,
     getStables,
     getTokenCounter,
+    getUni2GvtGro,
+    getUni2GroUsdc,
+    getLpTokenStakerV2,
     getUSDCeVault,
     getUSDTeVault,
     getDAIeVault,
