@@ -95,6 +95,9 @@ const getUni2GvtGro = () =>
 const getUni2GroUsdc = () =>
     getLatestSystemContract(ContractNames.UniswapV2Pair_gro_usdc, getProviderKey()).contract;
 
+const getLpTokenStakerV1 = () =>
+    getLatestSystemContract(ContractNames.LPTokenStakerV1, getProviderKey()).contract;
+
 const getLpTokenStakerV2 = () =>
     getLatestSystemContract(ContractNames.LPTokenStakerV2, getProviderKey()).contract;
 
@@ -421,6 +424,7 @@ export {
     getTokenCounter,
     getUni2GvtGro,
     getUni2GroUsdc,
+    getLpTokenStakerV1,
     getLpTokenStakerV2,
     getUSDCeVault,
     getUSDTeVault,

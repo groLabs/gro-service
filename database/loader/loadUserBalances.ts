@@ -1,3 +1,8 @@
+/// Status:
+/// - Balances are correctly calculated for unstaked gvt/pwrd/gro, total Gro, pool0, pool1, pool2 & pool3
+/// - Balances for pools 4 & 5 rely on tokenCounter referring to LpTokenStakerV1, so values do
+///   not have the latest positions of LpTokenStakerV2
+
 import moment from 'moment';
 import { query } from '../handler/queryHandler';
 import {
@@ -9,19 +14,18 @@ import { generateDateRange, } from '../common/personalUtil';
 import {
     getGroVault,
     getPowerD,
+    getGroDaoToken,
+    getLpTokenStakerV1,
+    getLpTokenStakerV2,
     getUSDCeVault,
-    getUSDCeVault_1_5,
-    getUSDCeVault_1_6,
     getUSDCeVault_1_7,
     getUSDTeVault,
-    getUSDTeVault_1_5,
-    getUSDTeVault_1_6,
     getUSDTeVault_1_7,
     getDAIeVault,
-    getDAIeVault_1_5,
-    getDAIeVault_1_6,
     getDAIeVault_1_7,
     getContractInfoHistory,
+    getUni2GvtGro,
+    getUni2GroUsdc,
 } from '../common/contractUtil';
 import {
     QUERY_ERROR,
@@ -31,10 +35,16 @@ import {
     checkTime,
     getBalances,
     getBalancesUniBalLP,
-    getBalancesCrvLP
+    getBalancesCrvLP,
+    getUnderlyingFactorsFromPools,
 } from '../common/balanceUtil';
 import { multiCall } from '../caller/multiCaller';
 import gvtABI from '../../abi/ce7b149/NonRebasingGToken.json';
+import pwrdABI from '../../abi/ce7b149/RebasingGToken.json';
+import groABI from '../../abi/fa8e260/GroDAOToken.json';
+import uniGvtGroABI from '../../abi/6270d2c/UniswapV2Pair_gvt_gro.json';
+import uniGvtUsdcABI from '../../abi/6270d2c/UniswapV2Pair_gro_usdc.json';
+import lpTokenStakerABI from '../../abi/fa8e260/LPTokenStaker.json';
 import argentABI from '../../abi/Argent.json';
 import { BALANCES_BATCH as BATCH } from '../constants';
 import { getConfig } from '../../common/configUtil';
@@ -63,22 +73,20 @@ const GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_poo
 let rowCount = 0;
 let contract = [];
 let gvt = [];
+let gvtStaked = [];
 let pwrd = [];
 let gro = [];
+let groStaked = [];
 let groTotal = [];
-let lpGroGvt = [];
-let lpGroUsdc = [];
+let lpGvtGroPooled = [];
+let lpGvtGroStaked = [];
+let lpGroUsdcPooled = [];
+let lpGroUsdcStaked = [];
 let lpCrvPwrd = [];
 let lpGroWeth = [];
 let usdce_1_0 = [];
 let usdte_1_0 = [];
 let daie_1_0 = [];
-let usdce_1_5 = [];
-let usdte_1_5 = [];
-let daie_1_5 = [];
-let usdce_1_6 = [];
-let usdte_1_6 = [];
-let daie_1_6 = [];
 let usdce_1_7 = [];
 let usdte_1_7 = [];
 let daie_1_7 = [];
@@ -113,97 +121,104 @@ const getBalancesSC = async (
             showInfo(`Reading balances from TokenCounter() in ${desc}`);
         }
 
+        // Mainnet only (do the same for ropsten)
+        const lpTokenStakerAddress = (block >= 14268775)
+            ? getLpTokenStakerV2().address
+            : getLpTokenStakerV1().address;
+
+        // TODO: probably replace gvtABI, pwrdABI, etc... by ERC20
         const [
             contractUpdate,
             gvtUpdate,
+            gvtStakedUpdate,
             pwrdUpdate,
             groUpdate,
+            groStakedUpdate,
             groTotalUpdate,
-            lpGroGvtUpdate,
-            lpGroUsdcUpdate,
+            lpGvtGroPooledUpdate,
+            lpGvtGroStakedUpdate,
+            lpGroUsdcPooledUpdate,
+            lpGroUsdcStakedUpdate,
             lpCrvPwrdUpdate,
             lpGroWethUpdate,
             usdceUpdate_1_0,
             usdteUpdate_1_0,
             daieUpdate_1_0,
-            usdceUpdate_1_5,
-            usdteUpdate_1_5,
-            daieUpdate_1_5,
-            usdceUpdate_1_6,
-            usdteUpdate_1_6,
-            daieUpdate_1_6,
             usdceUpdate_1_7,
             usdteUpdate_1_7,
             daieUpdate_1_7,
         ] = await Promise.all([
-            multiCall(GN.ETHEREUM, argentAddress, '', argentABI, 'isArgentWallet', userBatch, ReturnType.BOOL, Base.D18),
-            getBalances(getGroVault().address, userBatch, block),
-            getBalances(getPowerD().address, userBatch, block),
-            getBalances(GRO_ADDRESS, userBatch, block),
+            multiCall(GN.ETHEREUM, argentAddress, '', '', argentABI, 'isArgentWallet', userBatch, ReturnType.BOOL, Base.D18, block),
+            multiCall(GN.ETHEREUM, getGroVault().address, '', '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18, block),
+            multiCall(GN.ETHEREUM, lpTokenStakerAddress, '', '3', lpTokenStakerABI, 'userInfo', userBatch, ReturnType.UINT_UINT, Base.D18, block),
+            multiCall(GN.ETHEREUM, getPowerD().address, '', '', pwrdABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18, block),
+            multiCall(GN.ETHEREUM, getGroDaoToken().address, '', '', groABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18, block),
+            multiCall(GN.ETHEREUM, lpTokenStakerAddress, '', '0', lpTokenStakerABI, 'userInfo', userBatch, ReturnType.UINT_UINT, Base.D18, block),
             (nodeEnv === NetworkName.MAINNET)
                 ? getBalances(voteAggregatorAddress, userBatch, block)
                 : [],
-            getBalancesUniBalLP(GRO_GVT_ADDRESS, userBatch, block),
-            getBalancesUniBalLP(GRO_USDC_ADDRESS, userBatch, block),
+            multiCall(GN.ETHEREUM, getUni2GvtGro().address, '', '', uniGvtGroABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18, block),
+            multiCall(GN.ETHEREUM, lpTokenStakerAddress, '', '1', lpTokenStakerABI, 'userInfo', userBatch, ReturnType.UINT_UINT, Base.D18, block),
+            multiCall(GN.ETHEREUM, getUni2GroUsdc().address, '', '', uniGvtUsdcABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18, block),
+            multiCall(GN.ETHEREUM, lpTokenStakerAddress, '', '2', lpTokenStakerABI, 'userInfo', userBatch, ReturnType.UINT_UINT, Base.D18, block),
             (nodeEnv === NetworkName.MAINNET)
                 ? getBalancesCrvLP(CRV_PWRD_ADDRESS, userBatch, block)
                 : [],
             (nodeEnv === NetworkName.MAINNET)
                 ? getBalancesUniBalLP(GRO_WETH_ADDRESS, userBatch, block)
                 : [],
+            // SJS: temporarily disabled (avax balances not used + rpc issues)
+            /*
             multiCall(GN.AVALANCHE, getUSDCeVault().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
             multiCall(GN.AVALANCHE, getUSDTeVault().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
             multiCall(GN.AVALANCHE, getDAIeVault().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
-            multiCall(GN.AVALANCHE, getUSDCeVault_1_5().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
-            multiCall(GN.AVALANCHE, getUSDTeVault_1_5().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
-            multiCall(GN.AVALANCHE, getDAIeVault_1_5().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
-            multiCall(GN.AVALANCHE, getUSDCeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
-            multiCall(GN.AVALANCHE, getUSDTeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
-            multiCall(GN.AVALANCHE, getDAIeVault_1_6().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
             multiCall(GN.AVALANCHE, getUSDCeVault_1_7().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
             multiCall(GN.AVALANCHE, getUSDTeVault_1_7().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D6),
             multiCall(GN.AVALANCHE, getDAIeVault_1_7().address, '', gvtABI, 'balanceOf', userBatch, ReturnType.UINT, Base.D18),
+            */
+            [],
+            [],
+            [],
+            [],
+            [],
+            []
         ]);
 
         if (gvt.length === 0) {
             contract = contractUpdate
             gvt = gvtUpdate;
+            gvtStaked = gvtStakedUpdate;
             pwrd = pwrdUpdate;
             gro = groUpdate;
+            groStaked = groStakedUpdate;
             groTotal = groTotalUpdate;
-            lpGroGvt = lpGroGvtUpdate;
-            lpGroUsdc = lpGroUsdcUpdate;
+            lpGvtGroPooled = lpGvtGroPooledUpdate;
+            lpGvtGroStaked = lpGvtGroStakedUpdate;
+            lpGroUsdcPooled = lpGroUsdcPooledUpdate;
+            lpGroUsdcStaked = lpGroUsdcStakedUpdate;
             lpCrvPwrd = lpCrvPwrdUpdate;
             lpGroWeth = lpGroWethUpdate;
             usdce_1_0 = usdceUpdate_1_0;
             usdte_1_0 = usdteUpdate_1_0;
             daie_1_0 = daieUpdate_1_0;
-            usdce_1_5 = usdceUpdate_1_5;
-            usdte_1_5 = usdteUpdate_1_5;
-            daie_1_5 = daieUpdate_1_5;
-            usdce_1_6 = usdceUpdate_1_6;
-            usdte_1_6 = usdteUpdate_1_6;
-            daie_1_6 = daieUpdate_1_6;
             usdce_1_7 = usdceUpdate_1_7;
             usdte_1_7 = usdteUpdate_1_7;
             daie_1_7 = daieUpdate_1_7;
         } else {
             contract.push(...contractUpdate);
-            gvt[0].amount_unstaked.push(...gvtUpdate[0].amount_unstaked);
-            gvt[1].amount_staked.push(...gvtUpdate[1].amount_staked);
-            pwrd[0].amount_unstaked.push(...pwrdUpdate[0].amount_unstaked);
-            pwrd[1].amount_staked.push(...pwrdUpdate[1].amount_staked);
-            gro[0].amount_unstaked.push(...groUpdate[0].amount_unstaked);
-            gro[1].amount_staked.push(...groUpdate[1].amount_staked);
+            gvt.push(...gvtUpdate);
+            gvtStaked.push(...gvtStakedUpdate);
+            pwrd.push(...pwrdUpdate);
+            //pwrd[1].amount_staked.push(...pwrdUpdate[1].amount_staked);
+            gro.push(...groUpdate);
+            groStaked.push(...groStakedUpdate);
             (nodeEnv === NetworkName.MAINNET)
                 ? groTotal[0].amount_unstaked.push(...groTotalUpdate[0].amount_unstaked)
                 : [];
-            lpGroGvt[0].amount_pooled_lp.push(...lpGroGvtUpdate[0].amount_pooled_lp);
-            lpGroGvt[1].amount_staked_lp.push(...lpGroGvtUpdate[1].amount_staked_lp);
-            lpGroGvt[2].lp_position.push(...lpGroGvtUpdate[2].lp_position);
-            lpGroUsdc[0].amount_pooled_lp.push(...lpGroUsdcUpdate[0].amount_pooled_lp);
-            lpGroUsdc[1].amount_staked_lp.push(...lpGroUsdcUpdate[1].amount_staked_lp);
-            lpGroUsdc[2].lp_position.push(...lpGroUsdcUpdate[2].lp_position);
+            lpGvtGroPooled.push(...lpGvtGroPooledUpdate);
+            lpGvtGroStaked.push(...lpGvtGroStakedUpdate);
+            lpGroUsdcPooled.push(...lpGroUsdcPooledUpdate);
+            lpGroUsdcStaked.push(...lpGroUsdcStakedUpdate);
             (nodeEnv === NetworkName.MAINNET)
                 ? lpCrvPwrd[0].amount_pooled_lp.push(...lpCrvPwrdUpdate[0].amount_pooled_lp)
                 : [];
@@ -225,12 +240,6 @@ const getBalancesSC = async (
             usdce_1_0.push(...usdceUpdate_1_0);
             usdte_1_0.push(...usdteUpdate_1_0);
             daie_1_0.push(...daieUpdate_1_0);
-            usdce_1_5.push(...usdceUpdate_1_5);
-            usdte_1_5.push(...usdteUpdate_1_5);
-            daie_1_5.push(...daieUpdate_1_5);
-            usdce_1_6.push(...usdceUpdate_1_6);
-            usdte_1_6.push(...usdteUpdate_1_6);
-            daie_1_6.push(...daieUpdate_1_6);
             usdce_1_7.push(...usdceUpdate_1_7);
             usdte_1_7.push(...usdteUpdate_1_7);
             daie_1_7.push(...daieUpdate_1_7);
@@ -240,22 +249,20 @@ const getBalancesSC = async (
             ? {
                 contract: contract,
                 gvt: gvt,
+                gvtStaked: gvtStaked,
                 pwrd: pwrd,
                 gro: gro,
+                groStaked: groStaked,
                 groTotal: groTotal,
-                lpGroGvt: lpGroGvt,
-                lpGroUsdc: lpGroUsdc,
+                lpGvtGroPooled: lpGvtGroPooled,
+                lpGvtGroStaked: lpGvtGroStaked,
+                lpGroUsdcPooled: lpGroUsdcPooled,
+                lpGroUsdcStaked: lpGroUsdcStaked,
                 lpCrvPwrd: lpCrvPwrd,
                 lpGroWeth: lpGroWeth,
                 usdce_1_0: usdce_1_0,
                 usdte_1_0: usdte_1_0,
                 daie_1_0: daie_1_0,
-                usdce_1_5: usdce_1_5,
-                usdte_1_5: usdte_1_5,
-                daie_1_5: daie_1_5,
-                usdce_1_6: usdce_1_6,
-                usdte_1_6: usdte_1_6,
-                daie_1_6: daie_1_6,
                 usdce_1_7: usdce_1_7,
                 usdte_1_7: usdte_1_7,
                 daie_1_7: daie_1_7,
@@ -265,7 +272,7 @@ const getBalancesSC = async (
                 block,
                 newOffset,
                 account,
-                voteAggregatorAddress
+                voteAggregatorAddress,
             );
 
     } catch (err) {
@@ -280,6 +287,7 @@ const insertBalances = async (
     day: moment.Moment,
     addr: string,
     res: any,
+    factor: any
 ): Promise<boolean> => {
     return new Promise(async (resolve) => {
         try {
@@ -290,22 +298,24 @@ const insertBalances = async (
                 contract[i]
                     ? 1                                 // Argent wallet
                     : 0,                                // non Argent wallet
-                res.gvt[0].amount_unstaked[i],          // unstaked gvt
-                res.pwrd[0].amount_unstaked[i],         // unstaked pwrd
-                res.gro[0].amount_unstaked[i],          // unstaked gro
+                res.gvt[i],                             // unstaked gvt
+                res.pwrd[i],                            // unstaked pwrd
+                res.gro[i],                             // unstaked gro
                 (nodeEnv === NetworkName.MAINNET && res.groTotal.length > 0)
                     ? res.groTotal[0].amount_unstaked[i]    // total gro
                     : null,
-                res.gro[1].amount_staked[i],            // pool0 - staked lp
-                res.lpGroGvt[0].amount_pooled_lp[i],    // pool1 - pooled lp
-                res.lpGroGvt[1].amount_staked_lp[i],    // pool1 - staked lp
-                res.lpGroGvt[2].lp_position[i][0],      // pool1 - staked gvt
-                res.lpGroGvt[2].lp_position[i][1],      // pool1 - staked gro
-                res.lpGroUsdc[0].amount_pooled_lp[i],   // pool2 - pooled lp
-                res.lpGroUsdc[1].amount_staked_lp[i],   // pool2 - staked lp
-                res.lpGroUsdc[2].lp_position[i][0],     // pool2 - staked gro
-                res.lpGroUsdc[2].lp_position[i][1],     // pool2 - staked usdc
-                res.gvt[1].amount_staked[i],            // pool3 - staked lp
+                res.groStaked[i][0],                    // pool0 - staked lp
+                //pool1
+                res.lpGvtGroPooled[i],                  // pooled lp
+                res.lpGvtGroStaked[i][0],               // staked lp
+                (res.lpGvtGroPooled[i] + res.lpGvtGroStaked[i][0]) * factor.pool1GvtFactor,     // staked gvt
+                (res.lpGvtGroPooled[i] + res.lpGvtGroStaked[i][0]) * factor.pool1GroFactor,     // staked gro
+                //pool2
+                res.lpGroUsdcPooled[i],                  // pooled lp
+                res.lpGroUsdcStaked[i][0],               // staked lp
+                (res.lpGroUsdcPooled[i] + res.lpGroUsdcStaked[i][0]) * factor.pool2GroFactor,   // staked gro
+                (res.lpGroUsdcPooled[i] + res.lpGroUsdcStaked[i][0]) * factor.pool2UsdcFactor,  // staked usdc
+                res.gvtStaked[i][0],                    // pool3 - staked lp
                 (nodeEnv === NetworkName.MAINNET)
                     ? res.lpCrvPwrd[0].amount_pooled_lp[i]   // pool4 - pooled lp
                     : null,
@@ -327,18 +337,25 @@ const insertBalances = async (
                 (nodeEnv === NetworkName.MAINNET)
                     ? res.lpGroWeth[2].lp_position[i][1]     // pool5 - staked weth
                     : null,
-                res.usdce_1_0[i],
-                res.usdte_1_0[i],
-                res.daie_1_0[i],
-                res.usdce_1_5[i],
-                res.usdte_1_5[i],
-                res.daie_1_5[i],
-                res.usdce_1_6[i],
-                res.usdte_1_6[i],
-                res.daie_1_6[i],
-                res.usdce_1_7[i],
-                res.usdte_1_7[i],
-                res.daie_1_7[i],
+                // SJS: temporarily disables for testing
+                // res.usdce_1_0[i],
+                // res.usdte_1_0[i],
+                // res.daie_1_0[i],
+                // res.usdce_1_7[i],
+                // res.usdte_1_7[i],
+                // res.daie_1_7[i],
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 moment.utc(),
             ];
 
@@ -409,22 +426,21 @@ const checkTokenCounterDate = (day: moment.Moment) => {
 const cleanseVars = () => {
     contract = [];
     gvt = [];
+    gvtStaked = [];
     pwrd = [];
+    //pwrdStaked = [];
     gro = [];
+    groStaked = [];
     groTotal = [];
-    lpGroGvt = [];
-    lpGroUsdc = [];
+    lpGvtGroPooled = [];
+    lpGvtGroStaked = [];
+    lpGroUsdcPooled = [];
+    lpGroUsdcStaked = [];
     lpCrvPwrd = [];
     lpGroWeth = [];
     usdce_1_0 = [];
     usdte_1_0 = [];
     daie_1_0 = [];
-    usdce_1_5 = [];
-    usdte_1_5 = [];
-    daie_1_5 = [];
-    usdce_1_6 = [];
-    usdte_1_6 = [];
-    daie_1_6 = [];
     usdce_1_7 = [];
     usdte_1_7 = [];
     daie_1_7 = [];
@@ -450,6 +466,7 @@ const loadUserBalances = async (
     time: string,
 ): Promise<boolean> => {
     try {
+
         // Retrieve target time to load balances (23:59:59 by default)
         const [hours, minutes, seconds] = checkTime(time);
         if (hours === -1)
@@ -503,6 +520,9 @@ const loadUserBalances = async (
                 }
             }
 
+            // Get LP underlying token factors
+            const factors = await getUnderlyingFactorsFromPools(block);
+
             // Retrieve balances from the SC
             const result = await getBalancesSC(
                 users,
@@ -520,7 +540,7 @@ const loadUserBalances = async (
             // Insert balances into the DB
             for (let i = 0; i < users.length; i++) {
                 const addr = users[i];
-                const res = await insertBalances(account, i, day, addr, result);
+                const res = await insertBalances(account, i, day, addr, result, factors);
                 if (!res)
                     return false;
             }

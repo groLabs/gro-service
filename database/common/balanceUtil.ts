@@ -1,15 +1,19 @@
-// import { BigNumber } from 'ethers';
+import { BigNumber } from 'ethers';
 import moment from 'moment';
 import { parseAmount } from '../common/globalUtil';
 import { getConfig } from '../../common/configUtil';
-import { getTokenCounter } from './contractUtil';
+import {
+    getTokenCounter,
+    getUni2GvtGro,
+    getUni2GroUsdc,
+} from './contractUtil';
 import { Base } from '../types';
 import { showError } from '../handler/logHandler';
 
 const UNI_POOL_GVT_GRO_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_gvt_pool_address');
 const UNI_POOL_GVT_USDC_ADDRESS = getConfig('staker_pools.contracts.uniswap_gro_usdc_pool_address');
 const BAL_POOL_GRO_WETH_ADDRESS = getConfig('staker_pools.contracts.balancer_gro_weth_pool_address');
-
+const DECIMALS_FACTOR_18 = BigNumber.from(10).pow(BigNumber.from(18));
 
 /// @notice Check time format (if defined) and return hours, minutes & seconds
 /// @dev    If time is not defined, return 23:59:59 by default
@@ -25,7 +29,7 @@ const checkTime = (time: string): number[] => {
         const seconds = parseInt(time.substring(6, 8));
         return [hours, minutes, seconds];
     } else {
-       showError('balanceUtil.ts->checkTime()', `invalid time format ${time}`);
+        showError('balanceUtil.ts->checkTime()', `invalid time format ${time}`);
         return [-1, -1, -1];
     }
 }
@@ -45,8 +49,8 @@ const getBalances = async (
         );
 
         return [
-            { amount_unstaked: result[0].map(unstaked => parseAmount(unstaked, Base.D18)) },
-            { amount_staked: result[1].map(staked => parseAmount(staked, Base.D18)) }, // only for single-sided pools (gvt, gro)
+            { amount_unstaked: result[0].map(unstaked => parseAmount(unstaked, Base.D18, 8)) },
+            { amount_staked: result[1].map(staked => parseAmount(staked, Base.D18, 8)) }, // only for single-sided pools (gvt, gro)
         ];
     } catch (err) {
         showError('balanceUtil.ts->getBalances()', err);
@@ -83,13 +87,13 @@ const getBalancesUniBalLP = async (
                 return [];
         }
         return [
-            { amount_pooled_lp: result[0].map(pooled => parseAmount(pooled, Base.D18)) },
-            { amount_staked_lp: result[1].map(staked => parseAmount(staked, Base.D18)) },
+            { amount_pooled_lp: result[0].map(pooled => parseAmount(pooled, Base.D18, 8)) },
+            { amount_staked_lp: result[1].map(staked => parseAmount(staked, Base.D18, 8)) },
             {
                 lp_position: result[2].map(
                     lp_positions => [
-                        parseAmount(lp_positions[0], Base.D18),
-                        parseAmount(lp_positions[1], (tokenAddress === UNI_POOL_GVT_USDC_ADDRESS) ? Base.D6 : Base.D18),
+                        parseAmount(lp_positions[0], Base.D18, 8),
+                        parseAmount(lp_positions[1], (tokenAddress === UNI_POOL_GVT_USDC_ADDRESS) ? Base.D6 : Base.D18, 8),
                     ])
             }
         ];
@@ -112,9 +116,9 @@ const getBalancesCrvLP = async (
             blockTag,
         );
         return [
-            { amount_pooled_lp: result[0].map(pooled => parseAmount(pooled, Base.D18)) },
-            { amount_staked_lp: result[1].map(staked => parseAmount(staked, Base.D18)) },
-            { lp_position: result[2].map(lp_position => parseAmount(lp_position, Base.D18)) }
+            { amount_pooled_lp: result[0].map(pooled => parseAmount(pooled, Base.D18, 8)) },
+            { amount_staked_lp: result[1].map(staked => parseAmount(staked, Base.D18, 8)) },
+            { lp_position: result[2].map(lp_position => parseAmount(lp_position, Base.D18, 8)) }
         ];
     } catch (err) {
         showError('balanceUtil.ts->getBalancesCrvLP()', err);
@@ -122,9 +126,46 @@ const getBalancesCrvLP = async (
     }
 }
 
+const getUnderlyingFactorsFromPools = async (blockNumber: number) => {
+    try {
+        const [
+            poolGvtGro_totalSupply,
+            poolGvtGro_reserves,
+            poolGroUsdc_totalSupply,
+            poolGroUsdc_reserves
+        ] = await Promise.all([
+            getUni2GvtGro().totalSupply({ blockTag: blockNumber }),
+            getUni2GvtGro().getReserves({ blockTag: blockNumber }),
+            getUni2GroUsdc().totalSupply({ blockTag: blockNumber }),
+            getUni2GroUsdc().getReserves({ blockTag: blockNumber }),
+        ]);
+
+        return {
+            pool1GvtFactor: poolGvtGro_totalSupply.isZero()
+                ? 0
+                : parseAmount(poolGvtGro_reserves[0].mul(DECIMALS_FACTOR_18).div(poolGvtGro_totalSupply), Base.D18, 12),
+            pool1GroFactor: poolGvtGro_totalSupply.isZero()
+                ? 0
+                : parseAmount(poolGvtGro_reserves[1].mul(DECIMALS_FACTOR_18).div(poolGvtGro_totalSupply), Base.D18, 12),
+            pool2GroFactor: poolGroUsdc_totalSupply.isZero()
+                ? 0
+                : parseAmount(poolGroUsdc_reserves[0].mul(DECIMALS_FACTOR_18).div(poolGroUsdc_totalSupply), Base.D18, 12),
+            pool2UsdcFactor: poolGroUsdc_totalSupply.isZero()
+                ? 0
+                : parseAmount(poolGroUsdc_reserves[1].mul(DECIMALS_FACTOR_18).div(poolGroUsdc_totalSupply), Base.D6, 12),
+        }
+
+
+    } catch (err) {
+        showError('balanceUtil.ts->getBalances()', err);
+        return []; // TODO
+    }
+}
+
 export {
     checkTime,
     getBalances,
+    getUnderlyingFactorsFromPools,
     getBalancesUniBalLP,
     getBalancesCrvLP,
 }
