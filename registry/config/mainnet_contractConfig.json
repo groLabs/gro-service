@@ -74,7 +74,8 @@
         "USDC",
         "USDT",
         "UniswapV2Pair_gvt_gro",
-        "UniswapV2Pair_gro_usdc"
+        "UniswapV2Pair_gro_usdc",
+        "Airdrop"
     ],
     "contractHistories": {
         "GroHodler": [
@@ -850,6 +851,21 @@
                 "address": "0x21C5918CcB42d20A2368bdCA8feDA0399EbfD2f6",
                 "deployedBlock": 13327380,
                 "startBlock": 13327380,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "Other",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "Airdrop": [
+            {
+                "address": "0xF3d39A7FEbA9bE0C1D18b355E7eD01070Ee2c561",
+                "deployedBlock": 14268734,
+                "startBlock": 14268734,
                 "endBlock": null,
                 "abiVersion": "6270d2c",
                 "tag": "Other",

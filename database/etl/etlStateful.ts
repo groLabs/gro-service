@@ -138,90 +138,97 @@ const etlStatefulByBlock = async (
                 ];
 
                 result.push(
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogNewDeposit,
-                        CN.depositHandler,
-                        from,
-                        newOffset
-                    ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogNewWithdrawal,
-                        CN.withdrawHandler,
-                        from,
-                        newOffset
-                    ),
-                    ...groTokenContracts.map((groTokenContract) =>
-                        loadStateful(
-                            getNetwork(GN.ETHEREUM).id,
-                            EV.Transfer,
-                            groTokenContract,
-                            from,
-                            newOffset,
-                        )),
-                    ...[
-                        CN.powerD,
-                        CN.groVault,
-                    ].map((groTokenContract) =>
-                        loadStateful(
-                            getNetwork(GN.ETHEREUM).id,
-                            EV.Approval,
-                            groTokenContract,
-                            from,
-                            newOffset,
-                        )),
-                    ...[
-                        CN.DAI,
-                        CN.USDC,
-                        CN.USDT,
-                    ].map((stableCoin) =>
-                        loadStateful(
-                            getNetwork(GN.ETHEREUM).id,
-                            EV.Approval,
-                            stableCoin,
-                            from,
-                            newOffset,
-                        )),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogBonusClaimed,
-                        CN.GroHodler,
-                        from,
-                        newOffset
-                    ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogDeposit,
-                        CN.LPTokenStakerV2,
-                        from,
-                        newOffset
-                    ),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogNewDeposit,
+                    //     CN.depositHandler,
+                    //     from,
+                    //     newOffset
+                    // ),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogNewWithdrawal,
+                    //     CN.withdrawHandler,
+                    //     from,
+                    //     newOffset
+                    // ),
+                    // ...groTokenContracts.map((groTokenContract) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.Transfer,
+                    //         groTokenContract,
+                    //         from,
+                    //         newOffset,
+                    //     )),
+                    // ...[
+                    //     CN.powerD,
+                    //     CN.groVault,
+                    // ].map((groTokenContract) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.Approval,
+                    //         groTokenContract,
+                    //         from,
+                    //         newOffset,
+                    //     )),
+                    // ...[
+                    //     CN.DAI,
+                    //     CN.USDC,
+                    //     CN.USDT,
+                    // ].map((stableCoin) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.Approval,
+                    //         stableCoin,
+                    //         from,
+                    //         newOffset,
+                    //     )),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogBonusClaimed,
+                    //     CN.GroHodler,
+                    //     from,
+                    //     newOffset
+                    // ),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogDeposit,
+                    //     CN.LPTokenStakerV2,
+                    //     from,
+                    //     newOffset
+                    // ),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogClaim,
+                    //     CN.LPTokenStakerV2,
+                    //     from,
+                    //     newOffset
+                    // ),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogMultiClaim,
+                    //     CN.LPTokenStakerV2,
+                    //     from,
+                    //     newOffset
+                    // ),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogWithdraw,
+                    //     CN.LPTokenStakerV2,
+                    //     from,
+                    //     newOffset
+                    // ),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogMultiWithdraw,
+                    //     CN.LPTokenStakerV2,
+                    //     from,
+                    //     newOffset
+                    // ),
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
                         EV.LogClaim,
-                        CN.LPTokenStakerV2,
-                        from,
-                        newOffset
-                    ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogMultiClaim,
-                        CN.LPTokenStakerV2,
-                        from,
-                        newOffset
-                    ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogWithdraw,
-                        CN.LPTokenStakerV2,
-                        from,
-                        newOffset
-                    ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogMultiWithdraw,
-                        CN.LPTokenStakerV2,
+                        CN.Airdrop,
                         from,
                         newOffset
                     ),

@@ -66,7 +66,8 @@
         "USDT_e",
         "AVAXDAIVault_v1_9_internal",
         "AVAXUSDCVault_v1_9_internal",
-        "AVAXUSDTVault_v1_9_internal"
+        "AVAXUSDTVault_v1_9_internal",
+        "Airdrop"
     ],
     "contractHistories": {
         "DAIVaultAdaptor": [
@@ -1209,6 +1210,21 @@
                 "endBlock": null,
                 "abiVersion": "6270d2c",
                 "tag": "AVAX",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "Airdrop": [
+            {
+                "address": "0x3ea387553e894dAf16B84131Cc30e279ee4600C9",
+                "deployedBlock": 11938973,
+                "startBlock": 11938973,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "Other",
                 "tokens": [],
                 "protocols": [],
                 "protocolsDisplayName": [],

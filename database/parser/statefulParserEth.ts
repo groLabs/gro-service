@@ -114,16 +114,25 @@ const eventParserEth = async (
                     pids = [parseInt(log.args.pid.toString())];
                     amounts = [parseAmount(log.args.amount, Base.D18, 12)];
                 }
-
                 payload = {
                     user: log.args.user,
                     pids: pids,
                     amounts: amounts,
                 }
+                // Claims from Airdrop
+            } else if (eventName === EV.LogClaim
+                && contractName === CN.Airdrop
+            ) {
+                payload = {
+                    account: log.args.account,
+                    vest: log.args.vest,
+                    tranche_id: parseInt(log.args.trancheId.toString()),
+                    amount: parseAmount(log.args.amount, Base.D18, 12),
+                }
                 // Claims from LPTokenStakerV2
             } else if (
-                eventName === EV.LogClaim
-                || eventName === EV.LogMultiClaim
+                (eventName === EV.LogClaim && contractName === CN.LPTokenStakerV2)
+                || (eventName === EV.LogMultiClaim && contractName === CN.LPTokenStakerV2)
             ) {
                 const pids = (eventName === EV.LogClaim)
                     ? [parseInt(log.args.pid.toString())]

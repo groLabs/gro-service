@@ -147,7 +147,15 @@ const insertEth = async (
             break;
         case EV.LogClaim:
         case EV.LogMultiClaim:
-            res = await query('insert_ev_staker_claims.sql', event);
+            if (contractName === CN.LPTokenStakerV2) {
+                res = await query('insert_ev_staker_claims.sql', event);
+            } else if (contractName === CN.Airdrop) {
+                res = await query('insert_ev_airdrop_claims.sql', event);
+            } else {
+                const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;
+                showError('loadStateful.ts->insertAvax()', msg);
+                return errorObj(msg);
+            }
             break;
         default:
             const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;
