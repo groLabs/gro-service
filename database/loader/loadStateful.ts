@@ -60,6 +60,12 @@ const insertAvax = async (
             case EV.AnswerUpdated:
                 res = await query('insert_ev_price.sql', event);
                 break;
+            case EV.LogHarvested:
+                res = await query('insert_ev_strategy_harvest.sql', event);
+                break;
+            case EV.LogNewStrategyHarvest:
+                res = await query('insert_ev_vault_harvest.sql', event);
+                break;
             case EV.LogNewPositionOpened:
                 const resOpen = await query('insert_ev_ah_position_opened.sql', event[0]);
                 if (resOpen.status === QUERY_SUCCESS && resOpen.rowCount > 0) {

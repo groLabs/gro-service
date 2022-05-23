@@ -83,7 +83,8 @@ const etlStatefulByDate = async (
 }
 
 /// @notice Load events for the given network and from/to blocks
-/// @dev    Event <LogNewReleaseFactor> is not applicable for Labs 1.0
+/// @dev    (!) Event <LogNewReleaseFactor> is not applicable for Labs v1.0
+/// @dev    (!) Event <LogHarvested> is not applicable for Strategies v1.0
 /// @dev    Load is split in N batches through iterative calls, where N is
 ///         defined in constants->LISTENER_BLOCKS_ETH or LISTENER_BLOCKS_AVAX
 /// @param  globalNetwork The blockchain network (1: Ethereum, 2: Avalanche)
@@ -274,14 +275,14 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset,
                     //     )),
-                    ...vaults.map((vault) =>
-                        loadStateful(
-                            getNetwork(GN.AVALANCHE).id,
-                            EV.Approval,
-                            vault,
-                            from,
-                            newOffset,
-                        )),
+                    // ...vaults.map((vault) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.AVALANCHE).id,
+                    //         EV.Approval,
+                    //         vault,
+                    //         from,
+                    //         newOffset,
+                    //     )),
                     // ...vaults.map((vault) =>
                     //     loadStateful(
                     //         getNetwork(GN.AVALANCHE).id,
@@ -349,6 +350,26 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset,
                     //     )),
+                    ...vaults.map((vault) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.LogNewStrategyHarvest,
+                            vault,
+                            from,
+                            newOffset,
+                        )),
+                    ...[
+                        CN.AVAXDAIStrategy_v1_7,
+                        CN.AVAXUSDCStrategy_v1_7,
+                        CN.AVAXUSDTStrategy_v1_7,
+                    ].map((strategy) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.LogHarvested,
+                            strategy,
+                            from,
+                            newOffset,
+                        )),
                 );
             }
 

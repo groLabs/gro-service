@@ -113,6 +113,9 @@ enum EventName {
     LogNewPositionOpened = 'LogNewPositionOpened',
     LogPositionClosed = 'LogPositionClosed',
     LogPositionAdjusted = 'LogPositionAdjusted',
+    LogHarvested = 'LogHarvested',
+    LogNewStrategyHarvest = 'LogNewStrategyHarvest',
+
 }
 
 enum Bool {

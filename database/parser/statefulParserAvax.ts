@@ -139,6 +139,20 @@ const eventParserAvax = async (
                         updated_at: parseInt(log.args.updatedAt.toString()),
                     }
                     break;
+                case EV.LogHarvested:
+                    payload = {
+                        profit: parseAmount(log.args.profit, base, 8),
+                        loss: parseAmount(log.args.loss, base, 8),
+                        debt_payment: parseAmount(log.args.debtPayment, base, 8),
+                        debt_outstanding: parseAmount(log.args.debtOutstanding, base, 8),
+                    }
+                    break;
+                case EV.LogNewStrategyHarvest:
+                    payload = {
+                        loss: log.args.loss,
+                        change: parseAmount(log.args.change, base, 8),
+                    }
+                    break;
                 // AH position opened
                 case EV.LogNewPositionOpened:
                     // For table EV_LAB_AH_POSITION_OPENED
