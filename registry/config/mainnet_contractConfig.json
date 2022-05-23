@@ -616,13 +616,16 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": ["USDC", "MIM"],
+                "tokens": [
+                    "USDC",
+                    "ALUSD"
+                ],
                 "protocols": ["Curve", "Convex"],
                 "protocolsDisplayName": ["Curve", "Convex"],
                 "metaData": {
                     "N": "Convex XPool USDC",
-                    "DN": "Convex-MIM-3CRV",
-                    "DY": 110000
+                    "DN": "Convex-ALUSD-3CRV",
+                    "DY": 95000
                 },
                 "active": true
             }
@@ -678,13 +681,16 @@
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
-                "tokens": ["USDT", "UST"],
+                "tokens": [
+                    "USDT",
+                    "LUSD"
+                ],
                 "protocols": ["Curve", "Convex"],
                 "protocolsDisplayName": ["Curve", "Convex"],
                 "metaData": {
                     "N": "Convex XPool USDT",
-                    "DN": "Convex-UST-wormhole-3CRV",
-                    "DY": 110000
+                    "DN": "Convex-LUSD-3CRV",
+                    "DY": 25000
                 },
                 "active": true
             }
