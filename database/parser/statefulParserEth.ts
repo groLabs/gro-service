@@ -57,6 +57,19 @@ const eventParserEth = async (
                     amount2: parseAmount(log.args.tokenAmounts[1], Base.D6, 8),
                     amount3: parseAmount(log.args.tokenAmounts[2], Base.D6, 8),
                 }
+
+
+                // Withdrawals from Emergency Handler
+            } else if (eventName === EV.LogEmergencyWithdrawal) {
+                payload = {
+                    pwrd: log.args.pwrd ? log.args.pwrd : null,
+                    account: log.args.account ? log.args.account : null,
+                    asset: log.args.asset ? log.args.asset : null,
+                    amount: log.args.amount ? parseAmount(log.args.amount, Base.D18, 8) : null,
+                    price: log.args.price ? parseAmount(log.args.price, Base.D18, 8) : null,
+                }
+
+
                 // Transfers
             } else if (eventName === EV.Transfer) {
                 payload = {

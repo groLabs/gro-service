@@ -152,6 +152,13 @@ const etlStatefulByBlock = async (
                     //     from,
                     //     newOffset
                     // ),
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogEmergencyWithdrawal,
+                        CN.emergencyHandler,
+                        from,
+                        newOffset
+                    ),
                     // ...groTokenContracts.map((groTokenContract) =>
                     //     loadStateful(
                     //         getNetwork(GN.ETHEREUM).id,
@@ -225,13 +232,13 @@ const etlStatefulByBlock = async (
                     //     from,
                     //     newOffset
                     // ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogClaim,
-                        CN.Airdrop,
-                        from,
-                        newOffset
-                    ),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogClaim,
+                    //     CN.Airdrop,
+                    //     from,
+                    //     newOffset
+                    // ),
                 );
             }
 

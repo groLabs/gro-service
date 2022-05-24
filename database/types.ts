@@ -99,6 +99,7 @@ enum EventName {
     LogNewDeposit = 'LogNewDeposit',
     LogDeposit = 'LogDeposit',
     LogNewWithdrawal = 'LogNewWithdrawal',
+    LogEmergencyWithdrawal = 'LogEmergencyWithdrawal',
     LogWithdrawal = 'LogWithdrawal',
     LogWithdraw = 'LogWithdraw',
     LogMultiWithdraw = 'LogMultiWithdraw',

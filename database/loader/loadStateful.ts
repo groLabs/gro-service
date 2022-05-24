@@ -132,6 +132,9 @@ const insertEth = async (
         case EV.LogNewWithdrawal:
             res = await query('insert_ev_gro_withdrawals.sql', event);
             break;
+        case EV.LogEmergencyWithdrawal:
+            res = await query('insert_ev_gro_emergency_withdrawals.sql', event);
+            break;
         case EV.Transfer:
             res = await query('insert_ev_transfers.sql', event);
             break;
