@@ -99,6 +99,7 @@ enum EventName {
     LogNewDeposit = 'LogNewDeposit',
     LogDeposit = 'LogDeposit',
     LogNewWithdrawal = 'LogNewWithdrawal',
+    LogEmergencyWithdraw = 'LogEmergencyWithdraw',
     LogEmergencyWithdrawal = 'LogEmergencyWithdrawal',
     LogWithdrawal = 'LogWithdrawal',
     LogWithdraw = 'LogWithdraw',
@@ -116,7 +117,7 @@ enum EventName {
     LogPositionAdjusted = 'LogPositionAdjusted',
     LogHarvested = 'LogHarvested',
     LogNewStrategyHarvest = 'LogNewStrategyHarvest',
-
+    LogMigrateUser = 'LogMigrateUser',
 }
 
 enum Bool {

@@ -85,6 +85,8 @@ const etlStatefulByDate = async (
 /// @notice Load events for the given network and from/to blocks
 /// @dev    (!) Event <LogNewReleaseFactor> is not applicable for Labs v1.0
 /// @dev    (!) Event <LogHarvested> is not applicable for Strategies v1.0
+/// @dev    (!) Event <LogMultiWithdraw> is not applicable for LpTokenStaker v1.0
+/// @dev    (!) Event <LogMigrateUser> is not applicable for LPTokenStaker V1.0
 /// @dev    Load is split in N batches through iterative calls, where N is
 ///         defined in constants->LISTENER_BLOCKS_ETH or LISTENER_BLOCKS_AVAX
 /// @param  globalNetwork The blockchain network (1: Ethereum, 2: Avalanche)
@@ -134,7 +136,12 @@ const etlStatefulByBlock = async (
                 const groTokenContracts = [
                     CN.powerD,
                     CN.groVault,
-                    //CN.GroDAOToken,
+                    CN.GroDAOToken,
+                ];
+
+                const LpTokenStakerContracts = [
+                    CN.LPTokenStakerV1,
+                    CN.LPTokenStakerV2
                 ];
 
                 result.push(
@@ -152,13 +159,13 @@ const etlStatefulByBlock = async (
                     //     from,
                     //     newOffset
                     // ),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogEmergencyWithdrawal,
-                        CN.emergencyHandler,
-                        from,
-                        newOffset
-                    ),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogEmergencyWithdrawal,
+                    //     CN.emergencyHandler,
+                    //     from,
+                    //     newOffset
+                    // ),
                     // ...groTokenContracts.map((groTokenContract) =>
                     //     loadStateful(
                     //         getNetwork(GN.ETHEREUM).id,
@@ -199,46 +206,59 @@ const etlStatefulByBlock = async (
                     // ),
                     // loadStateful(
                     //     getNetwork(GN.ETHEREUM).id,
-                    //     EV.LogDeposit,
-                    //     CN.LPTokenStakerV2,
-                    //     from,
-                    //     newOffset
-                    // ),
-                    // loadStateful(
-                    //     getNetwork(GN.ETHEREUM).id,
-                    //     EV.LogClaim,
-                    //     CN.LPTokenStakerV2,
-                    //     from,
-                    //     newOffset
-                    // ),
-                    // loadStateful(
-                    //     getNetwork(GN.ETHEREUM).id,
-                    //     EV.LogMultiClaim,
-                    //     CN.LPTokenStakerV2,
-                    //     from,
-                    //     newOffset
-                    // ),
-                    // loadStateful(
-                    //     getNetwork(GN.ETHEREUM).id,
-                    //     EV.LogWithdraw,
-                    //     CN.LPTokenStakerV2,
-                    //     from,
-                    //     newOffset
-                    // ),
-                    // loadStateful(
-                    //     getNetwork(GN.ETHEREUM).id,
-                    //     EV.LogMultiWithdraw,
-                    //     CN.LPTokenStakerV2,
-                    //     from,
-                    //     newOffset
-                    // ),
-                    // loadStateful(
-                    //     getNetwork(GN.ETHEREUM).id,
                     //     EV.LogClaim,
                     //     CN.Airdrop,
                     //     from,
                     //     newOffset
                     // ),
+                    // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.LogDeposit,
+                    //         LpTokenStakerContract,
+                    //         from,
+                    //         newOffset
+                    //     )),
+                    // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.LogClaim,
+                    //         LpTokenStakerContract,
+                    //         from,
+                    //         newOffset
+                    //     )),
+                    // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.LogMultiClaim,
+                    //         LpTokenStakerContract,
+                    //         from,
+                    //         newOffset
+                    //     )),
+                    // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.LogWithdraw,
+                    //         LpTokenStakerContract,
+                    //         from,
+                    //         newOffset
+                    //     )),
+                    // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.LogMultiWithdraw,
+                    //         LpTokenStakerContract,
+                    //         from,
+                    //         newOffset
+                    //     )),
+                    ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.LogMigrateUser,
+                            LpTokenStakerContract,
+                            from,
+                            newOffset
+                        )),
                 );
             }
 

@@ -169,3 +169,21 @@ CREATE TABLE gro."EV_STAKER_CLAIMS" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."EV_STAKER_CLAIMS" OWNER to postgres;
+
+CREATE TABLE gro."EV_STAKER_USERS_MIGRATED" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "block_timestamp" INTEGER NULL,
+    "log_name" CHARACTER VARYING (100) NOT NULL,
+    "account" CHARACTER VARYING (42) NULL,
+    "pids" INTEGER [] NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT "EV_STAKER_USERS_MIGRATED_pkey" PRIMARY KEY (
+        "transaction_id",
+        "log_index",
+        "contract_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_STAKER_USERS_MIGRATED" OWNER to postgres;

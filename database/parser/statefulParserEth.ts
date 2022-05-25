@@ -57,10 +57,9 @@ const eventParserEth = async (
                     amount2: parseAmount(log.args.tokenAmounts[1], Base.D6, 8),
                     amount3: parseAmount(log.args.tokenAmounts[2], Base.D6, 8),
                 }
-
-
                 // Withdrawals from Emergency Handler
-            } else if (eventName === EV.LogEmergencyWithdrawal) {
+            } else if (eventName === EV.LogEmergencyWithdrawal
+                && contractName === CN.emergencyHandler) {
                 payload = {
                     pwrd: log.args.pwrd ? log.args.pwrd : null,
                     account: log.args.account ? log.args.account : null,
@@ -68,8 +67,6 @@ const eventParserEth = async (
                     amount: log.args.amount ? parseAmount(log.args.amount, Base.D18, 8) : null,
                     price: log.args.price ? parseAmount(log.args.price, Base.D18, 8) : null,
                 }
-
-
                 // Transfers
             } else if (eventName === EV.Transfer) {
                 payload = {
@@ -97,14 +94,20 @@ const eventParserEth = async (
                 // Claims from Hodler
             } else if (eventName === EV.LogBonusClaimed) {
                 payload = {
-                    from: log.args.user,
-                    token_id: TokenId.GRO,
-                    pid: null,
+                    user: log.args.user,
                     vest: log.args.vest,
-                    tranche_id: null,
                     amount: parseAmount(log.args.amount, Base.D18, 8),
                 }
-                // TODO: what about LPTokenStakerV1 for IDL?
+                // Claims from Airdrop
+            } else if (eventName === EV.LogClaim
+                && contractName === CN.Airdrop
+            ) {
+                payload = {
+                    account: log.args.account,
+                    vest: log.args.vest,
+                    tranche_id: parseInt(log.args.trancheId.toString()),
+                    amount: parseAmount(log.args.amount, Base.D18, 12),
+                }
                 // Deposits in LPTokenStaker
             } else if (eventName === EV.LogDeposit) {
                 payload = {
@@ -112,9 +115,13 @@ const eventParserEth = async (
                     pid: parseInt(log.args.pid.toString()),
                     amount: parseAmount(log.args.amount, Base.D18, 12),
                 }
-                // Withdrawals from LPTokenStakerV2 in ETH
-            } else if (eventName === EV.LogWithdraw ||
-                eventName === EV.LogMultiWithdraw
+                // Withdrawals from LPTokenStaker in ETH
+            } else if (
+                (contractName === CN.LPTokenStakerV1
+                    || contractName === CN.LPTokenStakerV2)
+                && (eventName === EV.LogWithdraw
+                    || eventName === EV.LogMultiWithdraw
+                    || eventName === EV.LogEmergencyWithdraw)
             ) {
                 let pids = [];
                 let amounts = [];
@@ -132,20 +139,12 @@ const eventParserEth = async (
                     pids: pids,
                     amounts: amounts,
                 }
-                // Claims from Airdrop
-            } else if (eventName === EV.LogClaim
-                && contractName === CN.Airdrop
-            ) {
-                payload = {
-                    account: log.args.account,
-                    vest: log.args.vest,
-                    tranche_id: parseInt(log.args.trancheId.toString()),
-                    amount: parseAmount(log.args.amount, Base.D18, 12),
-                }
-                // Claims from LPTokenStakerV2
+                // Claims from LPTokenStaker
             } else if (
-                (eventName === EV.LogClaim && contractName === CN.LPTokenStakerV2)
-                || (eventName === EV.LogMultiClaim && contractName === CN.LPTokenStakerV2)
+                (contractName === CN.LPTokenStakerV1
+                    || contractName === CN.LPTokenStakerV2)
+                && (eventName === EV.LogClaim
+                    || eventName === EV.LogMultiClaim)
             ) {
                 const pids = (eventName === EV.LogClaim)
                     ? [parseInt(log.args.pid.toString())]
@@ -156,6 +155,15 @@ const eventParserEth = async (
                     vest: log.args.vest,
                     pids: pids,
                     amount: parseAmount(log.args.amount, Base.D18, 12),
+                }
+                // Migrations from LPTokenStakerV1 in ETH
+            } else if (
+                (contractName === CN.LPTokenStakerV2
+                    && eventName === EV.LogMigrateUser)
+            ) {
+                payload = {
+                    account: log.args.account,
+                    pids: log.args.pids.map((pid: number) => parseInt(pid.toString())),
                 }
             } else {
                 showError(

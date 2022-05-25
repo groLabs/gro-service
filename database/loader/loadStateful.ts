@@ -148,21 +148,28 @@ const insertEth = async (
         case EV.LogMultiWithdraw:
             res = await query('insert_ev_staker_withdrawals.sql', event);
             break;
+        case EV.LogBonusClaimed:
+            res = await query('insert_ev_hodler_claims.sql', event);
+            break;
+        case EV.LogMigrateUser:
+            res = await query('insert_ev_staker_users_migrated.sql', event);
+            break;
         case EV.LogClaim:
         case EV.LogMultiClaim:
-            if (contractName === CN.LPTokenStakerV2) {
+            if (contractName === CN.LPTokenStakerV1
+                || contractName === CN.LPTokenStakerV2) {
                 res = await query('insert_ev_staker_claims.sql', event);
             } else if (contractName === CN.Airdrop) {
                 res = await query('insert_ev_airdrop_claims.sql', event);
             } else {
                 const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;
-                showError('loadStateful.ts->insertAvax()', msg);
+                showError('loadStateful.ts->insertEth()', msg);
                 return errorObj(msg);
             }
             break;
         default:
             const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;
-            showError('loadStateful.ts->insertAvax()', msg);
+            showError('loadStateful.ts->insertEth()', msg);
             return errorObj(msg);
     }
     return res;
