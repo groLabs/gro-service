@@ -266,7 +266,12 @@ async function calcCurrentStrategyAPY(startBlock, endBlock) {
         for (let j = 0; j < strategies.length; j += 1) {
             logger.info(`strategy ${j}`);
             const { strategy } = strategies[j];
-            const { metaData } = latestContractInfo[strategy.address];
+            const { metaData, startBlock: strategyStartBlock } =
+                latestContractInfo[strategy.address];
+            // eslint-disable-next-line no-await-in-loop
+            if (startBlock.blockNumber < strategyStartBlock) {
+                startBlock.blockNumber = strategyStartBlock;
+            }
             // eslint-disable-next-line no-await-in-loop
             const apy = await calcStrategyAPY(
                 yearnVaults[i],

@@ -613,7 +613,7 @@
             {
                 "address": "0x8b335D3E266389Ae08A2F22b01D33813d40ED8Fd",
                 "deployedBlock": 14300371,
-                "startBlock": 14300371,
+                "startBlock": 14836344,
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
@@ -678,7 +678,7 @@
             {
                 "address": "0xDE5a25415C637b52d59Ef980b29a5fDa8dC3C70B",
                 "deployedBlock": 14300374,
-                "startBlock": 14300374,
+                "startBlock": 14836345,
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
