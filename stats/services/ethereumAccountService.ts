@@ -1,5 +1,6 @@
 import BN from 'bignumber.js';
 import { ethers } from 'ethers';
+import { toChecksumAddress } from 'web3-utils';
 import { getFilterEvents } from '../../common/logFilter';
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import { ContractCallError, ParameterError } from '../../common/error';
@@ -15,6 +16,7 @@ import { getUserBonusInfo } from './vestingBonusService';
 import { ContractNames } from '../../registry/registry';
 import { newContract } from '../../registry/contracts';
 import { getUserPoolsInfo } from './stakerPoolService';
+import { EmergencyWithdrawals } from './emergencyWithdrawals';
 
 import {
     getContractsHistory,
@@ -820,6 +822,41 @@ async function getPwrDBalanceOnStaker(account) {
     return usdBalance;
 }
 
+function getEmergencyWithdrawals(account) {
+    const accountKey = toChecksumAddress(account);
+    const withdrawalItems = EmergencyWithdrawals[accountKey];
+    const result = {
+        pwrd: new BN(0),
+        gvt: new BN(0),
+        transactions: [],
+    };
+    if (!withdrawalItems) return result;
+    withdrawalItems.forEach((item) => {
+        const {
+            token,
+            hash,
+            timestamp,
+            usd_amount: amount,
+            coin_amount: coinAmount,
+            block_number: blockNumber,
+        } = item;
+        if (token === 'pwrd') {
+            result.pwrd = result.pwrd.plus(new BN(amount));
+        } else {
+            result.gvt = result.gvt.plus(new BN(amount));
+        }
+        result.transactions.push({
+            token,
+            hash,
+            timestamp,
+            usd_amount: div(amount, CONTRACT_ASSET_DECIMAL, amountDecimal),
+            coin_amount: coinAmount,
+            block_number: blockNumber,
+        });
+    });
+    return result;
+}
+
 async function ethereumPersonalStats(account) {
     const result = {
         status: 'error',
@@ -866,6 +903,7 @@ async function ethereumPersonalStats(account) {
 
         // logger.info(`${account} historical: ${JSON.stringify(data)}`);
         const { groVault, powerD, approval } = data;
+
         const failTransactions = await getAccountFailTransactions(account);
         const transactions = await getTransactions(groVault, powerD, provider);
         const transaction = await getTransaction(
@@ -891,9 +929,14 @@ async function ethereumPersonalStats(account) {
 
         result.pools = await getUserPoolsInfo(account, latestBlock.number);
 
+        const emergencyWithdrawals = getEmergencyWithdrawals(account);
+        result.transaction.withdrawals = [
+            ...result.transaction.withdrawals,
+            ...emergencyWithdrawals.transactions,
+        ];
         // calculate groVault deposit & withdraw
         let groVaultDepositAmount = new BN(0);
-        let groVaultWithdrawAmount = new BN(0);
+        let groVaultWithdrawAmount = emergencyWithdrawals.gvt;
         data.groVault.deposit.forEach((log) => {
             groVaultDepositAmount = groVaultDepositAmount.plus(log.amount);
         });
@@ -903,7 +946,7 @@ async function ethereumPersonalStats(account) {
 
         // calcuate powerd deposti & withdraw
         let powerDDepositAmount = new BN(0);
-        let powerDWithdrawAmount = new BN(0);
+        let powerDWithdrawAmount = emergencyWithdrawals.pwrd;
         data.powerD.deposit.forEach((log) => {
             powerDDepositAmount = powerDDepositAmount.plus(log.amount);
         });
