@@ -23,6 +23,7 @@ export const airdrop = {
         'airdrop-14-proofs.json',
         'airdrop-15-proofs.json',
         'airdrop-16-proofs.json',
+        'airdrop-17-proofs.json',
     ],
 };
 export const gro_gate = {
