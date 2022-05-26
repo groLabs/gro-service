@@ -202,19 +202,23 @@ const loadStateful = async (
 
         if (isDeployed) {
 
-            // For approval events, retrieve all associated stablecoins
             const isApproval = (eventName === EV.Approval)
                 ? true
                 : false;
 
-            const filter = !isApproval
-                ? []
-                : (networkId === NetworkId.AVALANCHE)
-                    ? [null, getLatestContractsAddress()[_contractName].address]
-                    : (_contractName !== CN.groVault && _contractName !== CN.powerD)
-                        ? [null, getLatestContractsAddress()[CN.depositHandler].address] // For eth, to: depositHandler
-                        : [];
-
+            // - For transfer events of stablecoins, filter by emergencyHandler 
+            //   (for the aggregation layer to identify emergency withdrawals)
+            // - For approval events, retrieve all associated stablecoins
+            const filter =
+                (_contractName === CN.DAI || _contractName === CN.USDC || _contractName === CN.USDT)
+                    ? [getLatestContractsAddress()[CN.emergencyHandler].address, null]
+                    : !isApproval
+                        ? []
+                        : (networkId === NetworkId.AVALANCHE)
+                            ? [null, getLatestContractsAddress()[_contractName].address]
+                            : (_contractName !== CN.groVault && _contractName !== CN.powerD)
+                                ? [null, getLatestContractsAddress()[CN.depositHandler].address] // For eth, to: depositHandler
+                                : [];
 
             const contractNames = (isApproval && networkId === NetworkId.AVALANCHE)
                 ? getStableContractNames(networkId, _contractName)

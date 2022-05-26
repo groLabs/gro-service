@@ -69,11 +69,21 @@ const eventParserEth = async (
                 }
                 // Transfers
             } else if (eventName === EV.Transfer) {
+                const base = (contractName === CN.USDC || contractName === CN.USDT)
+                    ? Base.D6
+                    : Base.D18;
+                const value = (contractName === CN.DAI)
+                    ? log.args.wad
+                    : log.args.value;
                 payload = {
                     token_id: getTokenIdByContractName(contractName),
-                    from: log.args.from,
-                    to: log.args.to,
-                    value: parseAmount(log.args.value, Base.D18, 8), // TODO: depends on stable?
+                    from: (contractName === CN.DAI)
+                        ? log.args.src
+                        : log.args.from,
+                    to: (contractName === CN.DAI)
+                        ? log.args.dst
+                        : log.args.to,
+                    value: parseAmount(value, base, 8),
                 }
                 // Approvals
             } else if (eventName === EV.Approval) {
