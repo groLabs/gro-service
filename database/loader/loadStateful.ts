@@ -167,6 +167,9 @@ const insertEth = async (
                 return errorObj(msg);
             }
             break;
+        case EV.LogPnLExecution:
+            res = await query('insert_ev_gro_pnl_execution.sql', event);
+            break;
         default:
             const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;
             showError('loadStateful.ts->insertEth()', msg);

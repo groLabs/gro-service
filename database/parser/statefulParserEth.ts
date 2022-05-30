@@ -175,6 +175,20 @@ const eventParserEth = async (
                     account: log.args.account,
                     pids: log.args.pids.map((pid: number) => parseInt(pid.toString())),
                 }
+                // Execution from PnL
+            } else if (eventName === EV.LogPnLExecution) {
+                payload = {
+                    deducted_assets: parseAmount(log.args.deductedAssets, Base.D18, 8),
+                    total_pnl: parseAmount(log.args.totalPnL, Base.D18, 8),
+                    invest_pnl: parseAmount(log.args.investPnL, Base.D18, 8),
+                    price_pnl: parseAmount(log.args.pricePnL, Base.D18, 8),
+                    withdrawal_bonus: parseAmount(log.args.withdrawalBonus, Base.D18, 8),
+                    performance_bonus: parseAmount(log.args.performanceBonus, Base.D18, 8),
+                    before_gvt_assets: parseAmount(log.args.beforeGvtAssets, Base.D18, 8),
+                    before_pwrd_assets: parseAmount(log.args.beforePwrdAssets, Base.D18, 8),
+                    after_gvt_assets: parseAmount(log.args.afterGvtAssets, Base.D18, 8),
+                    after_pwrd_assets: parseAmount(log.args.afterPwrdAssets, Base.D18, 8),
+                }
             } else {
                 showError(
                     'statefulParser.ts->eventParser()',

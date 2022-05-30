@@ -101,6 +101,12 @@ const eventParserAvax = async (
                         base,
                         contractName,
                     );
+                    if (!lockedProfit || !totalAssets) {
+                        return {
+                            status: QUERY_ERROR,
+                            data: null
+                        }
+                    }
                     payload = {
                         strategy: log.args.strategy,
                         gain: parseAmount(log.args.gain, base, 8),

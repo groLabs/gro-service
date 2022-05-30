@@ -118,6 +118,7 @@ enum EventName {
     LogHarvested = 'LogHarvested',
     LogNewStrategyHarvest = 'LogNewStrategyHarvest',
     LogMigrateUser = 'LogMigrateUser',
+    LogPnLExecution = 'LogPnLExecution',
 }
 
 enum Bool {
