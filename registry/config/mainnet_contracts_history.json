@@ -1912,6 +1912,60 @@
             "contractName": "AVAXUSDTStrategy_v1_7"
         }
     ],
+    "AVAXDAIStrategy_v1_9_internal": [
+        {
+            "address": "0xCfd28f3afB79380eC6cD759F76eA0a5c5b56A9aC",
+            "deployedBlock": 12832319,
+            "startBlock": 12832319,
+            "abiVersion": "6270d2c",
+            "tag": "AVAX",
+            "tokens": ["0xd586E7F844cEa2F87f50152665BCbc2C279D8d70"],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_DAI.e_strat_v1_9_internal",
+                "DN": "DAI.e AH v1.9 internal",
+                "DY": 117589
+            },
+            "active": true
+        }
+    ],
+    "AVAXUSDCStrategy_v1_9_internal": [
+        {
+            "address": "0xECBA3778357a7A448810D1D9a67025cD9BAf169A",
+            "deployedBlock": 12832007,
+            "startBlock": 12832007,
+            "abiVersion": "6270d2c",
+            "tag": "AVAX",
+            "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_USDC.e_strat_v1_9_internal",
+                "DN": "USDC.e AH v1.9 internal",
+                "DY": 117589
+            },
+            "active": true
+        }
+    ],
+    "AVAXUSDTStrategy_v1_9_internal": [
+        {
+            "address": "0x7053CdCfe9A6f8DB99768734939fCD6672470158",
+            "deployedBlock": 12832095,
+            "startBlock": 12832095,
+            "abiVersion": "6270d2c",
+            "tag": "AVAX",
+            "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {
+                "N": "ah_USDT.e_strat_v1_9_internal",
+                "DN": "USDT.e AH v1.9 internal",
+                "DY": 117589
+            },
+            "active": true
+        }
+    ],
     "AVAXBouncer": [
         {
             "address": "0x60861b5AFdf4B6e449dd194a6b54d6A64DFE2d81",

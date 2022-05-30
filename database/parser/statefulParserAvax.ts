@@ -116,7 +116,7 @@ const eventParserAvax = async (
                         total_loss: parseAmount(log.args.totalLoss, base, 8),
                         total_debt: parseAmount(log.args.totalDebt, base, 8),
                         debt_added: parseAmount(log.args.debtAdded, base, 8),
-                        debt_ratio: parseAmount(log.args.debtRatio, base, 8) * 100, //TBC
+                        debt_ratio: parseInt(log.args.debtRatio.toString()) / 10000,
                         locked_profit: lockedProfit,
                         total_assets: totalAssets,
                     }
