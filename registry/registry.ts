@@ -101,6 +101,9 @@ const ContractNames = {
     AVAXUSDCStrategy_v1_9_internal: "AVAXUSDCStrategy_v1_9_internal",
     AVAXUSDTStrategy_v1_9_internal: "AVAXUSDTStrategy_v1_9_internal",
     AVAXBouncer: 'AVAXBouncer',
+    Chainlink_aggr_usdc_e: 'Chainlink_aggr_usdc_e',
+    Chainlink_aggr_usdt_e: 'Chainlink_aggr_usdt_e',
+    Chainlink_aggr_dai_e: 'Chainlink_aggr_dai_e',
     Chainlink_aggr_usdc: 'Chainlink_aggr_usdc',
     Chainlink_aggr_usdt: 'Chainlink_aggr_usdt',
     Chainlink_aggr_dai: 'Chainlink_aggr_dai',
@@ -190,9 +193,12 @@ ContractABIMapping[ContractNames.AVAXDAIStrategy_v1_9_internal] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_9_internal] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_9_internal] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXBouncer] = 'Bouncer';
-ContractABIMapping[ContractNames.Chainlink_aggr_usdc] = 'ChainlinkOffchainAggregator';
-ContractABIMapping[ContractNames.Chainlink_aggr_usdt] = 'ChainlinkOffchainAggregator';
-ContractABIMapping[ContractNames.Chainlink_aggr_dai] = 'ChainlinkOffchainAggregator';
+ContractABIMapping[ContractNames.Chainlink_aggr_usdc_e] = 'ChainlinkOffchainAggregatorAvax';
+ContractABIMapping[ContractNames.Chainlink_aggr_usdt_e] = 'ChainlinkOffchainAggregatorAvax';
+ContractABIMapping[ContractNames.Chainlink_aggr_dai_e] = 'ChainlinkOffchainAggregatorAvax';
+ContractABIMapping[ContractNames.Chainlink_aggr_usdc] = 'ChainlinkOffchainAggregatorEth';
+ContractABIMapping[ContractNames.Chainlink_aggr_usdt] = 'ChainlinkOffchainAggregatorEth';
+ContractABIMapping[ContractNames.Chainlink_aggr_dai] = 'ChainlinkOffchainAggregatorEth';
 ContractABIMapping[ContractNames.DAI_e] = 'DAI_e';
 ContractABIMapping[ContractNames.USDC_e] = 'USDC_e';
 ContractABIMapping[ContractNames.USDT_e] = 'USDT_e';

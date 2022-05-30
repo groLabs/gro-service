@@ -154,6 +154,9 @@ const insertEth = async (
         case EV.LogMigrateUser:
             res = await query('insert_ev_staker_users_migrated.sql', event);
             break;
+        case EV.AnswerUpdated:
+            res = await query('insert_ev_price.sql', event);
+            break;
         case EV.LogClaim:
         case EV.LogMultiClaim:
             if (contractName === CN.LPTokenStakerV1

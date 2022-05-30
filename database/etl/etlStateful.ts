@@ -144,6 +144,12 @@ const etlStatefulByBlock = async (
                     CN.LPTokenStakerV2
                 ];
 
+                const oracles = [
+                    CN.Chainlink_aggr_usdc,
+                    CN.Chainlink_aggr_usdt,
+                    CN.Chainlink_aggr_dai,
+                ];
+
                 result.push(
                     // loadStateful(
                     //     getNetwork(GN.ETHEREUM).id,
@@ -279,13 +285,21 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset
                     //     )),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogPnLExecution,
+                    //     CN.pnl,
+                    //     from,
+                    //     newOffset
+                    // ),
+                    ...oracles.map((oracle) =>
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
-                        EV.LogPnLExecution,
-                        CN.pnl,
+                        EV.AnswerUpdated,
+                        oracle,
                         from,
-                        newOffset
-                    ),
+                        newOffset,
+                    )),
                 );
             }
 
@@ -298,25 +312,27 @@ const etlStatefulByBlock = async (
                     CN.AVAXDAIVault_v1_7,
                     CN.AVAXUSDCVault_v1_7,
                     CN.AVAXUSDTVault_v1_7,
-                    CN.AVAXDAIVault_v1_9_internal,
-                    CN.AVAXUSDCVault_v1_9_internal,
-                    CN.AVAXUSDTVault_v1_9_internal,
+                    // CN.AVAXDAIVault_v1_9_internal,
+                    // CN.AVAXUSDCVault_v1_9_internal,
+                    // CN.AVAXUSDTVault_v1_9_internal,
                 ];
 
                 const strategies = [
-                    CN.AVAXDAIStrategy,
-                    CN.AVAXUSDCStrategy,
-                    CN.AVAXUSDTStrategy,
+                    // CN.AVAXDAIStrategy,
+                    // CN.AVAXUSDCStrategy,
+                    // CN.AVAXUSDTStrategy,
                     CN.AVAXDAIStrategy_v1_7,
                     CN.AVAXUSDCStrategy_v1_7,
                     CN.AVAXUSDTStrategy_v1_7,
-                    //TODO: internal strats
+                    // CN.AVAXDAIStrategy_v1_9_internal,
+                    // CN.AVAXUSDCStrategy_v1_9_internal,
+                    // CN.AVAXUSDTStrategy_v1_9_internal,
                 ]
 
                 const oracles = [
-                    CN.Chainlink_aggr_usdc,
-                    CN.Chainlink_aggr_usdt,
-                    CN.Chainlink_aggr_dai,
+                    CN.Chainlink_aggr_usdc_e,
+                    CN.Chainlink_aggr_usdt_e,
+                    CN.Chainlink_aggr_dai_e,
                 ];
 
                 result.push(
@@ -344,14 +360,14 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset,
                     //     )),
-                    ...vaults.map((vault) =>
-                        loadStateful(
-                            getNetwork(GN.AVALANCHE).id,
-                            EV.Transfer,
-                            vault,
-                            from,
-                            newOffset,
-                        )),
+                    // ...vaults.map((vault) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.AVALANCHE).id,
+                    //         EV.Transfer,
+                    //         vault,
+                    //         from,
+                    //         newOffset,
+                    //     )),
                     // ...vaults.map((vault) =>
                     //     loadStateful(
                     //         getNetwork(GN.AVALANCHE).id,
@@ -372,14 +388,14 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset,
                     //     )),
-                    // ...oracles.map((oracle) =>
-                    //     loadStateful(
-                    //         getNetwork(GN.AVALANCHE).id,
-                    //         EV.AnswerUpdated,
-                    //         oracle,
-                    //         from,
-                    //         newOffset,
-                    //     )),
+                    ...oracles.map((oracle) =>
+                        loadStateful(
+                            getNetwork(GN.AVALANCHE).id,
+                            EV.AnswerUpdated,
+                            oracle,
+                            from,
+                            newOffset,
+                        )),
                     // loadStateful(
                     //     getNetwork(GN.AVALANCHE).id,
                     //     EV.LogClaim,
@@ -423,6 +439,9 @@ const etlStatefulByBlock = async (
                     //     CN.AVAXDAIStrategy_v1_7,
                     //     CN.AVAXUSDCStrategy_v1_7,
                     //     CN.AVAXUSDTStrategy_v1_7,
+                    //     // CN.AVAXDAIStrategy_v1_9_internal,
+                    //     // CN.AVAXUSDCStrategy_v1_9_internal,
+                    //     // CN.AVAXUSDTStrategy_v1_9_internal,
                     // ].map((strategy) =>
                     //     loadStateful(
                     //         getNetwork(GN.AVALANCHE).id,

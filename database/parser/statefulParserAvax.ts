@@ -130,11 +130,11 @@ const eventParserAvax = async (
                 // Chainlink price
                 case EV.AnswerUpdated:
                     const token1_id =
-                        (contractName === CN.Chainlink_aggr_dai)
+                        (contractName === CN.Chainlink_aggr_dai_e)
                             ? TokenId.DAI_e
-                            : (contractName === CN.Chainlink_aggr_usdc)
+                            : (contractName === CN.Chainlink_aggr_usdc_e)
                                 ? TokenId.USDC_e
-                                : (contractName === CN.Chainlink_aggr_usdt)
+                                : (contractName === CN.Chainlink_aggr_usdt_e)
                                     ? TokenId.USDT_e
                                     : TokenId.UNKNOWN;
                     payload = {

@@ -189,6 +189,23 @@ const eventParserEth = async (
                     after_gvt_assets: parseAmount(log.args.afterGvtAssets, Base.D18, 8),
                     after_pwrd_assets: parseAmount(log.args.afterPwrdAssets, Base.D18, 8),
                 }
+                // Chainlink price
+            } else if (eventName === EV.AnswerUpdated) {
+                const token1_id =
+                    (contractName === CN.Chainlink_aggr_dai)
+                        ? TokenId.DAI
+                        : (contractName === CN.Chainlink_aggr_usdc)
+                            ? TokenId.USDC
+                            : (contractName === CN.Chainlink_aggr_usdt)
+                                ? TokenId.USDT
+                                : TokenId.UNKNOWN;
+                payload = {
+                    token1_id: token1_id,
+                    token2_id: TokenId.USD,
+                    price: parseAmount(log.args.current, Base.D8, 8),
+                    round_id: parseInt(log.args.roundId.toString()),
+                    updated_at: parseInt(log.args.updatedAt.toString()),
+                }
             } else {
                 showError(
                     'statefulParser.ts->eventParser()',

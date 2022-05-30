@@ -67,6 +67,9 @@
         "AVAXUSDCStrategy_v1_9_internal",
         "AVAXUSDTStrategy_v1_9_internal",
         "AVAXBouncer",
+        "Chainlink_aggr_usdc_e",
+        "Chainlink_aggr_usdt_e",
+        "Chainlink_aggr_dai_e",
         "Chainlink_aggr_usdc",
         "Chainlink_aggr_usdt",
         "Chainlink_aggr_dai",
@@ -753,14 +756,14 @@
                 "active": true
             }
         ],
-        "Chainlink_aggr_usdt": [
+        "Chainlink_aggr_dai_e": [
             {
-                "address": "0xb8AEB9160385fa2D1B63B5E88351238593ba0127",
-                "deployedBlock": 2657380,
-                "startBlock": 2657380,
+                "address": "0xCC4633a1a85d553623bAC7945Bd87CFad6E6a8c8",
+                "deployedBlock": 2657404,
+                "startBlock": 2657404,
                 "endBlock": null,
                 "abiVersion": "6270d2c",
-                "tag": "AVAX",
+                "tag": "Oracle",
                 "tokens": [],
                 "protocols": [],
                 "protocolsDisplayName": [],
@@ -768,14 +771,29 @@
                 "active": true
             }
         ],
-        "Chainlink_aggr_usdc": [
+        "Chainlink_aggr_usdc_e": [
             {
                 "address": "0xfBd998938f8f7210eEC3D1e12E80A10972F02aEd",
                 "deployedBlock": 2713386,
                 "startBlock": 2713386,
                 "endBlock": null,
                 "abiVersion": "6270d2c",
-                "tag": "AVAX",
+                "tag": "Oracle",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "Chainlink_aggr_usdt_e": [
+            {
+                "address": "0xb8AEB9160385fa2D1B63B5E88351238593ba0127",
+                "deployedBlock": 2657380,
+                "startBlock": 2657380,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "Oracle",
                 "tokens": [],
                 "protocols": [],
                 "protocolsDisplayName": [],
@@ -785,12 +803,42 @@
         ],
         "Chainlink_aggr_dai": [
             {
-                "address": "0xCC4633a1a85d553623bAC7945Bd87CFad6E6a8c8",
-                "deployedBlock": 2657404,
-                "startBlock": 2657404,
+                "address": "0xDEc0a100eaD1fAa37407f0Edc76033426CF90b82",
+                "deployedBlock": 12382652,
+                "startBlock": 12382652,
                 "endBlock": null,
                 "abiVersion": "6270d2c",
-                "tag": "AVAX",
+                "tag": "Oracle",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "Chainlink_aggr_usdc": [
+            {
+                "address": "0x789190466E21a8b78b8027866CBBDc151542A26C",
+                "deployedBlock": 12136582,
+                "startBlock": 12136582,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "Oracle",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "Chainlink_aggr_usdt": [
+            {
+                "address": "0xa964273552C1dBa201f5f000215F5BD5576e8f93",
+                "deployedBlock": 12136589,
+                "startBlock": 12136589,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "Oracle",
                 "tokens": [],
                 "protocols": [],
                 "protocolsDisplayName": [],
