@@ -4,6 +4,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const ERC20_TRANSFER_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 const BALANCES_BATCH = 300;     // # of wallets per batch
 const LISTENER_BLOCKS_ETH = 6500;   // # of blocks per batch (1 day is around 6418 blocks in Eth)
+//const LISTENER_BLOCKS_ETH = 20500;
 const LISTENER_BLOCKS_AVAX = 43500; // # of blocks per batch (1 day is around 42000 blocks on Avax)
 
 // Max number to store a float into the DB - type NUMBER(20,8)

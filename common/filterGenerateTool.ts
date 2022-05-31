@@ -96,11 +96,11 @@ function getValidContractHistoryEventFilters(
             continue;
         }
         if (endBlock && endBlock < fromBlock) {
-            logger.info(
-                `skip contract filter for endBlock < fromBlock : ${JSON.stringify(
-                    contractInfo
-                )}`
-            );
+            // logger.info(
+            //     `skip contract filter for endBlock < fromBlock : ${JSON.stringify(
+            //         contractInfo
+            //     )}`
+            // );
             continue;
         }
         const contract = getContract(contractName, contractInfo, providerKey);

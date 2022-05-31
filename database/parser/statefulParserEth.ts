@@ -189,6 +189,14 @@ const eventParserEth = async (
                     after_gvt_assets: parseAmount(log.args.afterGvtAssets, Base.D18, 8),
                     after_pwrd_assets: parseAmount(log.args.afterPwrdAssets, Base.D18, 8),
                 }
+                // Strategy harvest
+            } else if (eventName === EV.Harvested) {
+                payload = {
+                    profit: parseAmount(log.args.profit, Base.D18, 8),
+                    loss: parseAmount(log.args.loss, Base.D18, 8),
+                    debt_payment: parseAmount(log.args.debtPayment, Base.D18, 8),
+                    debt_outstanding: parseAmount(log.args.debtOutstanding, Base.D18, 8),
+                }
                 // Chainlink price
             } else if (eventName === EV.AnswerUpdated) {
                 const token1_id =

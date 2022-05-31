@@ -213,3 +213,23 @@ CREATE TABLE gro."EV_GRO_PNL_EXECUTION" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."EV_GRO_PNL_EXECUTION" OWNER to postgres;
+
+CREATE TABLE gro."EV_GRO_STRATEGY_HARVEST" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "block_timestamp" INTEGER NULL,
+    "log_name" CHARACTER VARYING (100) NOT NULL,
+    "profit" NUMERIC (20, 8) NULL,
+    "loss" NUMERIC (20, 8) NULL,
+    "debt_payment" NUMERIC (20, 8) NULL,
+    "debt_outstanding" NUMERIC (20, 8) NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT "EV_GRO_STRATEGY_HARVEST_pkey" PRIMARY KEY (
+        "transaction_id",
+        "log_index",
+        "contract_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_GRO_STRATEGY_HARVEST" OWNER to postgres;

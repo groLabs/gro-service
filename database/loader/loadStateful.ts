@@ -61,10 +61,10 @@ const insertAvax = async (
                 res = await query('insert_ev_price.sql', event);
                 break;
             case EV.LogHarvested:
-                res = await query('insert_ev_strategy_harvest.sql', event);
+                res = await query('insert_ev_lab_strategy_harvest.sql', event);
                 break;
             case EV.LogNewStrategyHarvest:
-                res = await query('insert_ev_vault_harvest.sql', event);
+                res = await query('insert_ev_lab_vault_harvest.sql', event);
                 break;
             case EV.LogNewPositionOpened:
                 const resOpen = await query('insert_ev_ah_position_opened.sql', event[0]);
@@ -173,6 +173,9 @@ const insertEth = async (
         case EV.LogPnLExecution:
             res = await query('insert_ev_gro_pnl_execution.sql', event);
             break;
+        case EV.Harvested:
+            res = await query('insert_ev_gro_strategy_harvest.sql', event);
+            break;
         default:
             const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;
             showError('loadStateful.ts->insertEth()', msg);
@@ -216,13 +219,21 @@ const loadStateful = async (
             //   (for the aggregation layer to identify emergency withdrawals)
             // - For approval events, retrieve all associated stablecoins
             const filter =
-                (_contractName === CN.DAI || _contractName === CN.USDC || _contractName === CN.USDT)
+                (eventName === EV.Transfer
+                    && (_contractName === CN.DAI
+                        || _contractName === CN.USDC
+                        || _contractName === CN.USDT
+                    )
+                )
                     ? [getLatestContractsAddress()[CN.emergencyHandler].address, null]
                     : !isApproval
                         ? []
                         : (networkId === NetworkId.AVALANCHE)
                             ? [null, getLatestContractsAddress()[_contractName].address]
-                            : (_contractName !== CN.groVault && _contractName !== CN.powerD)
+                            : (_contractName !== CN.groVault
+                                && _contractName !== CN.powerD
+                                && _contractName !== CN.GroDAOToken
+                            )
                                 ? [null, getLatestContractsAddress()[CN.depositHandler].address] // For eth, to: depositHandler
                                 : [];
 
