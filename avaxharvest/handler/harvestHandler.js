@@ -107,7 +107,7 @@ const bankABI = [
 
 async function harvest(vault) {
     try {
-        await setBorrowLimit(vault);
+        // await setBorrowLimit(vault);
         const {
             stableCoin,
             vaultAdaptorMK2,
@@ -133,10 +133,10 @@ async function harvest(vault) {
         logger.info(`assets in ${vaultName} ${balVault} ${balStrategy}`);
 
         const openPositionId = await ahStrategy.activePosition();
-	if (openPositionId > 0) {
+        if (openPositionId > 0) {
             const vc = await ahStrategy.volatilityCheck();
             const positionData = await ahStrategy.getPosition(openPositionId);
-	    const current = await ahStrategy.borrowLimit();
+            const current = await ahStrategy.borrowLimit();
             logger.info(
                 `wantOpen ${vaultName} ${positionData.wantOpen[0]} ${positionData.wantOpen[1]} `
             );
