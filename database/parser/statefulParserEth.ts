@@ -219,7 +219,7 @@ const eventParserEth = async (
                         data: null
                     }
                 }
-                
+
                 payload = {
                     strategy: log.args.strategy,
                     gain: parseAmount(log.args.gain, base, 8),
@@ -233,6 +233,12 @@ const eventParserEth = async (
                     locked_profit: lockedProfit,
                     total_assets: totalAssets,
                 }
+                // Strategy update debt ratio
+            } else if (eventName === EV.StrategyUpdateDebtRatio) {
+                    payload = {
+                        strategy: log.args.strategy,
+                        debt_ratio: parseInt(log.args.debtRatio.toString()) / 10000,
+                    }
                 // Chainlink price
             } else if (eventName === EV.AnswerUpdated) {
                 const token1_id =

@@ -323,10 +323,18 @@ const etlStatefulByBlock = async (
                     //     from,
                     //     newOffset,
                     // )),
+                    // ...vaults.map((vault) =>
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.StrategyReported,
+                    //     vault,
+                    //     from,
+                    //     newOffset,
+                    // )),
                     ...vaults.map((vault) =>
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
-                        EV.StrategyReported,
+                        EV.StrategyUpdateDebtRatio,
                         vault,
                         from,
                         newOffset,

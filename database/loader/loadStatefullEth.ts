@@ -65,6 +65,9 @@ const loadStatefulEth = async (
         case EV.StrategyReported:
             res = await query('insert_ev_strategy_reported.sql', event);
             break;
+        case EV.StrategyUpdateDebtRatio:
+            res = await query('insert_ev_gro_strategy_update_ratio.sql', event);
+            break;
         default:
             const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;
             showError('loadStateful.ts->insertEth()', msg);
