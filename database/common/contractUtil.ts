@@ -104,8 +104,28 @@ const getLpTokenStakerV2 = () =>
 const getGroVesting = () =>
     getLatestSystemContract(ContractNames.GroVesting, getProviderKey()).contract;
 
+// Vaults ETH - Not used (and ABI probably wrong as they return exception eg: when calling totalAssets)
+// const getDAIVault = () =>
+//     getLatestSystemContract(ContractNames.DAIVault, getProviderKey()).contract;
 
-// Vaults
+// const getUSDCVault = () =>
+//     getLatestSystemContract(ContractNames.USDCVault, getProviderKey()).contract;
+
+// const getUSDTVault = () =>
+//     getLatestSystemContract(ContractNames.USDTVault, getProviderKey()).contract;
+
+// Vault adaptors ETH
+const getDAIVaultAdaptor = () => 
+    getLatestSystemContract(ContractNames.DAIVaultAdaptor, getProviderKey()).contract;
+
+const getUSDCVaultAdaptor = () =>
+    getLatestSystemContract(ContractNames.USDCVaultAdaptor, getProviderKey()).contract;
+
+const getUSDTVaultAdaptor = () =>
+    getLatestSystemContract(ContractNames.USDTVaultAdaptor, getProviderKey()).contract;
+
+
+// Vaults AVAX
 const getUSDCeVault = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault, getProviderAvax()).contract;
 
@@ -237,6 +257,7 @@ const getVaultFromContractName = (contractName: string) => {
     try {
         let sc;
         switch (contractName) {
+            // Avalanche
             case ContractNames.AVAXDAIVault:
                 sc = getDAIeVault();
                 break;
@@ -281,6 +302,15 @@ const getVaultFromContractName = (contractName: string) => {
                 break;
             case ContractNames.AVAXUSDTVault_v1_9_internal:
                 sc = getUSDTeVault_1_9_internal();
+                break;
+            case ContractNames.DAIVault:
+                sc = getDAIVaultAdaptor();
+                break;
+            case ContractNames.USDCVault:
+                sc = getUSDCVaultAdaptor();
+                break;
+            case ContractNames.USDTVault:
+                sc = getUSDTVaultAdaptor();
                 break;
             default:
                 showError(

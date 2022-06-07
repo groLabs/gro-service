@@ -35,7 +35,7 @@ const loadStatefulAvax = async (
                 res = await query('insert_ev_lab_claims.sql', event);
                 break;
             case EV.LogStrategyReported:
-                res = await query('insert_ev_lab_strategy_reported.sql', event);
+                res = await query('insert_ev_strategy_reported.sql', event);
                 break;
             case EV.LogNewReleaseFactor:
                 res = await query('insert_ev_lab_new_release_factor.sql', event);

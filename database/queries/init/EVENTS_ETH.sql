@@ -204,6 +204,8 @@ CREATE TABLE gro."EV_GRO_PNL_EXECUTION" (
     "before_pwrd_assets" NUMERIC (20, 8) NULL,
     "after_gvt_assets" NUMERIC (20, 8) NULL,
     "after_pwrd_assets" NUMERIC (20, 8) NULL,
+    "gvt_factor" NUMERIC (20, 8) NULL,
+    "pwrd_factor" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_GRO_PNL_EXECUTION_pkey" PRIMARY KEY (
         "transaction_id",
@@ -233,3 +235,19 @@ CREATE TABLE gro."EV_GRO_STRATEGY_HARVEST" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."EV_GRO_STRATEGY_HARVEST" OWNER to postgres;
+
+CREATE TABLE gro."EV_GRO_STRATEGY_UPDATE_RATIO" (
+   "transaction_id" CHARACTER VARYING (66) NOT NULL,
+   "log_index" INTEGER NOT NULL,
+   "contract_address" CHARACTER VARYING (42) NOT NULL,
+   "block_timestamp" INTEGER NULL,
+   "log_name" CHARACTER VARYING (100) NOT NULL,
+   "strategy" CHARACTER VARYING (42) NOT NULL,
+   "debt_ratio" NUMERIC (20, 8) NULL,
+   "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
+   CONSTRAINT "EV_GRO_STRATEGY_UPDATE_RATIO_pkey" PRIMARY KEY
+      (transaction_id, log_index, contract_address)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_GRO_STRATEGY_UPDATE_RATIO" OWNER to postgres;

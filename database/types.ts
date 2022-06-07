@@ -110,6 +110,7 @@ enum EventName {
     LogBonusClaimed = 'LogBonusClaimed',
     LogMultiClaim = 'LogMultiClaim',
     LogStrategyReported = 'LogStrategyReported',
+    StrategyReported = 'StrategyReported',
     LogNewReleaseFactor = 'LogNewReleaseFactor',
     AnswerUpdated = 'AnswerUpdated',
     LogNewPositionOpened = 'LogNewPositionOpened',

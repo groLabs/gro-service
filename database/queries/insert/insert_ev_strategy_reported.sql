@@ -1,4 +1,4 @@
-INSERT INTO gro."EV_LAB_STRATEGY_REPORTED" (
+INSERT INTO gro."EV_STRATEGY_REPORTED" (
         "transaction_id",
         "log_index",
         "contract_address",
@@ -33,4 +33,4 @@ VALUES (
         $14,
         $15,
         $16
-    ) ON CONFLICT ON CONSTRAINT "EV_LAB_STRATEGY_REPORTED_pkey" DO NOTHING;
+    ) ON CONFLICT ON CONSTRAINT "EV_STRATEGY_REPORTED_pkey" DO NOTHING;

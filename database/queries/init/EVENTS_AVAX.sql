@@ -43,33 +43,6 @@ CREATE TABLE gro."EV_LAB_WITHDRAWALS" (
 
 ALTER TABLE gro."EV_LAB_WITHDRAWALS" OWNER to postgres;
 
-CREATE TABLE gro."EV_LAB_STRATEGY_REPORTED" (
-    "transaction_id" CHARACTER VARYING (66) NOT NULL,
-    "log_index" INTEGER NOT NULL,
-    "contract_address" CHARACTER VARYING (42) NOT NULL,
-    "block_timestamp" INTEGER NULL,
-    "log_name" CHARACTER VARYING (100) NOT NULL,
-    "strategy" CHARACTER VARYING (42) NULL,
-    "gain" NUMERIC (20, 8) NULL,
-    "loss" NUMERIC (20, 8) NULL,
-    "debt_paid" NUMERIC (20, 8) NULL,
-    "total_gain" NUMERIC (20, 8) NULL,
-    "total_loss" NUMERIC (20, 8) NULL,
-    "total_debt" NUMERIC (20, 8) NULL,
-    "debt_added" NUMERIC (20, 8) NULL,
-    "debt_ratio" NUMERIC (20, 8) NULL,
-    "locked_profit" NUMERIC (20, 8) NULL,
-    "total_assets" NUMERIC (20, 8) NULL,
-    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
-    CONSTRAINT "EV_LAB_STRATEGY_REPORTED_pkey" PRIMARY KEY (
-        "transaction_id",
-        "log_index",
-        "contract_address"
-    ) NOT DEFERRABLE INITIALLY IMMEDIATE
-) WITH (OIDS = FALSE);
-
-ALTER TABLE gro."EV_LAB_STRATEGY_REPORTED" OWNER to postgres;
-
 CREATE TABLE gro."EV_LAB_NEW_RELEASE_FACTOR" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
     "log_index" INTEGER NOT NULL,

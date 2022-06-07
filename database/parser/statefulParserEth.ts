@@ -16,6 +16,7 @@ import {
     errorObj,
     parseAmount
 } from '../common/globalUtil';
+import { getVaultFromContractName } from '../common/contractUtil';
 
 
 const eventParserEth = async (
@@ -197,6 +198,41 @@ const eventParserEth = async (
                     debt_payment: parseAmount(log.args.debtPayment, Base.D18, 8),
                     debt_outstanding: parseAmount(log.args.debtOutstanding, Base.D18, 8),
                 }
+                // Strategy reported (from Vaults and vault adaptors)
+            } else if (eventName === EV.StrategyReported) {
+                const base = (contractName === CN.DAIVault)
+                    ? Base.D18
+                    : Base.D6;
+
+                const [
+                    lockedProfit,
+                    totalAssets,
+                ] = await getExtraDataFromVaults(
+                    log.blockNumber,
+                    base,
+                    contractName,
+                );
+
+                if (!totalAssets) {
+                    return {
+                        status: QUERY_ERROR,
+                        data: null
+                    }
+                }
+                
+                payload = {
+                    strategy: log.args.strategy,
+                    gain: parseAmount(log.args.gain, base, 8),
+                    loss: parseAmount(log.args.loss, base, 8),
+                    debt_paid: parseAmount(log.args.debtPaid, base, 8),
+                    total_gain: parseAmount(log.args.totalGain, base, 8),
+                    total_loss: parseAmount(log.args.totalLoss, base, 8),
+                    total_debt: parseAmount(log.args.totalDebt, base, 8),
+                    debt_added: parseAmount(log.args.debtAdded, base, 8),
+                    debt_ratio: parseInt(log.args.debtRatio.toString()) / 10000,
+                    locked_profit: lockedProfit,
+                    total_assets: totalAssets,
+                }
                 // Chainlink price
             } else if (eventName === EV.AnswerUpdated) {
                 const token1_id =
@@ -256,6 +292,30 @@ const eventParserEth = async (
     } catch (err) {
         showError('statefulParser.ts->eventParser()', err);
         return errorObj(err);
+    }
+}
+
+//@dev: lockedProfit does not exist for Ethereum vaults
+//@dev: totalAssets is read from VaultAdaptors instead of Vaults
+const getExtraDataFromVaults = async (
+    blockNumber: number,
+    base: Base,
+    contractName: string
+) => {
+    try {
+        const sc = getVaultFromContractName(contractName);
+        const _totalAssets = await sc.totalAssets({ blockTag: blockNumber });
+        const totalAssets = parseAmount(_totalAssets, base, 8);
+        const lockedProfit = null;
+
+
+        return [
+            lockedProfit,
+            totalAssets,
+        ];
+    } catch (err) {
+        showError('statefulParserEth.ts->getExtraDataFromVaults()', err);
+        return [null, null];
     }
 }
 
