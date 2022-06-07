@@ -248,18 +248,18 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset
                     //     )),
-                    // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
-                    //     loadStateful(
-                    //         getNetwork(GN.ETHEREUM).id,
-                    //         EV.LogMultiClaim,
-                    //         LpTokenStakerContract,
-                    //         from,
-                    //         newOffset
-                    //     )),
                     // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
                     //     loadStateful(
                     //         getNetwork(GN.ETHEREUM).id,
                     //         EV.LogWithdraw,
+                    //         LpTokenStakerContract,
+                    //         from,
+                    //         newOffset
+                    //     )),
+                    // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.LogMultiClaim,
                     //         LpTokenStakerContract,
                     //         from,
                     //         newOffset
@@ -288,25 +288,13 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset
                     //     )),
-                    // ...[
-                    //     CN.USDC,
-                    //     CN.USDT,
-                    //     CN.DAI
-                    // ].map((LpTokenStakerContract) =>
-                    //     loadStateful(
-                    //         getNetwork(GN.ETHEREUM).id,
-                    //         EV.Transfer,
-                    //         LpTokenStakerContract,
-                    //         from,
-                    //         newOffset
-                    //     )),
-                    // loadStateful(
-                    //     getNetwork(GN.ETHEREUM).id,
-                    //     EV.LogPnLExecution,
-                    //     CN.pnl,
-                    //     from,
-                    //     newOffset
-                    // ),
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogPnLExecution,
+                        CN.pnl,
+                        from,
+                        newOffset
+                    ),
                     // ...strategies.map((strategy) =>
                     //     loadStateful(
                     //         getNetwork(GN.ETHEREUM).id,
@@ -314,6 +302,22 @@ const etlStatefulByBlock = async (
                     //         strategy,
                     //         from,
                     //         newOffset
+                    //     )),
+                    // ...vaults.map((vault) =>
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.StrategyReported,
+                    //     vault,
+                    //     from,
+                    //     newOffset,
+                    // )),
+                    // ...vaults.map((vault) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.StrategyUpdateDebtRatio,
+                    //         vault,
+                    //         from,
+                    //         newOffset,
                     //     )),
                     // ...oracles.map((oracle) =>
                     // loadStateful(
@@ -323,22 +327,19 @@ const etlStatefulByBlock = async (
                     //     from,
                     //     newOffset,
                     // )),
-                    // ...vaults.map((vault) =>
-                    // loadStateful(
-                    //     getNetwork(GN.ETHEREUM).id,
-                    //     EV.StrategyReported,
-                    //     vault,
-                    //     from,
-                    //     newOffset,
-                    // )),
-                    ...vaults.map((vault) =>
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.StrategyUpdateDebtRatio,
-                        vault,
-                        from,
-                        newOffset,
-                    )),
+                    // 1off load to track transfers from emergencyHandler
+                    // ...[
+                    //     CN.USDC,
+                    //     CN.USDT,
+                    //     CN.DAI
+                    // ].map((stableContract) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.Transfer,
+                    //         stableContract,
+                    //         from,
+                    //         newOffset
+                    //     )),
                 );
             }
 
@@ -407,14 +408,14 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset,
                     //     )),
-                    ...vaults.map((vault) =>
-                        loadStateful(
-                            getNetwork(GN.AVALANCHE).id,
-                            EV.LogStrategyReported,
-                            vault,
-                            from,
-                            newOffset,
-                        )),
+                    // ...vaults.map((vault) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.AVALANCHE).id,
+                    //         EV.LogStrategyReported,
+                    //         vault,
+                    //         from,
+                    //         newOffset,
+                    //     )),
                     // ...[
                     //     CN.AVAXDAIVault_v1_7,
                     //     CN.AVAXUSDCVault_v1_7,

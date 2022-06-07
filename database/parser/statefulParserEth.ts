@@ -16,7 +16,11 @@ import {
     errorObj,
     parseAmount
 } from '../common/globalUtil';
-import { getVaultFromContractName } from '../common/contractUtil';
+import {
+    getPowerD,
+    getGroVault,
+    getVaultFromContractName,
+} from '../common/contractUtil';
 
 
 const eventParserEth = async (
@@ -163,11 +167,11 @@ const eventParserEth = async (
 
                 payload = {
                     user: log.args.user,
-                    vest: log.args.vest,
+                    vest: log.args.vest, //only for V2
                     pids: pids,
                     amount: parseAmount(log.args.amount, Base.D18, 12),
                 }
-                // Migrations from LPTokenStakerV1 in ETH
+                // Migrations from LPTokenStakerV1 into LPTokenStakerV2
             } else if (
                 (contractName === CN.LPTokenStakerV2
                     && eventName === EV.LogMigrateUser)
@@ -178,6 +182,11 @@ const eventParserEth = async (
                 }
                 // Execution from PnL
             } else if (eventName === EV.LogPnLExecution) {
+                const [
+                    pwrdFactor,
+                    gvtFactor,
+                ] = await getGTokenFactors(log.blockNumber);
+                
                 payload = {
                     deducted_assets: parseAmount(log.args.deductedAssets, Base.D18, 8),
                     total_pnl: parseAmount(log.args.totalPnL, Base.D18, 8),
@@ -189,6 +198,8 @@ const eventParserEth = async (
                     before_pwrd_assets: parseAmount(log.args.beforePwrdAssets, Base.D18, 8),
                     after_gvt_assets: parseAmount(log.args.afterGvtAssets, Base.D18, 8),
                     after_pwrd_assets: parseAmount(log.args.afterPwrdAssets, Base.D18, 8),
+                    pwrd_factor: pwrdFactor,
+                    gvt_factor: gvtFactor,
                 }
                 // Strategy harvest
             } else if (eventName === EV.Harvested) {
@@ -314,13 +325,32 @@ const getExtraDataFromVaults = async (
         const totalAssets = parseAmount(_totalAssets, base, 8);
         const lockedProfit = null;
 
-
         return [
             lockedProfit,
             totalAssets,
         ];
     } catch (err) {
         showError('statefulParserEth.ts->getExtraDataFromVaults()', err);
+        return [null, null];
+    }
+}
+
+const getGTokenFactors = async (blockNumber: number) => {
+    try {
+        const [
+            pwrd,
+            gvt,
+        ] = await Promise.all([
+            getPowerD().factor({ blockTag: blockNumber }),
+            getGroVault().factor({ blockTag: blockNumber }),
+        ]);
+
+        return [
+            parseAmount(pwrd, Base.D18, 12),
+            parseAmount(gvt, Base.D18, 12)
+        ];
+    } catch (err) {
+        showError('statefulParserEth.ts->getGTokenFactors()', err);
         return [null, null];
     }
 }

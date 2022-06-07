@@ -204,8 +204,8 @@ CREATE TABLE gro."EV_GRO_PNL_EXECUTION" (
     "before_pwrd_assets" NUMERIC (20, 8) NULL,
     "after_gvt_assets" NUMERIC (20, 8) NULL,
     "after_pwrd_assets" NUMERIC (20, 8) NULL,
-    "gvt_factor" NUMERIC (20, 8) NULL,
-    "pwrd_factor" NUMERIC (20, 8) NULL,
+    "gvt_factor" NUMERIC (20, 12) NULL,
+    "pwrd_factor" NUMERIC (20, 12) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_GRO_PNL_EXECUTION_pkey" PRIMARY KEY (
         "transaction_id",

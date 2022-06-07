@@ -13,7 +13,9 @@ INSERT INTO gro."EV_GRO_PNL_EXECUTION" (
         "before_gvt_assets",
         "before_pwrd_assets",
         "after_gvt_assets",
-        "after_pwrd_assets"
+        "after_pwrd_assets",
+        "pwrd_factor",
+        "gvt_factor"
     )
 VALUES (
         $1,
@@ -30,5 +32,7 @@ VALUES (
         $12,
         $13,
         $14,
-        $15
+        $15,
+        $16,
+        $17
     ) ON CONFLICT ON CONSTRAINT "EV_GRO_PNL_EXECUTION_pkey" DO NOTHING;
