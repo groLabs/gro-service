@@ -251,3 +251,120 @@ CREATE TABLE gro."EV_GRO_STRATEGY_UPDATE_RATIO" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."EV_GRO_STRATEGY_UPDATE_RATIO" OWNER to postgres;
+
+-- pools
+
+CREATE TABLE gro."EV_POOL_BAL_SWAP" (
+   "transaction_id" CHARACTER VARYING (66) NOT NULL,
+   "log_index" INTEGER NOT NULL,
+   "contract_address" CHARACTER VARYING (42) NOT NULL,
+   "block_timestamp" INTEGER NULL,
+   "log_name" CHARACTER VARYING (100) NOT NULL,
+   "pool_id" CHARACTER VARYING (66) NULL,
+   "token_in" CHARACTER VARYING (42) NULL,
+   "token_out" CHARACTER VARYING (42) NULL,
+   "amount_in" NUMERIC (20, 8) NULL,
+   "amount_out" NUMERIC (20, 8) NULL,
+   "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
+   CONSTRAINT "EV_POOL_BAL_SWAP_pkey" PRIMARY KEY
+      (transaction_id, log_index, contract_address)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_POOL_BAL_SWAP" OWNER to postgres;
+
+CREATE TABLE gro."EV_POOL_BAL_LIQUIDITY" (
+   "transaction_id" CHARACTER VARYING (66) NOT NULL,
+   "log_index" INTEGER NOT NULL,
+   "contract_address" CHARACTER VARYING (42) NOT NULL,
+   "block_timestamp" INTEGER NULL,
+   "log_name" CHARACTER VARYING (100) NOT NULL,
+   "pool_id" CHARACTER VARYING (66) NULL,
+   "liquidity_provider" CHARACTER VARYING (42) NULL,
+   "tokens" CHARACTER VARYING (42) [] NULL,
+   "deltas" NUMERIC (20, 8) [] NULL,
+   "protocol_fee_amounts" NUMERIC (20, 8) [] NULL,
+   "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
+   CONSTRAINT "EV_POOL_BAL_LIQUIDITY_pkey" PRIMARY KEY
+      (transaction_id, log_index, contract_address)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_POOL_BAL_LIQUIDITY" OWNER to postgres;
+
+CREATE TABLE gro."EV_POOL_UNI_SWAP" (
+   "transaction_id" CHARACTER VARYING (66) NOT NULL,
+   "log_index" INTEGER NOT NULL,
+   "contract_address" CHARACTER VARYING (42) NOT NULL,
+   "block_timestamp" INTEGER NULL,
+   "log_name" CHARACTER VARYING (100) NOT NULL,
+   "sender" CHARACTER VARYING (42) NULL,
+   "amount0_in" NUMERIC (20, 8) NULL,
+   "amount1_in" NUMERIC (20, 8) NULL,
+   "amount0_out" NUMERIC (20, 8) NULL,
+   "amount1_out" NUMERIC (20, 8) NULL,
+   "to" CHARACTER VARYING (42) NULL,
+   "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
+   CONSTRAINT "EV_POOL_UNI_SWAP_pkey" PRIMARY KEY
+      (transaction_id, log_index, contract_address)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_POOL_UNI_SWAP" OWNER to postgres;
+
+CREATE TABLE gro."EV_POOL_UNI_LIQUIDITY" (
+   "transaction_id" CHARACTER VARYING (66) NOT NULL,
+   "log_index" INTEGER NOT NULL,
+   "contract_address" CHARACTER VARYING (42) NOT NULL,
+   "block_timestamp" INTEGER NULL,
+   "log_name" CHARACTER VARYING (100) NOT NULL,
+   "sender" CHARACTER VARYING (42) NULL,
+   "amount0" NUMERIC (20, 8) NULL,
+   "amount1" NUMERIC (20, 8) NULL,
+   "to" CHARACTER VARYING (42) NULL,
+   "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
+   CONSTRAINT "EV_POOL_UNI_LIQUIDITY_pkey" PRIMARY KEY
+      (transaction_id, log_index, contract_address)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_POOL_UNI_LIQUIDITY" OWNER to postgres;
+
+CREATE TABLE gro."EV_POOL_META_SWAP" (
+   "transaction_id" CHARACTER VARYING (66) NOT NULL,
+   "log_index" INTEGER NOT NULL,
+   "contract_address" CHARACTER VARYING (42) NOT NULL,
+   "block_timestamp" INTEGER NULL,
+   "log_name" CHARACTER VARYING (100) NOT NULL,
+   "buyer" CHARACTER VARYING (42) NULL,
+   "sold_id" SMALLINT NULL,
+   "tokens_sold" NUMERIC (20, 8) NULL,
+   "bought_id" SMALLINT NULL,
+   "tokens_bought" NUMERIC (20, 8) NULL,
+   "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
+   CONSTRAINT "EV_POOL_META_SWAP_pkey" PRIMARY KEY
+      (transaction_id, log_index, contract_address)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_POOL_META_SWAP" OWNER to postgres;
+
+CREATE TABLE gro."EV_POOL_META_LIQUIDITY" (
+   "transaction_id" CHARACTER VARYING (66) NOT NULL,
+   "log_index" INTEGER NOT NULL,
+   "contract_address" CHARACTER VARYING (42) NOT NULL,
+   "block_timestamp" INTEGER NULL,
+   "log_name" CHARACTER VARYING (100) NOT NULL,
+   "provider" CHARACTER VARYING (42) NULL,
+   "token_amounts" NUMERIC (20, 8) [] NULL,
+   "fees" NUMERIC (20, 8) [] NULL,
+   "coin_amount"  NUMERIC (20, 8) NULL,
+   "invariant" NUMERIC (20, 8) NULL,
+   "token_supply" NUMERIC (20, 8) NULL,
+   "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
+   CONSTRAINT "EV_POOL_META_LIQUIDITY_pkey" PRIMARY KEY
+      (transaction_id, log_index, contract_address)
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_POOL_META_LIQUIDITY" OWNER to postgres;
