@@ -119,6 +119,18 @@ VALUES (21, 'wavax', 'Wrapped Avax', '0x0000000000000000000000000000000000000000
 INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "contract_address")
 VALUES (22, 'weth', 'Wrapped Ether', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
 
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "contract_address")
+VALUES (23, 'balancer_gro_weth', 'Balancer 80 GRO 20 WETH LP', '0x702605F43471183158938C1a3e5f5A359d7b31ba');
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "contract_address")
+VALUES (24, 'uniswap_gvt_gro', 'Uniswap GVT/GRO LP', '0x2ac5bC9ddA37601EDb1A5E29699dEB0A5b67E9bB');
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "contract_address")
+VALUES (25, 'uniswap_gro_usdc', 'Uniswap GRO/USDC LP', '0x21C5918CcB42d20A2368bdCA8feDA0399EbfD2f6');
+
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "contract_address")
+VALUES (26, 'curve_pwrd3crv', 'Curve.fi DAI/USDC/USDT LP', '0xbcb91E689114B9Cc865AD7871845C95241Df4105');
+
 /****************************************************
                     MD_TRANSFERS 
  ****************************************************/

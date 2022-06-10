@@ -65,6 +65,10 @@ enum TokenName {
     avax = 'avax',
     wavax = 'wavax',
     weth = 'weth',
+    balancer_gro_weth = 'balancer_gro_weth',
+    uniswap_gvt_gro = 'uniswap_gvt_gro',
+    uniswap_gro_usdc = 'uniswap_gro_usdc',
+    curve_pwrd3crv = 'curve_pwrd3crv',
 }
 
 // Must be aligned with table MD_TOKENS
@@ -92,6 +96,10 @@ enum TokenId {
     avax = 20,
     wavax = 21,
     weth = 22,
+    balancer_gro_weth = 23,
+    uniswap_gvt_gro = 24,
+    uniswap_gro_usdc = 25,
+    curve_pwrd3crv = 26,
 }
 
 enum EventName {
@@ -122,6 +130,16 @@ enum EventName {
     LogMigrateUser = 'LogMigrateUser',
     LogPnLExecution = 'LogPnLExecution',
     Harvested = 'Harvested',
+    Swap = 'Swap',
+    PoolBalanceChanged = 'PoolBalanceChanged',
+    Mint = 'Mint',
+    Burn = 'Burn',
+    TokenExchange = 'TokenExchange',
+    TokenExchangeUnderlying = 'TokenExchangeUnderlying',
+    AddLiquidity = 'AddLiquidity',
+    RemoveLiquidity = 'RemoveLiquidity',
+    RemoveLiquidityOne = 'RemoveLiquidityOne',
+    RemoveLiquidityImbalance = 'RemoveLiquidityImbalance',
 }
 
 enum Bool {
