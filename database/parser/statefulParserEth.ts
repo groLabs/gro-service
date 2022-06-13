@@ -20,6 +20,7 @@ import {
     getPowerD,
     getGroVault,
     getCurve_PWRD3CRV,
+    getLpTokenStakerV2,
     getVaultFromContractName,
 } from '../common/contractUtil';
 
@@ -131,7 +132,7 @@ const eventParserEth = async (
                     pid: parseInt(log.args.pid.toString()),
                     amount: parseAmount(log.args.amount, Base.D18, 12),
                 }
-                // Withdrawals from LPTokenStaker in ETH
+                // Withdrawals from LPTokenStaker
             } else if (
                 (contractName === CN.LPTokenStakerV1
                     || contractName === CN.LPTokenStakerV2)
@@ -166,11 +167,18 @@ const eventParserEth = async (
                     ? [parseInt(log.args.pid.toString())]
                     : log.args.pids.map((pid: number) => parseInt(pid.toString()));
 
+                const amounts = await getClaimedAmounts(
+                    log.blockNumber,
+                    pids,
+                    log.args.user,
+                );
+
                 payload = {
                     user: log.args.user,
                     vest: log.args.vest, //only for V2
                     pids: pids,
                     amount: parseAmount(log.args.amount, Base.D18, 12),
+                    amounts: amounts,
                 }
                 // Migrations from LPTokenStakerV1 into LPTokenStakerV2
             } else if (
@@ -467,7 +475,32 @@ const getVirtualPrice = async (blockNumber: number) => {
         console.log('virtual price:', parseAmount(virtualPrice, Base.D18, 8));
         return parseAmount(virtualPrice, Base.D18, 8);
     } catch (err) {
+        showError('statefulParserEth.ts->getVirtualPrice()', err);
+        return null;
+    }
+}
 
+//@dev: event LogMultiClaim does not have the claimed amounts per pool; therefore, it is calculated
+//      by retrieving the claimed amounts in block-1 through on-call function claimable()
+const getClaimedAmounts = async (
+    blockNumber: number,
+    pids: number[],
+    address: string,
+) => {
+    try {
+        let claimedAmounts = [];
+        for (const pid of pids) {
+            const amount = await getLpTokenStakerV2().claimable(
+                pid,
+                address,
+                { blockTag: blockNumber - 1 }
+            );
+            claimedAmounts.push(parseAmount(amount, Base.D18, 12));
+        }
+        return claimedAmounts; 
+    } catch (err) {
+        showError('statefulParserEth.ts->getVirtualPrice()', err);
+        return [];
     }
 }
 

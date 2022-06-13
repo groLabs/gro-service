@@ -160,6 +160,7 @@ CREATE TABLE gro."EV_STAKER_CLAIMS" (
     "vest" BOOLEAN NULL,
     "pids" INTEGER [] NULL,
     "amount" NUMERIC (24, 12) NULL,
+    "amounts" NUMERIC (24, 12) [] NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_STAKER_CLAIMS_pkey" PRIMARY KEY (
         "transaction_id",
@@ -341,7 +342,7 @@ CREATE TABLE gro."EV_POOL_META_SWAP" (
    "tokens_sold" NUMERIC (20, 8) NULL,
    "bought_id" SMALLINT NULL,
    "tokens_bought" NUMERIC (20, 8) NULL,
-   "virtual_price" NUMERIC (20, 8) NULL,
+   "virtual_price" NUMERIC (20, 18) NULL,
    "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
    CONSTRAINT "EV_POOL_META_SWAP_pkey" PRIMARY KEY
       (transaction_id, log_index, contract_address)
@@ -362,7 +363,7 @@ CREATE TABLE gro."EV_POOL_META_LIQUIDITY" (
    "coin_amount"  NUMERIC (20, 8) NULL,
    "invariant" NUMERIC (20, 8) NULL,
    "token_supply" NUMERIC (20, 8) NULL,
-   "virtual_price" NUMERIC (20, 8) NULL,
+   "virtual_price" NUMERIC (20, 18) NULL,
    "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
    CONSTRAINT "EV_POOL_META_LIQUIDITY_pkey" PRIMARY KEY
       (transaction_id, log_index, contract_address)

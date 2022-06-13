@@ -256,14 +256,14 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset
                     //     )),
-                    // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
-                    //     loadStateful(
-                    //         getNetwork(GN.ETHEREUM).id,
-                    //         EV.LogMultiClaim,
-                    //         LpTokenStakerContract,
-                    //         from,
-                    //         newOffset
-                    //     )),
+                    ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.LogMultiClaim,
+                            LpTokenStakerContract,
+                            from,
+                            newOffset
+                        )),
                     // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
                     //     loadStateful(
                     //         getNetwork(GN.ETHEREUM).id,
@@ -388,17 +388,17 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset
                     //     )),
-                    ...[
-                        EV.TokenExchange,
-                        EV.TokenExchangeUnderlying,
-                    ].map((event) =>
-                        loadStateful(
-                            getNetwork(GN.ETHEREUM).id,
-                            event,
-                            CN.Curve_PWRD3CRV,
-                            from,
-                            newOffset
-                        )),
+                    // ...[
+                    //     EV.TokenExchange,
+                    //     EV.TokenExchangeUnderlying,
+                    // ].map((event) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         event,
+                    //         CN.Curve_PWRD3CRV,
+                    //         from,
+                    //         newOffset
+                    //     )),
                     // ...[
                     //     EV.AddLiquidity,
                     //     EV.RemoveLiquidity,

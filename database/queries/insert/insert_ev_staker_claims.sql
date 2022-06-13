@@ -7,7 +7,8 @@ INSERT INTO gro."EV_STAKER_CLAIMS" (
         "user",
         "vest",
         "pids",
-        "amount"
+        "amount",
+        "amounts"
     )
 VALUES (
         $1,
@@ -18,5 +19,6 @@ VALUES (
         $6,
         $7,
         $8,
-        $9
+        $9,
+        $10
     ) ON CONFLICT ON CONSTRAINT "EV_STAKER_CLAIMS_pkey" DO NOTHING;
