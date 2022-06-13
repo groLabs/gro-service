@@ -140,6 +140,10 @@ enum EventName {
     RemoveLiquidity = 'RemoveLiquidity',
     RemoveLiquidityOne = 'RemoveLiquidityOne',
     RemoveLiquidityImbalance = 'RemoveLiquidityImbalance',
+    LogAddPool = 'LogAddPool',
+    LogSetPool = 'LogSetPool',
+    LogMaxGroPerBlock = 'LogMaxGroPerBlock',
+    LogGroPerBlock = 'LogGroPerBlock',
 }
 
 enum Bool {

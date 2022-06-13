@@ -167,11 +167,13 @@ const eventParserEth = async (
                     ? [parseInt(log.args.pid.toString())]
                     : log.args.pids.map((pid: number) => parseInt(pid.toString()));
 
-                const amounts = await getClaimedAmounts(
-                    log.blockNumber,
-                    pids,
-                    log.args.user,
-                );
+                const amounts = (eventName === EV.LogMultiClaim)
+                    ? await getClaimedAmounts(
+                        log.blockNumber,
+                        pids,
+                        log.args.user,
+                    )
+                    : [parseAmount(log.args.amount, Base.D18, 12)];
 
                 payload = {
                     user: log.args.user,
@@ -179,6 +181,49 @@ const eventParserEth = async (
                     pids: pids,
                     amount: parseAmount(log.args.amount, Base.D18, 12),
                     amounts: amounts,
+                }
+                // Add pool to LpTokenStaker
+            } else if (
+                (contractName === CN.LPTokenStakerV1
+                    || contractName === CN.LPTokenStakerV2)
+                && (eventName === EV.LogAddPool
+                )
+            ) {
+                payload = {
+                    pid: parseInt(log.args.pid.toString()),
+                    alloc_point: parseInt(log.args.allocPoint.toString()),
+                    lp_token: log.args.lpToken,
+                }
+                // Set pool in LpTokenStaker
+            } else if (
+                (contractName === CN.LPTokenStakerV1
+                    || contractName === CN.LPTokenStakerV2)
+                && (eventName === EV.LogSetPool
+                )
+            ) {
+                payload = {
+                    pid: parseInt(log.args.pid.toString()),
+                    alloc_point: parseInt(log.args.allocPoint.toString()),
+                }
+                // Max Gro per block in LpTokenStaker
+            } else if (
+                (contractName === CN.LPTokenStakerV1
+                    || contractName === CN.LPTokenStakerV2)
+                && (eventName === EV.LogMaxGroPerBlock
+                )
+            ) {
+                payload = {
+                    max_gro_per_block: parseAmount(log.args.newMax, Base.D18, 8),
+                }
+                // Gro per block in LpTokenStaker
+            } else if (
+                (contractName === CN.LPTokenStakerV1
+                    || contractName === CN.LPTokenStakerV2)
+                && (eventName === EV.LogGroPerBlock
+                )
+            ) {
+                payload = {
+                    gro_per_block: parseAmount(log.args.newGro, Base.D18, 8),
                 }
                 // Migrations from LPTokenStakerV1 into LPTokenStakerV2
             } else if (
@@ -497,7 +542,7 @@ const getClaimedAmounts = async (
             );
             claimedAmounts.push(parseAmount(amount, Base.D18, 12));
         }
-        return claimedAmounts; 
+        return claimedAmounts;
     } catch (err) {
         showError('statefulParserEth.ts->getVirtualPrice()', err);
         return [];

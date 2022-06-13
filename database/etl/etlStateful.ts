@@ -256,14 +256,46 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset
                     //     )),
-                    ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
+                    ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
                         loadStateful(
                             getNetwork(GN.ETHEREUM).id,
-                            EV.LogMultiClaim,
+                            EV.LogAddPool,
                             LpTokenStakerContract,
                             from,
                             newOffset
                         )),
+                    ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.LogSetPool,
+                            LpTokenStakerContract,
+                            from,
+                            newOffset
+                        )),
+                        ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.LogMaxGroPerBlock,
+                            LpTokenStakerContract,
+                            from,
+                            newOffset
+                        )),
+                        ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.LogGroPerBlock,
+                            LpTokenStakerContract,
+                            from,
+                            newOffset
+                        )),
+                    // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.LogMultiClaim,
+                    //         LpTokenStakerContract,
+                    //         from,
+                    //         newOffset
+                    //     )),
                     // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
                     //     loadStateful(
                     //         getNetwork(GN.ETHEREUM).id,
