@@ -68,6 +68,32 @@ const loadStatefulEth = async (
         case EV.StrategyUpdateDebtRatio:
             res = await query('insert_ev_gro_strategy_update_ratio.sql', event);
             break;
+        case EV.Swap:
+            if (contractName === CN.BalancerV2Vault) {
+                res = await query('insert_ev_pool_bal_swap.sql', event);
+            } else if (contractName === CN.UniswapV2Pair_gvt_gro
+                || contractName === CN.UniswapV2Pair_gro_usdc) {
+                res = await query('insert_ev_pool_uni_swap.sql', event);
+            } else {
+                const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;
+                showError('loadStateful.ts->insertEth()', msg);
+                return errorObj(msg);
+            }
+            break;
+        case EV.Mint:
+        case EV.Burn:
+            res = await query('insert_ev_pool_uni_liquidity.sql', event);
+            break;
+        case EV.TokenExchange:
+        case EV.TokenExchangeUnderlying:
+            res = await query('insert_ev_pool_curve_swap.sql', event);
+            break;
+        case EV.AddLiquidity:
+        case EV.RemoveLiquidity:
+        case EV.RemoveLiquidityOne:
+        case EV.RemoveLiquidityImbalance:
+            res = await query('insert_ev_pool_curve_liquidity.sql', event);
+            break;
         default:
             const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;
             showError('loadStateful.ts->insertEth()', msg);

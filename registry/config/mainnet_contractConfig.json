@@ -81,6 +81,8 @@
         "USDT",
         "UniswapV2Pair_gvt_gro",
         "UniswapV2Pair_gro_usdc",
+        "BalancerV2Vault",
+        "Curve_PWRD3CRV",
         "Airdrop"
     ],
     "contractHistories": {
@@ -956,6 +958,36 @@
                 "address": "0x21C5918CcB42d20A2368bdCA8feDA0399EbfD2f6",
                 "deployedBlock": 13327380,
                 "startBlock": 13327380,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "Other",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "BalancerV2Vault": [
+            {
+                "address": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+                "deployedBlock": 12272146,
+                "startBlock": 12272146,
+                "endBlock": null,
+                "abiVersion": "6270d2c",
+                "tag": "Other",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "Curve_PWRD3CRV": [
+            {
+                "address": "0xbcb91E689114B9Cc865AD7871845C95241Df4105",
+                "deployedBlock": 13314289,
+                "startBlock": 13314289,
                 "endBlock": null,
                 "abiVersion": "6270d2c",
                 "tag": "Other",

@@ -19,6 +19,7 @@ import {
 import {
     getPowerD,
     getGroVault,
+    getCurve_PWRD3CRV,
     getVaultFromContractName,
 } from '../common/contractUtil';
 
@@ -186,7 +187,7 @@ const eventParserEth = async (
                     pwrdFactor,
                     gvtFactor,
                 ] = await getGTokenFactors(log.blockNumber);
-                
+
                 payload = {
                     deducted_assets: parseAmount(log.args.deductedAssets, Base.D18, 8),
                     total_pnl: parseAmount(log.args.totalPnL, Base.D18, 8),
@@ -246,10 +247,10 @@ const eventParserEth = async (
                 }
                 // Strategy update debt ratio
             } else if (eventName === EV.StrategyUpdateDebtRatio) {
-                    payload = {
-                        strategy: log.args.strategy,
-                        debt_ratio: parseInt(log.args.debtRatio.toString()) / 10000,
-                    }
+                payload = {
+                    strategy: log.args.strategy,
+                    debt_ratio: parseInt(log.args.debtRatio.toString()) / 10000,
+                }
                 // Chainlink price
             } else if (eventName === EV.AnswerUpdated) {
                 const token1_id =
@@ -267,6 +268,110 @@ const eventParserEth = async (
                     round_id: parseInt(log.args.roundId.toString()),
                     updated_at: parseInt(log.args.updatedAt.toString()),
                 }
+                // Balancer swaps
+            } else if (eventName === EV.Swap
+                && contractName === CN.BalancerV2Vault
+            ) {
+                payload = {
+                    pool_id: log.args.poolId,
+                    token_in: log.args.tokenIn,
+                    token_out: log.args.tokenOut,
+                    amount_in: parseAmount(log.args.amountIn, Base.D18, 8),
+                    amount_out: parseAmount(log.args.amountOut, Base.D18, 8),
+                }
+                // Uniswap swaps
+            } else if (eventName === EV.Swap
+                && (contractName === CN.UniswapV2Pair_gvt_gro
+                    || contractName === CN.UniswapV2Pair_gro_usdc)
+            ) {
+                const baseAmount1 = (contractName === CN.UniswapV2Pair_gro_usdc)
+                    ? Base.D6
+                    : Base.D18;
+
+                payload = {
+                    sender: log.args.sender,
+                    amount0_in: parseAmount(log.args.amount0In, Base.D18, 8),
+                    amount1_in: parseAmount(log.args.amount1In, baseAmount1, 8),
+                    amount0_out: parseAmount(log.args.amount0Out, Base.D18, 8),
+                    amount1_out: parseAmount(log.args.amount1Out, baseAmount1, 8),
+                    to: log.args.sender,
+                }
+                // Uniswap liquidity
+            } else if (
+                (eventName === EV.Mint
+                    || eventName === EV.Burn)
+                && (contractName === CN.UniswapV2Pair_gvt_gro
+                    || contractName === CN.UniswapV2Pair_gro_usdc)
+            ) {
+                const baseAmount1 = (contractName === CN.UniswapV2Pair_gro_usdc)
+                    ? Base.D6
+                    : Base.D18;
+
+                payload = {
+                    sender: log.args.sender,
+                    amount0: parseAmount(log.args.amount0, Base.D18, 8),
+                    amount1: parseAmount(log.args.amount1, baseAmount1, 8),
+                    to: log.args.to,
+                }
+                // Curve swaps
+            } else if (
+                (eventName === EV.TokenExchange
+                    || eventName === EV.TokenExchangeUnderlying)
+                && contractName === CN.Curve_PWRD3CRV
+            ) {
+                const virtualPrice = await getVirtualPrice(log.blockNumber);
+
+                payload = {
+                    buyer: log.args.buyer,
+                    sold_id: parseInt(log.args.sold_id.toString()),
+                    tokens_sold: parseAmount(log.args.tokens_sold, Base.D18, 8),
+                    bought_id: parseInt(log.args.bought_id.toString()),
+                    tokens_bought: parseAmount(log.args.tokens_bought, Base.D18, 8),
+                    virtual_price: virtualPrice,
+                }
+                // Curve liquidity
+            } else if (
+                (eventName === EV.AddLiquidity
+                    || eventName === EV.RemoveLiquidity
+                    || eventName === EV.RemoveLiquidityOne
+                    || eventName === EV.RemoveLiquidityImbalance)
+                && contractName === CN.Curve_PWRD3CRV
+            ) {
+
+                console.log(log);
+                console.log('log.args.token_amounts:', log.args.token_amounts.map((val) => val.toString()));
+                console.log('log.args.fees:', log.args.fees.map((val) => val.toString()));
+
+                const virtualPrice = await getVirtualPrice(log.blockNumber);
+
+                payload = {
+                    provider: log.args.provider,
+                    token_amounts: (eventName === EV.RemoveLiquidityOne)
+                        ? [parseAmount(log.args.token_amount, Base.D18, 8)]
+                        : [
+                            log.args.token_amounts[0] ? parseAmount(log.args.token_amounts[0], Base.D18, 8) : 0, // DAI
+                            log.args.token_amounts[1] ? parseAmount(log.args.token_amounts[1], Base.D6, 8) : 0,  // USDC
+                            log.args.token_amounts[2] ? parseAmount(log.args.token_amounts[2], Base.D6, 8) : 0,  // USDT
+                        ],
+                    fees: (eventName === EV.RemoveLiquidityOne)
+                        ? null
+                        : [
+                            log.args.fees[0] ? parseAmount(log.args.fees[0], Base.D18, 8) : 0, // DAI
+                            log.args.fees[1] ? parseAmount(log.args.fees[1], Base.D6, 8) : 0,  // USDC
+                            log.args.fees[2] ? parseAmount(log.args.fees[2], Base.D6, 8) : 0,  // USDT
+                        ],
+                    coin_amount: (eventName === EV.RemoveLiquidityOne)
+                        ? parseAmount(log.args.coin_amount, Base.D18, 8)
+                        : null,
+                    invariant: (eventName === EV.AddLiquidity || eventName === EV.RemoveLiquidityImbalance)
+                        ? parseAmount(log.args.invariant, Base.D18, 8)
+                        : null,
+                    token_supply: parseAmount(log.args.token_supply, Base.D18, 8),
+                    virtual_price: virtualPrice,
+                }
+                console.log('payload:', payload);
+
+
             } else {
                 showError(
                     'statefulParser.ts->eventParser()',
@@ -307,7 +412,7 @@ const eventParserEth = async (
             },
         };
     } catch (err) {
-        showError('statefulParser.ts->eventParser()', err);
+        showError(`statefulParser.ts->eventParser() for event <${eventName}> and contract <${contractName}>`, err);
         return errorObj(err);
     }
 }
@@ -352,6 +457,17 @@ const getGTokenFactors = async (blockNumber: number) => {
     } catch (err) {
         showError('statefulParserEth.ts->getGTokenFactors()', err);
         return [null, null];
+    }
+}
+
+//@dev: get virtual price from metapool swaps
+const getVirtualPrice = async (blockNumber: number) => {
+    try {
+        const virtualPrice = await getCurve_PWRD3CRV().get_virtual_price({ blockTag: blockNumber });
+        console.log('virtual price:', parseAmount(virtualPrice, Base.D18, 8));
+        return parseAmount(virtualPrice, Base.D18, 8);
+    } catch (err) {
+
     }
 }
 

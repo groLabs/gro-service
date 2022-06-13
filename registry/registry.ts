@@ -118,6 +118,8 @@ const ContractNames = {
     USDT: "USDT",
     UniswapV2Pair_gvt_gro: "UniswapV2Pair_gvt_gro",
     UniswapV2Pair_gro_usdc: "UniswapV2Pair_gro_usdc",
+    BalancerV2Vault: "BalancerV2Vault",
+    Curve_PWRD3CRV: "Curve_PWRD3CRV",
     Airdrop: "Airdrop",
 };
 
@@ -207,6 +209,8 @@ ContractABIMapping[ContractNames.USDC] = 'USDC';
 ContractABIMapping[ContractNames.USDT] = 'USDT';
 ContractABIMapping[ContractNames.UniswapV2Pair_gvt_gro] = 'UniswapV2Pair_gvt_gro';
 ContractABIMapping[ContractNames.UniswapV2Pair_gro_usdc] = 'UniswapV2Pair_gro_usdc';
+ContractABIMapping[ContractNames.BalancerV2Vault] = 'BalancerV2Vault';
+ContractABIMapping[ContractNames.Curve_PWRD3CRV] = 'Curve_PWRD3CRV';
 ContractABIMapping[ContractNames.Airdrop] = 'Airdrop';
 
 function readLocalContractConfig(isReload = false) {

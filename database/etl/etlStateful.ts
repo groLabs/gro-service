@@ -288,13 +288,13 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset
                     //     )),
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.LogPnLExecution,
-                        CN.pnl,
-                        from,
-                        newOffset
-                    ),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.LogPnLExecution,
+                    //     CN.pnl,
+                    //     from,
+                    //     newOffset
+                    // ),
                     // ...strategies.map((strategy) =>
                     //     loadStateful(
                     //         getNetwork(GN.ETHEREUM).id,
@@ -340,8 +340,81 @@ const etlStatefulByBlock = async (
                     //         from,
                     //         newOffset
                     //     )),
+                    // pools
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.Swap,
+                    //     CN.BalancerV2Vault,
+                    //     from,
+                    //     newOffset
+                    // ),
+                    // loadStateful(
+                    //     getNetwork(GN.ETHEREUM).id,
+                    //     EV.PoolBalanceChanged,
+                    //     CN.BalancerV2Vault,
+                    //     from,
+                    //     newOffset
+                    // ),
+                    // ...[
+                    //     CN.UniswapV2Pair_gvt_gro,
+                    //     CN.UniswapV2Pair_gro_usdc,
+                    // ].map((uniPair) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.Swap,
+                    //         uniPair,
+                    //         from,
+                    //         newOffset
+                    //     )),
+                    // ...[
+                    //     CN.UniswapV2Pair_gvt_gro,
+                    //     CN.UniswapV2Pair_gro_usdc,
+                    // ].map((uniPair) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.Mint,
+                    //         uniPair,
+                    //         from,
+                    //         newOffset
+                    //     )),
+                    // ...[
+                    //     CN.UniswapV2Pair_gvt_gro,
+                    //     CN.UniswapV2Pair_gro_usdc,
+                    // ].map((uniPair) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         EV.Burn,
+                    //         uniPair,
+                    //         from,
+                    //         newOffset
+                    //     )),
+                    ...[
+                        EV.TokenExchange,
+                        EV.TokenExchangeUnderlying,
+                    ].map((event) =>
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            event,
+                            CN.Curve_PWRD3CRV,
+                            from,
+                            newOffset
+                        )),
+                    // ...[
+                    //     EV.AddLiquidity,
+                    //     EV.RemoveLiquidity,
+                    //     EV.RemoveLiquidityOne,
+                    //     EV.RemoveLiquidityImbalance,
+                    // ].map((event) =>
+                    //     loadStateful(
+                    //         getNetwork(GN.ETHEREUM).id,
+                    //         event,
+                    //         CN.Curve_PWRD3CRV,
+                    //         from,
+                    //         newOffset
+                    //     )),
                 );
             }
+
 
             if (globalNetwork === GN.AVALANCHE) {
 

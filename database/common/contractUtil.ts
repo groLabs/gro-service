@@ -104,6 +104,9 @@ const getLpTokenStakerV2 = () =>
 const getGroVesting = () =>
     getLatestSystemContract(ContractNames.GroVesting, getProviderKey()).contract;
 
+const getCurve_PWRD3CRV = () =>
+    getLatestSystemContract(ContractNames.Curve_PWRD3CRV, getProvider()).contract;
+
 // Vaults ETH - Not used (and ABI probably wrong as they return exception eg: when calling totalAssets)
 // const getDAIVault = () =>
 //     getLatestSystemContract(ContractNames.DAIVault, getProviderKey()).contract;
@@ -456,6 +459,7 @@ export {
     getUni2GroUsdc,
     getLpTokenStakerV1,
     getLpTokenStakerV2,
+    getCurve_PWRD3CRV,
     getUSDCeVault,
     getUSDTeVault,
     getDAIeVault,

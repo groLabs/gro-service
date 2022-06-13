@@ -2191,6 +2191,36 @@
             "active": true
         }
     ],
+    "BalancerV2Vault": [
+        {
+            "address": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+            "deployedBlock": 12272146,
+            "startBlock": 12272146,
+            "endBlock": null,
+            "abiVersion": "6270d2c",
+            "tag": "Other",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        }
+    ],
+    "Curve_PWRD3CRV": [
+        {
+            "address": "0xbcb91E689114B9Cc865AD7871845C95241Df4105",
+            "deployedBlock": 13314289,
+            "startBlock": 13314289,
+            "endBlock": null,
+            "abiVersion": "6270d2c",
+            "tag": "Other",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        }
+    ],
     "Airdrop": [
         {
             "address": "0xF3d39A7FEbA9bE0C1D18b355E7eD01070Ee2c561",
