@@ -132,6 +132,17 @@ async function parseSingleClaim(account, endBlock) {
     return poolsTotalResult;
 }
 
+async function getPoolUnclaim(account, poolId, blockNumber) {
+    const staker = getLatestStaker();
+    const amount = await staker
+        .claimable(poolId, account, { blockTag: blockNumber })
+        .catch((error) => {
+            logger.error(error);
+            return BigNumber.from(0);
+        });
+    return amount;
+}
+
 async function parseMultiClaim(account, endBlock) {
     const multiClaimEvents = await fetchClaimEvents(
         'LogMultiClaim',
@@ -139,22 +150,28 @@ async function parseMultiClaim(account, endBlock) {
         endBlock
     );
     const poolsTotalResult = { all: BigNumber.from(0) };
-    multiClaimEvents.forEach((event) => {
-        const [, vest, pids, amounts] = event.args;
+    multiClaimEvents.forEach(async (event) => {
+        const blockNumber = event.blockNumber;
+        const [, vest, pids] = event.args;
         for (let i = 0; i < pids.length; i += 1) {
             const pidString = pids[i].toString();
             if (!poolsTotalResult[pidString]) {
                 poolsTotalResult[pidString] = BigNumber.from(0);
             }
             // temporary set the instantUnlockPercent to 3000, but it may changed
-            let distAmount = amounts
-            .mul(BigNumber.from(3000))
-            .div(BigNumber.from(10000));
+            const amount = await getPoolUnclaim(
+                account,
+                pids[i],
+                blockNumber - 1
+            );
+            let distAmount = amount
+                .mul(BigNumber.from(3000))
+                .div(BigNumber.from(10000));
             if (vest) {
-                distAmount = amounts;
+                distAmount = amount;
             }
             poolsTotalResult[pidString] =
-            poolsTotalResult[pidString].add(distAmount);
+                poolsTotalResult[pidString].add(distAmount);
             poolsTotalResult.all = poolsTotalResult.all.add(distAmount);
         }
     });
@@ -273,7 +290,9 @@ async function calculateUserBalanceInPools(account) {
     for (let i = 0; i < pools.length; i += 1) {
         if (Number(i).toString() !== pwrdPool) {
             const { pid, tvl } = pools[i];
-            const usdAmount = new BN(balancesPercent[pid]).multipliedBy(new BN(tvl));
+            const usdAmount = new BN(balancesPercent[pid]).multipliedBy(
+                new BN(tvl)
+            );
             result[pid] = usdAmount.toFixed(2);
             balanceTotal = balanceTotal.plus(usdAmount);
         } else {
