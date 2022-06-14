@@ -96,6 +96,9 @@ const loadStatefulEth = async (
         case EV.Burn:
             res = await query('insert_ev_pool_uni_liquidity.sql', event);
             break;
+        case EV.LogVest:
+            res = await query('insert_ev_gro_vests.sql', event);
+            break;
         case EV.TokenExchange:
         case EV.TokenExchangeUnderlying:
             res = await query('insert_ev_pool_curve_swap.sql', event);

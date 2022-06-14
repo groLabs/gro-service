@@ -145,6 +145,7 @@ enum EventName {
     LogMaxGroPerBlock = 'LogMaxGroPerBlock',
     LogGroPerBlock = 'LogGroPerBlock',
     LogNewDrop = 'LogNewDrop',
+    LogVest = 'LogVest',
 }
 
 enum Bool {

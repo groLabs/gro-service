@@ -1,4 +1,4 @@
--- ETH TABLES
+-- Core protocol
 
 CREATE TABLE gro."EV_GRO_DEPOSITS" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
@@ -110,6 +110,56 @@ CREATE TABLE gro."EV_AIRDROP_CLAIMS" (
 
 ALTER TABLE gro."EV_AIRDROP_CLAIMS" OWNER to postgres;
 
+
+
+
+
+
+CREATE TABLE gro."EV_GRO_VESTS" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "block_timestamp" INTEGER NULL,
+    "log_name" CHARACTER VARYING (100) NOT NULL,
+    "user" CHARACTER VARYING (42) NULL,
+    "total_locked_amount" NUMERIC (20, 8) NULL,
+    "amount" NUMERIC (20, 8) NULL,
+    "vesting_total" NUMERIC (20, 8) NULL,
+    "vesting_start_time" INTEGER NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT "EV_GRO_VESTS_pkey" PRIMARY KEY (
+        "transaction_id",
+        "log_index",
+        "contract_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_GRO_VESTS" OWNER to postgres;
+
+CREATE TABLE gro."EV_GRO_EXITS" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "block_timestamp" INTEGER NULL,
+    "log_name" CHARACTER VARYING (100) NOT NULL,
+    "user" CHARACTER VARYING (42) NULL,
+    "total_locked_amount" NUMERIC (20, 8) NULL,
+    "amount" NUMERIC (20, 8) NULL,
+    "minting_amount" NUMERIC (20, 8) NULL,
+    "penalty" NUMERIC (20, 8) NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT "EV_GRO_EXITS_pkey" PRIMARY KEY (
+        "transaction_id",
+        "log_index",
+        "contract_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_GRO_EXITS" OWNER to postgres;
+
+
+
+
 -- STAKER TABLES
 
 CREATE TABLE gro."EV_STAKER_DEPOSITS" (
@@ -189,9 +239,6 @@ CREATE TABLE gro."EV_STAKER_USERS_MIGRATED" (
 
 ALTER TABLE gro."EV_STAKER_USERS_MIGRATED" OWNER to postgres;
 
-
--- start of new staker tables
-
 CREATE TABLE gro."EV_STAKER_ADD_POOL" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
     "log_index" INTEGER NOT NULL,
@@ -263,11 +310,7 @@ CREATE TABLE gro."EV_STAKER_GRO_PER_BLOCK" (
 
 ALTER TABLE gro."EV_STAKER_GRO_PER_BLOCK" OWNER to postgres;
 
--- end of new staker tables 
-
-
-
-
+-- pnl
 
 CREATE TABLE gro."EV_GRO_PNL_EXECUTION" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,

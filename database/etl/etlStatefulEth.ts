@@ -311,19 +311,28 @@ const etlStatefulEth = (
             //         from,
             //         newOffset
             //     )),
-            ...[
-                EV.AddLiquidity,
-                EV.RemoveLiquidity,
-                EV.RemoveLiquidityOne,
-                EV.RemoveLiquidityImbalance,
-            ].map((event) =>
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    event,
-                    CN.Curve_PWRD3CRV,
-                    from,
-                    newOffset
-                )),
+            // ...[
+            //     EV.AddLiquidity,
+            //     EV.RemoveLiquidity,
+            //     EV.RemoveLiquidityOne,
+            //     EV.RemoveLiquidityImbalance,
+            // ].map((event) =>
+            //     loadStateful(
+            //         getNetwork(GN.ETHEREUM).id,
+            //         event,
+            //         CN.Curve_PWRD3CRV,
+            //         from,
+            //         newOffset
+            //     )),
+
+
+            loadStateful(
+                getNetwork(GN.ETHEREUM).id,
+                EV.LogVest,
+                CN.GroVesting,
+                from,
+                newOffset
+            ),
         );
         return result;
 
