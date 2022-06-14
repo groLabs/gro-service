@@ -79,6 +79,23 @@ CREATE TABLE gro."EV_LAB_CLAIMS" (
 
 ALTER TABLE gro."EV_LAB_CLAIMS" OWNER to postgres;
 
+CREATE TABLE gro."EV_LAB_DROPS" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "block_timestamp" INTEGER NULL,
+    "log_name" CHARACTER VARYING (100) NOT NULL,
+    "merkle_root" CHARACTER VARYING (66) NULL,
+    "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
+    CONSTRAINT "EV_LAB_DROPS_pkey" PRIMARY KEY (
+        "transaction_id",
+        "log_index",
+        "contract_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_LAB_DROPS" OWNER to postgres;
+
 CREATE TABLE gro."EV_LAB_AH_POSITIONS" (
     "position_id" INTEGER NOT NULL,
     "transaction_id" CHARACTER VARYING (66) NOT NULL,

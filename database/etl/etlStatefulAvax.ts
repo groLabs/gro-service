@@ -44,22 +44,22 @@ const etlStatefulAvax = (
         ];
 
         result.push(
-            ...vaults.map((vault) =>
-                loadStateful(
-                    getNetwork(GN.AVALANCHE).id,
-                    EV.LogDeposit,
-                    vault,
-                    from,
-                    newOffset,
-                )),
-            ...vaults.map((vault) =>
-                loadStateful(
-                    getNetwork(GN.AVALANCHE).id,
-                    EV.LogWithdrawal,
-                    vault,
-                    from,
-                    newOffset,
-                )),
+            // ...vaults.map((vault) =>
+            //     loadStateful(
+            //         getNetwork(GN.AVALANCHE).id,
+            //         EV.LogDeposit,
+            //         vault,
+            //         from,
+            //         newOffset,
+            //     )),
+            // ...vaults.map((vault) =>
+            //     loadStateful(
+            //         getNetwork(GN.AVALANCHE).id,
+            //         EV.LogWithdrawal,
+            //         vault,
+            //         from,
+            //         newOffset,
+            //     )),
             // ...vaults.map((vault) =>
             //     loadStateful(
             //         getNetwork(GN.AVALANCHE).id,
@@ -111,6 +111,13 @@ const etlStatefulAvax = (
             //     from,
             //     newOffset,
             // ),
+            loadStateful(
+                getNetwork(GN.AVALANCHE).id,
+                EV.LogNewDrop,
+                CN.AVAXBouncer,
+                from,
+                newOffset,
+            ),
             // ...strategies.map((strategy) =>
             //     loadStateful(
             //         getNetwork(GN.AVALANCHE).id,

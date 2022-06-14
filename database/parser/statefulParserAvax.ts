@@ -91,6 +91,12 @@ const eventParserAvax = async (
                         amount: parseInt(log.args.amount.toString()),
                     }
                     break;
+                // Drops from Bouncer
+                case EV.LogNewDrop:
+                    payload = {
+                        merkle_root: log.args.merkleRoot,
+                    }
+                    break;
                 // Strategy reported
                 case EV.LogStrategyReported:
                     const [

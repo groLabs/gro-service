@@ -136,38 +136,38 @@ const etlStatefulEth = (
             //         from,
             //         newOffset
             //     )),
-            ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogAddPool,
-                    LpTokenStakerContract,
-                    from,
-                    newOffset
-                )),
-            ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogSetPool,
-                    LpTokenStakerContract,
-                    from,
-                    newOffset
-                )),
-            ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogMaxGroPerBlock,
-                    LpTokenStakerContract,
-                    from,
-                    newOffset
-                )),
-            ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogGroPerBlock,
-                    LpTokenStakerContract,
-                    from,
-                    newOffset
-                )),
+            // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+            //     loadStateful(
+            //         getNetwork(GN.ETHEREUM).id,
+            //         EV.LogAddPool,
+            //         LpTokenStakerContract,
+            //         from,
+            //         newOffset
+            //     )),
+            // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+            //     loadStateful(
+            //         getNetwork(GN.ETHEREUM).id,
+            //         EV.LogSetPool,
+            //         LpTokenStakerContract,
+            //         from,
+            //         newOffset
+            //     )),
+            // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+            //     loadStateful(
+            //         getNetwork(GN.ETHEREUM).id,
+            //         EV.LogMaxGroPerBlock,
+            //         LpTokenStakerContract,
+            //         from,
+            //         newOffset
+            //     )),
+            // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+            //     loadStateful(
+            //         getNetwork(GN.ETHEREUM).id,
+            //         EV.LogGroPerBlock,
+            //         LpTokenStakerContract,
+            //         from,
+            //         newOffset
+            //     )),
             // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
             //     loadStateful(
             //         getNetwork(GN.ETHEREUM).id,
@@ -311,19 +311,19 @@ const etlStatefulEth = (
             //         from,
             //         newOffset
             //     )),
-            // ...[
-            //     EV.AddLiquidity,
-            //     EV.RemoveLiquidity,
-            //     EV.RemoveLiquidityOne,
-            //     EV.RemoveLiquidityImbalance,
-            // ].map((event) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         event,
-            //         CN.Curve_PWRD3CRV,
-            //         from,
-            //         newOffset
-            //     )),
+            ...[
+                EV.AddLiquidity,
+                EV.RemoveLiquidity,
+                EV.RemoveLiquidityOne,
+                EV.RemoveLiquidityImbalance,
+            ].map((event) =>
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    event,
+                    CN.Curve_PWRD3CRV,
+                    from,
+                    newOffset
+                )),
         );
         return result;
 
