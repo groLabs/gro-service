@@ -324,15 +324,24 @@ const etlStatefulEth = (
             //         from,
             //         newOffset
             //     )),
-
-
-            loadStateful(
-                getNetwork(GN.ETHEREUM).id,
-                EV.LogVest,
-                CN.GroVesting,
-                from,
-                newOffset
-            ),
+            // loadStateful(
+            //     getNetwork(GN.ETHEREUM).id,
+            //     EV.LogVest,
+            //     CN.GroVesting,
+            //     from,
+            //     newOffset
+            // ),
+            ...[
+                EV.LogExit,
+                EV.LogInstantExit,
+            ].map((event) =>
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    event,
+                    CN.GroVesting,
+                    from,
+                    newOffset
+                )),
         );
         return result;
 

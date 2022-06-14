@@ -125,25 +125,35 @@ const eventParserEth = async (
                     tranche_id: parseInt(log.args.trancheId.toString()),
                     amount: parseAmount(log.args.amount, Base.D18, 12),
                 }
-
-
-
-                // Vest from GROVesting
+                // Vests from GROVesting
             } else if (eventName === EV.LogVest
                 && contractName === CN.GroVesting
             ) {
-
                 payload = {
                     user: log.args.user,
                     total_locked_amount: parseAmount(log.args.totalLockedAmount, Base.D18, 8),
                     amount: parseAmount(log.args.amount, Base.D18, 8),
                     vesting_total: parseAmount(log.args.vesting[0], Base.D18, 8),
-                    vesting_start_time:  parseInt(log.args.vesting[1].toString()),
+                    vesting_start_time: parseInt(log.args.vesting[1].toString()),
                 }
-                console.log('payload:', payload);
-
-
-
+                // Exits from GROVesting
+            } else if ((eventName === EV.LogExit
+                || eventName === EV.LogInstantExit)
+                && contractName === CN.GroVesting
+            ) {
+                payload = {
+                    user: log.args.user,
+                    total_locked_amount: (eventName === EV.LogExit)
+                        ? parseAmount(log.args.totalLockedAmount, Base.D18, 8)
+                        : null,
+                    amount: (eventName === EV.LogExit)
+                        ? parseAmount(log.args.amount, Base.D18, 8)
+                        : null,
+                    minting_amount: (eventName === EV.LogExit)
+                        ? null
+                        : parseAmount(log.args.mintingAmount, Base.D18, 8),
+                    penalty: parseAmount(log.args.penalty, Base.D18, 8),
+                }
                 // Deposits in LPTokenStaker
             } else if (eventName === EV.LogDeposit) {
                 payload = {

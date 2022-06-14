@@ -99,6 +99,10 @@ const loadStatefulEth = async (
         case EV.LogVest:
             res = await query('insert_ev_gro_vests.sql', event);
             break;
+        case EV.LogExit:
+        case EV.LogInstantExit:
+            res = await query('insert_ev_gro_exits.sql', event);
+            break;
         case EV.TokenExchange:
         case EV.TokenExchangeUnderlying:
             res = await query('insert_ev_pool_curve_swap.sql', event);
