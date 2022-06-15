@@ -1,11 +1,9 @@
+import { GlobalNetwork as GN } from '../types';
+import { generateDateRange } from '../common/personalUtil';
 import {
     showInfo,
     showError,
 } from '../handler/logHandler';
-import {
-    EventName as EV,
-    GlobalNetwork as GN
-} from '../types';
 import {
     LISTENER_BLOCKS_ETH,
     LISTENER_BLOCKS_AVAX,
@@ -15,7 +13,7 @@ import {
     findBlockByDate,
     findBlockByDateAvax,
 } from '../common/globalUtil';
-import { generateDateRange } from '../common/personalUtil';
+
 import { etlStatefulEth } from './etlStatefulEth';
 import { etlStatefulAvax } from './etlStatefulAvax';
 
@@ -25,6 +23,7 @@ import { etlStatefulAvax } from './etlStatefulAvax';
 /// @param  globalNetwork The blockchain network (1: Ethereum, 2: Avalanche)
 /// @param  _fromDate The start date to process blocks in format 'DD/MM/YYYY'
 /// @param  _toDdate The end date to process blocks in format 'DD/MM/YYYY'
+/// @param  eventCodes The list of event codes to be loaded (see etlStatefulEth.ts or etlStatefulAvax.ts)
 /// @return True if no exceptions found; false otherwise
 const etlStatefulByDate = async (
     globalNetwork: GN,
@@ -94,6 +93,7 @@ const etlStatefulByDate = async (
 /// @param  from The start block to load events
 /// @param  to The end block to load events
 /// @param  offset The offset to track the amount of iterations
+/// @param  eventCodes The list of event codes to be loaded (see etlStatefulEth.ts or etlStatefulAvax.ts)
 /// @return True if no exceptions found; false otherwise
 const etlStatefulByBlock = async (
     globalNetwork: GN,
@@ -144,7 +144,8 @@ const etlStatefulByBlock = async (
             if (globalNetwork === GN.AVALANCHE) {
                 result = etlStatefulAvax(
                     from,
-                    newOffset
+                    newOffset,
+                    eventCodes,
                 );
             }
 

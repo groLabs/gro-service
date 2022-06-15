@@ -7,11 +7,12 @@ import {
     GlobalNetwork as GN
 } from '../types';
 
+
 const etlStatefulEth = (
     from: number,
     newOffset: number,
     eventCodes: number[],
-) => {
+): Promise<any>[] => {
     try {
         let result = [];
 
@@ -513,6 +514,7 @@ const etlStatefulEth = (
             );
         }
 
+        //****@dev: number to be updated if additional events are integrated */
         if (eventCodes.some(el => el > 34)) {
             showError('etlStatefulEth.ts->etlStatefulEth()', 'Event code above the max value');
             result.push(false);
