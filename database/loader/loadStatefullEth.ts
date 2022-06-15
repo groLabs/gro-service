@@ -96,12 +96,8 @@ const loadStatefulEth = async (
         case EV.Burn:
             res = await query('insert_ev_pool_uni_liquidity.sql', event);
             break;
-        case EV.LogVest:
-            res = await query('insert_ev_gro_vests.sql', event);
-            break;
-        case EV.LogExit:
-        case EV.LogInstantExit:
-            res = await query('insert_ev_gro_exits.sql', event);
+        case EV.PoolBalanceChanged:
+            res = await query('insert_ev_pool_bal_liquidity.sql', event);
             break;
         case EV.TokenExchange:
         case EV.TokenExchangeUnderlying:
@@ -112,6 +108,13 @@ const loadStatefulEth = async (
         case EV.RemoveLiquidityOne:
         case EV.RemoveLiquidityImbalance:
             res = await query('insert_ev_pool_curve_liquidity.sql', event);
+            break;
+        case EV.LogVest:
+            res = await query('insert_ev_gro_vests.sql', event);
+            break;
+        case EV.LogExit:
+        case EV.LogInstantExit:
+            res = await query('insert_ev_gro_exits.sql', event);
             break;
         default:
             const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;

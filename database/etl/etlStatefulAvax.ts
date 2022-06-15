@@ -60,14 +60,14 @@ const etlStatefulAvax = (
             //         from,
             //         newOffset,
             //     )),
-            // ...vaults.map((vault) =>
-            //     loadStateful(
-            //         getNetwork(GN.AVALANCHE).id,
-            //         EV.Approval,
-            //         vault,
-            //         from,
-            //         newOffset,
-            //     )),
+            ...vaults.map((vault) =>
+                loadStateful(
+                    getNetwork(GN.AVALANCHE).id,
+                    EV.Approval,
+                    vault,
+                    from,
+                    newOffset,
+                )),
             // ...vaults.map((vault) =>
             //     loadStateful(
             //         getNetwork(GN.AVALANCHE).id,
@@ -111,13 +111,13 @@ const etlStatefulAvax = (
             //     from,
             //     newOffset,
             // ),
-            loadStateful(
-                getNetwork(GN.AVALANCHE).id,
-                EV.LogNewDrop,
-                CN.AVAXBouncer,
-                from,
-                newOffset,
-            ),
+            // loadStateful(
+            //     getNetwork(GN.AVALANCHE).id,
+            //     EV.LogNewDrop,
+            //     CN.AVAXBouncer,
+            //     from,
+            //     newOffset,
+            // ),
             // ...strategies.map((strategy) =>
             //     loadStateful(
             //         getNetwork(GN.AVALANCHE).id,

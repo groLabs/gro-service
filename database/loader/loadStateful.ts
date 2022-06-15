@@ -56,27 +56,39 @@ const loadStateful = async (
                 ? true
                 : false;
 
-            // - For transfer events of stablecoins, filter by emergencyHandler 
-            //   (for the aggregation layer to identify emergency withdrawals)
-            // - For approval events, retrieve all associated stablecoins
-            const filter =
-                (eventName === EV.Transfer
-                    && (_contractName === CN.DAI
-                        || _contractName === CN.USDC
-                        || _contractName === CN.USDT
-                    )
+            // Set event filters
+            let filter = [];
+            if (eventName === EV.Transfer
+                && (_contractName === CN.DAI
+                    || _contractName === CN.USDC
+                    || _contractName === CN.USDT
                 )
-                    ? [getLatestContractsAddress()[CN.emergencyHandler].address, null]
-                    : !isApproval
-                        ? []
-                        : (networkId === NetworkId.AVALANCHE)
-                            ? [null, getLatestContractsAddress()[_contractName].address]
-                            : (_contractName !== CN.groVault
-                                && _contractName !== CN.powerD
-                                && _contractName !== CN.GroDAOToken
-                            )
-                                ? [null, getLatestContractsAddress()[CN.depositHandler].address] // For eth, to: depositHandler
-                                : [];
+            ) {
+                // Case 1: for transfer events of stablecoins, filter by emergencyHandler 
+                // (This was a 1off load for the aggregation layer to identify empty emergency withdrawals events)
+                filter = [getLatestContractsAddress()[CN.emergencyHandler].address, null];
+            } else if (isApproval) {
+                if (networkId === NetworkId.AVALANCHE) {
+                    // Case 2: for approval AVAX retrieve all associated stablecoins
+                    filter = [null, getLatestContractsAddress()[_contractName].address];
+                } else if (
+                    (networkId === NetworkId.MAINNET || networkId === NetworkId.ROPSTEN)
+                    && _contractName !== CN.groVault
+                    && _contractName !== CN.powerD
+                    && _contractName !== CN.GroDAOToken
+                ) {
+                    // Case 3: for USDC, USDT or DAI approval, filter by 'to' = depositHandler
+                    filter = [null, getLatestContractsAddress()[CN.depositHandler].address];
+                }
+            } else if (_contractName === CN.BalancerV2Vault) {
+                // Case 4: for Balancer swaps or liquidity, filter by poolId
+                if (eventName === EV.Swap) {
+                    filter = ['0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f', null, null];
+                } else {
+                    filter = ['0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f', null];
+                }
+            }
+
 
             const contractNames = (isApproval && networkId === NetworkId.AVALANCHE)
                 ? getStableContractNames(networkId, _contractName)

@@ -252,7 +252,7 @@ const etlStatefulEth = (
             //         from,
             //         newOffset
             //     )),
-            // pools
+            // ***** pools ***********
             // loadStateful(
             //     getNetwork(GN.ETHEREUM).id,
             //     EV.Swap,
@@ -260,13 +260,13 @@ const etlStatefulEth = (
             //     from,
             //     newOffset
             // ),
-            // loadStateful(
-            //     getNetwork(GN.ETHEREUM).id,
-            //     EV.PoolBalanceChanged,
-            //     CN.BalancerV2Vault,
-            //     from,
-            //     newOffset
-            // ),
+            loadStateful(
+                getNetwork(GN.ETHEREUM).id,
+                EV.PoolBalanceChanged,
+                CN.BalancerV2Vault,
+                from,
+                newOffset
+            ),
             // ...[
             //     CN.UniswapV2Pair_gvt_gro,
             //     CN.UniswapV2Pair_gro_usdc,
@@ -331,17 +331,17 @@ const etlStatefulEth = (
             //     from,
             //     newOffset
             // ),
-            ...[
-                EV.LogExit,
-                EV.LogInstantExit,
-            ].map((event) =>
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    event,
-                    CN.GroVesting,
-                    from,
-                    newOffset
-                )),
+            // ...[
+            //     EV.LogExit,
+            //     EV.LogInstantExit,
+            // ].map((event) =>
+            //     loadStateful(
+            //         getNetwork(GN.ETHEREUM).id,
+            //         event,
+            //         CN.GroVesting,
+            //         from,
+            //         newOffset
+            //     )),
         );
         return result;
 
