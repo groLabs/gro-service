@@ -190,29 +190,35 @@ import { etlStatefulByBlock, etlStatefulByDate } from './etl/etlStateful';
                     break;
                 case 'etlStatefulByBlock':
                     await loadContractInfoFromRegistry();
-                    if (params.length === 4) {
+                    if (params.length === 5) {
                         const fromBlock = parseInt(params[2]);
                         const toBlock = parseInt(params[3]);
+                        const rawEvents = params[4].split(',');
+                        const eventCodes = rawEvents.map((event) => parseInt(event));
                         await etlStatefulByBlock(
                             parseInt(params[1]),    // network (1: Ethereum, 2: Avalanche)
                             fromBlock,              // from block
                             toBlock,                // to block
                             fromBlock,              // offset (always from block)
+                            eventCodes,             // event codes (array) to be loaded
                         );
                     } else {
-                        console.log(`Wrong parameters for etlStatefulByBlock - e.g. etlStatefulByBlock 1 14524648 14539648`);
+                        console.log(`Wrong parameters for etlStatefulByBlock - e.g. etlStatefulByBlock 1 14524648 14539648 1,2,4`);
                     }
                     break;
                 case 'etlStatefulByDate':
                     await loadContractInfoFromRegistry();
-                    if (params.length === 4) {
+                    if (params.length === 5) {
+                        const rawEvents = params[4].split(',');
+                        const eventCodes = rawEvents.map((event) => parseInt(event));
                         await etlStatefulByDate(
                             parseInt(params[1]),    // network (1: Ethereum, 2: Avalanche)
                             params[2],              // start date ('DD/MM/YYYY')
                             params[3],              // end date ('DD/MM/YYYY')
+                            eventCodes,             // event codes (array) to be loaded
                         );
                     } else {
-                        console.log(`Wrong parameters for etlStatefulByDate - e.g. etlStatefulByDate 1 08/05/2022 08/06/2022`);
+                        console.log(`Wrong parameters for etlStatefulByDate - e.g. etlStatefulByDate 1 08/05/2022 10/05/2022 1,2,4`);
                     }
                     break;
                 default:

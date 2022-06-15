@@ -1,4 +1,5 @@
 import { getNetwork } from '../common/globalUtil';
+import { showError } from '../handler/logHandler';
 import { loadStateful } from '../loader/loadStateful';
 import { ContractNames as CN } from '../../registry/registry';
 import {
@@ -9,6 +10,7 @@ import {
 const etlStatefulEth = (
     from: number,
     newOffset: number,
+    eventCodes: number[],
 ) => {
     try {
         let result = [];
@@ -35,7 +37,6 @@ const etlStatefulEth = (
             CN.USDCPrimary,
             CN.USDTPrimary,
             CN.DAISecondary,
-            // TODO: others?
         ];
 
         const vaults = [
@@ -44,305 +45,479 @@ const etlStatefulEth = (
             CN.USDTVault,
         ];
 
-        result.push(
-            // loadStateful(
-            //     getNetwork(GN.ETHEREUM).id,
-            //     EV.LogNewDeposit,
-            //     CN.depositHandler,
-            //     from,
-            //     newOffset
-            // ),
-            // loadStateful(
-            //     getNetwork(GN.ETHEREUM).id,
-            //     EV.LogNewWithdrawal,
-            //     CN.withdrawHandler,
-            //     from,
-            //     newOffset
-            // ),
-            // loadStateful(
-            //     getNetwork(GN.ETHEREUM).id,
-            //     EV.LogEmergencyWithdrawal,
-            //     CN.emergencyHandler,
-            //     from,
-            //     newOffset
-            // ),
-            // ...groTokenContracts.map((groTokenContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.Transfer,
-            //         groTokenContract,
-            //         from,
-            //         newOffset,
-            //     )),
-            // ...[
-            //     CN.powerD,
-            //     CN.groVault,
-            //     CN.GroDAOToken,
-            // ].map((groTokenContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.Approval,
-            //         groTokenContract,
-            //         from,
-            //         newOffset,
-            //     )),
-            // ...[
-            //     CN.DAI,
-            //     CN.USDC,
-            //     CN.USDT,
-            // ].map((stableCoin) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.Approval,
-            //         stableCoin,
-            //         from,
-            //         newOffset,
-            //     )),
-            // loadStateful(
-            //     getNetwork(GN.ETHEREUM).id,
-            //     EV.LogBonusClaimed,
-            //     CN.GroHodler,
-            //     from,
-            //     newOffset
-            // ),
-            // loadStateful(
-            //     getNetwork(GN.ETHEREUM).id,
-            //     EV.LogClaim,
-            //     CN.Airdrop,
-            //     from,
-            //     newOffset
-            // ),
-            // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.LogDeposit,
-            //         LpTokenStakerContract,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.LogClaim,
-            //         LpTokenStakerContract,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.LogWithdraw,
-            //         LpTokenStakerContract,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.LogAddPool,
-            //         LpTokenStakerContract,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.LogSetPool,
-            //         LpTokenStakerContract,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.LogMaxGroPerBlock,
-            //         LpTokenStakerContract,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.LogGroPerBlock,
-            //         LpTokenStakerContract,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.LogMultiClaim,
-            //         LpTokenStakerContract,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.LogMultiWithdraw,
-            //         LpTokenStakerContract,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.LogEmergencyWithdraw,
-            //         LpTokenStakerContract,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.LogMigrateUser,
-            //         LpTokenStakerContract,
-            //         from,
-            //         newOffset
-            //     )),
-            // loadStateful(
-            //     getNetwork(GN.ETHEREUM).id,
-            //     EV.LogPnLExecution,
-            //     CN.pnl,
-            //     from,
-            //     newOffset
-            // ),
-            // ...strategies.map((strategy) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.Harvested,
-            //         strategy,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...vaults.map((vault) =>
-            // loadStateful(
-            //     getNetwork(GN.ETHEREUM).id,
-            //     EV.StrategyReported,
-            //     vault,
-            //     from,
-            //     newOffset,
-            // )),
-            // ...vaults.map((vault) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.StrategyUpdateDebtRatio,
-            //         vault,
-            //         from,
-            //         newOffset,
-            //     )),
-            // ...oracles.map((oracle) =>
-            // loadStateful(
-            //     getNetwork(GN.ETHEREUM).id,
-            //     EV.AnswerUpdated,
-            //     oracle,
-            //     from,
-            //     newOffset,
-            // )),
-            // 1off load to track transfers from emergencyHandler
-            // ...[
-            //     CN.USDC,
-            //     CN.USDT,
-            //     CN.DAI
-            // ].map((stableContract) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.Transfer,
-            //         stableContract,
-            //         from,
-            //         newOffset
-            //     )),
-            // ***** pools ***********
-            // loadStateful(
-            //     getNetwork(GN.ETHEREUM).id,
-            //     EV.Swap,
-            //     CN.BalancerV2Vault,
-            //     from,
-            //     newOffset
-            // ),
-            loadStateful(
-                getNetwork(GN.ETHEREUM).id,
-                EV.PoolBalanceChanged,
-                CN.BalancerV2Vault,
-                from,
-                newOffset
-            ),
-            // ...[
-            //     CN.UniswapV2Pair_gvt_gro,
-            //     CN.UniswapV2Pair_gro_usdc,
-            // ].map((uniPair) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.Swap,
-            //         uniPair,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...[
-            //     CN.UniswapV2Pair_gvt_gro,
-            //     CN.UniswapV2Pair_gro_usdc,
-            // ].map((uniPair) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.Mint,
-            //         uniPair,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...[
-            //     CN.UniswapV2Pair_gvt_gro,
-            //     CN.UniswapV2Pair_gro_usdc,
-            // ].map((uniPair) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         EV.Burn,
-            //         uniPair,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...[
-            //     EV.TokenExchange,
-            //     EV.TokenExchangeUnderlying,
-            // ].map((event) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         event,
-            //         CN.Curve_PWRD3CRV,
-            //         from,
-            //         newOffset
-            //     )),
-            // ...[
-            //     EV.AddLiquidity,
-            //     EV.RemoveLiquidity,
-            //     EV.RemoveLiquidityOne,
-            //     EV.RemoveLiquidityImbalance,
-            // ].map((event) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         event,
-            //         CN.Curve_PWRD3CRV,
-            //         from,
-            //         newOffset
-            //     )),
-            // loadStateful(
-            //     getNetwork(GN.ETHEREUM).id,
-            //     EV.LogVest,
-            //     CN.GroVesting,
-            //     from,
-            //     newOffset
-            // ),
-            // ...[
-            //     EV.LogExit,
-            //     EV.LogInstantExit,
-            // ].map((event) =>
-            //     loadStateful(
-            //         getNetwork(GN.ETHEREUM).id,
-            //         event,
-            //         CN.GroVesting,
-            //         from,
-            //         newOffset
-            //     )),
-        );
+        if (eventCodes.includes(1)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogNewDeposit,
+                    CN.depositHandler,
+                    from,
+                    newOffset
+                )
+            );
+        }
+
+        if (eventCodes.includes(2)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogNewWithdrawal,
+                    CN.withdrawHandler,
+                    from,
+                    newOffset
+                )
+            );
+        }
+
+        if (eventCodes.includes(3)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogEmergencyWithdrawal,
+                    CN.emergencyHandler,
+                    from,
+                    newOffset
+                ),
+            );
+        }
+
+        if (eventCodes.includes(4)) {
+            result.push(
+                ...groTokenContracts.map((groTokenContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.Transfer,
+                        groTokenContract,
+                        from,
+                        newOffset,
+                    ))
+            );
+        }
+
+        if (eventCodes.includes(5)) {
+            result.push(
+                ...[
+                    CN.powerD,
+                    CN.groVault,
+                    CN.GroDAOToken,
+                ].map((groTokenContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.Approval,
+                        groTokenContract,
+                        from,
+                        newOffset,
+                    ))
+            );
+        }
+
+        if (eventCodes.includes(6)) {
+            result.push(
+                ...[
+                    CN.DAI,
+                    CN.USDC,
+                    CN.USDT,
+                ].map((stableCoin) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.Approval,
+                        stableCoin,
+                        from,
+                        newOffset,
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(7)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogBonusClaimed,
+                    CN.GroHodler,
+                    from,
+                    newOffset
+                ),
+            );
+        }
+
+        if (eventCodes.includes(8)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogClaim,
+                    CN.Airdrop,
+                    from,
+                    newOffset
+                ),
+            );
+        }
+
+        if (eventCodes.includes(9)) {
+            result.push(
+                ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogDeposit,
+                        LpTokenStakerContract,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(10)) {
+            result.push(
+                ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogClaim,
+                        LpTokenStakerContract,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(11)) {
+            result.push(
+                ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogWithdraw,
+                        LpTokenStakerContract,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(12)) {
+            result.push(
+                ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogAddPool,
+                        LpTokenStakerContract,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(13)) {
+            result.push(
+                ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogSetPool,
+                        LpTokenStakerContract,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(14)) {
+            result.push(
+                ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogMaxGroPerBlock,
+                        LpTokenStakerContract,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(15)) {
+            result.push(
+                ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogGroPerBlock,
+                        LpTokenStakerContract,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(16)) {
+            result.push(
+                ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogMultiClaim,
+                        LpTokenStakerContract,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(17)) {
+            result.push(
+                ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogMultiWithdraw,
+                        LpTokenStakerContract,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(18)) {
+            result.push(
+                ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogEmergencyWithdraw,
+                        LpTokenStakerContract,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(19)) {
+            result.push(
+                ...[CN.LPTokenStakerV2].map((LpTokenStakerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogMigrateUser,
+                        LpTokenStakerContract,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(20)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogPnLExecution,
+                    CN.pnl,
+                    from,
+                    newOffset
+                ),
+            );
+        }
+
+        if (eventCodes.includes(21)) {
+            result.push(
+                ...strategies.map((strategy) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.Harvested,
+                        strategy,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(22)) {
+            result.push(
+                ...vaults.map((vault) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.StrategyReported,
+                        vault,
+                        from,
+                        newOffset,
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(23)) {
+            result.push(
+                ...vaults.map((vault) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.StrategyUpdateDebtRatio,
+                        vault,
+                        from,
+                        newOffset,
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(24)) {
+            result.push(
+                ...oracles.map((oracle) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.AnswerUpdated,
+                        oracle,
+                        from,
+                        newOffset,
+                    )),
+            );
+        }
+
+        // 1off load to track transfers from emergencyHandler
+        if (eventCodes.includes(25)) {
+            result.push(
+                ...[
+                    CN.USDC,
+                    CN.USDT,
+                    CN.DAI
+                ].map((stableContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.Transfer,
+                        stableContract,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        // ***** pools ***********
+
+        if (eventCodes.includes(26)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.Swap,
+                    CN.BalancerV2Vault,
+                    from,
+                    newOffset
+                ),
+            );
+        }
+
+        if (eventCodes.includes(27)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.PoolBalanceChanged,
+                    CN.BalancerV2Vault,
+                    from,
+                    newOffset
+                ),
+            );
+        }
+
+        if (eventCodes.includes(28)) {
+            result.push(
+                ...[
+                    CN.UniswapV2Pair_gvt_gro,
+                    CN.UniswapV2Pair_gro_usdc,
+                ].map((uniPair) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.Swap,
+                        uniPair,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(29)) {
+            result.push(
+                ...[
+                    CN.UniswapV2Pair_gvt_gro,
+                    CN.UniswapV2Pair_gro_usdc,
+                ].map((uniPair) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.Mint,
+                        uniPair,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(30)) {
+            result.push(
+                ...[
+                    CN.UniswapV2Pair_gvt_gro,
+                    CN.UniswapV2Pair_gro_usdc,
+                ].map((uniPair) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.Burn,
+                        uniPair,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(31)) {
+            result.push(
+                ...[
+                    EV.TokenExchange,
+                    EV.TokenExchangeUnderlying,
+                ].map((event) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        event,
+                        CN.Curve_PWRD3CRV,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(32)) {
+            result.push(
+                ...[
+                    EV.AddLiquidity,
+                    EV.RemoveLiquidity,
+                    EV.RemoveLiquidityOne,
+                    EV.RemoveLiquidityImbalance,
+                ].map((event) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        event,
+                        CN.Curve_PWRD3CRV,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(33)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogVest,
+                    CN.GroVesting,
+                    from,
+                    newOffset
+                ),
+            );
+        }
+
+        if (eventCodes.includes(34)) {
+            result.push(
+                ...[
+                    EV.LogExit,
+                    EV.LogInstantExit,
+                ].map((event) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        event,
+                        CN.GroVesting,
+                        from,
+                        newOffset
+                    )),
+            );
+        }
+
+        if (eventCodes.some(el => el > 34)) {
+            showError('etlStatefulEth.ts->etlStatefulEth()', 'Event code above the max value');
+            result.push(false);
+        }
+
         return result;
 
     } catch (err) {

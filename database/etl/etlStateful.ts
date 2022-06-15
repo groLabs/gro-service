@@ -1,6 +1,3 @@
-import { getNetwork } from '../common/globalUtil';
-import { loadStateful } from '../loader/loadStateful';
-import { ContractNames as CN } from '../../registry/registry';
 import {
     showInfo,
     showError,
@@ -33,6 +30,7 @@ const etlStatefulByDate = async (
     globalNetwork: GN,
     _fromDate: string,
     _toDate: string,
+    eventCodes: number[],
 ): Promise<boolean> => {
     try {
         let fromBlock;
@@ -73,6 +71,7 @@ const etlStatefulByDate = async (
                 fromBlock.block,
                 toBlock.block,
                 fromBlock.block,
+                eventCodes,
             );
 
         } else
@@ -101,6 +100,7 @@ const etlStatefulByBlock = async (
     from: number,
     to: number,
     offset: number,
+    eventCodes: number[],
 ): Promise<boolean> => {
     try {
         if (from > 0 && to > 0) {
@@ -136,7 +136,8 @@ const etlStatefulByBlock = async (
             if (globalNetwork === GN.ETHEREUM) {
                 result = etlStatefulEth(
                     from,
-                    newOffset
+                    newOffset,
+                    eventCodes,
                 );
             }
 
@@ -161,7 +162,12 @@ const etlStatefulByBlock = async (
 
             return (newOffset >= to)
                 ? true
-                : etlStatefulByBlock(globalNetwork, newOffset, to, newOffset);
+                : etlStatefulByBlock(
+                    globalNetwork,
+                    newOffset,
+                    to,
+                    newOffset,
+                    eventCodes);
 
         } else {
             showError(
