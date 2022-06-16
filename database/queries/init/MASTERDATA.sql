@@ -131,6 +131,9 @@ VALUES (25, 'uniswap_gro_usdc', 'Uniswap GRO/USDC LP', '0x21C5918CcB42d20A2368bd
 INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "contract_address")
 VALUES (26, 'curve_pwrd3crv', 'Curve.fi DAI/USDC/USDT LP', '0xbcb91E689114B9Cc865AD7871845C95241Df4105');
 
+INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "contract_address")
+VALUES (27, 'curve_3crv', 'Curve.fi DAI/USDC/USDT (3Crv)', '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490');
+
 /****************************************************
                     MD_TRANSFERS 
  ****************************************************/

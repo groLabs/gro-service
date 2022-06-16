@@ -2,7 +2,7 @@ import { getNetwork } from '../common/globalUtil';
 import { showError } from '../handler/logHandler';
 import { loadStateful } from '../loader/loadStateful';
 import { ContractNames as CN } from '../../registry/registry';
-import { getLatestContractsAddress } from '../../registry/registryLoader';
+import { getLatestContractsAddress as getAddress} from '../../registry/registryLoader';
 import {
     EventName as EV,
     GlobalNetwork as GN
@@ -128,7 +128,7 @@ const etlStatefulEth = (
                         stableCoin,
                         from,
                         newOffset,
-                        [null, getLatestContractsAddress()[CN.depositHandler].address]
+                        [null, getAddress()[CN.depositHandler].address]
                     )),
             );
         }
@@ -397,7 +397,7 @@ const etlStatefulEth = (
                         stableContract,
                         from,
                         newOffset,
-                        [getLatestContractsAddress()[CN.emergencyHandler].address, null]
+                        [getAddress()[CN.emergencyHandler].address, null]
                     )),
             );
         }
@@ -553,6 +553,7 @@ const etlStatefulEth = (
                     CN.UniswapV2Pair_gvt_gro,
                     CN.UniswapV2Pair_gro_usdc,
                     CN.Curve_PWRD3CRV,
+                    CN.Balancer_gro_weth_LP,
                 ].map((pool) =>
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
@@ -571,6 +572,7 @@ const etlStatefulEth = (
                     CN.UniswapV2Pair_gvt_gro,
                     CN.UniswapV2Pair_gro_usdc,
                     CN.Curve_PWRD3CRV,
+                    CN.Balancer_gro_weth_LP,
                 ].map((pool) =>
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
@@ -583,8 +585,35 @@ const etlStatefulEth = (
             );
         }
 
-        //****@dev: number to be updated if additional events are integrated */
-        if (eventCodes.some(el => el > 36)) {
+        if (eventCodes.includes(37)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.Transfer,
+                    CN.Curve_3CRV,
+                    from,
+                    newOffset,
+                    [getAddress()[CN.Curve_PWRD3CRV].address, null]
+                ),
+            );
+        }
+
+        if (eventCodes.includes(38)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.Transfer,
+                    CN.Curve_3CRV,
+                    from,
+                    newOffset,
+                    [null, getAddress()[CN.Curve_PWRD3CRV].address]
+                ),
+            );
+        }
+
+
+        //****@dev: number to be updated if additional events are integrated
+        if (eventCodes.some(el => el > 38)) {
             showError('etlStatefulEth.ts->etlStatefulEth()', 'Event code above the max value');
             result.push(false);
         }

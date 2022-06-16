@@ -46,6 +46,16 @@ const getTokenIdByContractName = (
             return TokenId.USDT;
         case CN.DAI:
             return TokenId.DAI;
+        case CN.UniswapV2Pair_gvt_gro:
+            return TokenId.uniswap_gvt_gro;
+        case CN.UniswapV2Pair_gro_usdc:
+            return TokenId.uniswap_gro_usdc;
+        case CN.Balancer_gro_weth_LP:
+            return TokenId.balancer_gro_weth;
+        case CN.Curve_PWRD3CRV:
+            return TokenId.curve_pwrd3crv;
+        case CN.Curve_3CRV:
+            return TokenId.curve_3crv;
         default:
             return TokenId.UNKNOWN;
     }

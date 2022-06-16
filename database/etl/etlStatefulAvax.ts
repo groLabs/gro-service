@@ -2,7 +2,7 @@ import { getNetwork } from '../common/globalUtil';
 import { showError } from '../handler/logHandler';
 import { loadStateful } from '../loader/loadStateful';
 import { ContractNames as CN } from '../../registry/registry';
-import { getLatestContractsAddress } from '../../registry/registryLoader';
+import { getLatestContractsAddress as getAddress} from '../../registry/registryLoader';
 import {
     EventName as EV,
     GlobalNetwork as GN
@@ -84,7 +84,7 @@ const etlStatefulAvax = (
                         vault,
                         from,
                         newOffset,
-                        [null, getLatestContractsAddress()[vault].address]
+                        [null, getAddress()[vault].address]
                     )),
             );
         }

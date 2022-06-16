@@ -69,6 +69,7 @@ enum TokenName {
     uniswap_gvt_gro = 'uniswap_gvt_gro',
     uniswap_gro_usdc = 'uniswap_gro_usdc',
     curve_pwrd3crv = 'curve_pwrd3crv',
+    curve_3crv = 'curve_3crv',
 }
 
 // Must be aligned with table MD_TOKENS
@@ -100,6 +101,7 @@ enum TokenId {
     uniswap_gvt_gro = 24,
     uniswap_gro_usdc = 25,
     curve_pwrd3crv = 26,
+    curve_3crv = 27,
 }
 
 enum EventName {
