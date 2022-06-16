@@ -2,6 +2,7 @@ import { getNetwork } from '../common/globalUtil';
 import { showError } from '../handler/logHandler';
 import { loadStateful } from '../loader/loadStateful';
 import { ContractNames as CN } from '../../registry/registry';
+import { getLatestContractsAddress } from '../../registry/registryLoader';
 import {
     EventName as EV,
     GlobalNetwork as GN
@@ -55,6 +56,7 @@ const etlStatefulAvax = (
                         vault,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -68,6 +70,7 @@ const etlStatefulAvax = (
                         vault,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -81,6 +84,7 @@ const etlStatefulAvax = (
                         vault,
                         from,
                         newOffset,
+                        [null, getLatestContractsAddress()[vault].address]
                     )),
             );
         }
@@ -94,6 +98,7 @@ const etlStatefulAvax = (
                         vault,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -107,6 +112,7 @@ const etlStatefulAvax = (
                         vault,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -124,6 +130,7 @@ const etlStatefulAvax = (
                         vault,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -137,6 +144,7 @@ const etlStatefulAvax = (
                         oracle,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -149,6 +157,7 @@ const etlStatefulAvax = (
                     CN.AVAXBouncer,
                     from,
                     newOffset,
+                    []
                 ),
             );
         }
@@ -161,6 +170,7 @@ const etlStatefulAvax = (
                     CN.AVAXBouncer,
                     from,
                     newOffset,
+                    []
                 ),
             );
         }
@@ -174,6 +184,7 @@ const etlStatefulAvax = (
                         strategy,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -187,6 +198,7 @@ const etlStatefulAvax = (
                         strategy,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -200,6 +212,7 @@ const etlStatefulAvax = (
                         strategy,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -213,6 +226,7 @@ const etlStatefulAvax = (
                         vault,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -233,6 +247,7 @@ const etlStatefulAvax = (
                         strategy,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }

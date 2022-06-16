@@ -2,10 +2,12 @@ import { getNetwork } from '../common/globalUtil';
 import { showError } from '../handler/logHandler';
 import { loadStateful } from '../loader/loadStateful';
 import { ContractNames as CN } from '../../registry/registry';
+import { getLatestContractsAddress } from '../../registry/registryLoader';
 import {
     EventName as EV,
     GlobalNetwork as GN
 } from '../types';
+import { ZERO_ADDRESS } from '../constants';
 
 
 const etlStatefulEth = (
@@ -53,7 +55,8 @@ const etlStatefulEth = (
                     EV.LogNewDeposit,
                     CN.depositHandler,
                     from,
-                    newOffset
+                    newOffset,
+                    []
                 )
             );
         }
@@ -65,7 +68,8 @@ const etlStatefulEth = (
                     EV.LogNewWithdrawal,
                     CN.withdrawHandler,
                     from,
-                    newOffset
+                    newOffset,
+                    []
                 )
             );
         }
@@ -77,7 +81,8 @@ const etlStatefulEth = (
                     EV.LogEmergencyWithdrawal,
                     CN.emergencyHandler,
                     from,
-                    newOffset
+                    newOffset,
+                    []
                 ),
             );
         }
@@ -91,6 +96,7 @@ const etlStatefulEth = (
                         groTokenContract,
                         from,
                         newOffset,
+                        []
                     ))
             );
         }
@@ -104,6 +110,7 @@ const etlStatefulEth = (
                         groTokenContract,
                         from,
                         newOffset,
+                        []
                     ))
             );
         }
@@ -121,6 +128,7 @@ const etlStatefulEth = (
                         stableCoin,
                         from,
                         newOffset,
+                        [null, getLatestContractsAddress()[CN.depositHandler].address]
                     )),
             );
         }
@@ -132,7 +140,9 @@ const etlStatefulEth = (
                     EV.LogBonusClaimed,
                     CN.GroHodler,
                     from,
-                    newOffset
+                    newOffset,
+                    []
+
                 ),
             );
         }
@@ -144,7 +154,8 @@ const etlStatefulEth = (
                     EV.LogClaim,
                     CN.Airdrop,
                     from,
-                    newOffset
+                    newOffset,
+                    []
                 ),
             );
         }
@@ -157,7 +168,8 @@ const etlStatefulEth = (
                         EV.LogDeposit,
                         LpTokenStakerContract,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -170,7 +182,8 @@ const etlStatefulEth = (
                         EV.LogClaim,
                         LpTokenStakerContract,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -183,7 +196,8 @@ const etlStatefulEth = (
                         EV.LogWithdraw,
                         LpTokenStakerContract,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -196,7 +210,8 @@ const etlStatefulEth = (
                         EV.LogAddPool,
                         LpTokenStakerContract,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -209,7 +224,8 @@ const etlStatefulEth = (
                         EV.LogSetPool,
                         LpTokenStakerContract,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -222,7 +238,8 @@ const etlStatefulEth = (
                         EV.LogMaxGroPerBlock,
                         LpTokenStakerContract,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -235,7 +252,8 @@ const etlStatefulEth = (
                         EV.LogGroPerBlock,
                         LpTokenStakerContract,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -248,7 +266,8 @@ const etlStatefulEth = (
                         EV.LogMultiClaim,
                         LpTokenStakerContract,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -261,7 +280,8 @@ const etlStatefulEth = (
                         EV.LogMultiWithdraw,
                         LpTokenStakerContract,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -274,7 +294,8 @@ const etlStatefulEth = (
                         EV.LogEmergencyWithdraw,
                         LpTokenStakerContract,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -287,7 +308,8 @@ const etlStatefulEth = (
                         EV.LogMigrateUser,
                         LpTokenStakerContract,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -299,7 +321,8 @@ const etlStatefulEth = (
                     EV.LogPnLExecution,
                     CN.pnl,
                     from,
-                    newOffset
+                    newOffset,
+                    []
                 ),
             );
         }
@@ -312,7 +335,8 @@ const etlStatefulEth = (
                         EV.Harvested,
                         strategy,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -326,6 +350,7 @@ const etlStatefulEth = (
                         vault,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -339,6 +364,7 @@ const etlStatefulEth = (
                         vault,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -352,6 +378,7 @@ const etlStatefulEth = (
                         oracle,
                         from,
                         newOffset,
+                        []
                     )),
             );
         }
@@ -369,7 +396,8 @@ const etlStatefulEth = (
                         EV.Transfer,
                         stableContract,
                         from,
-                        newOffset
+                        newOffset,
+                        [getLatestContractsAddress()[CN.emergencyHandler].address, null]
                     )),
             );
         }
@@ -383,7 +411,8 @@ const etlStatefulEth = (
                     EV.Swap,
                     CN.BalancerV2Vault,
                     from,
-                    newOffset
+                    newOffset,
+                    ['0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f', null, null]
                 ),
             );
         }
@@ -395,7 +424,8 @@ const etlStatefulEth = (
                     EV.PoolBalanceChanged,
                     CN.BalancerV2Vault,
                     from,
-                    newOffset
+                    newOffset,
+                    ['0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f', null]
                 ),
             );
         }
@@ -411,7 +441,8 @@ const etlStatefulEth = (
                         EV.Swap,
                         uniPair,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -427,7 +458,8 @@ const etlStatefulEth = (
                         EV.Mint,
                         uniPair,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -443,7 +475,8 @@ const etlStatefulEth = (
                         EV.Burn,
                         uniPair,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -459,7 +492,8 @@ const etlStatefulEth = (
                         event,
                         CN.Curve_PWRD3CRV,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -477,7 +511,8 @@ const etlStatefulEth = (
                         event,
                         CN.Curve_PWRD3CRV,
                         from,
-                        newOffset
+                        newOffset,
+                        []
                     )),
             );
         }
@@ -489,7 +524,8 @@ const etlStatefulEth = (
                     EV.LogVest,
                     CN.GroVesting,
                     from,
-                    newOffset
+                    newOffset,
+                    []
                 ),
             );
         }
@@ -505,13 +541,50 @@ const etlStatefulEth = (
                         event,
                         CN.GroVesting,
                         from,
-                        newOffset
+                        newOffset,
+                        []
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(35)) {
+            result.push(
+                ...[
+                    CN.UniswapV2Pair_gvt_gro,
+                    CN.UniswapV2Pair_gro_usdc,
+                    CN.Curve_PWRD3CRV,
+                ].map((pool) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.Transfer,
+                        pool,
+                        from,
+                        newOffset,
+                        [ZERO_ADDRESS, null]
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(36)) {
+            result.push(
+                ...[
+                    CN.UniswapV2Pair_gvt_gro,
+                    CN.UniswapV2Pair_gro_usdc,
+                    CN.Curve_PWRD3CRV,
+                ].map((pool) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.Transfer,
+                        pool,
+                        from,
+                        newOffset,
+                        [null, ZERO_ADDRESS]
                     )),
             );
         }
 
         //****@dev: number to be updated if additional events are integrated */
-        if (eventCodes.some(el => el > 34)) {
+        if (eventCodes.some(el => el > 36)) {
             showError('etlStatefulEth.ts->etlStatefulEth()', 'Event code above the max value');
             result.push(false);
         }

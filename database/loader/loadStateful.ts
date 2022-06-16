@@ -2,12 +2,10 @@
 import { ICall } from '../interfaces/ICall';
 import { query } from '../handler/queryHandler';
 import { isPlural } from '../common/globalUtil';
-import { getStableContractNames } from '../common/statefulUtil'
+import { getStableContractNames } from '../common/statefulUtil';
 import { getStatefulEvents } from '../listener/getStatefulEvents';
 import { eventParser } from '../parser/statefulParser';
 import { isContractDeployed } from '../common/deployedUtil';
-import { ContractNames as CN } from '../../registry/registry';
-import { getLatestContractsAddress } from '../../registry/registryLoader';
 import {
     showInfo,
     showError,
@@ -37,10 +35,10 @@ const loadStateful = async (
     eventName: EV,
     _contractName: string,
     _fromBlock: number,
-    toBlock: number
+    toBlock: number,
+    filter: string[],
 ): Promise<boolean> => {
     try {
-
         // check whether the target contract is deployed within the block range
         const {
             isDeployed,
@@ -55,40 +53,6 @@ const loadStateful = async (
             const isApproval = (eventName === EV.Approval)
                 ? true
                 : false;
-
-            // Set event filters
-            let filter = [];
-            if (eventName === EV.Transfer
-                && (_contractName === CN.DAI
-                    || _contractName === CN.USDC
-                    || _contractName === CN.USDT
-                )
-            ) {
-                // Case 1: for transfer events of stablecoins, filter by emergencyHandler 
-                // (This was a 1off load for the aggregation layer to identify empty emergency withdrawals events)
-                filter = [getLatestContractsAddress()[CN.emergencyHandler].address, null];
-            } else if (isApproval) {
-                if (networkId === NetworkId.AVALANCHE) {
-                    // Case 2: for approval AVAX retrieve all associated stablecoins
-                    filter = [null, getLatestContractsAddress()[_contractName].address];
-                } else if (
-                    (networkId === NetworkId.MAINNET || networkId === NetworkId.ROPSTEN)
-                    && _contractName !== CN.groVault
-                    && _contractName !== CN.powerD
-                    && _contractName !== CN.GroDAOToken
-                ) {
-                    // Case 3: for USDC, USDT or DAI approval, filter by 'to' = depositHandler
-                    filter = [null, getLatestContractsAddress()[CN.depositHandler].address];
-                }
-            } else if (_contractName === CN.BalancerV2Vault) {
-                // Case 4: for Balancer swaps or liquidity, filter by poolId
-                if (eventName === EV.Swap) {
-                    filter = ['0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f', null, null];
-                } else {
-                    filter = ['0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f', null];
-                }
-            }
-
 
             const contractNames = (isApproval && networkId === NetworkId.AVALANCHE)
                 ? getStableContractNames(networkId, _contractName)
