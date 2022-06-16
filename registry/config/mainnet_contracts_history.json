@@ -2206,11 +2206,41 @@
             "active": true
         }
     ],
+    "Balancer_gro_weth_LP": [
+        {
+            "address": "0x702605F43471183158938C1a3e5f5A359d7b31ba",
+            "deployedBlock": 13355180,
+            "startBlock": 13355180,
+            "endBlock": null,
+            "abiVersion": "6270d2c",
+            "tag": "Other",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        }
+    ],
     "Curve_PWRD3CRV": [
         {
             "address": "0xbcb91E689114B9Cc865AD7871845C95241Df4105",
             "deployedBlock": 13314289,
             "startBlock": 13314289,
+            "endBlock": null,
+            "abiVersion": "6270d2c",
+            "tag": "Other",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        }
+    ],
+    "Curve_3CRV": [
+        {
+            "address": "0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490",
+            "deployedBlock": 10809467,
+            "startBlock": 10809467,
             "endBlock": null,
             "abiVersion": "6270d2c",
             "tag": "Other",
