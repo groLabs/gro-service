@@ -146,6 +146,9 @@ const eventParserEth = async (
                     total_locked_amount: (eventName === EV.LogExit)
                         ? parseAmount(log.args.totalLockedAmount, Base.D18, 8)
                         : null,
+                    unlocked: (eventName === EV.LogExit)
+                        ? parseAmount(log.args.unlocked, Base.D18, 8)
+                        : null,
                     amount: (eventName === EV.LogExit)
                         ? parseAmount(log.args.amount, Base.D18, 8)
                         : null,

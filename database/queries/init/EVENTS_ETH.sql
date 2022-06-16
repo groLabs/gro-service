@@ -144,6 +144,7 @@ CREATE TABLE gro."EV_GRO_EXITS" (
     "log_name" CHARACTER VARYING (100) NOT NULL,
     "user" CHARACTER VARYING (42) NULL,
     "total_locked_amount" NUMERIC (20, 8) NULL,
+    "unlocked" NUMERIC (20, 8) NULL,
     "amount" NUMERIC (20, 8) NULL,
     "minting_amount" NUMERIC (20, 8) NULL,
     "penalty" NUMERIC (20, 8) NULL,

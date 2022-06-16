@@ -97,11 +97,7 @@ const etlStatefulEth = (
 
         if (eventCodes.includes(5)) {
             result.push(
-                ...[
-                    CN.powerD,
-                    CN.groVault,
-                    CN.GroDAOToken,
-                ].map((groTokenContract) =>
+                ...groTokenContracts.map((groTokenContract) =>
                     loadStateful(
                         getNetwork(GN.ETHEREUM).id,
                         EV.Approval,

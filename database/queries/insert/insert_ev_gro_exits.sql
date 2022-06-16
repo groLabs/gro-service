@@ -6,6 +6,7 @@ INSERT INTO gro."EV_GRO_EXITS" (
         "log_name",
         "user",
         "total_locked_amount",
+        "unlocked",
         "amount",
         "minting_amount",
         "penalty"
@@ -20,5 +21,6 @@ VALUES (
         $7,
         $8,
         $9,
-        $10
+        $10,
+        $11
     ) ON CONFLICT ON CONSTRAINT "EV_GRO_EXITS_pkey" DO NOTHING;
