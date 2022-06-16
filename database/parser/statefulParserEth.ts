@@ -79,33 +79,19 @@ const eventParserEth = async (
                 const base = (contractName === CN.USDC || contractName === CN.USDT)
                     ? Base.D6
                     : Base.D18;
-                const value = (contractName === CN.DAI)
-                    ? log.args.wad
-                    : log.args.value;
                 payload = {
                     token_id: getTokenIdByContractName(contractName),
-                    from: (contractName === CN.DAI)
-                        ? log.args.src
-                        : log.args.from,
-                    to: (contractName === CN.DAI)
-                        ? log.args.dst
-                        : log.args.to,
-                    value: parseAmount(value, base, 8),
+                    from: log.args[0],
+                    to: log.args[1],
+                    value: parseAmount(log.args[2], base, 8),
                 }
                 // Approvals
             } else if (eventName === EV.Approval) {
-                const valueTemp = (contractName === CN.DAI)
-                    ? log.args.wad
-                    : log.args.value;
-                const value = parseAmount(valueTemp, Base.D18, 8);
+                const value = parseAmount(log.args[2], Base.D18, 8);
                 payload = {
                     token_id: getTokenIdByContractName(contractName),
-                    owner: (contractName === CN.DAI)
-                        ? log.args.src
-                        : log.args.owner,
-                    spender: (contractName === CN.DAI)
-                        ? log.args.guy
-                        : log.args.spender,
+                    owner: log.args[0],
+                    spender: log.args[1],
                     value: (value < MAX_NUMBER) ? value : -1,
                 }
                 // Claims from Hodler
@@ -446,7 +432,6 @@ const eventParserEth = async (
                     token_supply: parseAmount(log.args.token_supply, Base.D18, 8),
                     virtual_price: virtualPrice,
                 }
-                //console.log('payload:', payload);
             } else {
                 showError(
                     'statefulParser.ts->eventParser()',
