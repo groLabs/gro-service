@@ -110,11 +110,6 @@ CREATE TABLE gro."EV_AIRDROP_CLAIMS" (
 
 ALTER TABLE gro."EV_AIRDROP_CLAIMS" OWNER to postgres;
 
-
-
-
-
-
 CREATE TABLE gro."EV_GRO_VESTS" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
     "log_index" INTEGER NOT NULL,
@@ -157,9 +152,6 @@ CREATE TABLE gro."EV_GRO_EXITS" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."EV_GRO_EXITS" OWNER to postgres;
-
-
-
 
 -- STAKER TABLES
 

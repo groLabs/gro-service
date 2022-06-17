@@ -23,12 +23,14 @@ import { etlStatefulAvax } from './etlStatefulAvax';
 /// @param  globalNetwork The blockchain network (1: Ethereum, 2: Avalanche)
 /// @param  _fromDate The start date to process blocks in format 'DD/MM/YYYY'
 /// @param  _toDdate The end date to process blocks in format 'DD/MM/YYYY'
+/// @param  blocks The blocks per batch to be processed
 /// @param  eventCodes The list of event codes to be loaded (see etlStatefulEth.ts or etlStatefulAvax.ts)
 /// @return True if no exceptions found; false otherwise
 const etlStatefulByDate = async (
     globalNetwork: GN,
     _fromDate: string,
     _toDate: string,
+    blocks: number,
     eventCodes: number[],
 ): Promise<boolean> => {
     try {
@@ -70,6 +72,7 @@ const etlStatefulByDate = async (
                 fromBlock.block,
                 toBlock.block,
                 fromBlock.block,
+                blocks,
                 eventCodes,
             );
 
@@ -93,6 +96,7 @@ const etlStatefulByDate = async (
 /// @param  from The start block to load events
 /// @param  to The end block to load events
 /// @param  offset The offset to track the amount of iterations
+/// @param  blocks The blocks per batch to be processed
 /// @param  eventCodes The list of event codes to be loaded (see etlStatefulEth.ts or etlStatefulAvax.ts)
 /// @return True if no exceptions found; false otherwise
 const etlStatefulByBlock = async (
@@ -100,16 +104,19 @@ const etlStatefulByBlock = async (
     from: number,
     to: number,
     offset: number,
+    blocks: number,
     eventCodes: number[],
 ): Promise<boolean> => {
     try {
         if (from > 0 && to > 0) {
 
-            const LISTENER_BATCH = (globalNetwork === GN.ETHEREUM)
-                ? LISTENER_BLOCKS_ETH
-                : (globalNetwork === GN.AVALANCHE)
-                    ? LISTENER_BLOCKS_AVAX
-                    : 0;
+            const LISTENER_BATCH = (blocks !== 0)
+                ? blocks
+                : (globalNetwork === GN.ETHEREUM)
+                    ? LISTENER_BLOCKS_ETH
+                    : (globalNetwork === GN.AVALANCHE)
+                        ? LISTENER_BLOCKS_AVAX
+                        : 0;
 
             if (LISTENER_BATCH === 0) {
                 showError(
@@ -168,6 +175,7 @@ const etlStatefulByBlock = async (
                     newOffset,
                     to,
                     newOffset,
+                    blocks,
                     eventCodes);
 
         } else {

@@ -190,35 +190,37 @@ import { etlStatefulByBlock, etlStatefulByDate } from './etl/etlStateful';
                     break;
                 case 'etlStatefulByBlock':
                     await loadContractInfoFromRegistry();
-                    if (params.length === 5) {
+                    if (params.length === 6) {
                         const fromBlock = parseInt(params[2]);
                         const toBlock = parseInt(params[3]);
-                        const rawEvents = params[4].split(',');
+                        const rawEvents = params[5].split(',');
                         const eventCodes = rawEvents.map((event) => parseInt(event));
                         await etlStatefulByBlock(
                             parseInt(params[1]),    // network (1: Ethereum, 2: Avalanche)
                             fromBlock,              // from block
                             toBlock,                // to block
                             fromBlock,              // offset (always from block)
+                            parseInt(params[4]),    // blocks per batch
                             eventCodes,             // event codes (array) to be loaded
                         );
                     } else {
-                        console.log(`Wrong parameters for etlStatefulByBlock - e.g. etlStatefulByBlock 1 14524648 14539648 1,2,4`);
+                        console.log(`Wrong parameters for etlStatefulByBlock - e.g. etlStatefulByBlock 1 14524648 14539648 0 1,2,4`);
                     }
                     break;
                 case 'etlStatefulByDate':
                     await loadContractInfoFromRegistry();
-                    if (params.length === 5) {
-                        const rawEvents = params[4].split(',');
+                    if (params.length === 6) {
+                        const rawEvents = params[5].split(',');
                         const eventCodes = rawEvents.map((event) => parseInt(event));
                         await etlStatefulByDate(
                             parseInt(params[1]),    // network (1: Ethereum, 2: Avalanche)
                             params[2],              // start date ('DD/MM/YYYY')
                             params[3],              // end date ('DD/MM/YYYY')
+                            parseInt(params[4]),    // blocks per batch
                             eventCodes,             // event codes (array) to be loaded
                         );
                     } else {
-                        console.log(`Wrong parameters for etlStatefulByDate - e.g. etlStatefulByDate 1 08/05/2022 10/05/2022 1,2,4`);
+                        console.log(`Wrong parameters for etlStatefulByDate - e.g. etlStatefulByDate 1 08/05/2022 10/05/2022 0 1,2,4`);
                     }
                     break;
                 default:
