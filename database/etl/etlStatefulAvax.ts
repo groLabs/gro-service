@@ -234,7 +234,26 @@ const etlStatefulAvax = (
             );
         }
 
+
         if (eventCodes.includes(14)) {
+            result.push(
+                ...[
+                    CN.AVAXDAIStrategy,
+                    CN.AVAXUSDCStrategy,
+                    CN.AVAXUSDTStrategy,
+                ].map((strategy) =>
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.Harvested,
+                        strategy,
+                        from,
+                        newOffset,
+                        []
+                    )),
+            );
+        }
+
+        if (eventCodes.includes(15)) {
             result.push(
                 ...[
                     CN.AVAXDAIStrategy_v1_7,
@@ -256,7 +275,7 @@ const etlStatefulAvax = (
         }
 
         //****@dev: number to be updated if additional events are integrated */
-        if (eventCodes.some(el => el > 14)) {
+        if (eventCodes.some(el => el > 15)) {
             showError('etlStatefulEth.ts->etlStatefulEth()', 'Event code above the max value');
             result.push(false);
         }

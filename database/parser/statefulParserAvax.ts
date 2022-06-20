@@ -151,6 +151,7 @@ const eventParserAvax = async (
                         updated_at: parseInt(log.args.updatedAt.toString()),
                     }
                     break;
+                case EV.Harvested:
                 case EV.LogHarvested:
                     payload = {
                         profit: parseAmount(log.args.profit, base, 8),
