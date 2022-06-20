@@ -24,9 +24,9 @@ const etlStatefulAvax = (
             CN.AVAXDAIVault_v1_7,
             CN.AVAXUSDCVault_v1_7,
             CN.AVAXUSDTVault_v1_7,
-            // CN.AVAXDAIVault_v1_9_internal,
-            // CN.AVAXUSDCVault_v1_9_internal,
-            // CN.AVAXUSDTVault_v1_9_internal,
+            CN.AVAXDAIVault_v1_9_internal,
+            CN.AVAXUSDCVault_v1_9_internal,
+            CN.AVAXUSDTVault_v1_9_internal,
         ];
 
         const strategies = [
@@ -36,9 +36,9 @@ const etlStatefulAvax = (
             CN.AVAXDAIStrategy_v1_7,
             CN.AVAXUSDCStrategy_v1_7,
             CN.AVAXUSDTStrategy_v1_7,
-            // CN.AVAXDAIStrategy_v1_9_internal,
-            // CN.AVAXUSDCStrategy_v1_9_internal,
-            // CN.AVAXUSDTStrategy_v1_9_internal,
+            CN.AVAXDAIStrategy_v1_9_internal,
+            CN.AVAXUSDCStrategy_v1_9_internal,
+            CN.AVAXUSDTStrategy_v1_9_internal,
         ]
 
         const oracles = [
@@ -237,9 +237,9 @@ const etlStatefulAvax = (
                     CN.AVAXDAIStrategy_v1_7,
                     CN.AVAXUSDCStrategy_v1_7,
                     CN.AVAXUSDTStrategy_v1_7,
-                    // CN.AVAXDAIStrategy_v1_9_internal,
-                    // CN.AVAXUSDCStrategy_v1_9_internal,
-                    // CN.AVAXUSDTStrategy_v1_9_internal,
+                    CN.AVAXDAIStrategy_v1_9_internal,
+                    CN.AVAXUSDCStrategy_v1_9_internal,
+                    CN.AVAXUSDTStrategy_v1_9_internal,
                 ].map((strategy) =>
                     loadStateful(
                         getNetwork(GN.AVALANCHE).id,
