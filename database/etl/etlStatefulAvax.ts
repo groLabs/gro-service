@@ -253,7 +253,7 @@ const etlStatefulAvax = (
         }
 
         //****@dev: number to be updated if additional events are integrated */
-        if (eventCodes.some(el => el > 12)) {
+        if (eventCodes.some(el => el > 14)) {
             showError('etlStatefulEth.ts->etlStatefulEth()', 'Event code above the max value');
             result.push(false);
         }

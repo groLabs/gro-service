@@ -107,7 +107,7 @@ const eventParserAvax = async (
                         base,
                         contractName,
                     );
-                    if (!lockedProfit || !totalAssets) {
+                    if (!totalAssets) {
                         return {
                             status: QUERY_ERROR,
                             data: null
