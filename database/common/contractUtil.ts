@@ -306,6 +306,7 @@ const getVaultFromContractName = (contractName: string) => {
             case ContractNames.AVAXUSDTVault_v1_9_internal:
                 sc = getUSDTeVault_1_9_internal();
                 break;
+            // Ethereum
             case ContractNames.DAIVault:
                 sc = getDAIVaultAdaptor();
                 break;

@@ -46,6 +46,7 @@ const loadStatefulAvax = async (
             case EV.AnswerUpdated:
                 res = await query('insert_ev_price.sql', event);
                 break;
+            case EV.Harvested:
             case EV.LogHarvested:
                 res = await query('insert_ev_lab_strategy_harvest.sql', event);
                 break;
