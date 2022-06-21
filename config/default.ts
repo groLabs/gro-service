@@ -22,8 +22,8 @@ export const timeout_retry_staller = 1000;
 export const pagerduty = {
     token: process.env.PAGERDUTY_TOKEN,
     from: process.env.PAGERDUTY_TRIGGER_FROM,
-    service: 'P22YTVG',
-    policy: 'PD1HPMI',
+    service: 'PH3EY5S',
+    policy: 'P1C0NTA',
     urgency: {
         high: 'high',
         low: 'low',
