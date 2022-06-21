@@ -275,11 +275,14 @@ const eventParserEth = async (
                 }
                 // Strategy harvest
             } else if (eventName === EV.Harvested) {
+                const base = (contractName === CN.DAIPrimary || contractName === CN.DAISecondary)
+                    ? Base.D18
+                    : Base.D6;
                 payload = {
-                    profit: parseAmount(log.args.profit, Base.D18, 8),
-                    loss: parseAmount(log.args.loss, Base.D18, 8),
-                    debt_payment: parseAmount(log.args.debtPayment, Base.D18, 8),
-                    debt_outstanding: parseAmount(log.args.debtOutstanding, Base.D18, 8),
+                    profit: parseAmount(log.args.profit, base, 8),
+                    loss: parseAmount(log.args.loss, base, 8),
+                    debt_payment: parseAmount(log.args.debtPayment, base, 8),
+                    debt_outstanding: parseAmount(log.args.debtOutstanding, base, 8),
                 }
                 // Strategy reported (from Vaults and vault adaptors)
             } else if (eventName === EV.StrategyReported) {
@@ -397,13 +400,21 @@ const eventParserEth = async (
                     || eventName === EV.TokenExchangeUnderlying)
                 && contractName === CN.Curve_PWRD3CRV
             ) {
+                const sold_id = parseInt(log.args.sold_id.toString());
+                const bought_id = parseInt(log.args.bought_id.toString());
                 const virtualPrice = await getVirtualPrice(log.blockNumber);
+                const baseTokenSold = (eventName === EV.TokenExchangeUnderlying)
+                    ? getBaseFromTokenIDcurve(sold_id)
+                    : Base.D18;
+                const baseTokenBought = (eventName === EV.TokenExchangeUnderlying)
+                    ? getBaseFromTokenIDcurve(bought_id)
+                    : Base.D18;
                 payload = {
                     buyer: log.args.buyer,
-                    sold_id: parseInt(log.args.sold_id.toString()),
-                    tokens_sold: parseAmount(log.args.tokens_sold, Base.D18, 8),
-                    bought_id: parseInt(log.args.bought_id.toString()),
-                    tokens_bought: parseAmount(log.args.tokens_bought, Base.D18, 8),
+                    sold_id: sold_id,
+                    tokens_sold: parseAmount(log.args.tokens_sold, baseTokenSold, 8),
+                    bought_id: bought_id,
+                    tokens_bought: parseAmount(log.args.tokens_bought, baseTokenBought, 8),
                     virtual_price: virtualPrice,
                 }
                 // Curve liquidity
@@ -552,6 +563,20 @@ const getClaimedAmounts = async (
     } catch (err) {
         showError('statefulParserEth.ts->getVirtualPrice()', err);
         return [];
+    }
+}
+
+//@dev: get the token base (decimals) based on Curve's token id
+const getBaseFromTokenIDcurve = (tokenID: number) => {
+    switch (tokenID) {
+        case 0: // PWRD
+        case 1: // DAI
+            return Base.D18;
+        case 2: // USDC
+        case 3: // USDT
+            return Base.D6
+        default:
+            return Base.D18;
     }
 }
 

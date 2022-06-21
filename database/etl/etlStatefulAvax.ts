@@ -234,7 +234,6 @@ const etlStatefulAvax = (
             );
         }
 
-
         if (eventCodes.includes(14)) {
             result.push(
                 ...[
