@@ -693,6 +693,61 @@
                     "DY": 95000
                 },
                 "active": true
+            },
+            {
+                "address": "0xD370998b2E7941151E7BB9f6e337A12F337D0682",
+                "deployedBlock": 14997769,
+                "startBlock": 14997797,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "USDC",
+                    "OUSD"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex"
+                ],
+                "metaData": {
+                    "N": "Convex XPool USDC",
+                    "DN": "Convex-OUSD-3CRV",
+                    "DY": 33400
+                },
+                "active": true,
+                "contractName": "USDCPrimary"
+            }
+        ],
+        "USDCSecondary": [
+            {
+                "address": "0x8b335D3E266389Ae08A2F22b01D33813d40ED8Fd",
+                "deployedBlock": 14300371,
+                "startBlock": 14836344,
+                "endBlock": null,
+                "abiVersion": "ce7b149",
+                "tag": "Strategy",
+                "tokens": [
+                    "USDC",
+                    "ALUSD"
+                ],
+                "protocols": [
+                    "Curve",
+                    "Convex"
+                ],
+                "protocolsDisplayName": [
+                    "Curve",
+                    "Convex"
+                ],
+                "metaData": {
+                    "N": "Convex XPool USDC",
+                    "DN": "Convex-ALUSD-3CRV",
+                    "DY": 65400
+                },
+                "active": true
             }
         ],
         "USDTPrimary": [

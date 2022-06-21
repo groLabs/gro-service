@@ -147,6 +147,7 @@ async function newSystemLatestVaultStrategyContracts(signerInfo) {
     const strategiesAddr = [
         '0xDea436e15B40E7B707A7002A749f416dFE5B383F',
         '0x4d5b5376Cbcc001bb4F8930208828Ab87D121dA8',
+        '0xD370998b2E7941151E7BB9f6e337A12F337D0682',
         '0x8b335D3E266389Ae08A2F22b01D33813d40ED8Fd',
         '0xDE5a25415C637b52d59Ef980b29a5fDa8dC3C70B',
     ];
@@ -155,7 +156,10 @@ async function newSystemLatestVaultStrategyContracts(signerInfo) {
             result[vaultAdapterAddresses[i]];
         const { contract: vaultInstance, strategies } = vault;
         // eslint-disable-next-line no-await-in-loop
-        const strategyLength = await vaultAdapter.getStrategiesLength();
+        let strategyLength = await vaultAdapter.getStrategiesLength();
+        if (i == 1) {
+            strategyLength = 2;
+        }
         result[vaultAdapterAddresses[i]].strategyLength = strategyLength;
         for (let j = 0; j < strategyLength; j += 1) {
             // eslint-disable-next-line no-await-in-loop
