@@ -244,6 +244,20 @@ async function generateGroStatsMcFile() {
     formattedAvaxSystem.labs_vault[2].reserves.amount =
         formattedAvaxSystem.tvl['groUSDT.e_vault'];
 
+    // hardcode for lab 1.8
+    formattedAvaxSystem.labs_vault[9].amount =
+        formattedAvaxSystem.tvl['groDAI.e_vault_v1_7'];
+    formattedAvaxSystem.labs_vault[9].reserves.amount =
+        formattedAvaxSystem.tvl['groDAI.e_vault_v1_7'];
+    formattedAvaxSystem.labs_vault[10].amount =
+        formattedAvaxSystem.tvl['groUSDC.e_vault_v1_7'];
+    formattedAvaxSystem.labs_vault[10].reserves.amount =
+        formattedAvaxSystem.tvl['groUSDC.e_vault_v1_7'];
+    formattedAvaxSystem.labs_vault[11].amount =
+        formattedAvaxSystem.tvl['groUSDT.e_vault_v1_7'];
+    formattedAvaxSystem.labs_vault[11].reserves.amount =
+        formattedAvaxSystem.tvl['groUSDT.e_vault_v1_7'];
+
     const groStatsMultiChain = {
         current_timestamp: latestBlock.timestamp.toString(),
         network: process.env.NODE_ENV.toLowerCase(),
