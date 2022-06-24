@@ -19,6 +19,7 @@ const amountDecimal = getConfig('blockchain.amount_decimal_place', false) || 7;
 // ETH config
 import {
     getAlchemyRpcProvider,
+    getAvaxFullNodeRpcProvider,
     getAvaxArchivedNodeRpcProvider,
 } from '../../common/chainUtil';
 import BlocksScanner from './blockscanner';
@@ -28,7 +29,8 @@ const scanner = new BlocksScanner(provider);
 // AVAX config
 import { ethers } from 'ethers';
 
-const providerAVAX = getAvaxArchivedNodeRpcProvider();
+//const providerAVAX = getAvaxArchivedNodeRpcProvider();
+const providerAVAX = getAvaxFullNodeRpcProvider();
 
 const scannerAvax = new BlocksScanner(providerAVAX);
 
