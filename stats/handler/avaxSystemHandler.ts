@@ -9,13 +9,14 @@ import erc20ABI from '../../contract/abis/ERC20.json';
 import { getConfig } from '../../common/configUtil';
 import { getLatestSystemContractOnAVAX } from '../common/contractStorage';
 import { getEvents } from '../../common/logFilter';
-import { getAvaxArchivedNodeRpcProvider } from '../../common/chainUtil';
+import { getAvaxFullNodeRpcProvider } from '../../common/chainUtil';
 
 const logger = require('../statsLogger');
 
 const network = getConfig('blockchain.network') as string;
 
-const provider = getAvaxArchivedNodeRpcProvider();
+// TODO: change to full node due to rpc issue
+const provider = getAvaxFullNodeRpcProvider();
 
 const blockNumberTimestamp = {};
 const WAVAX = '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7';
@@ -1385,30 +1386,38 @@ async function getAvaxSystemStats() {
     const tokenPriceUsd = {
         avax: avaxprice,
     };
-    const allVaultsPromise = [];
-    for (
-        let vaultIndex = 9;
-        vaultIndex < latestVaults.length;
-        vaultIndex += 1
-    ) {
-        allVaultsPromise.push(
-            generateVaultData(
-                latestVaults,
-                vaultsTvl,
-                tvl,
-                latestStrategies,
-                vaultIndex,
-                avaxprice,
-                block
-            )
-        );
-    }
-    const labsVault = await Promise.all(allVaultsPromise);
+
+    /// TODO: temporarily disable position data due to rpc issue
+    // const allVaultsPromise = [];
+    // for (
+    //     let vaultIndex = 9;
+    //     vaultIndex < latestVaults.length;
+    //     vaultIndex += 1
+    // ) {
+    //     allVaultsPromise.push(
+    //         generateVaultData(
+    //             latestVaults,
+    //             vaultsTvl,
+    //             tvl,
+    //             latestStrategies,
+    //             vaultIndex,
+    //             avaxprice,
+    //             block
+    //         )
+    //     );
+    // }
+    // const labsVault = await Promise.all(allVaultsPromise);
+    // const systemStats = {
+    //     launch_timestamp: '1637746393',
+    //     tvl,
+    //     token_price_usd: tokenPriceUsd,
+    //     labs_vault: labsVault,
+    // };
     const systemStats = {
         launch_timestamp: '1637746393',
         tvl,
         token_price_usd: tokenPriceUsd,
-        labs_vault: labsVault,
+        labs_vault: [],
     };
     return systemStats;
 }
