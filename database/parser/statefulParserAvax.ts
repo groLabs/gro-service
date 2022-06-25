@@ -376,7 +376,7 @@ const getExtraDataForClosePosition = async (
             balance,
         ];
     } catch (err) {
-        showError('statefulParserAvax.ts->getExtraDataForClosePosition()', err);
+        showError(`statefulParserAvax.ts->getExtraDataForClosePosition() with contractName: ${contractName} & block: ${blockNumber}`, err);
         return [null, null];
     }
 }

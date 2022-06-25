@@ -118,7 +118,7 @@ const getCurve_PWRD3CRV = () =>
 //     getLatestSystemContract(ContractNames.USDTVault, getProviderKey()).contract;
 
 // Vault adaptors ETH
-const getDAIVaultAdaptor = () => 
+const getDAIVaultAdaptor = () =>
     getLatestSystemContract(ContractNames.DAIVaultAdaptor, getProviderKey()).contract;
 
 const getUSDCVaultAdaptor = () =>
@@ -211,6 +211,15 @@ const getUSDTeStrategy_1_7 = () =>
 const getDAIeStrategy_1_7 = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_7, getProviderAvax()).contract;
 
+const getUSDCeStrategy_1_9_internal = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy_v1_9_internal, getProviderAvax()).contract;
+
+const getUSDTeStrategy_1_9_internal = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy_v1_9_internal, getProviderAvax()).contract;
+
+const getDAIeStrategy_1_9_internal = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_9_internal, getProviderAvax()).contract;
+
 // Stablecoins Avax
 const getDAI_e = () => getLatestSystemContract(ContractNames.DAI_e, getProviderAvax()).contract;
 const getUSDC_e = () => getLatestSystemContract(ContractNames.USDC_e, getProviderAvax()).contract;
@@ -224,18 +233,21 @@ const getStableFromStrategyName = (contractName: string) => {
             case ContractNames.AVAXDAIStrategy_v1_5:
             case ContractNames.AVAXDAIStrategy_v1_6:
             case ContractNames.AVAXDAIStrategy_v1_7:
+            case ContractNames.AVAXDAIStrategy_v1_9_internal:
                 stableAddress = getDAI_e().address;
                 break;
             case ContractNames.AVAXUSDCStrategy:
             case ContractNames.AVAXUSDCStrategy_v1_5:
             case ContractNames.AVAXUSDCStrategy_v1_6:
             case ContractNames.AVAXUSDCStrategy_v1_7:
+            case ContractNames.AVAXUSDCStrategy_v1_9_internal:
                 stableAddress = getUSDC_e().address;
                 break;
             case ContractNames.AVAXUSDTStrategy:
             case ContractNames.AVAXUSDTStrategy_v1_5:
             case ContractNames.AVAXUSDTStrategy_v1_6:
             case ContractNames.AVAXUSDTStrategy_v1_7:
+            case ContractNames.AVAXUSDTStrategy_v1_9_internal:
                 stableAddress = getUSDT_e().address;
                 break;
             default:
@@ -369,6 +381,15 @@ const getStrategyFromContractName = (contractName: string) => {
                 break;
             case ContractNames.AVAXUSDTStrategy_v1_7:
                 sc = getUSDTeStrategy_1_7();
+                break;
+            case ContractNames.AVAXDAIStrategy_v1_9_internal:
+                sc = getDAIeStrategy_1_9_internal();
+                break;
+            case ContractNames.AVAXUSDCStrategy_v1_9_internal:
+                sc = getUSDCeStrategy_1_9_internal();
+                break;
+            case ContractNames.AVAXUSDTStrategy_v1_9_internal:
+                sc = getUSDTeStrategy_1_9_internal();
                 break;
             default:
                 showError(
