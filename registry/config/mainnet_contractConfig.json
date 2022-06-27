@@ -62,7 +62,9 @@
         "AVAXUSDTStrategy_v1_6",
         "AVAXDAIStrategy_v1_7",
         "AVAXUSDCStrategy_v1_7",
+        "AVAXUSDCStrategy_v1_7_IDL",
         "AVAXUSDTStrategy_v1_7",
+        "AVAXUSDTStrategy_v1_7_IDL",
         "AVAXDAIStrategy_v1_9_internal",
         "AVAXUSDCStrategy_v1_9_internal",
         "AVAXUSDTStrategy_v1_9_internal",
@@ -378,6 +380,42 @@
                 "metaData": {
                     "N": "ah_USDC.e_strat_v1_7",
                     "DN": "USDC.e AH v1.7",
+                    "DY": 117589
+                },
+                "active": true
+            }
+        ],
+        "AVAXUSDCStrategy_v1_7_IDL": [
+            {
+                "address": "0xa797C615FC49a39363FdFA3398E8D524756E9a13",
+                "deployedBlock": 10363748,
+                "startBlock": 10363748,
+                "abiVersion": "6270d2c",
+                "tag": "AVAX",
+                "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {
+                    "N": "ah_USDC.e_strat_v1_7",
+                    "DN": "USDC.e AH v1.7",
+                    "DY": 117589
+                },
+                "active": true
+            }
+        ],
+        "AVAXUSDTStrategy_v1_7_IDL": [
+            {
+                "address": "0x370e6e9cd875db40293f9dba86361ca7ff399b63",
+                "deployedBlock": 10363984,
+                "startBlock": 10363984,
+                "abiVersion": "6270d2c",
+                "tag": "AVAX",
+                "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {
+                    "N": "ah_USDT.e_strat_v1_7",
+                    "DN": "USDT.e AH v1.7",
                     "DY": 117589
                 },
                 "active": true

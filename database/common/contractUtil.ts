@@ -127,7 +127,6 @@ const getUSDCVaultAdaptor = () =>
 const getUSDTVaultAdaptor = () =>
     getLatestSystemContract(ContractNames.USDTVaultAdaptor, getProviderKey()).contract;
 
-
 // Vaults AVAX
 const getUSDCeVault = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCVault, getProviderAvax()).contract;
@@ -175,23 +174,24 @@ const getDAIeVault_1_9_internal = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXDAIVault_v1_9_internal, getProviderAvax()).contract;
 
 // Strategies
+
+const getDAIeStrategy = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy, getProviderAvax()).contract;
+
 const getUSDCeStrategy = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy, getProviderAvax()).contract;
 
 const getUSDTeStrategy = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy, getProviderAvax()).contract;
 
-const getDAIeStrategy = () =>
-    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy, getProviderAvax()).contract;
+const getDAIeStrategy_1_5 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_5, getProviderAvax()).contract;
 
 const getUSDCeStrategy_1_5 = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy_v1_5, getProviderAvax()).contract;
 
 const getUSDTeStrategy_1_5 = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy_v1_5, getProviderAvax()).contract;
-
-const getDAIeStrategy_1_5 = () =>
-    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_5, getProviderAvax()).contract;
 
 const getUSDCeStrategy_1_6 = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy_v1_6, getProviderAvax()).contract;
@@ -202,14 +202,17 @@ const getUSDTeStrategy_1_6 = () =>
 const getDAIeStrategy_1_6 = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_6, getProviderAvax()).contract;
 
-const getUSDCeStrategy_1_7 = () =>
-    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy_v1_7, getProviderAvax()).contract;
-
-const getUSDTeStrategy_1_7 = () =>
-    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy_v1_7, getProviderAvax()).contract;
-
 const getDAIeStrategy_1_7 = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_7, getProviderAvax()).contract;
+
+const getUSDCeStrategy_1_7 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy_v1_7_IDL, getProviderAvax()).contract;
+
+const getUSDTeStrategy_1_7 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy_v1_7_IDL, getProviderAvax()).contract;
+
+const getDAIeStrategy_1_9_internal = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_9_internal, getProviderAvax()).contract;
 
 const getUSDCeStrategy_1_9_internal = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy_v1_9_internal, getProviderAvax()).contract;
@@ -217,10 +220,8 @@ const getUSDCeStrategy_1_9_internal = () =>
 const getUSDTeStrategy_1_9_internal = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy_v1_9_internal, getProviderAvax()).contract;
 
-const getDAIeStrategy_1_9_internal = () =>
-    getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_9_internal, getProviderAvax()).contract;
-
 // Stablecoins Avax
+
 const getDAI_e = () => getLatestSystemContract(ContractNames.DAI_e, getProviderAvax()).contract;
 const getUSDC_e = () => getLatestSystemContract(ContractNames.USDC_e, getProviderAvax()).contract;
 const getUSDT_e = () => getLatestSystemContract(ContractNames.USDT_e, getProviderAvax()).contract;
