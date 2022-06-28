@@ -752,7 +752,7 @@
                     "Convex"
                 ],
                 "metaData": {
-                    "N": "Convex XPool USDC",
+                    "N": "Convex XPool USDC primary",
                     "DN": "Convex-OUSD-3CRV",
                     "DY": 33400
                 },
@@ -781,7 +781,7 @@
                     "Convex"
                 ],
                 "metaData": {
-                    "N": "Convex XPool USDC",
+                    "N": "Convex XPool USDC secondary",
                     "DN": "Convex-ALUSD-3CRV",
                     "DY": 65400
                 },
