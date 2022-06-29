@@ -679,10 +679,9 @@ async function getSinglePwrdStats(
     let rewardApy = BigNumber.from(0);
     if (!singleStaked.isZero()) {
         rewardApy = groPerBlock
-            .mul(1)
+            .mul(priceOracle.groPriceInUsd)
             .mul(BLOCKS_PER_YEAR)
             .mul(poolSixInfo.allocPoint)
-            .mul(ONE)
             .div(totalAllocPoint)
             .div(singleStaked);
     }
