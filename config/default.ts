@@ -23,7 +23,7 @@ export const pagerduty = {
     token: process.env.PAGERDUTY_TOKEN,
     from: process.env.PAGERDUTY_TRIGGER_FROM,
     service: 'PH3EY5S',
-    policy: 'P1C0NTA',
+    policy: 'PV2RP80',
     urgency: {
         high: 'high',
         low: 'low',
