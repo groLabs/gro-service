@@ -144,6 +144,7 @@ enum EventName {
     RemoveLiquidityImbalance = 'RemoveLiquidityImbalance',
     LogAddPool = 'LogAddPool',
     LogSetPool = 'LogSetPool',
+    LogUpdatePool = 'LogUpdatePool',
     LogMaxGroPerBlock = 'LogMaxGroPerBlock',
     LogGroPerBlock = 'LogGroPerBlock',
     LogNewDrop = 'LogNewDrop',

@@ -62,6 +62,9 @@ const loadStatefulEth = async (
         case EV.LogSetPool:
             res = await query('insert_ev_staker_set_pool.sql', event);
             break;
+        case EV.LogUpdatePool:
+            res = await query('insert_ev_staker_update_pool.sql', event);
+            break;
         case EV.LogMaxGroPerBlock:
             res = await query('insert_ev_staker_max_gro_per_block.sql', event);
             break;

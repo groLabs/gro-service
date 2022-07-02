@@ -269,6 +269,26 @@ CREATE TABLE gro."EV_STAKER_SET_POOL" (
 
 ALTER TABLE gro."EV_STAKER_SET_POOL" OWNER to postgres;
 
+CREATE TABLE gro."EV_STAKER_UPDATE_POOL" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "block_timestamp" INTEGER NULL,
+    "log_name" CHARACTER VARYING (100) NOT NULL,
+    "pid" INTEGER NULL,
+    "last_reward_block" INTEGER NULL,
+    "lp_supply" NUMERIC (20, 8) NULL,
+    "acc_gro_per_share" NUMERIC (20, 8) NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT "EV_STAKER_UPDATE_POOL_pkey" PRIMARY KEY (
+        "transaction_id",
+        "log_index",
+        "contract_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_STAKER_UPDATE_POOL" OWNER to postgres;
+
 CREATE TABLE gro."EV_STAKER_MAX_GRO_PER_BLOCK" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
     "log_index" INTEGER NOT NULL,

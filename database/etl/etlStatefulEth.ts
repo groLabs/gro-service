@@ -2,7 +2,7 @@ import { getNetwork } from '../common/globalUtil';
 import { showError } from '../handler/logHandler';
 import { loadStateful } from '../loader/loadStateful';
 import { ContractNames as CN } from '../../registry/registry';
-import { getLatestContractsAddress as getAddress} from '../../registry/registryLoader';
+import { getLatestContractsAddress as getAddress } from '../../registry/registryLoader';
 import {
     EventName as EV,
     GlobalNetwork as GN
@@ -611,9 +611,23 @@ const etlStatefulEth = (
             );
         }
 
+        if (eventCodes.includes(39)) {
+            result.push(
+                ...LpTokenStakerContracts.map((LpTokenStakerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogUpdatePool,
+                        LpTokenStakerContract,
+                        from,
+                        newOffset,
+                        []
+                    )),
+            );
+        }
+
 
         //****@dev: number to be updated if additional events are integrated
-        if (eventCodes.some(el => el > 38)) {
+        if (eventCodes.some(el => el > 39)) {
             showError('etlStatefulEth.ts->etlStatefulEth()', 'Event code above the max value');
             result.push(false);
         }

@@ -223,6 +223,19 @@ const eventParserEth = async (
                     pid: parseInt(log.args.pid.toString()),
                     alloc_point: parseInt(log.args.allocPoint.toString()),
                 }
+                // Set update in LpTokenStaker
+            } else if (
+                (contractName === CN.LPTokenStakerV1
+                    || contractName === CN.LPTokenStakerV2)
+                && (eventName === EV.LogUpdatePool
+                )
+            ) {
+                payload = {
+                    pid: parseInt(log.args.pid.toString()),
+                    last_reward_block: parseInt(log.args.lastRewardBlock.toString()),
+                    lp_supply: parseAmount(log.args.lpSupply, Base.D18, 8),
+                    acc_gro_per_share: parseAmount(log.args.accGroPerShare, Base.D18, 12),
+                }
                 // Max Gro per block in LpTokenStaker
             } else if (
                 (contractName === CN.LPTokenStakerV1
