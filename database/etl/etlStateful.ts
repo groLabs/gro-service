@@ -13,7 +13,6 @@ import {
     findBlockByDate,
     findBlockByDateAvax,
 } from '../common/globalUtil';
-
 import { etlStatefulEth } from './etlStatefulEth';
 import { etlStatefulAvax } from './etlStatefulAvax';
 

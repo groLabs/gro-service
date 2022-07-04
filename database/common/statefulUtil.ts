@@ -1,6 +1,18 @@
-import { ContractNames as CN } from '../../registry/registry';
-import { getLatestContractsAddress } from '../../registry/registryLoader';
+import {
+    // getContractHistory,
+    ContractNames as CN
+} from '../../registry/registry';
+// import { getLatestContractsAddress } from '../../registry/registryLoader';
 import { TokenId, NetworkId } from '../types';
+// import {
+//     showInfo,
+//     showError,
+// } from '../handler/logHandler';
+// import {
+//     DAIVaultAdaptor,
+//     USDCVaultAdaptor,
+//     USDTVaultAdaptor
+// } from '../../registry/config/mainnet_contracts_history.json';
 
 
 /// @notice Determine token identifier based on contract name
@@ -88,7 +100,33 @@ const getStableContractNames = (
     }
 }
 
+// const getVaultAdaptorAddresses = (eventCode: number) => {
+//     try {
+        
+//         const adaptor = (eventCode === 40)
+//             ? DAIVaultAdaptor
+//             : (eventCode === 41)
+//                 ? USDCVaultAdaptor
+//                 : (eventCode === 42)
+//                     ? USDTVaultAdaptor
+//                     : '';
+
+//         if (adaptor.length > 0) {
+//             //@ts-ignore
+//             const adaptorAddress = adaptor.map((item: string) => item.address);
+//             console.log('adaptorAddress -> ', adaptorAddress);
+//             return adaptorAddress;
+//         } else {
+//             return [];
+//         }
+//     } catch (err) {
+//         showError('etlStatefulUtil.ts->getVaultAdaptorAddresses()', err);
+//         return [];
+//     }
+// }
+
 export {
     getTokenIdByContractName,
     getStableContractNames,
+    // getVaultAdaptorAddresses,
 }

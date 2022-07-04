@@ -22,7 +22,6 @@ import { loadStatefulEth } from './loadStatefullEth'
 import { loadStatefulAvax } from './loadStatefulAvax';
 
 
-
 /// @notice Load events into the database
 /// @param  networkId The blockchain identifier
 /// @param  eventName The event name

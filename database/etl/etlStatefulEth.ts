@@ -625,9 +625,77 @@ const etlStatefulEth = (
             );
         }
 
+        if (eventCodes.includes(40)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.Transfer,
+                    CN.DAI,
+                    from,
+                    newOffset,
+                    [getAddress()[CN.DAIVaultAdaptor].address, null]
+                ),
+            );
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.Transfer,
+                    CN.DAI,
+                    from,
+                    newOffset,
+                    [null, getAddress()[CN.DAIVaultAdaptor].address]
+                ),
+            );
+        }
+
+        if (eventCodes.includes(41)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.Transfer,
+                    CN.USDC,
+                    from,
+                    newOffset,
+                    [getAddress()[CN.USDCVaultAdaptor].address, null]
+                ),
+            );
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.Transfer,
+                    CN.USDC,
+                    from,
+                    newOffset,
+                    [null, getAddress()[CN.USDCVaultAdaptor].address]
+                ),
+            );
+        }
+
+        if (eventCodes.includes(42)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.Transfer,
+                    CN.USDT,
+                    from,
+                    newOffset,
+                    [getAddress()[CN.USDTVaultAdaptor].address, null]
+                ),
+            );
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.Transfer,
+                    CN.USDT,
+                    from,
+                    newOffset,
+                    [null, getAddress()[CN.USDTVaultAdaptor].address]
+                ),
+            );
+        }
 
         //****@dev: number to be updated if additional events are integrated
-        if (eventCodes.some(el => el > 39)) {
+        if (eventCodes.some(el => el > 42)) {
             showError('etlStatefulEth.ts->etlStatefulEth()', 'Event code above the max value');
             result.push(false);
         }
