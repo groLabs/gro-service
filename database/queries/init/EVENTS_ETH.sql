@@ -121,6 +121,7 @@ CREATE TABLE gro."EV_GRO_VESTS" (
     "amount" NUMERIC (20, 8) NULL,
     "vesting_total" NUMERIC (20, 8) NULL,
     "vesting_start_time" INTEGER NULL,
+    "global_start_time" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_GRO_VESTS_pkey" PRIMARY KEY (
         "transaction_id",
@@ -143,6 +144,7 @@ CREATE TABLE gro."EV_GRO_EXITS" (
     "amount" NUMERIC (20, 8) NULL,
     "minting_amount" NUMERIC (20, 8) NULL,
     "penalty" NUMERIC (20, 8) NULL,
+    "global_start_time" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_GRO_EXITS_pkey" PRIMARY KEY (
         "transaction_id",
@@ -152,6 +154,44 @@ CREATE TABLE gro."EV_GRO_EXITS" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."EV_GRO_EXITS" OWNER to postgres;
+
+CREATE TABLE gro."EV_GRO_EXTENSIONS" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "block_timestamp" INTEGER NULL,
+    "log_name" CHARACTER VARYING (100) NOT NULL,
+    "user" CHARACTER VARYING (42) NULL,
+    "new_period" NUMERIC (20, 8) NULL,
+    "total" NUMERIC (20, 8) NULL,
+    "start_time" NUMERIC (20, 8) NULL,
+    "global_start_time" NUMERIC (20, 8) NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT "EV_GRO_EXTENSIONS_pkey" PRIMARY KEY (
+        "transaction_id",
+        "log_index",
+        "contract_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_GRO_EXTENSIONS" OWNER to postgres;
+
+CREATE TABLE gro."EV_GRO_MAX_LOCK_PERIOD" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "block_timestamp" INTEGER NULL,
+    "log_name" CHARACTER VARYING (100) NOT NULL,
+    "new_max_period" NUMERIC (20, 8) NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT "EV_GRO_MAX_LOCK_PERIOD_pkey" PRIMARY KEY (
+        "transaction_id",
+        "log_index",
+        "contract_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_GRO_MAX_LOCK_PERIOD" OWNER to postgres;
 
 -- STAKER TABLES
 
@@ -164,6 +204,7 @@ CREATE TABLE gro."EV_STAKER_DEPOSITS" (
     "user" CHARACTER VARYING (42) NULL,
     "pid" INTEGER NULL,
     "amount" NUMERIC (24, 12) NULL,
+    "reward_debt" NUMERIC (24, 12) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_STAKER_DEPOSITS_pkey" PRIMARY KEY (
         "transaction_id",
@@ -183,6 +224,7 @@ CREATE TABLE gro."EV_STAKER_WITHDRAWALS" (
     "user" CHARACTER VARYING (42) NULL,
     "pids" INTEGER [] NULL,
     "amounts" NUMERIC (24, 12) [] NULL,
+    "reward_debts" NUMERIC (24, 12) [] NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_STAKER_WITHDRAWALS_pkey" PRIMARY KEY (
         "transaction_id",
@@ -204,6 +246,7 @@ CREATE TABLE gro."EV_STAKER_CLAIMS" (
     "pids" INTEGER [] NULL,
     "amount" NUMERIC (24, 12) NULL,
     "amounts" NUMERIC (24, 12) [] NULL,
+    "reward_debts" NUMERIC (24, 12) [] NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_STAKER_CLAIMS_pkey" PRIMARY KEY (
         "transaction_id",
@@ -507,3 +550,6 @@ CREATE TABLE gro."EV_POOL_META_LIQUIDITY" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."EV_POOL_META_LIQUIDITY" OWNER to postgres;
+
+-- ALTER TABLE gro."EV_STAKER_WITHDRAWALS"
+-- ADD COLUMN reward_debts numeric(20,8);
