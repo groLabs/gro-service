@@ -7,6 +7,7 @@ import {
 import {
     getLatestContractsAddress,
     getLatestContractsAddressByAddress,
+    getContractsHistory,
 } from './registryLoader';
 import { ContractNames, ContractABIMapping } from './registry';
 
@@ -61,6 +62,31 @@ function newContract(contractName, contractInfo, signerInfo) {
 function newLatestContract(contractName, signerInfo) {
     const contractInfo = getLatestContractsAddress()[contractName];
     return newContract(contractName, contractInfo, signerInfo);
+}
+
+function getValidContractByBlock(contractName, blockNumber, signerInfo) {
+    const contractInfo = getContractsHistory()[contractName];
+    if (!contractInfo) {
+        logger.error(`Not found contract info by name: ${contractName}`);
+        return;
+    }
+    let distContractInfo;
+    for (let i = 0; i < contractInfo.length; i += 1) {
+        const info = contractInfo[i];
+        const { startBlock, endBlock: _endBlock } = info;
+        const endBlock = _endBlock || Infinity;
+        if (blockNumber >= startBlock && blockNumber <= endBlock) {
+            distContractInfo = info;
+            break;
+        }
+    }
+    if (!distContractInfo) {
+        logger.error(
+            `Not found contract info by block: ${blockNumber} for contract: ${contractName}`
+        );
+        return;
+    }
+    return newContract(contractName, distContractInfo, signerInfo);
 }
 
 function newLatestContractByAddress(address, signerInfo) {
@@ -191,4 +217,5 @@ export {
     newLatestContract,
     newSystemLatestContracts,
     newSystemLatestVaultStrategyContracts,
+    getValidContractByBlock,
 };
