@@ -151,6 +151,8 @@ enum EventName {
     LogVest = 'LogVest',
     LogExit = 'LogExit',
     LogInstantExit = 'LogInstantExit',
+    LogMaxLockPeriod = 'LogMaxLockPeriod',
+    LogExtend = 'LogExtend'
 }
 
 enum Bool {

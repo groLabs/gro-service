@@ -8,7 +8,8 @@ INSERT INTO gro."EV_GRO_VESTS" (
         "total_locked_amount",
         "amount",
         "vesting_total",
-        "vesting_start_time"
+        "vesting_start_time",
+        "global_start_time"
     )
 VALUES (
         $1,
@@ -20,5 +21,6 @@ VALUES (
         $7,
         $8,
         $9,
-        $10
+        $10,
+        $11
     ) ON CONFLICT ON CONSTRAINT "EV_GRO_VESTS_pkey" DO NOTHING;

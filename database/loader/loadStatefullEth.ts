@@ -119,6 +119,12 @@ const loadStatefulEth = async (
         case EV.LogInstantExit:
             res = await query('insert_ev_gro_exits.sql', event);
             break;
+        case EV.LogMaxLockPeriod:
+            res = await query('insert_ev_max_lock_period.sql', event);
+            break;
+        case EV.LogExtend:
+            res = await query('insert_ev_gro_extensions.sql', event);
+            break;
         default:
             const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;
             showError('loadStateful.ts->insertEth()', msg);

@@ -19,7 +19,9 @@ import {
 import {
     getPowerD,
     getGroVault,
+    getGroVesting,
     getCurve_PWRD3CRV,
+    getLpTokenStakerV1,
     getLpTokenStakerV2,
     getVaultFromContractName,
 } from '../common/contractUtil';
@@ -121,6 +123,7 @@ const eventParserEth = async (
                     amount: parseAmount(log.args.amount, Base.D18, 8),
                     vesting_total: parseAmount(log.args.vesting[0], Base.D18, 8),
                     vesting_start_time: parseInt(log.args.vesting[1].toString()),
+                    global_start_time: await getGlobalStartTime(log.blockNumber),
                 }
                 // Exits from GROVesting
             } else if ((eventName === EV.LogExit
@@ -142,13 +145,38 @@ const eventParserEth = async (
                         ? null
                         : parseAmount(log.args.mintingAmount, Base.D18, 8),
                     penalty: parseAmount(log.args.penalty, Base.D18, 8),
+                    global_start_time: await getGlobalStartTime(log.blockNumber),
+                }
+                // Extensions from GROVesting
+            } else if (eventName === EV.LogExtend
+                && contractName === CN.GroVesting
+            ) {
+                payload = {
+                    user: log.args.user,
+                    new_period: parseInt(log.args.newPeriod.toString()),
+                    total: parseAmount(log.args.newVesting.total, Base.D18, 8),
+                    start_time: parseInt(log.args.newVesting.startTime.toString()),
+                    global_start_time: await getGlobalStartTime(log.blockNumber),
+                }
+                // MaxLockPeriods from GROVesting
+            } else if (eventName === EV.LogMaxLockPeriod
+                && contractName === CN.GroVesting
+            ) {
+                payload = {
+                    user: parseInt(log.args.newMaxPeriod.toString()),
                 }
                 // Deposits in LPTokenStaker
             } else if (eventName === EV.LogDeposit) {
+                const rewardDebt = await getRewardDebts(
+                    log.blockNumber,
+                    log.args.user,
+                    [parseInt(log.args.pid.toString())]
+                );
                 payload = {
                     user: log.args.user,
                     pid: parseInt(log.args.pid.toString()),
                     amount: parseAmount(log.args.amount, Base.D18, 12),
+                    reward_debt: (rewardDebt.length > 0) ? rewardDebt[0] : null,
                 }
                 // Withdrawals from LPTokenStaker
             } else if (
@@ -169,11 +197,20 @@ const eventParserEth = async (
                     pids = [parseInt(log.args.pid.toString())];
                     amounts = [parseAmount(log.args.amount, Base.D18, 12)];
                 }
+
+                const rewardDebts = await getRewardDebts(
+                    log.blockNumber,
+                    log.args.user,
+                    pids,
+                );
+
                 payload = {
                     user: log.args.user,
                     pids: pids,
                     amounts: amounts,
+                    reward_debts: rewardDebts,
                 }
+                console.log('payload', payload);
                 // Claims from LPTokenStaker
             } else if (
                 (contractName === CN.LPTokenStakerV1
@@ -193,12 +230,19 @@ const eventParserEth = async (
                     )
                     : [parseAmount(log.args.amount, Base.D18, 12)];
 
+                const rewardDebts = await getRewardDebts(
+                    log.blockNumber,
+                    log.args.user,
+                    pids,
+                );
+
                 payload = {
                     user: log.args.user,
                     vest: log.args.vest, //only for V2
                     pids: pids,
                     amount: parseAmount(log.args.amount, Base.D18, 12),
                     amounts: amounts,
+                    reward_debts: rewardDebts,
                 }
                 // Add pool to LpTokenStaker
             } else if (
@@ -590,6 +634,55 @@ const getBaseFromTokenIDcurve = (tokenID: number) => {
             return Base.D6
         default:
             return Base.D18;
+    }
+}
+
+// TODO: depending on the block, use the valid contract (and not the latest one)
+const getGlobalStartTime = async (blockNumber: number): Promise<number> => {
+    try {
+        const globalStartTime = await getGroVesting().globalStartTime(
+            { blockTag: blockNumber }
+        )
+        if (globalStartTime) {
+            return parseInt(globalStartTime.toString());
+        } else {
+            return null;
+        }
+
+    } catch (err) {
+        showError('statefulParserEth.ts->getGlobalStartTime()', err);
+        return null;
+    }
+}
+
+const getRewardDebts = async (
+    blockNumber: number,
+    user: string,
+    pids: number[]
+): Promise<number[]> => {
+    try {
+        const staker = (blockNumber >= 14268775)
+            ? getLpTokenStakerV2()
+            : getLpTokenStakerV1();
+
+        const amounts = await Promise.all(
+            pids.map((pid) => {
+                return new Promise(async (resolve) => {
+                    resolve(staker.userInfo(
+                        pid,
+                        user,
+                        { blockTag: blockNumber }
+                    ))
+                })
+            })
+        );
+
+        let rewardDebt = amounts.map(amount => parseAmount(amount[1], Base.D18, 12));
+
+        return rewardDebt;
+    } catch (err) {
+        showError('statefulParserEth.ts->getRewardDebts()', err);
+        return [null];
     }
 }
 

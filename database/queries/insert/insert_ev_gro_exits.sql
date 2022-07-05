@@ -9,7 +9,8 @@ INSERT INTO gro."EV_GRO_EXITS" (
         "unlocked",
         "amount",
         "minting_amount",
-        "penalty"
+        "penalty",
+        "global_start_time"
     )
 VALUES (
         $1,
@@ -22,5 +23,6 @@ VALUES (
         $8,
         $9,
         $10,
-        $11
+        $11,
+        $12
     ) ON CONFLICT ON CONSTRAINT "EV_GRO_EXITS_pkey" DO NOTHING;

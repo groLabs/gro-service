@@ -1,4 +1,4 @@
--- Core protocol
+-- CORE PROTOCOL
 
 CREATE TABLE gro."EV_GRO_DEPOSITS" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
@@ -110,7 +110,9 @@ CREATE TABLE gro."EV_AIRDROP_CLAIMS" (
 
 ALTER TABLE gro."EV_AIRDROP_CLAIMS" OWNER to postgres;
 
-CREATE TABLE gro."EV_GRO_VESTS" (
+-- VESTING
+
+CREATE TABLE gro."EV_VESTING_VESTS" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
     "log_index" INTEGER NOT NULL,
     "contract_address" CHARACTER VARYING (42) NOT NULL,
@@ -121,18 +123,18 @@ CREATE TABLE gro."EV_GRO_VESTS" (
     "amount" NUMERIC (20, 8) NULL,
     "vesting_total" NUMERIC (20, 8) NULL,
     "vesting_start_time" INTEGER NULL,
-    "global_start_time" NUMERIC (20, 8) NULL,
+    "global_start_time" INTEGER NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
-    CONSTRAINT "EV_GRO_VESTS_pkey" PRIMARY KEY (
+    CONSTRAINT "EV_VESTING_VESTS_pkey" PRIMARY KEY (
         "transaction_id",
         "log_index",
         "contract_address"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
-ALTER TABLE gro."EV_GRO_VESTS" OWNER to postgres;
+ALTER TABLE gro."EV_VESTING_VESTS" OWNER to postgres;
 
-CREATE TABLE gro."EV_GRO_EXITS" (
+CREATE TABLE gro."EV_VESTING_EXITS" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
     "log_index" INTEGER NOT NULL,
     "contract_address" CHARACTER VARYING (42) NOT NULL,
@@ -144,39 +146,39 @@ CREATE TABLE gro."EV_GRO_EXITS" (
     "amount" NUMERIC (20, 8) NULL,
     "minting_amount" NUMERIC (20, 8) NULL,
     "penalty" NUMERIC (20, 8) NULL,
-    "global_start_time" NUMERIC (20, 8) NULL,
+    "global_start_time" INTEGER NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
-    CONSTRAINT "EV_GRO_EXITS_pkey" PRIMARY KEY (
+    CONSTRAINT "EV_VESTING_EXITS_pkey" PRIMARY KEY (
         "transaction_id",
         "log_index",
         "contract_address"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
-ALTER TABLE gro."EV_GRO_EXITS" OWNER to postgres;
+ALTER TABLE gro."EV_VESTING_EXITS" OWNER to postgres;
 
-CREATE TABLE gro."EV_GRO_EXTENSIONS" (
+CREATE TABLE gro."EV_VESTING_EXTENSIONS" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
     "log_index" INTEGER NOT NULL,
     "contract_address" CHARACTER VARYING (42) NOT NULL,
     "block_timestamp" INTEGER NULL,
     "log_name" CHARACTER VARYING (100) NOT NULL,
     "user" CHARACTER VARYING (42) NULL,
-    "new_period" NUMERIC (20, 8) NULL,
+    "new_period" INTEGER NULL,
     "total" NUMERIC (20, 8) NULL,
-    "start_time" NUMERIC (20, 8) NULL,
-    "global_start_time" NUMERIC (20, 8) NULL,
+    "start_time" INTEGER NULL,
+    "global_start_time" INTEGER NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
-    CONSTRAINT "EV_GRO_EXTENSIONS_pkey" PRIMARY KEY (
+    CONSTRAINT "EV_VESTING_EXTENSIONS_pkey" PRIMARY KEY (
         "transaction_id",
         "log_index",
         "contract_address"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
-ALTER TABLE gro."EV_GRO_EXTENSIONS" OWNER to postgres;
+ALTER TABLE gro."EV_VESTING_EXTENSIONS" OWNER to postgres;
 
-CREATE TABLE gro."EV_GRO_MAX_LOCK_PERIOD" (
+CREATE TABLE gro."EV_VESTING_MAX_LOCK_PERIOD" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
     "log_index" INTEGER NOT NULL,
     "contract_address" CHARACTER VARYING (42) NOT NULL,
@@ -184,16 +186,16 @@ CREATE TABLE gro."EV_GRO_MAX_LOCK_PERIOD" (
     "log_name" CHARACTER VARYING (100) NOT NULL,
     "new_max_period" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
-    CONSTRAINT "EV_GRO_MAX_LOCK_PERIOD_pkey" PRIMARY KEY (
+    CONSTRAINT "EV_VESTING_MAX_LOCK_PERIOD_pkey" PRIMARY KEY (
         "transaction_id",
         "log_index",
         "contract_address"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
-ALTER TABLE gro."EV_GRO_MAX_LOCK_PERIOD" OWNER to postgres;
+ALTER TABLE gro."EV_VESTING_MAX_LOCK_PERIOD" OWNER to postgres;
 
--- STAKER TABLES
+-- STAKER
 
 CREATE TABLE gro."EV_STAKER_DEPOSITS" (
     "transaction_id" CHARACTER VARYING (256) NOT NULL,
@@ -366,7 +368,7 @@ CREATE TABLE gro."EV_STAKER_GRO_PER_BLOCK" (
 
 ALTER TABLE gro."EV_STAKER_GRO_PER_BLOCK" OWNER to postgres;
 
--- pnl
+-- PNL
 
 CREATE TABLE gro."EV_GRO_PNL_EXECUTION" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
@@ -432,7 +434,7 @@ CREATE TABLE gro."EV_GRO_STRATEGY_UPDATE_RATIO" (
 
 ALTER TABLE gro."EV_GRO_STRATEGY_UPDATE_RATIO" OWNER to postgres;
 
--- pools
+-- POOLS
 
 CREATE TABLE gro."EV_POOL_BAL_SWAP" (
    "transaction_id" CHARACTER VARYING (66) NOT NULL,

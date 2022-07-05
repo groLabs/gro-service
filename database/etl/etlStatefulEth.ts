@@ -694,8 +694,34 @@ const etlStatefulEth = (
             );
         }
 
+        if (eventCodes.includes(43)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogMaxLockPeriod,
+                    CN.GroVesting,
+                    from,
+                    newOffset,
+                    []
+                ),
+            );
+        }
+
+        if (eventCodes.includes(44)) {
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogExtend,
+                    CN.GroVesting,
+                    from,
+                    newOffset,
+                    []
+                ),
+            );
+        }
+
         //****@dev: number to be updated if additional events are integrated
-        if (eventCodes.some(el => el > 42)) {
+        if (eventCodes.some(el => el > 44)) {
             showError('etlStatefulEth.ts->etlStatefulEth()', 'Event code above the max value');
             result.push(false);
         }

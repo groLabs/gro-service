@@ -1,13 +1,14 @@
-INSERT INTO gro."EV_STAKER_DEPOSITS" (
+INSERT INTO gro."EV_GRO_EXTENSIONS" (
         "transaction_id",
         "log_index",
         "contract_address",
         "block_timestamp",
         "log_name",
         "user",
-        "pid",
-        "amount",
-        "reward_debt"
+        "new_period",
+        "total",
+        "start_time",
+        "global_start_time"
     )
 VALUES (
         $1,
@@ -18,5 +19,6 @@ VALUES (
         $6,
         $7,
         $8,
-        $9
-    ) ON CONFLICT ON CONSTRAINT "EV_STAKER_DEPOSITS_pkey" DO NOTHING;
+        $9,
+        $10
+    ) ON CONFLICT ON CONSTRAINT "EV_GRO_EXTENSIONS_pkey" DO NOTHING;

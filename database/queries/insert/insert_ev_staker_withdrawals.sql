@@ -6,7 +6,8 @@ INSERT INTO gro."EV_STAKER_WITHDRAWALS" (
         "log_name",
         "user",
         "pids",
-        "amounts"
+        "amounts",
+        "reward_debts"
     )
 VALUES (
         $1,
@@ -16,5 +17,6 @@ VALUES (
         $5,
         $6,
         $7,
-        $8
+        $8,
+        $9
     ) ON CONFLICT ON CONSTRAINT "EV_STAKER_WITHDRAWALS_pkey" DO NOTHING;
