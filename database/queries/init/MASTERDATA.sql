@@ -187,3 +187,74 @@ VALUES (1, 'ACTIVE', now()::timestamp);
 
 INSERT INTO gro."MD_STATUS"("status_id", "description", "creation_date")
 VALUES (2, 'INACTIVE', now()::timestamp);
+
+
+/****************************************************
+                    MD_VAULT_ADAPTERS
+ ****************************************************/
+
+CREATE TABLE gro."MD_VAULT_ADAPTERS" (
+   "contract_address" CHARACTER VARYING (42) NOT NULL,
+   "token_id" INTEGER NULL,
+   "active" BOOLEAN NULL,
+   "creation_date" TIMESTAMP(6) WITHOUT TIME ZONE,
+   CONSTRAINT fk_token_id FOREIGN KEY ("token_id")
+      REFERENCES gro."MD_TOKENS" ("token_id")
+         MATCH SIMPLE
+         ON DELETE NO ACTION
+         ON UPDATE NO ACTION
+      NOT DEFERRABLE INITIALLY IMMEDIATE,
+   CONSTRAINT "MD_VAULT_ADAPTERS_pkey" PRIMARY KEY ("contract_address")
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) TABLESPACE pg_default;
+
+ALTER TABLE gro."MD_VAULT_ADAPTERS" OWNER to postgres;
+
+-- VALUES TO BE ADDED WHEN WE GO LIVE
+
+
+/****************************************************
+                    MD_VAULTS 
+ ****************************************************/
+
+CREATE TABLE gro."MD_VAULTS" (
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "vault_adapter" CHARACTER VARYING (42) NULL,
+    "creation_date" TIMESTAMP(6) WITHOUT TIME ZONE,
+   CONSTRAINT "MD_VAULTS_pkey" PRIMARY KEY ("contract_address")
+      NOT DEFERRABLE INITIALLY IMMEDIATE,
+   CONSTRAINT fk_vault_adapter FOREIGN KEY
+      (vault_adapter)
+      REFERENCES gro."MD_VAULT_ADAPTERS" ("contract_address")
+         MATCH SIMPLE
+         ON DELETE NO ACTION
+         ON UPDATE NO ACTION
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) TABLESPACE pg_default;
+
+ALTER TABLE gro."MD_VAULTS" OWNER to postgres;
+
+-- VALUES TO BE ADDED WHEN WE GO LIVE
+
+/****************************************************
+                    MD_STRATEGIES
+ ****************************************************/
+
+CREATE TABLE gro."MD_STRATEGIES" (
+   "contract_address" CHARACTER VARYING (42) NOT NULL,
+   "token_id" INTEGER NULL,
+   "active" BOOLEAN NULL,
+   "creation_date" TIMESTAMP(6) WITHOUT TIME ZONE,
+   CONSTRAINT fk_token_id FOREIGN KEY ("token_id")
+      REFERENCES gro."MD_TOKENS" ("token_id")
+         MATCH SIMPLE
+         ON DELETE NO ACTION
+         ON UPDATE NO ACTION
+      NOT DEFERRABLE INITIALLY IMMEDIATE,
+   CONSTRAINT "MD_STRATEGIES_pkey" PRIMARY KEY ("contract_address")
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) TABLESPACE pg_default;
+
+ALTER TABLE gro."MD_STRATEGIES" OWNER to postgres;
+
+-- VALUES TO BE ADDED WHEN WE GO LIVE
