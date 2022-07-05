@@ -71,6 +71,8 @@ const ContractNames = {
     LPTokenStakerV2: 'LPTokenStakerV2',
     GroDAOVesting: 'GroDAOVesting',
     GroVesting: 'GroVesting',
+    GroVestingV1_IDL: 'GroVestingV1_IDL',
+    GroVestingV2_IDL: 'GroVestingV2_IDL',
     GroDAOToken: 'GroDAOToken',
     VotingAggregator: 'VotingAggregator',
     AVAXDAIVault: 'AVAXDAIVault',
@@ -163,6 +165,8 @@ ContractABIMapping[ContractNames.GroHodler] = 'GroHodler';
 ContractABIMapping[ContractNames.LPTokenStakerV1] = 'LPTokenStakerV1';
 ContractABIMapping[ContractNames.LPTokenStakerV2] = 'LPTokenStaker';
 ContractABIMapping[ContractNames.GroVesting] = 'GroVesting';
+ContractABIMapping[ContractNames.GroVestingV1_IDL] = 'GroVesting';
+ContractABIMapping[ContractNames.GroVestingV2_IDL] = 'GroVesting';
 ContractABIMapping[ContractNames.GroDAOToken] = 'GroDAOToken';
 ContractABIMapping[ContractNames.VotingAggregator] = 'VoteAggregator';
 ContractABIMapping[ContractNames.AVAXDAIVault] = 'VaultAdaptorMK2';

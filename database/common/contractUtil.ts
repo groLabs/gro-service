@@ -104,6 +104,12 @@ const getLpTokenStakerV2 = () =>
 const getGroVesting = () =>
     getLatestSystemContract(ContractNames.GroVesting, getProviderKey()).contract;
 
+const getGroVestingV1 = () =>
+    getLatestSystemContract(ContractNames.GroVestingV1_IDL, getProviderKey()).contract;
+
+const getGroVestingV2 = () =>
+    getLatestSystemContract(ContractNames.GroVestingV2_IDL, getProviderKey()).contract;
+
 const getCurve_PWRD3CRV = () =>
     getLatestSystemContract(ContractNames.Curve_PWRD3CRV, getProvider()).contract;
 
@@ -502,6 +508,8 @@ export {
     getUSDC_e,
     getUSDT_e,
     getGroVesting,
+    getGroVestingV1,
+    getGroVestingV2,
     getContractInfoHistory,
     getVaultFromContractName,
     getStableFromStrategyName,

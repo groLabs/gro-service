@@ -1,7 +1,6 @@
 import { ICall } from '../interfaces/ICall';
 import { showError } from '../handler/logHandler';
 import { ContractNames as CN } from '../../registry/registry';
-import { getValidContractByBlock } from '../../registry/contracts';
 import { getTokenIdByContractName } from '../common/statefulUtil';
 import {
     MAX_NUMBER,
@@ -16,7 +15,6 @@ import {
 import {
     errorObj,
     parseAmount,
-    getProviderKey as eth_key,
 } from '../common/globalUtil';
 import {
     getPowerD,
@@ -25,6 +23,8 @@ import {
     getLpTokenStakerV1,
     getLpTokenStakerV2,
     getVaultFromContractName,
+    getGroVestingV1,
+    getGroVestingV2,
 } from '../common/contractUtil';
 
 
@@ -118,19 +118,27 @@ const eventParserEth = async (
             } else if (eventName === EV.LogVest
                 && contractName === CN.GroVesting
             ) {
+                const globalStartTime = await getGlobalStartTime(log.blockNumber, log.address);
+                if (!globalStartTime)
+                    return errorObj('globalStartTime not found');
+
                 payload = {
                     user: log.args.user,
                     total_locked_amount: parseAmount(log.args.totalLockedAmount, Base.D18, 8),
                     amount: parseAmount(log.args.amount, Base.D18, 8),
                     vesting_total: parseAmount(log.args.vesting[0], Base.D18, 8),
                     vesting_start_time: parseInt(log.args.vesting[1].toString()),
-                    global_start_time: await getGlobalStartTime(log.blockNumber),
+                    global_start_time: globalStartTime,
                 }
                 // Exits from GROVesting
             } else if ((eventName === EV.LogExit
                 || eventName === EV.LogInstantExit)
                 && contractName === CN.GroVesting
             ) {
+                const globalStartTime = await getGlobalStartTime(log.blockNumber, log.address);
+                if (!globalStartTime)
+                    return errorObj('globalStartTime not found');
+
                 payload = {
                     user: log.args.user,
                     total_locked_amount: (eventName === EV.LogExit)
@@ -146,18 +154,22 @@ const eventParserEth = async (
                         ? null
                         : parseAmount(log.args.mintingAmount, Base.D18, 8),
                     penalty: parseAmount(log.args.penalty, Base.D18, 8),
-                    global_start_time: await getGlobalStartTime(log.blockNumber),
+                    global_start_time: globalStartTime,
                 }
                 // Extensions from GROVesting
             } else if (eventName === EV.LogExtend
                 && contractName === CN.GroVesting
             ) {
+                const globalStartTime = await getGlobalStartTime(log.blockNumber, log.address);
+                if (!globalStartTime)
+                    return errorObj('globalStartTime not found');
+
                 payload = {
                     user: log.args.user,
                     new_period: parseInt(log.args.newPeriod.toString()),
                     total: parseAmount(log.args.newVesting.total, Base.D18, 8),
                     start_time: parseInt(log.args.newVesting.startTime.toString()),
-                    global_start_time: await getGlobalStartTime(log.blockNumber),
+                    global_start_time: globalStartTime,
                 }
                 // MaxLockPeriods from GROVesting
             } else if (eventName === EV.LogMaxLockPeriod
@@ -637,13 +649,18 @@ const getBaseFromTokenIDcurve = (tokenID: number) => {
     }
 }
 
-const getGlobalStartTime = async (blockNumber: number): Promise<number> => {
+const getGlobalStartTime = async (blockNumber: number, contractAddress: string): Promise<number> => {
     try {
-        const vester = getValidContractByBlock(
-            CN.GroVesting,
-            blockNumber,
-            eth_key()
-        ).contract;
+        const vester = (contractAddress === '0xA28693bf01Dc261887b238646Bb9636cB3a3730B')
+            ? getGroVestingV1()
+            : (contractAddress === '0x748218256AfE0A19a88EBEB2E0C5Ce86d2178360')
+                ? getGroVestingV2()
+                : '';
+
+        if (!vester) {
+            showError('statefulParserEth.ts->getGlobalStartTime()', 'GROVesting contract not found');
+            return null;
+        }
 
         const globalStartTime = await vester.globalStartTime(
             { blockTag: blockNumber }

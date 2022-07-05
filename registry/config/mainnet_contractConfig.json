@@ -34,6 +34,8 @@
         "LPTokenStakerV2",
         "GroDAOVesting",
         "GroVesting",
+        "GroVestingV1_IDL",
+        "GroVestingV2_IDL",
         "GroDAOToken",
         "VotingAggregator",
         "AVAXDAIVault",
@@ -132,6 +134,36 @@
                 "metaData": {},
                 "active": true
             },
+            {
+                "address": "0x748218256AfE0A19a88EBEB2E0C5Ce86d2178360",
+                "deployedBlock": 14268701,
+                "startBlock": 14268760,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "GroVestingV1_IDL": [
+            {
+                "address": "0xA28693bf01Dc261887b238646Bb9636cB3a3730B",
+                "deployedBlock": 13405101,
+                "startBlock": 13405101,
+                "endBlock": null,
+                "abiVersion": "fa8e260",
+                "tag": "Vesting",
+                "tokens": [],
+                "protocols": [],
+                "protocolsDisplayName": [],
+                "metaData": {},
+                "active": true
+            }
+        ],
+        "GroVestingV2_IDL": [
             {
                 "address": "0x748218256AfE0A19a88EBEB2E0C5Ce86d2178360",
                 "deployedBlock": 14268701,
