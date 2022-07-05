@@ -113,17 +113,17 @@ const loadStatefulEth = async (
             res = await query('insert_ev_pool_curve_liquidity.sql', event);
             break;
         case EV.LogVest:
-            res = await query('insert_ev_gro_vests.sql', event);
+            res = await query('insert_ev_vesting_vests.sql', event);
             break;
         case EV.LogExit:
         case EV.LogInstantExit:
-            res = await query('insert_ev_gro_exits.sql', event);
+            res = await query('insert_ev_vesting_exits.sql', event);
             break;
         case EV.LogMaxLockPeriod:
-            res = await query('insert_ev_max_lock_period.sql', event);
+            res = await query('insert_ev_vesting_max_lock_period.sql', event);
             break;
         case EV.LogExtend:
-            res = await query('insert_ev_gro_extensions.sql', event);
+            res = await query('insert_ev_vesting_extensions.sql', event);
             break;
         default:
             const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;

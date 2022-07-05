@@ -1,6 +1,7 @@
 import { ICall } from '../interfaces/ICall';
 import { showError } from '../handler/logHandler';
 import { ContractNames as CN } from '../../registry/registry';
+import { getValidContractByBlock } from '../../registry/contracts';
 import { getTokenIdByContractName } from '../common/statefulUtil';
 import {
     MAX_NUMBER,
@@ -14,12 +15,12 @@ import {
 } from '../types';
 import {
     errorObj,
-    parseAmount
+    parseAmount,
+    getProviderKey as eth_key,
 } from '../common/globalUtil';
 import {
     getPowerD,
     getGroVault,
-    getGroVesting,
     getCurve_PWRD3CRV,
     getLpTokenStakerV1,
     getLpTokenStakerV2,
@@ -210,7 +211,6 @@ const eventParserEth = async (
                     amounts: amounts,
                     reward_debts: rewardDebts,
                 }
-                console.log('payload', payload);
                 // Claims from LPTokenStaker
             } else if (
                 (contractName === CN.LPTokenStakerV1
@@ -637,12 +637,18 @@ const getBaseFromTokenIDcurve = (tokenID: number) => {
     }
 }
 
-// TODO: depending on the block, use the valid contract (and not the latest one)
 const getGlobalStartTime = async (blockNumber: number): Promise<number> => {
     try {
-        const globalStartTime = await getGroVesting().globalStartTime(
+        const vester = getValidContractByBlock(
+            CN.GroVesting,
+            blockNumber,
+            eth_key()
+        ).contract;
+
+        const globalStartTime = await vester.globalStartTime(
             { blockTag: blockNumber }
-        )
+        );
+
         if (globalStartTime) {
             return parseInt(globalStartTime.toString());
         } else {

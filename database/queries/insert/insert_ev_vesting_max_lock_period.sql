@@ -1,4 +1,4 @@
-INSERT INTO gro."EV_GRO_MAX_LOCK_PERIOD" (
+INSERT INTO gro."EV_VESTING_MAX_LOCK_PERIOD" (
         "transaction_id",
         "log_index",
         "contract_address",
@@ -13,4 +13,4 @@ VALUES (
         $4,
         $5,
         $6
-    ) ON CONFLICT ON CONSTRAINT "EV_GRO_MAX_LOCK_PERIOD_pkey" DO NOTHING;
+    ) ON CONFLICT ON CONSTRAINT "EV_VESTING_MAX_LOCK_PERIOD_pkey" DO NOTHING;
