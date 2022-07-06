@@ -98,7 +98,7 @@ CREATE TABLE gro."EV_AIRDROP_CLAIMS" (
     "log_name" CHARACTER VARYING (100) NOT NULL,
     "account" CHARACTER VARYING (42) NULL,
     "vest" BOOLEAN NULL,
-    "tranche_id" NUMERIC (20, 8) NULL,
+    "tranche_id" INTEGER NULL,
     "amount" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_AIRDROP_CLAIMS_pkey" PRIMARY KEY (

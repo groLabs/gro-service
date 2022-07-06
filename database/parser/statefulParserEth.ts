@@ -185,11 +185,13 @@ const eventParserEth = async (
                     log.args.user,
                     [parseInt(log.args.pid.toString())]
                 );
+                if (rewardDebt.length === 0)
+                    return errorObj('error when retrieving data from getRewardDebts()');
                 payload = {
                     user: log.args.user,
                     pid: parseInt(log.args.pid.toString()),
                     amount: parseAmount(log.args.amount, Base.D18, 12),
-                    reward_debt: (rewardDebt.length > 0) ? rewardDebt[0] : null,
+                    reward_debt: rewardDebt[0],
                 }
                 // Withdrawals from LPTokenStaker
             } else if (
@@ -216,6 +218,8 @@ const eventParserEth = async (
                     log.args.user,
                     pids,
                 );
+                if (rewardDebts.length === 0)
+                    return errorObj('error when retrieving data from getRewardDebts()');
 
                 payload = {
                     user: log.args.user,
@@ -247,6 +251,8 @@ const eventParserEth = async (
                     log.args.user,
                     pids,
                 );
+                if (rewardDebts.length === 0)
+                    return errorObj('error when retrieving data from getRewardDebts()');
 
                 payload = {
                     user: log.args.user,
@@ -444,7 +450,7 @@ const eventParserEth = async (
                     amount1_in: parseAmount(log.args.amount1In, baseAmount1, 8),
                     amount0_out: parseAmount(log.args.amount0Out, Base.D18, 8),
                     amount1_out: parseAmount(log.args.amount1Out, baseAmount1, 8),
-                    to: log.args.sender,
+                    to: log.args.to,
                 }
                 // Uniswap liquidity
             } else if (
@@ -705,7 +711,7 @@ const getRewardDebts = async (
         return rewardDebt;
     } catch (err) {
         showError('statefulParserEth.ts->getRewardDebts()', err);
-        return [null];
+        return [];
     }
 }
 

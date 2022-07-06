@@ -743,7 +743,6 @@ const etlStatefulEth = (
                             [null, item.address]
                         ),
                     );
-
                     result.push(
                         loadStateful(
                             getNetwork(GN.ETHEREUM).id,
