@@ -2,7 +2,10 @@ import { getNetwork } from '../common/globalUtil';
 import { showError } from '../handler/logHandler';
 import { loadStateful } from '../loader/loadStateful';
 import { ContractNames as CN } from '../../registry/registry';
-import { getLatestContractsAddress as getAddress } from '../../registry/registryLoader';
+import {
+    getContractsHistory,
+    getLatestContractsAddress as getAddress,
+} from '../../registry/registryLoader';
 import {
     EventName as EV,
     GlobalNetwork as GN
@@ -37,9 +40,11 @@ const etlStatefulEth = (
 
         const strategies = [
             CN.DAIPrimary,
-            CN.USDCPrimary,
-            CN.USDTPrimary,
             CN.DAISecondary,
+            CN.USDCPrimary,
+            CN.USDCSecondary,
+            CN.USDTPrimary,
+            CN.USDTSecondary,
         ];
 
         const vaults = [
@@ -720,8 +725,105 @@ const etlStatefulEth = (
             );
         }
 
+        // DAI transfers from/to strategies
+        if (eventCodes.includes(45)) {
+            const daiStrategyContracts = [
+                ...getContractsHistory().DAIPrimary,
+                ...getContractsHistory().DAISecondary
+            ];
+            for (const item of daiStrategyContracts) {
+                if (!item.endBlock || (item.endBlock > from && item.startBlock < newOffset)) {
+                    result.push(
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            CN.DAI,
+                            from,
+                            newOffset,
+                            [null, item.address]
+                        ),
+                    );
+
+                    result.push(
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            CN.DAI,
+                            from,
+                            newOffset,
+                            [item.address, null]
+                        ),
+                    );
+                }
+            }
+        }
+
+        // USDC transfers from/to strategies
+        if (eventCodes.includes(46)) {
+            const usdcStrategyContracts = [
+                ...getContractsHistory().USDCPrimary,
+                ...getContractsHistory().USDCSecondary
+            ];
+            for (const item of usdcStrategyContracts) {
+                if (!item.endBlock || (item.endBlock > from && item.startBlock < newOffset)) {
+                    result.push(
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            CN.USDC,
+                            from,
+                            newOffset,
+                            [null, item.address]
+                        ),
+                    );
+                    result.push(
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            CN.USDC,
+                            from,
+                            newOffset,
+                            [item.address, null]
+                        ),
+                    );
+                }
+            }
+        }
+
+        // USDT transfers from/to strategies
+        if (eventCodes.includes(47)) {
+            const usdtStrategyContracts = [
+                ...getContractsHistory().USDTPrimary,
+                ...getContractsHistory().USDTSecondary
+            ];
+            for (const item of usdtStrategyContracts) {
+                if (!item.endBlock || (item.endBlock > from && item.startBlock < newOffset)) {
+                    result.push(
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            CN.USDT,
+                            from,
+                            newOffset,
+                            [null, item.address]
+                        ),
+                    );
+                    result.push(
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            CN.USDT,
+                            from,
+                            newOffset,
+                            [item.address, null]
+                        ),
+                    );
+                }
+            }
+        }
+
         //****@dev: number to be updated if additional events are integrated
-        if (eventCodes.some(el => el > 44)) {
+        if (eventCodes.some(el => el > 47)) {
             showError('etlStatefulEth.ts->etlStatefulEth()', 'Event code above the max value');
             result.push(false);
         }
