@@ -213,13 +213,16 @@ const eventParserEth = async (
                     amounts = [parseAmount(log.args.amount, Base.D18, 12)];
                 }
 
-                const rewardDebts = await getRewardDebts(
-                    log.blockNumber,
-                    log.args.user,
-                    pids,
-                );
-                if (rewardDebts.length === 0)
-                    return errorObj('error when retrieving data from getRewardDebts()');
+                let rewardDebts = [];
+                if (pids.length > 0) {
+                    rewardDebts = await getRewardDebts(
+                        log.blockNumber,
+                        log.args.user,
+                        pids,
+                    );
+                    if (rewardDebts.length === 0)
+                        return errorObj(`Error when retrieving data from getRewardDebts() for log ${log}`);
+                }
 
                 payload = {
                     user: log.args.user,
@@ -234,6 +237,7 @@ const eventParserEth = async (
                 && (eventName === EV.LogClaim
                     || eventName === EV.LogMultiClaim)
             ) {
+
                 const pids = (eventName === EV.LogClaim)
                     ? [parseInt(log.args.pid.toString())]
                     : log.args.pids.map((pid: number) => parseInt(pid.toString()));
@@ -246,13 +250,16 @@ const eventParserEth = async (
                     )
                     : [parseAmount(log.args.amount, Base.D18, 12)];
 
-                const rewardDebts = await getRewardDebts(
-                    log.blockNumber,
-                    log.args.user,
-                    pids,
-                );
-                if (rewardDebts.length === 0)
-                    return errorObj('error when retrieving data from getRewardDebts()');
+                let rewardDebts = [];
+                if (pids.length > 0) {
+                    rewardDebts = await getRewardDebts(
+                        log.blockNumber,
+                        log.args.user,
+                        pids,
+                    );
+                    if (rewardDebts.length === 0)
+                        return errorObj(`Error when retrieving data from getRewardDebts() for log ${log}`);
+                }
 
                 payload = {
                     user: log.args.user,
@@ -262,6 +269,7 @@ const eventParserEth = async (
                     amounts: amounts,
                     reward_debts: rewardDebts,
                 }
+
                 // Add pool to LpTokenStaker
             } else if (
                 (contractName === CN.LPTokenStakerV1
