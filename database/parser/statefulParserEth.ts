@@ -618,7 +618,7 @@ const getGTokenFactors = async (blockNumber: number) => {
 const getVirtualPrice = async (blockNumber: number) => {
     try {
         const virtualPrice = await getCurve_PWRD3CRV().get_virtual_price({ blockTag: blockNumber });
-        return parseAmount(virtualPrice, Base.D18, 8);
+        return parseAmount(virtualPrice, Base.D18, 18);
     } catch (err) {
         showError('statefulParserEth.ts->getVirtualPrice()', err);
         return null;
