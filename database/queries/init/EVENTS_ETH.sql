@@ -323,7 +323,7 @@ CREATE TABLE gro."EV_STAKER_UPDATE_POOL" (
     "pid" INTEGER NULL,
     "last_reward_block" INTEGER NULL,
     "lp_supply" NUMERIC (20, 8) NULL,
-    "acc_gro_per_share" NUMERIC (20, 8) NULL,
+    "acc_gro_per_share" NUMERIC (24, 12) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_STAKER_UPDATE_POOL_pkey" PRIMARY KEY (
         "transaction_id",
