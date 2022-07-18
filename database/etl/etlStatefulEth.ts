@@ -630,73 +630,88 @@ const etlStatefulEth = (
             );
         }
 
+        // DAI transfers from/to vault adaptors
         if (eventCodes.includes(40)) {
-            result.push(
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.Transfer,
-                    CN.DAI,
-                    from,
-                    newOffset,
-                    [getAddress()[CN.DAIVaultAdaptor].address, null]
-                ),
-            );
-            result.push(
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.Transfer,
-                    CN.DAI,
-                    from,
-                    newOffset,
-                    [null, getAddress()[CN.DAIVaultAdaptor].address]
-                ),
-            );
+            for (const item of getContractsHistory().DAIVaultAdaptor) {
+                if (!item.endBlock || (item.endBlock > from && item.startBlock < newOffset)) {
+                    result.push(
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            CN.DAI,
+                            from,
+                            newOffset,
+                            [item.address, null]
+                        ),
+                    );
+                    result.push(
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            CN.DAI,
+                            from,
+                            newOffset,
+                            [null, item.address]
+                        ),
+                    );
+                }
+            }
         }
 
+        // USDC transfers from/to vault adaptors
         if (eventCodes.includes(41)) {
-            result.push(
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.Transfer,
-                    CN.USDC,
-                    from,
-                    newOffset,
-                    [getAddress()[CN.USDCVaultAdaptor].address, null]
-                ),
-            );
-            result.push(
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.Transfer,
-                    CN.USDC,
-                    from,
-                    newOffset,
-                    [null, getAddress()[CN.USDCVaultAdaptor].address]
-                ),
-            );
+            for (const item of getContractsHistory().USDCVaultAdaptor) {
+                if (!item.endBlock || (item.endBlock > from && item.startBlock < newOffset)) {
+                    result.push(
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            CN.USDC,
+                            from,
+                            newOffset,
+                            [item.address, null]
+                        ),
+                    );
+                    result.push(
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            CN.USDC,
+                            from,
+                            newOffset,
+                            [null, item.address]
+                        ),
+                    );
+                }
+            }
         }
 
+        // USDT transfers from/to vault adaptors
         if (eventCodes.includes(42)) {
-            result.push(
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.Transfer,
-                    CN.USDT,
-                    from,
-                    newOffset,
-                    [getAddress()[CN.USDTVaultAdaptor].address, null]
-                ),
-            );
-            result.push(
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.Transfer,
-                    CN.USDT,
-                    from,
-                    newOffset,
-                    [null, getAddress()[CN.USDTVaultAdaptor].address]
-                ),
-            );
+            for (const item of getContractsHistory().USDTVaultAdaptor) {
+                if (!item.endBlock || (item.endBlock > from && item.startBlock < newOffset)) {
+                    result.push(
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            CN.USDT,
+                            from,
+                            newOffset,
+                            [item.address, null]
+                        ),
+                    );
+                    result.push(
+                        loadStateful(
+                            getNetwork(GN.ETHEREUM).id,
+                            EV.Transfer,
+                            CN.USDT,
+                            from,
+                            newOffset,
+                            [null, item.address]
+                        ),
+                    );
+                }
+            }
         }
 
         if (eventCodes.includes(43)) {
