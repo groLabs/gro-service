@@ -289,7 +289,7 @@ async function calculateUserBalanceInPools(account) {
     const pwrdPool = await getPwrdPoolID();
     for (let i = 0; i < pools.length; i += 1) {
         if (Number(i).toString() !== pwrdPool) {
-            const { pid, tvl } = pools[i];
+            const { pid, tvl_staked: tvl } = pools[i];
             const usdAmount = new BN(balancesPercent[pid]).multipliedBy(
                 new BN(tvl)
             );
