@@ -150,7 +150,8 @@ async function parseMultiClaim(account, endBlock) {
         endBlock
     );
     const poolsTotalResult = { all: BigNumber.from(0) };
-    multiClaimEvents.forEach(async (event) => {
+    for (let i = 0; i < multiClaimEvents.length; i += 1) {
+        const event = multiClaimEvents[i];
         const blockNumber = event.blockNumber;
         const [, vest, pids] = event.args;
         for (let i = 0; i < pids.length; i += 1) {
@@ -174,7 +175,7 @@ async function parseMultiClaim(account, endBlock) {
                 poolsTotalResult[pidString].add(distAmount);
             poolsTotalResult.all = poolsTotalResult.all.add(distAmount);
         }
-    });
+    }
     return poolsTotalResult;
 }
 
