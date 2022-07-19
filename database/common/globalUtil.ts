@@ -42,7 +42,7 @@ const errorObj = (msg: string): ICall => ({
 const isPlural = (count: number) => (count > 1 ? 's' : '');
 
 const parseAmount = (
-    amount: any, //TOOD: Bignumber
+    amount: any,
     base: Base,
     decimals: number = amountDecimal
 ) => {
@@ -55,8 +55,10 @@ const parseAmount = (
                     ? new BN(10).pow(6)
                     : base === Base.D8
                         ? new BN(10).pow(8)
-                        : new BN(10).pow(1),
-            decimals //amountDecimal
+                        : base === Base.D12
+                            ? new BN(10).pow(12)
+                            : new BN(10).pow(1),
+            decimals
         )
     );
 };

@@ -175,6 +175,7 @@ enum Base {
     D6 = 0,
     D18 = 1,
     D8 = 2,
+    D12 = 3,
 }
 
 // For AVAX ETL

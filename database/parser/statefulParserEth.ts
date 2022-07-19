@@ -304,7 +304,7 @@ const eventParserEth = async (
                     pid: parseInt(log.args.pid.toString()),
                     last_reward_block: parseInt(log.args.lastRewardBlock.toString()),
                     lp_supply: parseAmount(log.args.lpSupply, Base.D18, 8),
-                    acc_gro_per_share: parseAmount(log.args.accGroPerShare, Base.D18, 12),
+                    acc_gro_per_share: parseAmount(log.args.accGroPerShare, Base.D12, 12),
                 }
                 // Max Gro per block in LpTokenStaker
             } else if (
