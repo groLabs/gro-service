@@ -24,7 +24,7 @@ import {
 } from '../../registry/registryLoader';
 
 import { getLatestSystemContract } from '../common/contractStorage';
-import { getAllAirdropResults } from './airdropService';
+import { getAllAirdropResults, getVestingAirdrop } from './airdropService';
 import LpTokenStakerABI from '../abi/LPTokenStaker.json';
 
 import erc20ABI from '../../abi/ERC20.json';
@@ -919,6 +919,8 @@ async function ethereumPersonalStats(account) {
             latestBlock.number
         );
         result.airdrops = airdrops;
+        const vestingAirdrop = await getVestingAirdrop(account);
+        result.vesting_airdrop = vestingAirdrop;
         const combinedGROBalance = await getCombinedGROBalance(account);
         result.gro_balance_combined = combinedGROBalance;
         const vestBonusInfo = await getUserBonusInfo(

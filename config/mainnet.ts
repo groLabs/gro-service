@@ -8,6 +8,11 @@ export const vesting = {
     address: '0x748218256AfE0A19a88EBEB2E0C5Ce86d2178360',
     start_block: 14268760,
 };
+export const merkle_airdrop = {
+    folder: '../airdrop',
+    file: 'airdrop-ust-vesting.json',
+};
+
 export const airdrop = {
     address: '0xF3d39A7FEbA9bE0C1D18b355E7eD01070Ee2c561',
     start_block: 14268737,
