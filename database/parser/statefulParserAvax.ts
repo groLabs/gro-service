@@ -68,18 +68,18 @@ const eventParserAvax = async (
                 case EV.Transfer:
                     payload = {
                         token_id: getTokenIdByContractName(contractName),
-                        from: log.args.from,
-                        to: log.args.to,
-                        value: parseAmount(log.args.value, base, 8),
+                        from: log.args[0],
+                        to: log.args[1],
+                        value: parseAmount(log.args[2], base, 8),
                     }
                     break;
                 // Approvals
                 case EV.Approval:
-                    const value = parseAmount(log.args.value, base, 8);
+                    const value = parseAmount(log.args[2], base, 8);
                     payload = {
                         token_id: getTokenIdByContractName(contractName),
-                        owner: log.args.owner,
-                        spender: log.args.spender,
+                        owner: log.args[0],
+                        spender: log.args[1],
                         value: (value < MAX_NUMBER) ? value : -1,
                     }
                     break;
