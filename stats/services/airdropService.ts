@@ -4,20 +4,24 @@ import fs from 'fs';
 import path from 'path';
 import { ethers } from 'ethers';
 import { getConfig } from '../../common/configUtil';
+import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import {
     getAirdropClaimEvents,
     getAirdropClaimed,
 } from '../handler/airdropClaimHandler';
+import { toChecksumAddress } from 'web3-utils';
 
 const logger = require('../statsLogger');
 
 const airdropConfig = getConfig('airdrop');
+const merkleAirdropConfig = getConfig('merkle_airdrop');
 
 const gasFundAirdropFile = airdropConfig.gas_pwrd;
 const gasRefundFilePath = `${airdropConfig.folder}/${gasFundAirdropFile}`;
 
 const DECIMAL = new BN('1000000000000000000');
 const airdropCache = new Map();
+const providerKey = 'stats_personal';
 
 let firstAirdropJson;
 
@@ -53,6 +57,13 @@ const airdropDefaultValue = {
     expired: 'false',
     proofs: [],
     hash: [],
+};
+
+const vestingAirdropDefaultValue = {
+    name: 'N/A',
+    token: 'N/A',
+    amount: '0.00',
+    proofs: [],
 };
 
 function expired(currentTimestamp, airdropExpiryTS) {
@@ -187,4 +198,44 @@ async function getAllAirdropResults(address, endBlock) {
     return airdrops;
 }
 
-export { updateOGAirdropFile, getAllAirdropResults };
+// async function getVestingAirdropInitialized(address) {
+//     const provider = getAlchemyRpcProvider(providerKey);
+//     const abi = [{}];
+//     const GMerkleVestor = new ethers.Contract(
+//         merkleAirdropConfig.address,
+//         abi,
+//         provider
+//     );
+//     return 'false';
+// }
+
+async function getVestingAirdrop(address) {
+    const account = toChecksumAddress(address);
+    const filePath = `${merkleAirdropConfig.folder}/${merkleAirdropConfig.file}`;
+    if (!airdropCache[filePath]) {
+        const content = await readAirdropFile(filePath);
+        const { root, total, airdrops } = content;
+        const proofResult = {};
+        for (let i = 0; i < airdrops.length; i += 1) {
+            const { address, amount, proofs } = airdrops[i];
+            const accountKey = toChecksumAddress(address);
+            proofResult[accountKey] = { address, amount, proofs };
+        }
+        airdropCache[filePath] = { root, total, proofs: proofResult };
+    }
+
+    const { proofs } = airdropCache[filePath];
+    if (!proofs[account]) return vestingAirdropDefaultValue;
+    const { amount, proofs: proof } = proofs[account];
+    // const initialized = await getVestingAirdropInitialized(account);
+    const result = {
+        name: 'UST-vesting-airdrop',
+        token: 'PWRD',
+        amount,
+        proofs: proof,
+        // initialized,
+    };
+    return result;
+}
+
+export { updateOGAirdropFile, getAllAirdropResults, getVestingAirdrop };
