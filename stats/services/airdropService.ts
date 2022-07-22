@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { ethers } from 'ethers';
 import { getConfig } from '../../common/configUtil';
+import { formatNumber2 } from '../../common/digitalUtil';
 import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import {
     getAirdropClaimEvents,
@@ -22,6 +23,7 @@ const gasRefundFilePath = `${airdropConfig.folder}/${gasFundAirdropFile}`;
 const DECIMAL = new BN('1000000000000000000');
 const airdropCache = new Map();
 const providerKey = 'stats_personal';
+const provider = getAlchemyRpcProvider(providerKey);
 
 let firstAirdropJson;
 
@@ -63,6 +65,9 @@ const vestingAirdropDefaultValue = {
     name: 'N/A',
     token: 'N/A',
     amount: '0.00',
+    claim_initialized: 'N/A',
+    claimed_amount: '0.00',
+    claimable_amount: '0.00',
     proofs: [],
 };
 
@@ -198,16 +203,120 @@ async function getAllAirdropResults(address, endBlock) {
     return airdrops;
 }
 
-// async function getVestingAirdropInitialized(address) {
-//     const provider = getAlchemyRpcProvider(providerKey);
-//     const abi = [{}];
-//     const GMerkleVestor = new ethers.Contract(
-//         merkleAirdropConfig.address,
-//         abi,
-//         provider
-//     );
-//     return 'false';
-// }
+async function getVestingAirdropInitialized(address) {
+    if (!merkleAirdropConfig.address) return 'N/A';
+    const abi = [
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            name: 'claimStarted',
+            outputs: [
+                {
+                    internalType: 'bool',
+                    name: '',
+                    type: 'bool',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+    ];
+    const GMerkleVestor = new ethers.Contract(
+        merkleAirdropConfig.address,
+        abi,
+        provider
+    );
+    const result = await GMerkleVestor.claimStarted(address);
+    return result;
+}
+
+async function getVestingAirdropClaimedAmount(address) {
+    if (!merkleAirdropConfig.address) return '0.00';
+    const abi = [
+        {
+            inputs: [
+                {
+                    internalType: 'address',
+                    name: '',
+                    type: 'address',
+                },
+            ],
+            name: 'usersInfo',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: 'totalClaim',
+                    type: 'uint256',
+                },
+                {
+                    internalType: 'uint256',
+                    name: 'claimedAmount',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+    ];
+    const GMerkleVestor = new ethers.Contract(
+        merkleAirdropConfig.address,
+        abi,
+        provider
+    );
+    const userInfo = await GMerkleVestor.usersInfo(address);
+    return formatNumber2(userInfo[1], 18, 2);
+}
+
+async function getVestingAirdropClaimableAmount(address, proofs, amount) {
+    if (!merkleAirdropConfig.address) return '0.00';
+    const abi = [
+        {
+            inputs: [
+                {
+                    internalType: 'bytes32[]',
+                    name: 'proof',
+                    type: 'bytes32[]',
+                },
+                {
+                    internalType: 'uint256',
+                    name: '_totalClaim',
+                    type: 'uint256',
+                },
+                {
+                    internalType: 'address',
+                    name: '_user',
+                    type: 'address',
+                },
+            ],
+            name: 'getVestedAmount',
+            outputs: [
+                {
+                    internalType: 'uint256',
+                    name: '',
+                    type: 'uint256',
+                },
+            ],
+            stateMutability: 'view',
+            type: 'function',
+        },
+    ];
+    const GMerkleVestor = new ethers.Contract(
+        merkleAirdropConfig.address,
+        abi,
+        provider
+    );
+    const claimabeAmount = await GMerkleVestor.getVestedAmount(
+        proofs,
+        amount,
+        address
+    );
+    return formatNumber2(claimabeAmount, 18, 2);
+}
 
 async function getVestingAirdrop(address) {
     const account = toChecksumAddress(address);
@@ -227,13 +336,21 @@ async function getVestingAirdrop(address) {
     const { proofs } = airdropCache[filePath];
     if (!proofs[account]) return vestingAirdropDefaultValue;
     const { amount, proofs: proof } = proofs[account];
-    // const initialized = await getVestingAirdropInitialized(account);
+    const initialized = await getVestingAirdropInitialized(account);
+    const claimedAmount = await getVestingAirdropClaimedAmount(account);
+    const claimableAmount = await getVestingAirdropClaimableAmount(
+        account,
+        proof,
+        amount
+    );
     const result = {
         name: 'UST-vesting-airdrop',
         token: 'PWRD',
         amount,
         proofs: proof,
-        // initialized,
+        claim_initialized: initialized,
+        claimed_amount: claimedAmount,
+        claimable_amount: claimableAmount,
     };
     return result;
 }
