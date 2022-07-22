@@ -24,7 +24,7 @@ const etlStatefulEth = (
         const groTokenContracts = [
             CN.powerD,
             CN.groVault,
-            CN.GroDAOToken,
+            // CN.GroDAOToken,
         ];
 
         const LpTokenStakerContracts = [

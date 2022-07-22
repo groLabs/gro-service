@@ -187,6 +187,12 @@ enum ContractVersion {
     VAULT_1_7 = 4,
 }
 
+enum Factor {
+    PWRD = 0,
+    GVT = 1,
+    BOTH = 2,
+}
+
 // Must be aligned with table MD_TRANSFERS
 // Existing values can't be updated (DB misalignment vs. current loaded values)
 enum Transfer {
@@ -232,6 +238,7 @@ export {
     Bool,
     Base,
     Status,
+    Factor,
     TokenId,
     Feature,
     Transfer,

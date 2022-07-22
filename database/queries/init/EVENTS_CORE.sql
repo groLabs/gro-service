@@ -68,6 +68,7 @@ CREATE TABLE gro."EV_TRANSFERS" (
     "from" CHARACTER VARYING (42) NULL,
     "to" CHARACTER VARYING (42) NULL,
     "value" NUMERIC (20, 8) NULL,
+    "factor" NUMERIC (20, 12) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_TRANSFERS_pkey" PRIMARY KEY (
         "transaction_id",

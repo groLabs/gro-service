@@ -9,6 +9,7 @@ import {
 } from '../constants';
 import {
     Base,
+    Factor,
     TokenId,
     EventName as EV,
 } from '../types';
@@ -82,11 +83,21 @@ const eventParserEth = async (
                 const base = (contractName === CN.USDC || contractName === CN.USDT)
                     ? Base.D6
                     : Base.D18;
+                const factor = (contractName === CN.powerD)
+                    ? (await getGTokenFactors(log.blockNumber, Factor.PWRD))[0]
+                    : (contractName === CN.groVault)
+                        ? (await getGTokenFactors(log.blockNumber, Factor.GVT))[1]
+                        : null;
+                if ((contractName === CN.powerD && !factor)
+                    || (contractName === CN.groVault && !factor))
+                    return errorObj(`Error when retrieving data from getGTokenFactors() for log ${log}`);
+
                 payload = {
                     token_id: getTokenIdByContractName(contractName),
                     from: log.args[0],
                     to: log.args[1],
                     value: parseAmount(log.args[2], base, 8),
+                    factor: factor,
                 }
                 // Approvals
             } else if (eventName === EV.Approval) {
@@ -340,7 +351,9 @@ const eventParserEth = async (
                 const [
                     pwrdFactor,
                     gvtFactor,
-                ] = await getGTokenFactors(log.blockNumber);
+                ] = await getGTokenFactors(log.blockNumber, Factor.BOTH);
+                if (!pwrdFactor || !gvtFactor)
+                    return errorObj(`Error when retrieving data from getGTokenFactors() for log ${log}`);
 
                 payload = {
                     deducted_assets: parseAmount(log.args.deductedAssets, Base.D18, 8),
@@ -594,19 +607,32 @@ const getExtraDataFromVaults = async (
     }
 }
 
-const getGTokenFactors = async (blockNumber: number) => {
+const getGTokenFactors = async (
+    blockNumber: number,
+    option: Factor
+): Promise<[number, number]> => {
     try {
-        const [
-            pwrd,
-            gvt,
-        ] = await Promise.all([
-            getPowerD().factor({ blockTag: blockNumber }),
-            getGroVault().factor({ blockTag: blockNumber }),
-        ]);
+        let pwrd: number;
+        let gvt: number;
+
+        if (option === Factor.BOTH) {
+            [
+                pwrd,
+                gvt,
+            ] = await Promise.all([
+                getPowerD().factor({ blockTag: blockNumber }),
+                getGroVault().factor({ blockTag: blockNumber }),
+            ]);
+        } else if (option === Factor.PWRD) {
+            pwrd = await getPowerD().factor({ blockTag: blockNumber });
+
+        } else if (option === Factor.GVT) {
+            gvt = await getGroVault().factor({ blockTag: blockNumber });
+        }
 
         return [
-            parseAmount(pwrd, Base.D18, 12),
-            parseAmount(gvt, Base.D18, 12)
+            pwrd ? parseAmount(pwrd, Base.D18, 12) : pwrd,
+            gvt ? parseAmount(gvt, Base.D18, 12) : gvt,
         ];
     } catch (err) {
         showError('statefulParserEth.ts->getGTokenFactors()', err);
