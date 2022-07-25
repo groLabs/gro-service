@@ -1,7 +1,6 @@
 import csvtojson from 'csvtojson';
 import BN from 'bignumber.js';
 import fs from 'fs';
-import path from 'path';
 import { ethers } from 'ethers';
 import { getConfig } from '../../common/configUtil';
 import { formatNumber2 } from '../../common/digitalUtil';
@@ -203,40 +202,8 @@ async function getAllAirdropResults(address, endBlock) {
     return airdrops;
 }
 
-async function getVestingAirdropInitialized(address) {
-    if (!merkleAirdropConfig.address) return 'N/A';
-    const abi = [
-        {
-            inputs: [
-                {
-                    internalType: 'address',
-                    name: '',
-                    type: 'address',
-                },
-            ],
-            name: 'claimStarted',
-            outputs: [
-                {
-                    internalType: 'bool',
-                    name: '',
-                    type: 'bool',
-                },
-            ],
-            stateMutability: 'view',
-            type: 'function',
-        },
-    ];
-    const GMerkleVestor = new ethers.Contract(
-        merkleAirdropConfig.address,
-        abi,
-        provider
-    );
-    const result = await GMerkleVestor.claimStarted(address);
-    return result;
-}
-
-async function getVestingAirdropClaimedAmount(address) {
-    if (!merkleAirdropConfig.address) return '0.00';
+async function getVestingAirdropUserInfo(address) {
+    if (!merkleAirdropConfig.address) return undefined;
     const abi = [
         {
             inputs: [
@@ -269,7 +236,19 @@ async function getVestingAirdropClaimedAmount(address) {
         provider
     );
     const userInfo = await GMerkleVestor.usersInfo(address);
-    return formatNumber2(userInfo[1], 18, 2);
+    return userInfo;
+}
+
+function parseVestingAirdropInitialized(userInfo) {
+    if (!userInfo) return 'N/A';
+    if (userInfo.totalClaim.isZero()) return 'false';
+    return 'true';
+}
+
+function parseVestingAirdropClaimedAmount(userInfo) {
+    if (!userInfo) return '0.00';
+    if (userInfo.totalClaim.isZero()) return '0.00';
+    return formatNumber2(userInfo.claimedAmount, 18, 2);
 }
 
 async function getVestingAirdropClaimableAmount(address, proofs, amount) {
@@ -336,8 +315,9 @@ async function getVestingAirdrop(address) {
     const { proofs } = airdropCache[filePath];
     if (!proofs[account]) return vestingAirdropDefaultValue;
     const { amount, proofs: proof } = proofs[account];
-    const initialized = await getVestingAirdropInitialized(account);
-    const claimedAmount = await getVestingAirdropClaimedAmount(account);
+    const userInfo = await getVestingAirdropUserInfo(account);
+    const initialized = await parseVestingAirdropInitialized(userInfo);
+    const claimedAmount = await parseVestingAirdropClaimedAmount(userInfo);
     const claimableAmount = await getVestingAirdropClaimableAmount(
         account,
         proof,
