@@ -9,32 +9,25 @@ export const vesting = {
     start_block: 14268760,
 };
 export const merkle_airdrop = {
-    folder: '../airdrop',
-    file: 'airdrop-ust-vesting.json',
+    address: '0x39fae389ebaa3aa6001a588484c9b0c62fa7396e',
+    folder: '.',
+    file: 'test_merkle_proofs.json',
 };
 
 export const airdrop = {
     address: '0xF3d39A7FEbA9bE0C1D18b355E7eD01070Ee2c561',
     start_block: 14268737,
-    folder: '../airdrop',
+    folder: '.',
     gas_pwrd: 'airdrop1_result.csv',
     files: [
-        'airdrop-7-proofs.json',
-        'airdrop-8-proofs.json',
-        'airdrop-9-proofs.json',
-        'airdrop-10-proofs.json',
-        'airdrop-12-proofs.json',
-        'airdrop-13-proofs.json',
-        'airdrop-14-proofs.json',
-        'airdrop-15-proofs.json',
         'airdrop-16-proofs.json',
         'airdrop-17-proofs.json',
         'airdrop-18-proofs.json',
     ],
 };
 export const gro_gate = {
-    folder: '../grogate',
-    files: [process.env.AVAX_BOUNCER_PROOF_FILE],
+    folder: '.',
+    files: ['bouncer-10-proofs.json'],
 };
 export const buoy_start_block = 13304056;
 export const blockchain = {
@@ -143,10 +136,10 @@ export const transaction_long_pending = {
     rebalance: 60000,
 };
 export const keep_stats_file_number = 250;
-export const stats_folder = '../stats/mainnet';
-export const log_folder = '../logs';
+export const stats_folder = '.';
+export const log_folder = './logs';
 export const blockNumberFile = '../stats/mainnet/lastBlockNumber.json';
-export const stats_latest = '../stats/mainnet/gro-latest.json';
+export const stats_latest = './gro-latest.json';
 export const pendingTransactionFile = '../pendingTransaction.json';
 export const vault_name = [
     'DAI yVault',

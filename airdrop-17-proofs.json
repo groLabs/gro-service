@@ -1,0 +1,77 @@
+{
+    "name": "lobsterdao_labs02",
+    "display_name": "Seafood for Lobsters 2",
+    "token": "gro",
+    "timestamp": "1653573600",
+    "expiry_ts": "1658844000",
+    "claimable": "true",
+    "totalAmount": "367510000000000000000",
+    "merkleIndex": 9,
+    "root": "0xafc26bca8ccb4ed723c9029e652fcd57936be963fd99195878686970004bf85d",
+    "proofs": {
+        "0x45fBaE76F1081DF48e90E056d693F3BD4B91d90f": {
+            "amount": "300000000000000000000",
+            "proof": [
+                "0x82260888a615f558ce1c4758c945c43054099b57146681b1070242edcdeb3a5c",
+                "0x360b0ef9740eda71e73bbde18b6bceba9557db3e7e2bcf7b65203086220de0c0",
+                "0x8e23575d304f1a6afe3d29577d882f5d0357af9faa2b327fb841dde445a7825d"
+            ]
+        },
+        "0x557068A9b7d66F97A61b97C80541eb17672E1e6f": {
+            "amount": "67510000000000000000",
+            "proof": [
+                "0x88286899d785341bf61149db5e2ac579870f83d81912a98eaccdce6ab057579b",
+                "0x360b0ef9740eda71e73bbde18b6bceba9557db3e7e2bcf7b65203086220de0c0",
+                "0x8e23575d304f1a6afe3d29577d882f5d0357af9faa2b327fb841dde445a7825d"
+            ]
+        },
+        "0x4C4A81298CC85c5BBF8092bd241fCc5dD6Ec3f74": {
+            "amount": "0",
+            "proof": [
+                "0xec914bd02cfe5f950e8e995b4ad73de1890cd36acb88cf632438bbf6e19a2226",
+                "0x4fe3ddcc76f40f3b88e82b563362e318ac2709f282b6d927ca8c34af0db00596",
+                "0x8e23575d304f1a6afe3d29577d882f5d0357af9faa2b327fb841dde445a7825d"
+            ]
+        },
+        "0xc94dDeACff69bd206CEDdFe2b601a277225D23D6": {
+            "amount": "0",
+            "proof": [
+                "0xe427556d78fb762084c4dcbbc649aec12fa2de6b8a0780a48f959344e741d916",
+                "0x4fe3ddcc76f40f3b88e82b563362e318ac2709f282b6d927ca8c34af0db00596",
+                "0x8e23575d304f1a6afe3d29577d882f5d0357af9faa2b327fb841dde445a7825d"
+            ]
+        },
+        "0xdBCf4f419B0364c81f337EEceb47bA76E1404aF9": {
+            "amount": "0",
+            "proof": [
+                "0x5d4ea9ab77194e4237183d070d386a6ff8a7f15e7be7b6833a52875a7e45074b",
+                "0x48860b3ca632fbf5b9c98cb881f98d399fd058ace4bd3653e5143b8c4d663d78",
+                "0xa2dfe71a025357c2b9aaeb19cc7efcae97649f026aabe8d57ec9ea815a9f5c57"
+            ]
+        },
+        "0x7B4B446f42016c12b47899cEC35F417cB290524f": {
+            "amount": "0",
+            "proof": [
+                "0x4f37341b60b7c3791e155f75a293a0e12f79cca867b8172c655647206235a70c",
+                "0x48860b3ca632fbf5b9c98cb881f98d399fd058ace4bd3653e5143b8c4d663d78",
+                "0xa2dfe71a025357c2b9aaeb19cc7efcae97649f026aabe8d57ec9ea815a9f5c57"
+            ]
+        },
+        "0x48cB6fD436D34A909523A74de8f82d6bF59E6A3C": {
+            "amount": "0",
+            "proof": [
+                "0x141f5120125c8b0478c122862579dea6f5c43ec47ecbdab729cb9ee1248360f5",
+                "0x7df31e254a7d7673a678685358808db2e8e466419b30751c78737dd8b457f307",
+                "0xa2dfe71a025357c2b9aaeb19cc7efcae97649f026aabe8d57ec9ea815a9f5c57"
+            ]
+        },
+        "0x732A3A2E00362802c422cdad0343eFB2E1A37A8A": {
+            "amount": "0",
+            "proof": [
+                "0x7a1cb6a2aec9f61b0af6fbd0f0d6f271cfe85d07c0b5c19496c96eb6403f6c5c",
+                "0x7df31e254a7d7673a678685358808db2e8e466419b30751c78737dd8b457f307",
+                "0xa2dfe71a025357c2b9aaeb19cc7efcae97649f026aabe8d57ec9ea815a9f5c57"
+            ]
+        }
+    }
+}

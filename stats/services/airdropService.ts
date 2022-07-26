@@ -4,7 +4,6 @@ import fs from 'fs';
 import { ethers } from 'ethers';
 import { getConfig } from '../../common/configUtil';
 import { formatNumber2 } from '../../common/digitalUtil';
-import { getAlchemyRpcProvider } from '../../common/chainUtil';
 import {
     getAirdropClaimEvents,
     getAirdropClaimed,
@@ -21,8 +20,9 @@ const gasRefundFilePath = `${airdropConfig.folder}/${gasFundAirdropFile}`;
 
 const DECIMAL = new BN('1000000000000000000');
 const airdropCache = new Map();
-const providerKey = 'stats_personal';
-const provider = getAlchemyRpcProvider(providerKey);
+const provider = new ethers.providers.JsonRpcProvider(
+    'https://u4ybf5gmfc.execute-api.eu-west-2.amazonaws.com'
+);
 
 let firstAirdropJson;
 

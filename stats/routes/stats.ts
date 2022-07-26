@@ -4,11 +4,21 @@ import cors from 'cors';
 import { query } from 'express-validator';
 import { wrapAsync } from '../common/wrap';
 import { ParameterError } from '../../common/error';
-import { getGroStatsContent, getGroStatsMcContent, getArgentStatsContent, getExternalStatsContent, reloadContractsFromRegistry } from '../services/statsService';
+import {
+    getGroStatsContent,
+    getGroStatsMcContent,
+    getArgentStatsContent,
+    getExternalStatsContent,
+    reloadContractsFromRegistry,
+} from '../services/statsService';
 import { generateReport } from '../services/newAccountService';
 import { ethereumPersonalStats } from '../services/ethereumAccountService';
 // const { getPersonalStats } = require('../../database/handler/personalHandler');
-import { getGroPrice, isValidBlockNumber, getBuoyStartBlock } from '../handler/priceHandler';
+import {
+    getGroPrice,
+    isValidBlockNumber,
+    getBuoyStartBlock,
+} from '../handler/priceHandler';
 import { generateHistoricalStats } from '../handler/statsHandler';
 import { validate } from '../common/validate';
 import { postDegenScore } from '../services/degenscoreService';
@@ -104,9 +114,9 @@ router.get(
     ]),
     wrapAsync(async (req, res) => {
         const { network } = req.query;
-        if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
-            throw new ParameterError('Parameter network failed.');
-        }
+        // if (network.toLowerCase() !== process.env.NODE_ENV.toLowerCase()) {
+        //     throw new ParameterError('Parameter network failed.');
+        // }
         const result = await generateReport(req.query.address);
         personalStatsMessage({ address: req.query.address });
         contractCallFailedCount.personalMCStats = 0;

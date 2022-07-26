@@ -1,0 +1,1146 @@
+{
+    "current_timestamp": "1658125156",
+    "network": "mainnet",
+    "mc_totals": {
+        "tvl": {
+            "mainnet": "15747136.3414466",
+            "avalanche": "234619.6484722",
+            "total": "15981755.9899188"
+        }
+    },
+    "mainnet": {
+        "current_timestamp": "1658125156",
+        "launch_timestamp": "1622204347",
+        "network": "mainnet",
+        "apy": {
+            "last24h": {
+                "pwrd": "0.031390",
+                "gvt": "0.153665"
+            },
+            "last7d": {
+                "pwrd": "0.011960",
+                "gvt": "0.059904"
+            },
+            "daily": {
+                "pwrd": "0.031390",
+                "gvt": "0.153665"
+            },
+            "weekly": {
+                "pwrd": "0.012480",
+                "gvt": "0.060372"
+            },
+            "monthly": {
+                "pwrd": "0.021180",
+                "gvt": "0.106140"
+            },
+            "all_time": {
+                "pwrd": "0.099311",
+                "gvt": "-0.458180"
+            },
+            "hodl_bonus": "0.001768",
+            "current": {
+                "pwrd": "0.015115",
+                "gvt": "0.094384"
+            }
+        },
+        "tvl": {
+            "pwrd": "7370091.2657075",
+            "gvt": "8377045.0757391",
+            "total": "15747136.3414466",
+            "util_ratio": "0.879796",
+            "util_ratio_limit_PD": "0.800000",
+            "util_ratio_limit_GW": "1.000000"
+        },
+        "system": {
+            "total_share": "0.999992",
+            "total_amount": "15747026.6643664",
+            "last3d_apy": "0.055516",
+            "lifeguard": {
+                "stablecoins": [
+                    {
+                        "name": "DAI",
+                        "display_name": "DAI",
+                        "amount": "0.0000000"
+                    },
+                    {
+                        "name": "USDC",
+                        "display_name": "USDC",
+                        "amount": "0.0000000"
+                    },
+                    {
+                        "name": "USDT",
+                        "display_name": "USDT",
+                        "amount": "0.0000000"
+                    }
+                ],
+                "name": "3CRV",
+                "display_name": "3CRV",
+                "amount": "0.0000000",
+                "share": "0.000000",
+                "last3d_apy": "0.000000"
+            },
+            "vault": [
+                {
+                    "name": "DAI yVault",
+                    "display_name": "DAI",
+                    "amount": "7909815.3777163",
+                    "share": "0.502301",
+                    "last3d_apy": "0.065580",
+                    "reserves": {
+                        "name": "DAI",
+                        "display_name": "DAI",
+                        "amount": "333379.0423112",
+                        "last3d_apy": "0.000000",
+                        "share": "0.021170"
+                    },
+                    "strategies": [
+                        {
+                            "name": "Convex XPool Dai primary",
+                            "display_name": "Convex-FRAX-3CRV",
+                            "address": "0xDea436e15B40E7B707A7002A749f416dFE5B383F",
+                            "amount": "4020732.0810797",
+                            "last3d_apy": "0.069810",
+                            "share": "0.255331"
+                        },
+                        {
+                            "name": "Convex XPool Dai secondary",
+                            "display_name": "Convex-mUSD-3CRV",
+                            "address": "0x4d5b5376Cbcc001bb4F8930208828Ab87D121dA8",
+                            "amount": "3555733.1592592",
+                            "last3d_apy": "0.066946",
+                            "share": "0.225801"
+                        }
+                    ]
+                },
+                {
+                    "name": "USDC yVault",
+                    "display_name": "USDC",
+                    "amount": "5040912.2035260",
+                    "share": "0.320116",
+                    "last3d_apy": "0.043168",
+                    "reserves": {
+                        "name": "USDC",
+                        "display_name": "USDC",
+                        "amount": "108703.8893384",
+                        "last3d_apy": "0.000000",
+                        "share": "0.006903"
+                    },
+                    "strategies": [
+                        {
+                            "name": "Convex XPool USDC primary",
+                            "display_name": "Convex-OUSD-3CRV",
+                            "address": "0xD370998b2E7941151E7BB9f6e337A12F337D0682",
+                            "amount": "2572141.6747145",
+                            "last3d_apy": "0.033400",
+                            "share": "0.163340"
+                        },
+                        {
+                            "name": "Convex XPool USDC secondary",
+                            "display_name": "Convex-ALUSD-3CRV",
+                            "address": "0x8b335D3E266389Ae08A2F22b01D33813d40ED8Fd",
+                            "amount": "2360076.8462846",
+                            "last3d_apy": "0.055803",
+                            "share": "0.149873"
+                        }
+                    ]
+                },
+                {
+                    "name": "USDT yVault",
+                    "display_name": "USDT",
+                    "amount": "2796299.0831241",
+                    "share": "0.177575",
+                    "last3d_apy": "0.049311",
+                    "reserves": {
+                        "name": "USDT",
+                        "display_name": "USDT",
+                        "amount": "80627.9945470",
+                        "last3d_apy": "0.000000",
+                        "share": "0.005120"
+                    },
+                    "strategies": [
+                        {
+                            "name": "Convex XPool USDT",
+                            "display_name": "Convex-LUSD-3CRV",
+                            "address": "0xDE5a25415C637b52d59Ef980b29a5fDa8dC3C70B",
+                            "amount": "2715671.2544140",
+                            "last3d_apy": "0.050775",
+                            "share": "0.172454"
+                        }
+                    ]
+                }
+            ]
+        },
+        "exposure": {
+            "stablecoins": [
+                {
+                    "name": "FRAX",
+                    "display_name": "FRAX",
+                    "concentration": "0.255331"
+                },
+                {
+                    "name": "MUSD",
+                    "display_name": "MUSD",
+                    "concentration": "0.225801"
+                },
+                {
+                    "name": "OUSD",
+                    "display_name": "OUSD",
+                    "concentration": "0.163340"
+                },
+                {
+                    "name": "ALUSD",
+                    "display_name": "ALUSD",
+                    "concentration": "0.149873"
+                },
+                {
+                    "name": "LUSD",
+                    "display_name": "LUSD",
+                    "concentration": "0.172454"
+                },
+                {
+                    "name": "DAI",
+                    "display_name": "DAI",
+                    "concentration": "0.987969"
+                },
+                {
+                    "name": "USDC",
+                    "display_name": "USDC",
+                    "concentration": "0.973702"
+                },
+                {
+                    "name": "USDT",
+                    "display_name": "USDT",
+                    "concentration": "0.971919"
+                }
+            ],
+            "protocols": [
+                {
+                    "name": "Curve",
+                    "display_name": "Curve",
+                    "concentration": "0.966799"
+                },
+                {
+                    "name": "Convex",
+                    "display_name": "Convex",
+                    "concentration": "0.966799"
+                }
+            ]
+        },
+        "token_price_usd": {
+            "pwrd": "1.0000000",
+            "gvt": "95.6887727",
+            "gro": "0.1683225"
+        },
+        "pools": [
+            {
+                "deposit_url": "NA",
+                "remove_url": "NA",
+                "name": "single_staking_100_gro_0",
+                "display_name": "GRO",
+                "type": "ss_1",
+                "display_type": "Gro Pool",
+                "display_order": "1",
+                "tokens": ["gro"],
+                "pid": "0",
+                "tvl": "130182.4383493",
+                "tvl_staked": "130182.4383493",
+                "staked": "773410837318211204124479",
+                "unstaked": "4524887105567440743010342",
+                "required_tokens_num": "1",
+                "disable": "false",
+                "lp_usd_price": "0.1683225",
+                "apy": {
+                    "current": {
+                        "total": "0.0120",
+                        "token": "0.0000",
+                        "pool_fees": "0.0000",
+                        "reward": "0.0120"
+                    }
+                }
+            },
+            {
+                "deposit_url": "https://app.uniswap.org/#/add/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0x3ADb04E127b9C0a5D36094125669d4603AC52a0c",
+                "remove_url": "https://app.uniswap.org/#/remove/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0x3ADb04E127b9C0a5D36094125669d4603AC52a0c",
+                "name": "uniswap_v2_5050_gro_gvt_1",
+                "display_name": "GRO / Vault",
+                "type": "uniswap_v2",
+                "display_type": "Uniswap v2",
+                "display_order": "2",
+                "tokens": ["gro", "gvt"],
+                "pid": "1",
+                "tvl": "156510.6924198",
+                "tvl_staked": "155809.5705726",
+                "staked": "19087285989560490901082",
+                "unstaked": "85890187374799499229",
+                "required_tokens_num": "2",
+                "disable": "false",
+                "lp_usd_price": "8.1630029",
+                "apy": {
+                    "current": {
+                        "total": "0.0680",
+                        "token": "0.0472",
+                        "pool_fees": "0.0008",
+                        "reward": "0.0200"
+                    }
+                }
+            },
+            {
+                "deposit_url": "https://app.uniswap.org/#/add/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                "remove_url": "https://app.uniswap.org/#/remove/v2/0x3Ec8798B81485A254928B70CDA1cf0A2BB0B74D7/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                "name": "uniswap_v2_5050_gro_usdc_2",
+                "display_name": "GRO / USDC",
+                "type": "uniswap_v2",
+                "display_type": "Uniswap v2",
+                "display_order": "3",
+                "tokens": ["gro", "usdc"],
+                "pid": "2",
+                "tvl": "553361.2222647",
+                "tvl_staked": "294379.5448030",
+                "staked": "326506410124788100",
+                "unstaked": "287245426147774604",
+                "required_tokens_num": "2",
+                "disable": "false",
+                "lp_usd_price": "901604.1819530",
+                "apy": {
+                    "current": {
+                        "total": "0.0769",
+                        "token": "0.0000",
+                        "pool_fees": "0.0029",
+                        "reward": "0.0740"
+                    }
+                }
+            },
+            {
+                "deposit_url": "NA",
+                "remove_url": "NA",
+                "name": "single_staking_100_gvt_3",
+                "display_name": "Vault",
+                "type": "ss_1",
+                "display_type": "Vault Pool",
+                "display_order": "4",
+                "tokens": ["gvt"],
+                "pid": "3",
+                "tvl": "3916297.6741443",
+                "tvl_staked": "3916297.6741443",
+                "staked": "40927452220719065728457",
+                "unstaked": "46617249590804136707227",
+                "required_tokens_num": "1",
+                "disable": "false",
+                "lp_usd_price": "95.6887727",
+                "apy": {
+                    "current": {
+                        "total": "0.1341",
+                        "token": "0.0944",
+                        "pool_fees": "0.0000",
+                        "reward": "0.0397"
+                    }
+                }
+            },
+            {
+                "deposit_url": "https://curve.fi/factory/44/deposit",
+                "remove_url": "https://curve.fi/factory/44/withdraw",
+                "name": "curve_meta_pwrd_3crv_4",
+                "display_name": "PWRD-3CRV",
+                "type": "curve_meta",
+                "display_type": "Curve Meta",
+                "display_order": "5",
+                "tokens": ["pwrd", "dai", "usdc", "usdt"],
+                "pid": "4",
+                "tvl": "9271752.6263312",
+                "tvl_staked": "9027210.6673164",
+                "staked": "8591491586986232520341062",
+                "unstaked": "232738579054915676926708",
+                "required_tokens_num": "1",
+                "disable": "false",
+                "lp_usd_price": "1.0507152",
+                "apy": {
+                    "current": {
+                        "total": "0.0215",
+                        "token": "0.0076",
+                        "pool_fees": "0.0136",
+                        "reward": "0.0003"
+                    }
+                }
+            },
+            {
+                "deposit_url": "https://app.balancer.fi/#/pool/0x702605f43471183158938c1a3e5f5a359d7b31ba00020000000000000000009f",
+                "remove_url": "NA",
+                "name": "balancer_v2_8020_gro_weth_5",
+                "display_name": "GRO 80% / WETH 20%",
+                "type": "balancer_v2",
+                "display_type": "Balancer v2",
+                "display_order": "0",
+                "tokens": ["gro", "weth"],
+                "pid": "5",
+                "tvl": "38684.3097698",
+                "tvl_staked": "37351.9608190",
+                "staked": "45062160488147500000000",
+                "unstaked": "1607372703690400000000",
+                "required_tokens_num": "0",
+                "disable": "false",
+                "lp_usd_price": "0.8288986",
+                "apy": {
+                    "current": {
+                        "total": "0.0452",
+                        "token": "0.0000",
+                        "pool_fees": "0.0119",
+                        "reward": "0.0333"
+                    }
+                }
+            },
+            {
+                "deposit_url": "NA",
+                "remove_url": "NA",
+                "name": "single_staking_100_pwrd_6",
+                "display_name": "PWRD",
+                "type": "ss_1",
+                "display_type": "PWRD Pool",
+                "display_order": "6",
+                "tokens": ["pwrd"],
+                "pid": "6",
+                "tvl": "36475.1950579",
+                "tvl_staked": "36475.1950579",
+                "staked": "36475195057882234913763",
+                "unstaked": "7333616070649646611275582",
+                "required_tokens_num": "1",
+                "disable": "false",
+                "lp_usd_price": "1.0000000",
+                "apy": {
+                    "current": {
+                        "total": "0.1005",
+                        "token": "0.0151",
+                        "pool_fees": "0.0000",
+                        "reward": "0.0853"
+                    }
+                }
+            }
+        ],
+        "pwrdBoost": {
+            "upperBoostApy": "0.0151",
+            "lowerBoostApy": "0.0045"
+        },
+        "gvtBoost": {
+            "upperBoostApy": "0.0944",
+            "lowerBoostApy": "0.0283"
+        }
+    },
+    "avalanche": {
+        "launch_timestamp": "1637746393",
+        "tvl": {
+            "groDAI.e_vault": "4742.9777348",
+            "groUSDC.e_vault": "103.1483840",
+            "groUSDT.e_vault": "2874.9951790",
+            "groDAI.e_vault_v1_5": "0.3586582",
+            "groUSDC.e_vault_v1_5": "48.9142590",
+            "groUSDT.e_vault_v1_5": "0.0000000",
+            "groDAI.e_vault_v1_6": "0.0000000",
+            "groUSDC.e_vault_v1_6": "0.0000000",
+            "groUSDT.e_vault_v1_6": "0.0000000",
+            "groDAI.e_vault_v1_7": "26820.2959312",
+            "groUSDC.e_vault_v1_7": "146983.6910390",
+            "groUSDT.e_vault_v1_7": "53045.2672870",
+            "total": "234619.6484722"
+        },
+        "token_price_usd": {
+            "avax": "23.2756708"
+        },
+        "labs_vault": [
+            {
+                "name": "groDAI.e_vault",
+                "display_name": "Gro Labs DAI.e AVAX Vault",
+                "stablecoin": "DAI.e",
+                "amount": "4742.9777348",
+                "share": "0.012661",
+                "all_time_apy": "0.248209",
+                "last3d_apy": "0.248627",
+                "reserves": {
+                    "name": "groDAI.e_vault",
+                    "display_name": "Gro Labs DAI.e AVAX Vault",
+                    "amount": "4742.9777348",
+                    "share": "0.012661",
+                    "last3d_apy": "0.000000"
+                },
+                "strategies": [
+                    {
+                        "name": "ah_DAI.e_strat",
+                        "display_name": "DAI.e AH",
+                        "address": "0x4c7ea5b8032c5ea82ddf617dac7972c70e0c0478",
+                        "amount": "0.0000000",
+                        "share": "0.000000",
+                        "last3d_apy": "0.000000",
+                        "all_time_apy": "0.000000",
+                        "sharpe_ratio": "51.017631",
+                        "sortino_ratio": "63.832790",
+                        "romad_ratio": "0.000000",
+                        "tvl_cap": "2000000.0000000",
+                        "open_position": {},
+                        "past_5_closed_positions": [
+                            {
+                                "open_ts": "1646143046",
+                                "open_amount": "77862.5500713",
+                                "close_ts": "1646147124",
+                                "close_amount": "77850.7465039",
+                                "apy": "-0.879235"
+                            },
+                            {
+                                "open_ts": "1646147185",
+                                "open_amount": "77853.6973957",
+                                "close_ts": "1646227104",
+                                "close_amount": "77862.0031402",
+                                "apy": "0.031604"
+                            },
+                            {
+                                "open_ts": "1646227165",
+                                "open_amount": "70004.5392925",
+                                "close_ts": "1646307003",
+                                "close_amount": "70070.7728996",
+                                "apy": "0.315641"
+                            },
+                            {
+                                "open_ts": "1646307024",
+                                "open_amount": "62164.5971926",
+                                "close_ts": "1646319023",
+                                "close_amount": "62152.3972326",
+                                "apy": "-0.386538"
+                            },
+                            {
+                                "open_ts": "1646319085",
+                                "open_amount": "62204.9293643",
+                                "close_ts": "1646332351",
+                                "close_amount": "62223.0117991",
+                                "apy": "0.466437"
+                            }
+                        ]
+                    }
+                ],
+                "avax_exposure": "0.000000"
+            },
+            {
+                "name": "groUSDC.e_vault",
+                "display_name": "Gro Labs USDC.e AVAX Vault",
+                "stablecoin": "USDC.e",
+                "amount": "103.1483840",
+                "share": "0.010267",
+                "all_time_apy": "0.221052",
+                "last3d_apy": "0.000000",
+                "reserves": {
+                    "name": "groUSDC.e_vault",
+                    "display_name": "Gro Labs USDC.e AVAX Vault",
+                    "amount": "103.1483840",
+                    "share": "0.010267",
+                    "last3d_apy": "0.000000"
+                },
+                "strategies": [
+                    {
+                        "name": "ah_USDC.e_strat",
+                        "display_name": "USDC.e AH",
+                        "address": "0x247af6e106549033d3a65354fc3a72ff3794fa99",
+                        "amount": "0.0000000",
+                        "share": "0.000000",
+                        "last3d_apy": "0.000000",
+                        "all_time_apy": "0.000000",
+                        "sharpe_ratio": "23.476301",
+                        "sortino_ratio": "25.460422",
+                        "romad_ratio": "0.000000",
+                        "tvl_cap": "2000000.0000000",
+                        "open_position": {},
+                        "past_5_closed_positions": [
+                            {
+                                "open_ts": "1646152584",
+                                "open_amount": "580193.5853270",
+                                "close_ts": "1646192907",
+                                "close_amount": "580308.7627680",
+                                "apy": "0.104792"
+                            },
+                            {
+                                "open_ts": "1646192962",
+                                "open_amount": "580279.9684080",
+                                "close_ts": "1646205083",
+                                "close_amount": "580126.7705500",
+                                "apy": "-0.522851"
+                            },
+                            {
+                                "open_ts": "1646205144",
+                                "open_amount": "572349.7665960",
+                                "close_ts": "1646273603",
+                                "close_amount": "572484.4720340",
+                                "apy": "0.293860"
+                            },
+                            {
+                                "open_ts": "1646273663",
+                                "open_amount": "142714.6471560",
+                                "close_ts": "1646319805",
+                                "close_amount": "142752.1796630",
+                                "apy": "0.121173"
+                            },
+                            {
+                                "open_ts": "1646319865",
+                                "open_amount": "142742.7965360",
+                                "close_ts": "1646332351",
+                                "close_amount": "142793.4375550",
+                                "apy": "0.604896"
+                            }
+                        ]
+                    }
+                ],
+                "avax_exposure": "0.000000"
+            },
+            {
+                "name": "groUSDT.e_vault",
+                "display_name": "Gro Labs USDT.e AVAX Vault",
+                "stablecoin": "USDT.e",
+                "amount": "2874.9951790",
+                "share": "0.011727",
+                "all_time_apy": "0.241058",
+                "last3d_apy": "0.000000",
+                "reserves": {
+                    "name": "groUSDT.e_vault",
+                    "display_name": "Gro Labs USDT.e AVAX Vault",
+                    "amount": "2874.9951790",
+                    "share": "0.011727",
+                    "last3d_apy": "0.000000"
+                },
+                "strategies": [
+                    {
+                        "name": "ah_USDT.e_strat",
+                        "display_name": "USDT.e AH",
+                        "address": "0x94a7c3419504cea9fba06ee739717b236ada0638",
+                        "amount": "0.0000000",
+                        "share": "0.000000",
+                        "last3d_apy": "0.000000",
+                        "all_time_apy": "0.000000",
+                        "sharpe_ratio": "29.816789",
+                        "sortino_ratio": "33.153213",
+                        "romad_ratio": "0.000000",
+                        "tvl_cap": "2000000.0000000",
+                        "open_position": {},
+                        "past_5_closed_positions": [
+                            {
+                                "open_ts": "1646153364",
+                                "open_amount": "543187.8393850",
+                                "close_ts": "1646192844",
+                                "close_amount": "543322.5875360",
+                                "apy": "0.134271"
+                            },
+                            {
+                                "open_ts": "1646192906",
+                                "open_amount": "543288.9004980",
+                                "close_ts": "1646205144",
+                                "close_amount": "543183.8606040",
+                                "apy": "-0.379859"
+                            },
+                            {
+                                "open_ts": "1646205206",
+                                "open_amount": "535371.0412990",
+                                "close_ts": "1646274803",
+                                "close_amount": "535559.1121860",
+                                "apy": "0.428060"
+                            },
+                            {
+                                "open_ts": "1646274863",
+                                "open_amount": "134543.4756850",
+                                "close_ts": "1646320047",
+                                "close_amount": "134573.1787700",
+                                "apy": "0.104111"
+                            },
+                            {
+                                "open_ts": "1646320104",
+                                "open_amount": "134565.7529990",
+                                "close_ts": "1646332345",
+                                "close_amount": "134613.6372080",
+                                "apy": "0.618651"
+                            }
+                        ]
+                    }
+                ],
+                "avax_exposure": "0.000000"
+            },
+            {
+                "name": "groDAI.e_vault_v1_5",
+                "display_name": "Gro Labs DAI.e AVAX Vault v1.5",
+                "stablecoin": "DAI.e",
+                "amount": "2256.1954227",
+                "share": "0.001120",
+                "all_time_apy": "0.132761",
+                "last3d_apy": "0.000000",
+                "reserves": {
+                    "name": "groDAI.e_vault_v1_5",
+                    "display_name": "Gro Labs DAI.e AVAX Vault v1.5",
+                    "amount": "2256.1954227",
+                    "share": "0.001120",
+                    "last3d_apy": "0.000000"
+                },
+                "strategies": [
+                    {
+                        "name": "ah_DAI.e_strat_v1_5",
+                        "display_name": "DAI.e AH v1.5",
+                        "address": "0xe0d6eff0f64da98b2c0e47102d59709b24cfc76f",
+                        "amount": "0.0000000",
+                        "share": "0.000000",
+                        "last3d_apy": "0.000000",
+                        "all_time_apy": "0.000000",
+                        "sharpe_ratio": "8.764900",
+                        "sortino_ratio": "17.646666",
+                        "romad_ratio": "0.000000",
+                        "tvl_cap": "10000000.0000000",
+                        "open_position": {},
+                        "past_5_closed_positions": [
+                            {
+                                "open_ts": "1643019028",
+                                "open_amount": "2256.2021778",
+                                "close_ts": "1643028085",
+                                "close_amount": "2256.2021778",
+                                "apy": "0.000000"
+                            },
+                            {
+                                "open_ts": "1643028143",
+                                "open_amount": "2256.9190839",
+                                "close_ts": "1643035227",
+                                "close_amount": "2256.9190839",
+                                "apy": "0.000000"
+                            },
+                            {
+                                "open_ts": "1643035286",
+                                "open_amount": "2256.7052711",
+                                "close_ts": "1643037024",
+                                "close_amount": "2256.7052711",
+                                "apy": "0.000000"
+                            },
+                            {
+                                "open_ts": "1643037085",
+                                "open_amount": "2256.2054365",
+                                "close_ts": "1643038405",
+                                "close_amount": "2256.2054365",
+                                "apy": "0.000000"
+                            },
+                            {
+                                "open_ts": "1643038466",
+                                "open_amount": "-0.0000000",
+                                "close_ts": "1643038527",
+                                "close_amount": "-0.0000000",
+                                "apy": "0.000000"
+                            }
+                        ]
+                    }
+                ],
+                "avax_exposure": "0.000000"
+            },
+            {
+                "name": "groUSDC.e_vault_v1_5",
+                "display_name": "Gro Labs USDC.e AVAX Vault v1.5",
+                "stablecoin": "USDC.e",
+                "amount": "48.9142590",
+                "share": "0.000024",
+                "all_time_apy": "0.115362",
+                "last3d_apy": "0.000000",
+                "reserves": {
+                    "name": "groUSDC.e_vault_v1_5",
+                    "display_name": "Gro Labs USDC.e AVAX Vault v1.5",
+                    "amount": "48.9142590",
+                    "share": "0.000024",
+                    "last3d_apy": "0.000000"
+                },
+                "strategies": [
+                    {
+                        "name": "ah_USDC.e_strat_v1_5",
+                        "display_name": "USDC.e AH v1.5",
+                        "address": "0x45fa601854326de028b982df9839a27d22f36344",
+                        "amount": "0.0000000",
+                        "share": "0.000000",
+                        "last3d_apy": "0.000000",
+                        "all_time_apy": "0.000000",
+                        "sharpe_ratio": "0.000000",
+                        "sortino_ratio": "0.000000",
+                        "romad_ratio": "0.000000",
+                        "tvl_cap": "10000000.0000000",
+                        "open_position": {},
+                        "past_5_closed_positions": [
+                            {
+                                "open_ts": "1642898008",
+                                "open_amount": "806650.0256420",
+                                "close_ts": "1642898069",
+                                "close_amount": "806650.0256420",
+                                "apy": "0.000000"
+                            },
+                            {
+                                "open_ts": "1642941628",
+                                "open_amount": "806646.3934890",
+                                "close_ts": "1642944632",
+                                "close_amount": "806646.3934890",
+                                "apy": "0.000000"
+                            },
+                            {
+                                "open_ts": "1643003375",
+                                "open_amount": "806480.1073390",
+                                "close_ts": "1643016155",
+                                "close_amount": "806480.1073390",
+                                "apy": "0.000000"
+                            },
+                            {
+                                "open_ts": "1643016202",
+                                "open_amount": "806402.4541820",
+                                "close_ts": "1643022024",
+                                "close_amount": "806402.4541820",
+                                "apy": "0.000000"
+                            },
+                            {
+                                "open_ts": "1643022086",
+                                "open_amount": "-0.0000010",
+                                "close_ts": "1643038226",
+                                "close_amount": "-0.0000010",
+                                "apy": "0.000000"
+                            }
+                        ]
+                    }
+                ],
+                "avax_exposure": "0.000000"
+            },
+            {
+                "name": "groUSDT.e_vault_v1_5",
+                "display_name": "Gro Labs USDT.e AVAX Vault v1.5",
+                "stablecoin": "USDT.e",
+                "amount": "0.0000000",
+                "share": "0.000000",
+                "all_time_apy": "0.000000",
+                "last3d_apy": "0.000000",
+                "reserves": {
+                    "name": "groUSDT.e_vault_v1_5",
+                    "display_name": "Gro Labs USDT.e AVAX Vault v1.5",
+                    "amount": "0.0000000",
+                    "share": "0.000000",
+                    "last3d_apy": "0.000000"
+                },
+                "strategies": [
+                    {
+                        "name": "ah_USDT.e_strat_v1_5",
+                        "display_name": "USDT.e AH v1.5",
+                        "address": "0xb29380360a44a7630f404c7609114e48fde0ddee",
+                        "amount": "0.0000000",
+                        "share": "0.000000",
+                        "last3d_apy": "0.000000",
+                        "all_time_apy": "0.000000",
+                        "sharpe_ratio": "0.000000",
+                        "sortino_ratio": "0.000000",
+                        "romad_ratio": "0.000000",
+                        "tvl_cap": "10000000.0000000",
+                        "open_position": {},
+                        "past_5_closed_positions": []
+                    }
+                ],
+                "avax_exposure": "0.000000"
+            },
+            {
+                "name": "groDAI.e_vault_v1_6",
+                "display_name": "Gro Labs DAI.e AVAX Vault v1.6",
+                "stablecoin": "DAI.e",
+                "amount": "0.0000000",
+                "share": "0.000000",
+                "all_time_apy": "0.000000",
+                "last3d_apy": "0.000000",
+                "reserves": {
+                    "name": "groDAI.e_vault_v1_6",
+                    "display_name": "Gro Labs DAI.e AVAX Vault v1.6",
+                    "amount": "0.0000000",
+                    "share": "0.000000",
+                    "last3d_apy": "0.000000"
+                },
+                "strategies": [
+                    {
+                        "name": "ah_DAI.e_strat_v1_6",
+                        "display_name": "DAI.e AH v1.6",
+                        "address": "0xb7a4ed26da881196c3da388b46cd290fd92aacc8",
+                        "amount": "0.0000000",
+                        "share": "0.000000",
+                        "last3d_apy": "0.000000",
+                        "all_time_apy": "0.000000",
+                        "sharpe_ratio": "0.000000",
+                        "sortino_ratio": "0.000000",
+                        "romad_ratio": "0.000000",
+                        "tvl_cap": "10000000.0000000",
+                        "open_position": {},
+                        "past_5_closed_positions": []
+                    }
+                ],
+                "avax_exposure": "0.000000"
+            },
+            {
+                "name": "groUSDC.e_vault_v1_6",
+                "display_name": "Gro Labs USDC.e AVAX Vault v1.6",
+                "stablecoin": "USDC.e",
+                "amount": "0.0000000",
+                "share": "0.000000",
+                "all_time_apy": "0.000000",
+                "last3d_apy": "0.000000",
+                "reserves": {
+                    "name": "groUSDC.e_vault_v1_6",
+                    "display_name": "Gro Labs USDC.e AVAX Vault v1.6",
+                    "amount": "0.0000000",
+                    "share": "0.000000",
+                    "last3d_apy": "0.000000"
+                },
+                "strategies": [
+                    {
+                        "name": "ah_USDC.e_strat_v1_6",
+                        "display_name": "USDC.e AH v1.6",
+                        "address": "0x21da4b3b6738adb122dedbfa722cdab6fa29d4ac",
+                        "amount": "0.0000000",
+                        "share": "0.000000",
+                        "last3d_apy": "0.000000",
+                        "all_time_apy": "0.000000",
+                        "sharpe_ratio": "0.000000",
+                        "sortino_ratio": "0.000000",
+                        "romad_ratio": "0.000000",
+                        "tvl_cap": "10000000.0000000",
+                        "open_position": {},
+                        "past_5_closed_positions": []
+                    }
+                ],
+                "avax_exposure": "0.000000"
+            },
+            {
+                "name": "groUSDT.e_vault_v1_6",
+                "display_name": "Gro Labs USDT.e AVAX Vault v1.6",
+                "stablecoin": "USDT.e",
+                "amount": "0.0000000",
+                "share": "0.000000",
+                "all_time_apy": "0.000000",
+                "last3d_apy": "0.000000",
+                "reserves": {
+                    "name": "groUSDT.e_vault_v1_6",
+                    "display_name": "Gro Labs USDT.e AVAX Vault v1.6",
+                    "amount": "0.0000000",
+                    "share": "0.000000",
+                    "last3d_apy": "0.000000"
+                },
+                "strategies": [
+                    {
+                        "name": "ah_USDT.e_strat_v1_6",
+                        "display_name": "USDT.e AH v1.6",
+                        "address": "0x9889d8cdcdf4f5a0f30378c909a8930cf0fed2f4",
+                        "amount": "0.0000000",
+                        "share": "0.000000",
+                        "last3d_apy": "0.000000",
+                        "all_time_apy": "0.000000",
+                        "sharpe_ratio": "0.000000",
+                        "sortino_ratio": "0.000000",
+                        "romad_ratio": "0.000000",
+                        "tvl_cap": "10000000.0000000",
+                        "open_position": {},
+                        "past_5_closed_positions": []
+                    }
+                ],
+                "avax_exposure": "0.000000"
+            },
+            {
+                "name": "groDAI.e_vault_v1_7",
+                "display_name": "Gro Labs DAI.e AVAX Vault v1.7",
+                "stablecoin": "DAI.e",
+                "amount": "26820.2959312",
+                "share": "0.141348",
+                "all_time_apy": "0.091660",
+                "last3d_apy": "0.000000",
+                "reserves": {
+                    "name": "groDAI.e_vault_v1_7",
+                    "display_name": "Gro Labs DAI.e AVAX Vault v1.7",
+                    "amount": "26820.2959312",
+                    "share": "0.141348",
+                    "last3d_apy": "0.000000"
+                },
+                "strategies": [
+                    {
+                        "name": "ah_DAI.e_strat_v1_7",
+                        "display_name": "DAI.e AH v1.7",
+                        "address": "0x670ea3f675a332d561d5a9ecaa16c097ac0b0ba5",
+                        "amount": "0.0000000",
+                        "share": "0.000000",
+                        "last3d_apy": "0.000000",
+                        "all_time_apy": "0.000000",
+                        "sharpe_ratio": "-73.525196",
+                        "sortino_ratio": "-87.764951",
+                        "romad_ratio": "0.000000",
+                        "tvl_cap": "2000000.0000000",
+                        "open_position": {},
+                        "past_5_closed_positions": [
+                            {
+                                "open_ts": "1653655103",
+                                "open_amount": "293694.6875321",
+                                "close_ts": "1653655288",
+                                "close_amount": "293694.9423659",
+                                "apy": "0.147909"
+                            },
+                            {
+                                "open_ts": "1653655348",
+                                "open_amount": "268858.5565243",
+                                "close_ts": "1654087404",
+                                "close_amount": "269026.6744536",
+                                "apy": "0.043205"
+                            },
+                            {
+                                "open_ts": "1654088064",
+                                "open_amount": "242495.9172731",
+                                "close_ts": "1654520123",
+                                "close_amount": "242066.4248259",
+                                "apy": "-0.121282"
+                            },
+                            {
+                                "open_ts": "1654520184",
+                                "open_amount": "254031.8584967",
+                                "close_ts": "1654589369",
+                                "close_amount": "253595.1714021",
+                                "apy": "-0.783568"
+                            },
+                            {
+                                "open_ts": "1654589903",
+                                "open_amount": "241969.9258505",
+                                "close_ts": "1655071466",
+                                "close_amount": "239778.6221692",
+                                "apy": "-0.573425"
+                            }
+                        ]
+                    }
+                ],
+                "avax_exposure": "0.000000"
+            },
+            {
+                "name": "groUSDC.e_vault_v1_7",
+                "display_name": "Gro Labs USDC.e AVAX Vault v1.7",
+                "stablecoin": "USDC.e",
+                "amount": "146983.6910390",
+                "share": "0.583427",
+                "all_time_apy": "0.078493",
+                "last3d_apy": "0.000000",
+                "reserves": {
+                    "name": "groUSDC.e_vault_v1_7",
+                    "display_name": "Gro Labs USDC.e AVAX Vault v1.7",
+                    "amount": "146983.6910390",
+                    "share": "0.583427",
+                    "last3d_apy": "0.000000"
+                },
+                "strategies": [
+                    {
+                        "name": "ah_USDC.e_strat_v1_7",
+                        "display_name": "USDC.e AH v1.7",
+                        "address": "0xa80ec1e57c5a37517a0f5912acc7b30585ebff56",
+                        "amount": "0.0000000",
+                        "share": "0.000000",
+                        "last3d_apy": "0.000000",
+                        "all_time_apy": "0.000000",
+                        "sharpe_ratio": "19.973115",
+                        "sortino_ratio": "76.196812",
+                        "romad_ratio": "0.000000",
+                        "tvl_cap": "2000000.0000000",
+                        "open_position": {},
+                        "past_5_closed_positions": [
+                            {
+                                "open_ts": "1653655230",
+                                "open_amount": "667247.9046740",
+                                "close_ts": "1654087285",
+                                "close_amount": "667221.0593680",
+                                "apy": "-0.002915"
+                            },
+                            {
+                                "open_ts": "1654088003",
+                                "open_amount": "620087.2910420",
+                                "close_ts": "1654520065",
+                                "close_amount": "619149.1933670",
+                                "apy": "-0.106076"
+                            },
+                            {
+                                "open_ts": "1654520123",
+                                "open_amount": "635337.2722010",
+                                "close_ts": "1654589369",
+                                "close_amount": "634316.1932310",
+                                "apy": "-0.731925"
+                            },
+                            {
+                                "open_ts": "1654589844",
+                                "open_amount": "610899.5652390",
+                                "close_ts": "1654989508",
+                                "close_amount": "610082.0562320",
+                                "apy": "-0.105098"
+                            },
+                            {
+                                "open_ts": "1654990463",
+                                "open_amount": "-111253.8300270",
+                                "close_ts": "1655078127",
+                                "close_amount": "-96574.0618780",
+                                "apy": "8.655805"
+                            }
+                        ]
+                    }
+                ],
+                "avax_exposure": "0.000000"
+            },
+            {
+                "name": "groUSDT.e_vault_v1_7",
+                "display_name": "Gro Labs USDT.e AVAX Vault v1.7",
+                "stablecoin": "USDT.e",
+                "amount": "53045.2672870",
+                "share": "0.255403",
+                "all_time_apy": "0.020200",
+                "last3d_apy": "0.000000",
+                "reserves": {
+                    "name": "groUSDT.e_vault_v1_7",
+                    "display_name": "Gro Labs USDT.e AVAX Vault v1.7",
+                    "amount": "53045.2672870",
+                    "share": "0.255403",
+                    "last3d_apy": "0.000000"
+                },
+                "strategies": [
+                    {
+                        "name": "ah_USDT.e_strat_v1_7",
+                        "display_name": "USDT.e AH v1.7",
+                        "address": "0x1a104793650684013c555d6ae07058f76e4679ef",
+                        "amount": "0.0000000",
+                        "share": "0.000000",
+                        "last3d_apy": "0.000000",
+                        "all_time_apy": "0.000000",
+                        "sharpe_ratio": "14.756008",
+                        "sortino_ratio": "56.347069",
+                        "romad_ratio": "0.000000",
+                        "tvl_cap": "2000000.0000000",
+                        "open_position": {},
+                        "past_5_closed_positions": [
+                            {
+                                "open_ts": "1653655344",
+                                "open_amount": "722907.6192100",
+                                "close_ts": "1654087403",
+                                "close_amount": "721690.0089450",
+                                "apy": "-0.122818"
+                            },
+                            {
+                                "open_ts": "1654087763",
+                                "open_amount": "709962.3531820",
+                                "close_ts": "1654519826",
+                                "close_amount": "707010.5303870",
+                                "apy": "-0.298534"
+                            },
+                            {
+                                "open_ts": "1654519885",
+                                "open_amount": "718746.1186160",
+                                "close_ts": "1654589369",
+                                "close_amount": "717217.1554260",
+                                "apy": "-0.965480"
+                            },
+                            {
+                                "open_ts": "1654590144",
+                                "open_amount": "700308.9319810",
+                                "close_ts": "1654989508",
+                                "close_amount": "699142.0352480",
+                                "apy": "-0.129310"
+                            },
+                            {
+                                "open_ts": "1654990824",
+                                "open_amount": "-128269.8754120",
+                                "close_ts": "1655077405",
+                                "close_amount": "-110588.4007890",
+                                "apy": "9.076680"
+                            }
+                        ]
+                    }
+                ],
+                "avax_exposure": "0.000000"
+            }
+        ]
+    }
+}

@@ -5,11 +5,17 @@ import { generateGroStatsFile } from '../handler/statsHandler';
 import { getConfig } from '../../common/configUtil';
 import { checkServerHealth } from '../../common/checkBotHealth';
 import { sendErrorMessageToLogChannel } from '../../common/discord/discordService';
-import { getLastBlockNumber, generateDepositAndWithdrawReport, updateLastBlockNumber, generateSummaryReport } from '../handler/eventHandler';
+import {
+    getLastBlockNumber,
+    generateDepositAndWithdrawReport,
+    updateLastBlockNumber,
+    generateSummaryReport,
+} from '../handler/eventHandler';
 import { getCurrentBlockNumber } from '../../common/chainUtil';
 import { getAvaxSystemStats } from '../handler/avaxSystemHandler';
 import { generateGroStatsMcFile } from '../handler/mcStatsHandler';
 import { sendAlertMessage } from '../../common/alertMessageSender';
+import { getValidContractHistoryEventFilters } from '../../common/filterGenerateTool';
 
 const logger = require('../statsLogger');
 
@@ -194,13 +200,11 @@ function botLiveCheckScheduler() {
 }
 
 function starStatsJobs() {
-    generateStatsFile();
-    removeStatsFile();
-    depositWithdrawEventScheduler();
-    // EventSummaryScheduler();
-    botLiveCheckScheduler();
+    // generateStatsFile();
+    // removeStatsFile();
+    // depositWithdrawEventScheduler();
+    // // EventSummaryScheduler();
+    // botLiveCheckScheduler();
 }
 
-export {
-    starStatsJobs,
-};
+export { starStatsJobs };
