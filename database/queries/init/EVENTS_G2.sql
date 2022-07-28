@@ -149,6 +149,48 @@ CREATE TABLE gro."EV_G2_VAULT_WITHDRAWALS" (
 
 ALTER TABLE gro."EV_G2_VAULT_WITHDRAWALS" OWNER to postgres;
 
+CREATE TABLE gro."EV_G2_VAULT_STRATEGY_QUEUE" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "block_timestamp" INTEGER NULL,
+    "log_name" CHARACTER VARYING (100) NOT NULL,
+    "strategy" CHARACTER VARYING (42) NULL,
+    "strategy_id" INTEGER NULL,
+    "pos" INTEGER NULL,
+    "next" INTEGER NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT "EV_G2_VAULT_STRATEGY_QUEUE_pkey" PRIMARY KEY (
+        "transaction_id",
+        "log_index",
+        "contract_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_G2_VAULT_STRATEGY_QUEUE" OWNER to postgres;
+
+CREATE TABLE gro."EV_G2_VAULT_STRATEGY_HARVEST" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "block_timestamp" INTEGER NULL,
+    "log_name" CHARACTER VARYING (100) NOT NULL,
+    "strategy" CHARACTER VARYING (42) NULL,
+    "gain" NUMERIC (20, 8) NULL,
+    "loss" NUMERIC (20, 8) NULL,
+    "debt_paid" NUMERIC (20, 8) NULL,
+    "debt_added" NUMERIC (20, 8) NULL,
+    "locked_profit" NUMERIC (20, 8) NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT "EV_G2_VAULT_STRATEGY_HARVEST_pkey" PRIMARY KEY (
+        "transaction_id",
+        "log_index",
+        "contract_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_G2_VAULT_STRATEGY_HARVEST" OWNER to postgres;
+
 CREATE TABLE gro."EV_G2_VAULT_STRATEGY_CHANGES" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
     "log_index" INTEGER NOT NULL,
@@ -169,21 +211,22 @@ CREATE TABLE gro."EV_G2_VAULT_STRATEGY_CHANGES" (
 
 ALTER TABLE gro."EV_G2_VAULT_STRATEGY_CHANGES" OWNER to postgres;
 
-CREATE TABLE gro."EV_G2_VAULT_STRATEGY_ADDED" (
+CREATE TABLE gro."EV_G2_VAULT_STRATEGY_WITHDRAWALS" (
     "transaction_id" CHARACTER VARYING (66) NOT NULL,
     "log_index" INTEGER NOT NULL,
     "contract_address" CHARACTER VARYING (42) NOT NULL,
     "block_timestamp" INTEGER NULL,
     "log_name" CHARACTER VARYING (100) NOT NULL,
-    "strategy" CHARACTER VARYING (42) NULL,
     "strategy_id" INTEGER NULL,
-    "pos" INTEGER NULL,
+    "strategy_debt" NUMERIC (20, 8) NULL,
+    "total_vault_debt" NUMERIC (20, 8) NULL,
+    "loss_from_strategy_withdrawal" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
-    CONSTRAINT "EV_G2_VAULT_STRATEGY_ADDED_pkey" PRIMARY KEY (
+    CONSTRAINT "EV_G2_VAULT_STRATEGY_WITHDRAWALS_pkey" PRIMARY KEY (
         "transaction_id",
         "log_index",
         "contract_address"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
-ALTER TABLE gro."EV_G2_VAULT_STRATEGY_ADDED" OWNER to postgres;
+ALTER TABLE gro."EV_G2_VAULT_STRATEGY_WITHDRAWALS" OWNER to postgres;
