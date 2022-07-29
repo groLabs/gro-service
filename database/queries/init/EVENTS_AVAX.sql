@@ -113,49 +113,58 @@ CREATE TABLE gro."EV_LAB_AH_POSITIONS" (
 ALTER TABLE gro."EV_LAB_AH_POSITIONS" OWNER to postgres;
 
 CREATE TABLE gro."EV_LAB_AH_POSITION_OPENED" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
     "position_id" INTEGER NOT NULL,
     "block_number" INTEGER NOT NULL,
-    "contract_address" CHARACTER VARYING (42) NOT NULL,
     "log_name" CHARACTER VARYING (100) NOT NULL,
     "amount" NUMERIC (20, 8) [] NULL,
     "collateral_size" NUMERIC (24, 12) NULL,
     "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
     CONSTRAINT "EV_LAB_AH_POSITION_OPENED_pkey" PRIMARY KEY (
-        "position_id"
+        "transaction_id",
+        "log_index",
+        "contract_address"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."EV_LAB_AH_POSITION_OPENED" OWNER to postgres;
 
 CREATE TABLE gro."EV_LAB_AH_POSITION_CLOSED" (
-    "position_id" INTEGER NOT NULL,
-    "transaction_hash" CHARACTER VARYING (66) NOT NULL,
-    "block_number" INTEGER NOT NULL,
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
     "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "position_id" INTEGER NOT NULL,
+    "block_number" INTEGER NOT NULL,
     "log_name" CHARACTER VARYING (100) NOT NULL,
     "amount" NUMERIC (20, 8) [] NULL,
     "want_received" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
     CONSTRAINT "EV_LAB_AH_POSITION_CLOSED_pkey" PRIMARY KEY (
-        "position_id"
+        "transaction_id",
+        "log_index",
+        "contract_address"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."EV_LAB_AH_POSITION_CLOSED" OWNER to postgres;
 
 CREATE TABLE gro."EV_LAB_AH_POSITION_ADJUSTED" (
-    "position_id" INTEGER NOT NULL,
-    "transaction_hash" CHARACTER VARYING (66) NOT NULL,
-    "block_number" INTEGER NOT NULL,
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
     "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "position_id" INTEGER NOT NULL,
+    "block_number" INTEGER NOT NULL,
     "log_name" CHARACTER VARYING (100) NOT NULL,
     "amount" NUMERIC (20, 8) [] NULL,
     "collateral_size" NUMERIC (24, 12) NULL,
     "withdraw" BOOLEAN NULL,
     "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
     CONSTRAINT "EV_LAB_AH_POSITION_ADJUSTED_pkey" PRIMARY KEY (
-        "position_id",
-        "transaction_hash"
+        "transaction_id",
+        "log_index",
+        "contract_address"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 

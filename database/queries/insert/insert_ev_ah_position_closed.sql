@@ -1,11 +1,12 @@
 INSERT INTO gro."EV_LAB_AH_POSITION_CLOSED" (
-    "position_id",
-    "transaction_hash",
-    "block_number",
-    "contract_address",
-    "log_name",
-    "amount",
-    "want_received"
+        "transaction_id",
+        "log_index",
+        "contract_address",
+        "position_id",
+        "block_number",
+        "log_name",
+        "amount",
+        "want_received"
     )
 VALUES (
         $1,
@@ -14,5 +15,6 @@ VALUES (
         $4,
         $5,
         $6,
-        $7
+        $7,
+        $8
     ) ON CONFLICT ON CONSTRAINT "EV_LAB_AH_POSITION_CLOSED_pkey" DO NOTHING;

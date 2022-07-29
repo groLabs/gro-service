@@ -170,9 +170,11 @@ const eventParserAvax = async (
                 case EV.LogNewPositionOpened:
                     // For table EV_LAB_AH_POSITION_OPENED
                     const ah_position_open = {
+                        transaction_id: log.transactionId,
+                        log_index: log.logIndex,
+                        contract_address: log.address,
                         position_id: parseInt(log.args.positionId.toString()),
                         block_number: log.blockNumber,
-                        contract_address: log.address,
                         log_name: log.name,
                         amount: [
                             parseAmount(log.args.price[0], base, 8),    // usdc, usdt or dai
@@ -193,16 +195,6 @@ const eventParserAvax = async (
                         ah_position_open,
                         ah_position_on_open,
                     ]);
-                    transactions.push({
-                        transaction_id: log.transactionId,
-                        block_number: log.blockNumber,
-                        block_timestamp: log.blockTimestamp,
-                        block_date: log.blockDate,
-                        network_id: log.networkId,
-                        tx_hash: log.transactionHash,
-                        block_hash: log.blockHash,
-                        uncled: false,
-                    });
                     break;
                 // AH position closed
                 case EV.LogPositionClosed:
@@ -212,10 +204,11 @@ const eventParserAvax = async (
                     ] = await getExtraDataForClosePosition(log.blockNumber, contractName);
                     // For table EV_LAB_AH_POSITION_CLOSED
                     const ah_position_close = {
-                        position_id: parseInt(log.args.positionId.toString()),
-                        transaction_hash: log.transactionHash,
-                        block_number: log.blockNumber,
+                        transaction_id: log.transactionId,
+                        log_index: log.logIndex,
                         contract_address: log.address,
+                        position_id: parseInt(log.args.positionId.toString()),
+                        block_number: log.blockNumber,
                         log_name: log.name,
                         amount: [
                             parseAmount(log.args.price[0], base, 8),    // usdc, usdt or dai
@@ -240,10 +233,11 @@ const eventParserAvax = async (
                         : 1;
                     // For table EV_LAB_AH_POSITION_ADJUSTED
                     const ah_position_adjust = {
-                        position_id: parseInt(log.args.positionId.toString()),
-                        transaction_hash: log.transactionHash,
-                        block_number: log.blockNumber,
+                        transaction_id: log.transactionId,
+                        log_index: log.logIndex,
                         contract_address: log.address,
+                        position_id: parseInt(log.args.positionId.toString()),
+                        block_number: log.blockNumber,
                         log_name: log.name,
                         amount: [
                             parseAmount(log.args.amounts[0], base, 8),      // usdc, usdt or dai
@@ -285,17 +279,17 @@ const eventParserAvax = async (
                     log_name: log.name,
                     ...payload,
                 });
-                transactions.push({
-                    transaction_id: log.transactionId,
-                    block_number: log.blockNumber,
-                    block_timestamp: log.blockTimestamp,
-                    block_date: log.blockDate,
-                    network_id: log.networkId,
-                    tx_hash: log.transactionHash,
-                    block_hash: log.blockHash,
-                    uncled: false,
-                });
             }
+            transactions.push({
+                transaction_id: log.transactionId,
+                block_number: log.blockNumber,
+                block_timestamp: log.blockTimestamp,
+                block_date: log.blockDate,
+                network_id: log.networkId,
+                tx_hash: log.transactionHash,
+                block_hash: log.blockHash,
+                uncled: false,
+            });
         }
 
         return {
