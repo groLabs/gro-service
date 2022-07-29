@@ -773,7 +773,7 @@
                 "tag": "Strategy",
                 "tokens": [
                     "USDC",
-                    "OUSD"
+                    "GUSD"
                 ],
                 "protocols": [
                     "Curve",
@@ -785,7 +785,7 @@
                 ],
                 "metaData": {
                     "N": "Convex XPool USDC primary",
-                    "DN": "Convex-OUSD-3CRV",
+                    "DN": "Convex-GUSD-3CRV",
                     "DY": 33400
                 },
                 "active": true,
