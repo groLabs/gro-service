@@ -30,7 +30,8 @@ const getGvtValue = async (amount) => {
                 showError('personalStatsApprovalsParser.ts->getGvtValue():', err);
                 return 0;
             });
-        return parseAmount(usdAmount, Base.D18);
+        const gvtValue = parseAmount(usdAmount, Base.D18);
+        return (gvtValue > MAX_NUMBER) ? -1 : gvtValue;
     }
 }
 
