@@ -212,9 +212,15 @@ const getDAIeStrategy_1_7 = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXDAIStrategy_v1_7, getProviderAvax()).contract;
 
 const getUSDCeStrategy_1_7 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy_v1_7, getProviderAvax()).contract;
+
+const getUSDCeStrategy_1_7_IDL = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXUSDCStrategy_v1_7_IDL, getProviderAvax()).contract;
 
 const getUSDTeStrategy_1_7 = () =>
+    getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy_v1_7, getProviderAvax()).contract;
+
+const getUSDTeStrategy_1_7_IDL = () =>
     getLatestSystemContractOnAVAX(ContractNames.AVAXUSDTStrategy_v1_7_IDL, getProviderAvax()).contract;
 
 const getDAIeStrategy_1_9_internal = () =>
@@ -247,6 +253,7 @@ const getStableFromStrategyName = (contractName: string) => {
             case ContractNames.AVAXUSDCStrategy_v1_5:
             case ContractNames.AVAXUSDCStrategy_v1_6:
             case ContractNames.AVAXUSDCStrategy_v1_7:
+            case ContractNames.AVAXUSDCStrategy_v1_7_IDL:
             case ContractNames.AVAXUSDCStrategy_v1_9_internal:
                 stableAddress = getUSDC_e().address;
                 break;
@@ -254,6 +261,7 @@ const getStableFromStrategyName = (contractName: string) => {
             case ContractNames.AVAXUSDTStrategy_v1_5:
             case ContractNames.AVAXUSDTStrategy_v1_6:
             case ContractNames.AVAXUSDTStrategy_v1_7:
+            case ContractNames.AVAXUSDTStrategy_v1_7_IDL:
             case ContractNames.AVAXUSDTStrategy_v1_9_internal:
                 stableAddress = getUSDT_e().address;
                 break;
@@ -386,8 +394,14 @@ const getStrategyFromContractName = (contractName: string) => {
             case ContractNames.AVAXUSDCStrategy_v1_7:
                 sc = getUSDCeStrategy_1_7();
                 break;
+            case ContractNames.AVAXUSDCStrategy_v1_7_IDL:
+                sc = getUSDCeStrategy_1_7_IDL();
+                break;
             case ContractNames.AVAXUSDTStrategy_v1_7:
                 sc = getUSDTeStrategy_1_7();
+                break;
+            case ContractNames.AVAXUSDTStrategy_v1_7_IDL:
+                sc = getUSDTeStrategy_1_7_IDL();
                 break;
             case ContractNames.AVAXDAIStrategy_v1_9_internal:
                 sc = getDAIeStrategy_1_9_internal();

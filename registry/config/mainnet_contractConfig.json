@@ -419,9 +419,9 @@
         ],
         "AVAXUSDCStrategy_v1_7_IDL": [
             {
-                "address": "0xa797C615FC49a39363FdFA3398E8D524756E9a13",
-                "deployedBlock": 10363748,
-                "startBlock": 10363748,
+                "address": "0xa80ec1e57C5A37517a0F5912aCc7B30585EBff56",
+                "deployedBlock": 12833202,
+                "startBlock": 12833202,
                 "abiVersion": "6270d2c",
                 "tag": "AVAX",
                 "tokens": ["0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664"],
@@ -437,9 +437,9 @@
         ],
         "AVAXUSDTStrategy_v1_7_IDL": [
             {
-                "address": "0x370e6e9cd875db40293f9dba86361ca7ff399b63",
-                "deployedBlock": 10363984,
-                "startBlock": 10363984,
+                "address": "0x1A104793650684013c555d6ae07058f76E4679ef",
+                "deployedBlock": 12833226,
+                "startBlock": 12833226,
                 "abiVersion": "6270d2c",
                 "tag": "AVAX",
                 "tokens": ["0xc7198437980c041c805A1EDcbA50c1Ce5db95118"],

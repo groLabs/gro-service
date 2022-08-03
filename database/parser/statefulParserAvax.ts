@@ -350,12 +350,12 @@ const getExtraDataFromVaults = async (
 ///@dev: calculation of field <want_close> for table EV_LAB_AH_POSITIONS
 const getExtraDataForClosePosition = async (
     blockNumber: number,
-    contractName: string
+    contractName: string,
 ) => {
     try {
         const stratContract = getStrategyFromContractName(contractName);
-        const stableContract = getStableFromStrategyName(contractName);
         const stratAddress = stratContract.address;
+        const stableContract = getStableFromStrategyName(contractName);
 
         const [
             estimatedTotalAssets,
