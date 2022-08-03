@@ -105,8 +105,7 @@ CREATE TABLE gro."EV_LAB_AH_POSITIONS" (
     "want_close" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
     CONSTRAINT "EV_LAB_AH_POSITIONS_pkey" PRIMARY KEY (
-        "position_id",
-        "transaction_id"
+        "position_id"
     ) NOT DEFERRABLE INITIALLY IMMEDIATE
 ) WITH (OIDS = FALSE);
 

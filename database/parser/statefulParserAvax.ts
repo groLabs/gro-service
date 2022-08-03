@@ -219,7 +219,7 @@ const eventParserAvax = async (
                     // For table EV_LAB_AH_POSITIONS
                     const ah_position_on_close = {
                         position_id: parseInt(log.args.positionId.toString()),
-                        want_close: parseAmount(estimatedTotalAssets, Base.D18, 8) - parseAmount(balance, base, 8)
+                        want_close: parseAmount(estimatedTotalAssets, base, 8) - parseAmount(balance, base, 8)
                     }
                     events.push([
                         ah_position_close,
