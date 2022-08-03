@@ -98,9 +98,11 @@ const ContractNames = {
     AVAXUSDTStrategy_v1_6: 'AVAXUSDTStrategy_v1_6',
     AVAXDAIStrategy_v1_7: 'AVAXDAIStrategy_v1_7',
     AVAXUSDCStrategy_v1_7: 'AVAXUSDCStrategy_v1_7',
-    AVAXUSDCStrategy_v1_7_IDL: 'AVAXUSDCStrategy_v1_7_IDL',
+    AVAXUSDCStrategy_v1_7_v1: 'AVAXUSDCStrategy_v1_7_v1',
+    AVAXUSDCStrategy_v1_7_v2: 'AVAXUSDCStrategy_v1_7_v2',
     AVAXUSDTStrategy_v1_7: 'AVAXUSDTStrategy_v1_7',
-    AVAXUSDTStrategy_v1_7_IDL: 'AVAXUSDTStrategy_v1_7_IDL',
+    AVAXUSDTStrategy_v1_7_v1: 'AVAXUSDTStrategy_v1_7_v1',
+    AVAXUSDTStrategy_v1_7_v2: 'AVAXUSDTStrategy_v1_7_v2',
     AVAXDAIStrategy_v1_9_internal: "AVAXDAIStrategy_v1_9_internal",
     AVAXUSDCStrategy_v1_9_internal: "AVAXUSDCStrategy_v1_9_internal",
     AVAXUSDTStrategy_v1_9_internal: "AVAXUSDTStrategy_v1_9_internal",
@@ -198,9 +200,11 @@ ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_6] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_6] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXDAIStrategy_v1_7] = 'AHv2FarmerDai';
 ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_7] = 'AHv2Farmer';
-ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_7_IDL] = 'AHv2Farmer';
+ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_7_v1] = 'AHv2Farmer';
+ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_7_v2] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_7] = 'AHv2Farmer';
-ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_7_IDL] = 'AHv2Farmer';
+ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_7_v1] = 'AHv2Farmer';
+ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_7_v2] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXDAIStrategy_v1_9_internal] = 'AHv2FarmerDai';
 ContractABIMapping[ContractNames.AVAXUSDCStrategy_v1_9_internal] = 'AHv2Farmer';
 ContractABIMapping[ContractNames.AVAXUSDTStrategy_v1_9_internal] = 'AHv2Farmer';

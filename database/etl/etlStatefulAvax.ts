@@ -34,10 +34,10 @@ const etlStatefulAvax = (
             CN.AVAXUSDCStrategy,
             CN.AVAXUSDTStrategy,
             CN.AVAXDAIStrategy_v1_7,
-            CN.AVAXUSDCStrategy_v1_7,
-            CN.AVAXUSDCStrategy_v1_7_IDL,  // second deployment of the contract
-            CN.AVAXUSDTStrategy_v1_7,
-            CN.AVAXUSDTStrategy_v1_7_IDL,   // second deployment of the contract
+            CN.AVAXUSDCStrategy_v1_7_v1,    // 1st deployment of the contract
+            CN.AVAXUSDCStrategy_v1_7_v2,    // 2nd deployment of the contract
+            CN.AVAXUSDTStrategy_v1_7_v1,    // 1st deployment of the contract
+            CN.AVAXUSDTStrategy_v1_7_v2,    // 2nd deployment of the contract
             CN.AVAXDAIStrategy_v1_9_internal,
             CN.AVAXUSDCStrategy_v1_9_internal,
             CN.AVAXUSDTStrategy_v1_9_internal,
