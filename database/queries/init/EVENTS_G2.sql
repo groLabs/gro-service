@@ -97,7 +97,7 @@ CREATE TABLE gro."EV_G2_TRANCHE_BALANCES" (
     "block_timestamp" INTEGER NULL,
     "log_name" CHARACTER VARYING (100) NOT NULL,
     "balances" NUMERIC(20,8)[2] NULL,
-    "utilisation" NUMERIC(20,8) NULL,
+    "utilization" NUMERIC(20,8) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_G2_TRANCHE_BALANCES_pkey" PRIMARY KEY (
         "transaction_id",
@@ -247,3 +247,23 @@ CREATE TABLE gro."EV_G2_VAULT_STRATEGY_WITHDRAWALS" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."EV_G2_VAULT_STRATEGY_WITHDRAWALS" OWNER to postgres;
+
+CREATE TABLE gro."EV_G2_CONVEX_STRATEGY_HARVEST" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "block_timestamp" INTEGER NULL,
+    "log_name" CHARACTER VARYING (100) NOT NULL,
+    "profit" NUMERIC (20, 8) NULL,
+    "loss" NUMERIC (20, 8) NULL,
+    "debt_repayment" NUMERIC (20, 8) NULL,
+    "excess_debt" NUMERIC (20, 8) NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT "EV_G2_CONVEX_STRATEGY_HARVEST_pkey" PRIMARY KEY (
+        "transaction_id",
+        "log_index",
+        "contract_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_G2_CONVEX_STRATEGY_HARVEST" OWNER to postgres;
