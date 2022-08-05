@@ -43,8 +43,8 @@ CREATE TABLE gro."MD_TOKENS" (
     "token_id" SMALLINT NOT NULL,
     "name" CHARACTER VARYING (255) NOT NULL,
     "description" CHARACTER VARYING (255) NULL,
-    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "MD_TOKENS_pkey" PRIMARY KEY ("token_id")
 ) TABLESPACE pg_default;
 
@@ -143,7 +143,7 @@ CREATE TABLE gro."MD_TRANSFERS" (
     "transfer_id" INTEGER NOT NULL,
     "name" CHARACTER VARYING (255) NOT NULL,
     "description" CHARACTER VARYING (255) NULL,
-    "creation_date" TIMESTAMP(6) WITHOUT TIME ZONE,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "MD_TRANSFERS_pkey" PRIMARY KEY ("transfer_id")
 ) TABLESPACE pg_default;
 
@@ -156,7 +156,7 @@ ALTER TABLE gro."MD_TRANSFERS" OWNER to postgres;
 CREATE TABLE gro."MD_FEATURES" (
     "feature_id" SMALLINT NOT NULL,
     "description" CHARACTER VARYING (255) NULL,
-    "creation_date" TIMESTAMP(6) WITHOUT TIME ZONE,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "MD_FEATURES_pkey" PRIMARY KEY ("feature_id")
 ) TABLESPACE pg_default;
 
@@ -197,7 +197,7 @@ CREATE TABLE gro."MD_VAULT_ADAPTERS" (
    "contract_address" CHARACTER VARYING (42) NOT NULL,
    "token_id" INTEGER NULL,
    "active" BOOLEAN NULL,
-   "creation_date" TIMESTAMP(6) WITHOUT TIME ZONE,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
    CONSTRAINT fk_token_id FOREIGN KEY ("token_id")
       REFERENCES gro."MD_TOKENS" ("token_id")
          MATCH SIMPLE
@@ -210,7 +210,14 @@ CREATE TABLE gro."MD_VAULT_ADAPTERS" (
 
 ALTER TABLE gro."MD_VAULT_ADAPTERS" OWNER to postgres;
 
--- VALUES TO BE ADDED WHEN WE GO LIVE
+INSERT INTO gro."MD_VAULT_ADAPTERS"("contract_address", "token_id", "active", "creation_date")
+VALUES ('0x9B2688DA7d80641F6E46A76889EA7F8B59771724', 7, true, now()::timestamp);
+
+INSERT INTO gro."MD_VAULT_ADAPTERS"("contract_address", "token_id", "active", "creation_date")
+VALUES ('0x6419Cb544878E8C4faA5EaF22D59d4A96E5F12FA', 8, true, now()::timestamp);
+
+INSERT INTO gro."MD_VAULT_ADAPTERS"("contract_address", "token_id", "active", "creation_date")
+VALUES ('0x277947D84A2Ec370a636683799351acef97fec60', 9, true, now()::timestamp);
 
 
 /****************************************************
@@ -220,7 +227,7 @@ ALTER TABLE gro."MD_VAULT_ADAPTERS" OWNER to postgres;
 CREATE TABLE gro."MD_VAULTS" (
     "contract_address" CHARACTER VARYING (42) NOT NULL,
     "vault_adapter" CHARACTER VARYING (42) NULL,
-    "creation_date" TIMESTAMP(6) WITHOUT TIME ZONE,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
    CONSTRAINT "MD_VAULTS_pkey" PRIMARY KEY ("contract_address")
       NOT DEFERRABLE INITIALLY IMMEDIATE,
    CONSTRAINT fk_vault_adapter FOREIGN KEY
@@ -234,7 +241,15 @@ CREATE TABLE gro."MD_VAULTS" (
 
 ALTER TABLE gro."MD_VAULTS" OWNER to postgres;
 
--- VALUES TO BE ADDED WHEN WE GO LIVE
+INSERT INTO gro."MD_VAULTS"("contract_address", "vault_adapter", "creation_date")
+VALUES ('0x6a01bC748d71489372BD8fB743b23F63d99aac85', '0x277947D84A2Ec370a636683799351acef97fec60', now()::timestamp);
+
+INSERT INTO gro."MD_VAULTS"("contract_address", "vault_adapter", "creation_date")
+VALUES ('0x03b298D27b0426758cb70c4ADd6523927bD7cC8e', '0x9B2688DA7d80641F6E46A76889EA7F8B59771724', now()::timestamp);
+
+INSERT INTO gro."MD_VAULTS"("contract_address", "vault_adapter", "creation_date")
+VALUES ('0x9CD696A225d7a3c9Ce1ed71f5bDB031234a86D79', '0x6419Cb544878E8C4faA5EaF22D59d4A96E5F12FA', now()::timestamp);
+
 
 /****************************************************
                     MD_STRATEGIES
@@ -242,19 +257,32 @@ ALTER TABLE gro."MD_VAULTS" OWNER to postgres;
 
 CREATE TABLE gro."MD_STRATEGIES" (
    "contract_address" CHARACTER VARYING (42) NOT NULL,
-   "token_id" INTEGER NULL,
+   "vault" CHARACTER VARYING (42) NULL,
    "active" BOOLEAN NULL,
-   "creation_date" TIMESTAMP(6) WITHOUT TIME ZONE,
-   CONSTRAINT fk_token_id FOREIGN KEY ("token_id")
-      REFERENCES gro."MD_TOKENS" ("token_id")
+   "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
+   CONSTRAINT fk_vault FOREIGN KEY ("vault")
+      REFERENCES gro."MD_VAULTS" ("contract_address")
          MATCH SIMPLE
          ON DELETE NO ACTION
          ON UPDATE NO ACTION
       NOT DEFERRABLE INITIALLY IMMEDIATE,
-   CONSTRAINT "MD_STRATEGIES_pkey" PRIMARY KEY ("contract_address")
+   CONSTRAINT "MD_STRATEGIES_pkey" PRIMARY KEY (contract_address)
       NOT DEFERRABLE INITIALLY IMMEDIATE
 ) TABLESPACE pg_default;
 
 ALTER TABLE gro."MD_STRATEGIES" OWNER to postgres;
 
--- VALUES TO BE ADDED WHEN WE GO LIVE
+INSERT INTO gro."MD_STRATEGIES"("contract_address", "vault", "active", "creation_date")
+VALUES ('0x4d5b5376Cbcc001bb4F8930208828Ab87D121dA8', '0x6a01bC748d71489372BD8fB743b23F63d99aac85', true, now()::timestamp);
+
+INSERT INTO gro."MD_STRATEGIES"("contract_address", "vault", "active", "creation_date")
+VALUES ('0x8b335D3E266389Ae08A2F22b01D33813d40ED8Fd', '0x03b298D27b0426758cb70c4ADd6523927bD7cC8e', true, now()::timestamp);
+
+INSERT INTO gro."MD_STRATEGIES"("contract_address", "vault", "active", "creation_date")
+VALUES ('0xD370998b2E7941151E7BB9f6e337A12F337D0682', '0x03b298D27b0426758cb70c4ADd6523927bD7cC8e', true, now()::timestamp);
+
+INSERT INTO gro."MD_STRATEGIES"("contract_address", "vault", "active", "creation_date")
+VALUES ('0xDE5a25415C637b52d59Ef980b29a5fDa8dC3C70B', '0x9CD696A225d7a3c9Ce1ed71f5bDB031234a86D79', true, now()::timestamp);
+
+INSERT INTO gro."MD_STRATEGIES"("contract_address", "vault", "active", "creation_date")
+VALUES ('0xDea436e15B40E7B707A7002A749f416dFE5B383F', '0x6a01bC748d71489372BD8fB743b23F63d99aac85', true, now()::timestamp);
