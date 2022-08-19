@@ -71,6 +71,7 @@ const eventParserAvax = async (
                         from: log.args[0],
                         to: log.args[1],
                         value: parseAmount(log.args[2], base, 8),
+                        factor: null,
                     }
                     break;
                 // Approvals
