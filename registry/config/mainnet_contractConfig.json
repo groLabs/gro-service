@@ -915,13 +915,13 @@
                 "tag": "Strategy",
                 "tokens": [
                     "USDT",
-                    "LUSD"
+                    "TUSD"
                 ],
                 "protocols": ["Curve", "Convex"],
                 "protocolsDisplayName": ["Curve", "Convex"],
                 "metaData": {
                     "N": "Convex XPool USDT",
-                    "DN": "Convex-LUSD-3CRV",
+                    "DN": "Convex-TUSD-3CRV",
                     "DY": 25000
                 },
                 "active": true
