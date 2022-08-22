@@ -909,7 +909,7 @@
             {
                 "address": "0xDE5a25415C637b52d59Ef980b29a5fDa8dC3C70B",
                 "deployedBlock": 14300374,
-                "startBlock": 14836345,
+                "startBlock": 15388888,
                 "endBlock": null,
                 "abiVersion": "ce7b149",
                 "tag": "Strategy",
@@ -922,7 +922,7 @@
                 "metaData": {
                     "N": "Convex XPool USDT",
                     "DN": "Convex-TUSD-3CRV",
-                    "DY": 25000
+                    "DY": 31900
                 },
                 "active": true
             }
