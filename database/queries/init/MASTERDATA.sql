@@ -286,3 +286,83 @@ VALUES ('0xDE5a25415C637b52d59Ef980b29a5fDa8dC3C70B', '0x9CD696A225d7a3c9Ce1ed71
 
 INSERT INTO gro."MD_STRATEGIES"("contract_address", "vault", "active", "creation_date")
 VALUES ('0xDea436e15B40E7B707A7002A749f416dFE5B383F', '0x6a01bC748d71489372BD8fB743b23F63d99aac85', true, now()::timestamp);
+
+/****************************************************
+                    MD_LABS
+ ****************************************************/
+
+CREATE TABLE gro."MD_LABS" (
+   "contract_address" CHARACTER VARYING (42) NOT NULL,
+   "token_id" INTEGER NULL,
+   "active" BOOLEAN NULL,
+   "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
+   CONSTRAINT fk_token_id FOREIGN KEY
+      (token_id)
+      REFERENCES gro."MD_TOKENS" ("token_id")
+         MATCH SIMPLE
+         ON DELETE NO ACTION
+         ON UPDATE NO ACTION
+      NOT DEFERRABLE INITIALLY IMMEDIATE,
+   CONSTRAINT "MD_LABS_pkey" PRIMARY KEY ("contract_address")
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."MD_LABS" OWNER to postgres;
+
+INSERT INTO gro."MD_LABS"("contract_address", "token_id", "active")
+VALUES ('0x2Eb05cfFA24309b9aaf300392A4D8Db745d4E592', 11, true);
+
+INSERT INTO gro."MD_LABS"("contract_address", "token_id", "active")
+VALUES ('0x6FfF1e1140034897f5b370b931Fbd7e4970FE130', 11, true);
+
+INSERT INTO gro."MD_LABS"("contract_address", "token_id", "active")
+VALUES ('0x6EF44077a1F5e10cDfcCc30EFb7dCdb1d5475581', 12, true);
+
+INSERT INTO gro."MD_LABS"("contract_address", "token_id", "active")
+VALUES ('0xcc20CE15425A89614bD7a3B539a3c966FA7fFBC2', 12, true);
+
+INSERT INTO gro."MD_LABS"("contract_address", "token_id", "active")
+VALUES ('0x6063597B9356B246E706Fd6A48C780F897e3ef55', 13, true);
+
+INSERT INTO gro."MD_LABS"("contract_address", "token_id", "active")
+VALUES ('0x7b2f293B2164c70834C134Dc6bA61e6B6119f0b5', 13, true);
+
+/****************************************************
+                    MD_LAB_STRATEGIES
+ ****************************************************/
+
+CREATE TABLE gro."MD_LAB_STRATEGIES" (
+   "contract_address" CHARACTER VARYING (42) NOT NULL,
+   "lab" CHARACTER VARYING (42) NULL,
+   "active" BOOLEAN NULL,
+   "creation_date" TIMESTAMP (6) NULL DEFAULT now (),
+   CONSTRAINT "MD_LAB_STRATEGIES_pkey" PRIMARY KEY ("contract_address")
+      NOT DEFERRABLE INITIALLY IMMEDIATE,
+   CONSTRAINT fk_lab FOREIGN KEY ("lab")
+      REFERENCES gro."MD_LABS" ("contract_address")
+         MATCH SIMPLE
+         ON DELETE NO ACTION
+         ON UPDATE NO ACTION
+      NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."MD_LAB_STRATEGIES" OWNER to postgres;
+
+INSERT INTO gro."MD_LAB_STRATEGIES"("contract_address", "lab", "active")
+VALUES ('0x1A104793650684013c555d6ae07058f76E4679ef', '0x6EF44077a1F5e10cDfcCc30EFb7dCdb1d5475581', true);
+
+INSERT INTO gro."MD_LAB_STRATEGIES"("contract_address", "lab", "active")
+VALUES ('0x670EA3f675a332D561d5a9ECaa16c097Ac0b0ba5', '0x6063597B9356B246E706Fd6A48C780F897e3ef55', true);
+
+INSERT INTO gro."MD_LAB_STRATEGIES"("contract_address", "lab", "active")
+VALUES ('0x7053CdCfe9A6f8DB99768734939fCD6672470158', '0xcc20CE15425A89614bD7a3B539a3c966FA7fFBC2', true);
+
+INSERT INTO gro."MD_LAB_STRATEGIES"("contract_address", "lab", "active")
+VALUES ('0xa80ec1e57C5A37517a0F5912aCc7B30585EBff56', '0x2Eb05cfFA24309b9aaf300392A4D8Db745d4E592', true);
+
+INSERT INTO gro."MD_LAB_STRATEGIES"("contract_address", "lab", "active")
+VALUES ('0xCfd28f3afB79380eC6cD759F76eA0a5c5b56A9aC', '0x7b2f293B2164c70834C134Dc6bA61e6B6119f0b5', true);
+
+INSERT INTO gro."MD_LAB_STRATEGIES"("contract_address", "lab", "active")
+VALUES ('0xECBA3778357a7A448810D1D9a67025cD9BAf169A', '0x6FfF1e1140034897f5b370b931Fbd7e4970FE130', true);
+
