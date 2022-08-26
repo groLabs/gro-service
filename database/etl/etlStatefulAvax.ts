@@ -2,7 +2,7 @@ import { getNetwork } from '../common/globalUtil';
 import { showError } from '../handler/logHandler';
 import { loadStateful } from '../loader/loadStateful';
 import { ContractNames as CN } from '../../registry/registry';
-import { getLatestContractsAddress as getAddress} from '../../registry/registryLoader';
+import { getLatestContractsAddress as getAddress } from '../../registry/registryLoader';
 import {
     EventName as EV,
     GlobalNetwork as GN
@@ -275,8 +275,104 @@ const etlStatefulAvax = (
             );
         }
 
+        // DAIe transfers to/from DAIVaults
+        if (eventCodes.includes(16)) {
+            result.push(
+                ...[
+                    CN.AVAXDAIVault_v1_7,
+                    CN.AVAXDAIVault_v1_9_internal,
+                ].map((daiVault) =>
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.Transfer,
+                        CN.DAI_e,
+                        from,
+                        newOffset,
+                        [getAddress()[daiVault].address, null]
+                    )),
+            );
+            result.push(
+                ...[
+                    CN.AVAXDAIVault_v1_7,
+                    CN.AVAXDAIVault_v1_9_internal,
+                ].map((daiVault) =>
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.Transfer,
+                        CN.DAI_e,
+                        from,
+                        newOffset,
+                        [null, getAddress()[daiVault].address]
+                    )),
+            );
+        }
+
+        // USDCe transfers to/from USDCVaults
+        if (eventCodes.includes(17)) {
+            result.push(
+                ...[
+                    CN.AVAXUSDCVault_v1_7,
+                    CN.AVAXUSDCVault_v1_9_internal,
+                ].map((usdcVault) =>
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.Transfer,
+                        CN.USDC_e,
+                        from,
+                        newOffset,
+                        [getAddress()[usdcVault].address, null]
+                    )),
+            );
+            result.push(
+                ...[
+                    CN.AVAXUSDCVault_v1_7,
+                    CN.AVAXUSDCVault_v1_9_internal,
+                ].map((usdcVault) =>
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.Transfer,
+                        CN.USDC_e,
+                        from,
+                        newOffset,
+                        [null, getAddress()[usdcVault].address]
+                    )),
+            );
+        }
+
+        // USDTe transfers to/from USDTVaults
+        if (eventCodes.includes(18)) {
+            result.push(
+                ...[
+                    CN.AVAXUSDTVault_v1_7,
+                    CN.AVAXUSDTVault_v1_9_internal,
+                ].map((usdtVault) =>
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.Transfer,
+                        CN.USDT_e,
+                        from,
+                        newOffset,
+                        [getAddress()[usdtVault].address, null]
+                    )),
+            );
+            result.push(
+                ...[
+                    CN.AVAXUSDTVault_v1_7,
+                    CN.AVAXUSDTVault_v1_9_internal,
+                ].map((usdtVault) =>
+                    loadStateful(
+                        getNetwork(GN.AVALANCHE).id,
+                        EV.Transfer,
+                        CN.USDT_e,
+                        from,
+                        newOffset,
+                        [null, getAddress()[usdtVault].address]
+                    )),
+            );
+        }
+
         //****@dev: number to be updated if additional events are integrated */
-        if (eventCodes.some(el => el > 15)) {
+        if (eventCodes.some(el => el > 18)) {
             showError('etlStatefulEth.ts->etlStatefulEth()', 'Event code above the max value');
             result.push(false);
         }
