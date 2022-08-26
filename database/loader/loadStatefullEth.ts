@@ -45,10 +45,12 @@ const loadStatefulEth = async (
             break;
         case EV.LogClaim:
         case EV.LogMultiClaim:
+        case EV.LogInitialClaim:
             if (contractName === CN.LPTokenStakerV1
                 || contractName === CN.LPTokenStakerV2) {
                 res = await query('insert_ev_staker_claims.sql', event);
-            } else if (contractName === CN.Airdrop) {
+            } else if (contractName === CN.Airdrop
+                || contractName === CN.GMerkleVestor) {
                 res = await query('insert_ev_airdrop_claims.sql', event);
             } else {
                 const msg = `Event name (${eventName}) for contract <${contractName}> not found before inserting data into DB`;

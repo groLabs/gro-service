@@ -2265,5 +2265,20 @@
             "metaData": {},
             "active": true
         }
+    ],
+    "GMerkleVestor": [
+        {
+            "address": "0x02c133B9fBffb8D2E8cb7B7a94C7c880b331c720",
+            "deployedBlock": 15217092,
+            "startBlock": 15217092,
+            "endBlock": null,
+            "abiVersion": "6270d2c",
+            "tag": "Other",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        }
     ]
 }

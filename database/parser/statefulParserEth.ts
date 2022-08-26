@@ -125,6 +125,19 @@ const eventParserEth = async (
                     tranche_id: parseInt(log.args.trancheId.toString()),
                     amount: parseAmount(log.args.amount, Base.D18, 12),
                 }
+                // Initial Claims / Claims from GMerkleVestor
+            } else if ((eventName === EV.LogClaim || eventName === EV.LogInitialClaim)
+                && contractName === CN.GMerkleVestor
+            ) {
+                const amount = (eventName === EV.LogClaim)
+                    ? log.args.amount
+                    : log.args.claimAmount
+                payload = {
+                    account: log.args.user,
+                    vest: null,
+                    tranche_id: null,
+                    amount: parseAmount(amount, Base.D18, 12),
+                }
                 // Vests from GROVesting
             } else if (eventName === EV.LogVest
                 && contractName === CN.GroVesting

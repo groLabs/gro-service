@@ -129,6 +129,7 @@ const ContractNames = {
     Curve_PWRD3CRV: "Curve_PWRD3CRV",
     Curve_3CRV: "Curve_3CRV",
     Airdrop: "Airdrop",
+    GMerkleVestor: "GMerkleVestor",
 };
 
 const ContractABIMapping = {};
@@ -228,6 +229,7 @@ ContractABIMapping[ContractNames.Balancer_gro_weth_LP] = 'Balancer_gro_weth_LP';
 ContractABIMapping[ContractNames.Curve_PWRD3CRV] = 'Curve_PWRD3CRV';
 ContractABIMapping[ContractNames.Curve_3CRV] = 'Curve_3CRV';
 ContractABIMapping[ContractNames.Airdrop] = 'Airdrop';
+ContractABIMapping[ContractNames.GMerkleVestor] = 'GMerkleVestor';
 
 function readLocalContractConfig(isReload = false) {
     if (isReload || !localContractConfig) {

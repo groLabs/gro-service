@@ -163,6 +163,26 @@ const etlStatefulEth = (
                     []
                 ),
             );
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogInitialClaim,
+                    CN.GMerkleVestor,
+                    from,
+                    newOffset,
+                    []
+                ),
+            );
+            result.push(
+                loadStateful(
+                    getNetwork(GN.ETHEREUM).id,
+                    EV.LogClaim,
+                    CN.GMerkleVestor,
+                    from,
+                    newOffset,
+                    []
+                ),
+            );
         }
 
         if (eventCodes.includes(9)) {
