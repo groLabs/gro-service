@@ -114,7 +114,7 @@ INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "contract_address
 VALUES (20, 'avax', 'Avalanche', '0x0000000000000000000000000000000000000000');
 
 INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "contract_address")
-VALUES (21, 'wavax', 'Wrapped Avax', '0x0000000000000000000000000000000000000000');
+VALUES (21, 'wavax', 'Wrapped Avax', '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7');
 
 INSERT INTO gro."MD_TOKENS"("token_id", "name", "description", "contract_address")
 VALUES (22, 'weth', 'Wrapped Ether', '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2');
