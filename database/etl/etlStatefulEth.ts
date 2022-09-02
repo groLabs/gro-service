@@ -572,6 +572,8 @@ const etlStatefulEth = (
             );
         }
 
+        // Transfer events in Pools not filtered anymore by [ZERO_ADDRESS, null] &  [null, ZERO_ADDRESS]
+        // No 36 required
         if (eventCodes.includes(35)) {
             result.push(
                 ...[
@@ -586,26 +588,7 @@ const etlStatefulEth = (
                         pool,
                         from,
                         newOffset,
-                        [ZERO_ADDRESS, null]
-                    )),
-            );
-        }
-
-        if (eventCodes.includes(36)) {
-            result.push(
-                ...[
-                    CN.UniswapV2Pair_gvt_gro,
-                    CN.UniswapV2Pair_gro_usdc,
-                    CN.Curve_PWRD3CRV,
-                    CN.Balancer_gro_weth_LP,
-                ].map((pool) =>
-                    loadStateful(
-                        getNetwork(GN.ETHEREUM).id,
-                        EV.Transfer,
-                        pool,
-                        from,
-                        newOffset,
-                        [null, ZERO_ADDRESS]
+                        []
                     )),
             );
         }
