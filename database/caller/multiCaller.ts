@@ -62,12 +62,12 @@ const multiCall = async (
         if (globalNetwork === GlobalNetwork.ETHEREUM) {
             results = await multicallProvider.call(
                 contractCallContext,
-                block
+                { blockNumber: block.toString() }
             );
         } else if (globalNetwork === GlobalNetwork.AVALANCHE) {
             results = await multicallAvaxProvider.call(
                 contractCallContext,
-                block
+                { blockNumber: block.toString() }
             );
         }
 
