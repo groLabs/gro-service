@@ -140,15 +140,18 @@ const etlStatefulEth = (
 
         if (eventCodes.includes(7)) {
             result.push(
-                loadStateful(
-                    getNetwork(GN.ETHEREUM).id,
-                    EV.LogBonusClaimed,
-                    CN.GroHodler,
-                    from,
-                    newOffset,
-                    []
-
-                ),
+                ...[
+                    CN.GroHodlerV1,
+                    CN.GroHodlerV2,
+                ].map((groHodlerContract) =>
+                    loadStateful(
+                        getNetwork(GN.ETHEREUM).id,
+                        EV.LogBonusClaimed,
+                        groHodlerContract,
+                        from,
+                        newOffset,
+                        []
+                    )),
             );
         }
 

@@ -1281,6 +1281,37 @@
             "contractName": "GroHodler"
         }
     ],
+    "GroHodlerV1": [
+        {
+            "address": "0xEf10eac205817A88C6d504d02481053E85A8F927",
+            "deployedBlock": 13405194,
+            "startBlock": 13405194,
+            "endBlock": 14268637,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true
+        }
+    ],
+    "GroHodlerV2": [
+        {
+            "address": "0x8b4A30c8884ca4AfF1E4c82Cce79802a63E61397",
+            "deployedBlock": 14268703,
+            "startBlock": 14268703,
+            "endBlock": null,
+            "abiVersion": "fa8e260",
+            "tag": "Vesting",
+            "tokens": [],
+            "protocols": [],
+            "protocolsDisplayName": [],
+            "metaData": {},
+            "active": true,
+            "contractName": "GroHodler"
+        }
+    ],
     "LPTokenStakerV1": [
         {
             "address": "0x001C249c09090D79Dc350A286247479F08c7aaD7",

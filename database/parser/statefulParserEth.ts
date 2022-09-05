@@ -112,7 +112,9 @@ const eventParserEth = async (
             } else if (eventName === EV.LogBonusClaimed) {
                 payload = {
                     user: log.args.user,
-                    vest: log.args.vest,
+                    vest: (contractName === CN.GroHodlerV2) 
+                        ? log.args.vest
+                        : null,
                     amount: parseAmount(log.args.amount, Base.D18, 8),
                 }
                 // Claims from Airdrop

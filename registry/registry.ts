@@ -67,6 +67,8 @@ const ContractNames = {
     BalancerWeightedPool: 'BalancerWeightedPool',
     TokenCounter: 'TokenCounter',
     GroHodler: 'GroHodler',
+    GroHodlerV1: 'GroHodlerV1',
+    GroHodlerV2: 'GroHodlerV2',
     LPTokenStakerV1: 'LPTokenStakerV1',
     LPTokenStakerV2: 'LPTokenStakerV2',
     GroDAOVesting: 'GroDAOVesting',
@@ -163,8 +165,9 @@ ContractABIMapping[ContractNames.USDTSecondary] = 'BaseStrategy';
 ContractABIMapping[ContractNames.BalancerWeightedPool] = 'BalancerWeightedPool';
 ContractABIMapping[ContractNames.TokenCounter] = 'TokenCounter';
 ContractABIMapping[ContractNames.GroHodler] = 'GroHodler';
+ContractABIMapping[ContractNames.GroHodlerV1] = 'GroHodlerV1';
+ContractABIMapping[ContractNames.GroHodlerV2] = 'GroHodlerV2';
 ContractABIMapping[ContractNames.GroDAOVesting] = 'GroDAOVesting';
-ContractABIMapping[ContractNames.GroHodler] = 'GroHodler';
 ContractABIMapping[ContractNames.LPTokenStakerV1] = 'LPTokenStakerV1';
 ContractABIMapping[ContractNames.LPTokenStakerV2] = 'LPTokenStaker';
 ContractABIMapping[ContractNames.GroVesting] = 'GroVesting';
