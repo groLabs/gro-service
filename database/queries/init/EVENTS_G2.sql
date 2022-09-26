@@ -267,3 +267,20 @@ CREATE TABLE gro."EV_G2_CONVEX_STRATEGY_HARVEST" (
 ) WITH (OIDS = FALSE);
 
 ALTER TABLE gro."EV_G2_CONVEX_STRATEGY_HARVEST" OWNER to postgres;
+
+CREATE TABLE gro."EV_G2_PNL_FIXED_RATED_DISTRIBUTION" (
+    "transaction_id" CHARACTER VARYING (66) NOT NULL,
+    "log_index" INTEGER NOT NULL,
+    "contract_address" CHARACTER VARYING (42) NOT NULL,
+    "block_timestamp" INTEGER NULL,
+    "log_name" CHARACTER VARYING (100) NOT NULL,
+    "seniorProfit" NUMERIC (20, 8) NULL,
+    "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
+    CONSTRAINT "EV_G2_PNL_FIXED_RATED_DISTRIBUTION_pkey" PRIMARY KEY (
+        "transaction_id",
+        "log_index",
+        "contract_address"
+    ) NOT DEFERRABLE INITIALLY IMMEDIATE
+) WITH (OIDS = FALSE);
+
+ALTER TABLE gro."EV_G2_PNL_FIXED_RATED_DISTRIBUTION" OWNER to postgres;
