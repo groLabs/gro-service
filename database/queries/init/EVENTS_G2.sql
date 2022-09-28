@@ -78,6 +78,7 @@ CREATE TABLE gro."EV_G2_TRANCHE_WITHDRAWALS" (
     "amount" NUMERIC (20, 8) NULL,
     "index" INTEGER NULL,
     "tranche" BOOLEAN NULL,
+    "yield_token_amounts" NUMERIC (20, 8) NULL,
     "calc_amount" NUMERIC (20, 8) NULL,
     "pwrd_total_supply_base" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
