@@ -73,6 +73,8 @@ const query = async (
     }
 }
 
+// @dev: PostgreSQL is auto committing/rolling back, so adding it after the query will generate
+//       "postgres@postgres:[7435]:WARNING: there is no transaction in progress" issue
 const singleQuery = async (
     q: string,
     file: string,
@@ -84,11 +86,11 @@ const singleQuery = async (
         const client = await pool.connect();
         try {
             const result = await client.query(q, params);
-            if (op === SqlCommand.INSERT
-                || op === SqlCommand.UPDATE
-                || op === SqlCommand.DELETE) {
-                await client.query('COMMIT');
-            }
+            // if (op === SqlCommand.INSERT
+            //     || op === SqlCommand.UPDATE
+            //     || op === SqlCommand.DELETE) {
+            //     await client.query('COMMIT');
+            // }
             if (result) {
                 result.status = 200;
                 return result;
@@ -96,11 +98,11 @@ const singleQuery = async (
                 return NO_DATA;
             }
         } catch (err) {
-            if (op === SqlCommand.INSERT
-                || op === SqlCommand.UPDATE
-                || op === SqlCommand.DELETE) {
-                await client.query('ROLLBACK');
-            }
+            // if (op === SqlCommand.INSERT
+            //     || op === SqlCommand.UPDATE
+            //     || op === SqlCommand.DELETE) {
+            //     await client.query('ROLLBACK');
+            // }
             showError(
                 'queryHandler.ts->singleQuery()',
                 `\n Message: ${err} \n Query: ${file} \n Params: ${params}`
@@ -129,16 +131,16 @@ const batchQuery = async (
                 const result = await client.query(q, params[i]);
                 rows += result.rowCount;
             }
-            if (op === SqlCommand.INSERT
-                || op === SqlCommand.UPDATE) {
-                await client.query('COMMIT');
-            }
+            // if (op === SqlCommand.INSERT
+            //     || op === SqlCommand.UPDATE) {
+            //     await client.query('COMMIT');
+            // }
             return [true, rows];
         } catch (err) {
-            if (op === SqlCommand.INSERT
-                || op === SqlCommand.UPDATE) {
-                await client.query('ROLLBACK');
-            }
+            // if (op === SqlCommand.INSERT
+            //     || op === SqlCommand.UPDATE) {
+            //     await client.query('ROLLBACK');
+            // }
             showError(
                 'queryHandler.ts->batchQuery()',
                 `\n Message: ${err} \n Query: ${file} \n Params: ${params}`
