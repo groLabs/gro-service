@@ -9,7 +9,7 @@ CREATE TABLE gro."EV_G2_ROUTER_DEPOSITS" (
     "index" INTEGER NULL,
     "amounts" NUMERIC (20, 8) [] NULL,
     "tranche" BOOLEAN NULL,
-    "slippage" INTEGER NULL,
+    "tranche_amount" NUMERIC (20, 8) NULL,
     "shares" NUMERIC (20, 8) NULL,
     "calc_amount" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
@@ -32,7 +32,6 @@ CREATE TABLE gro."EV_G2_ROUTER_WITHDRAWALS" (
     "amount" NUMERIC (20, 8) NULL,
     "index" INTEGER NULL,
     "tranche" BOOLEAN NULL,
-    "slippage" INTEGER NULL,
     "calc_amount" NUMERIC (20, 8) NULL,
     "creation_date" TIMESTAMP (6) WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT "EV_G2_ROUTER_WITHDRAWALS_pkey" PRIMARY KEY (
