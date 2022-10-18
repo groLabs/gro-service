@@ -312,6 +312,11 @@ export const route = {
     gro_stats_mc: {
         path: '/stats/gro_stats_mc?network=ropsten',
     },
+    gro_stats_g2: {
+        hostname: '6gm13x96lc.execute-api.eu-west-2.amazonaws.com',
+        path: '/stats/gro_stats_mc?network=mainnet',
+        port: 443,
+    },
     historical_gro_stats: {
         hostname: process.env.BOT_DEV_HOST,
         path: '/stats/historical_gro_stats',

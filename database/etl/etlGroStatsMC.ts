@@ -12,19 +12,29 @@ import {
     showInfo,
     showError,
 } from '../handler/logHandler';
+import { NetworkName } from '../types';
 
-let options = {
-    hostname: route.gro_stats.hostname,
-    port: route.gro_stats.port,
-    path: '',
-    method: 'GET',
-}
 
+let options = (nodeEnv === NetworkName.ROPSTEN)
+    ? { // G2 testing
+        hostname: route.gro_stats_g2.hostname,
+        port: route.gro_stats_g2.port,
+        path: '',
+        method: 'GET',
+    }
+    : { // Standard
+        hostname: route.gro_stats.hostname,
+        port: route.gro_stats.port,
+        path: '',
+        method: 'GET',
+    };
 
 const etlGroStatsMC = async () => {
     try {
         let lastTimestamp;
-        options.path = route.gro_stats_mc.path;
+        options.path = (nodeEnv === NetworkName.ROPSTEN)
+            ? route.gro_stats_g2.path
+            : route.gro_stats_mc.path;
         const res = await checkLastTimestamp('GRO_STATS');
         if (res.status === QUERY_SUCCESS) {
             lastTimestamp = res.rows[0].last_timestamp;

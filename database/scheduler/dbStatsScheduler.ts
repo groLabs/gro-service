@@ -26,11 +26,13 @@ import {
     showInfo,
     showError,
 } from '../handler/logHandler';
-import { 
+import {
     Bool,
     LoadType,
+    NetworkName,
     GlobalNetwork,
 } from '../types';
+const nodeEnv = process.env.NODE_ENV.toLowerCase();
 
 
 const groStatsJob = async () => {
@@ -109,12 +111,21 @@ const vestingBonusJob = async () => {
 }
 
 const startDbStatsJobs = async () => {
-    //TODO: capture exception in contract load fails
-    await loadContractInfoFromRegistry();
-    groStatsJob();
-    priceCheckJob();
-    tokenPriceJob();
-    //vestingBonusJob();
+    // //TODO: capture exception if contract load fails
+    // await loadContractInfoFromRegistry();
+    // groStatsJob();
+    // priceCheckJob();
+    // tokenPriceJob();
+    // //vestingBonusJob();
+
+    if (nodeEnv === NetworkName.ROPSTEN) {
+        groStatsJob();
+    } else {
+        await loadContractInfoFromRegistry();
+        groStatsJob();
+        priceCheckJob();
+        tokenPriceJob();
+    }
 }
 
 export {
