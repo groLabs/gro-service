@@ -121,10 +121,10 @@ const startDbStatsJobs = async () => {
     if (nodeEnv === NetworkName.ROPSTEN) {
         groStatsJob();
     } else {
-        await loadContractInfoFromRegistry();
+        //await loadContractInfoFromRegistry();
         groStatsJob();
-        priceCheckJob();
-        tokenPriceJob();
+        //priceCheckJob();
+        //tokenPriceJob();
     }
 }
 
