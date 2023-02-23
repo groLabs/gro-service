@@ -24,7 +24,10 @@ const registryAddress = getConfig('registry_address', false) as
 const ethererumProvider = getAlchemyRpcProvider();
 let provider;
 if (process.env.NODE_ENV === 'mainnet') {
-    provider = getAvaxFullNodeRpcProvider();
+    // provider = getAvaxFullNodeRpcProvider();
+    provider = new ethers.providers.JsonRpcProvider(
+        'https://api.avax.network/ext/bc/C/rpc'
+    );
 } else {
     provider = ethererumProvider;
 }

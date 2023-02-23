@@ -174,12 +174,12 @@ async function generateGroStatsMcFile() {
     //     utilRatio: tvl.util_ratio,
     // });
 
-    const avaxSystem = await getAvaxSystemStats();
+    //const avaxSystem = await getAvaxSystemStats();
     const mcTotals = {
         tvl: {
             mainnet: tvl.total,
-            avalanche: avaxSystem.tvl.total,
-            total: tvl.total.add(avaxSystem.tvl.total),
+            avalanche: 0, // avaxSystem.tvl.total,
+            total: tvl.total, //.add(avaxSystem.tvl.total),
         },
     };
     const formattedTvl = mapper(
@@ -187,6 +187,7 @@ async function generateGroStatsMcFile() {
         ['total_share', 'share', 'last3d_apy'],
         ['avalanche', 'total', 'mainnet']
     );
+    /*
     const formattedAvaxSystem = mapper(
         avaxSystem,
         [
@@ -257,13 +258,14 @@ async function generateGroStatsMcFile() {
         formattedAvaxSystem.tvl['groUSDT.e_vault_v1_7'];
     formattedAvaxSystem.labs_vault[11].reserves.amount =
         formattedAvaxSystem.tvl['groUSDT.e_vault_v1_7'];
-
+    */
+   
     const groStatsMultiChain = {
         current_timestamp: latestBlock.timestamp.toString(),
         network: process.env.NODE_ENV.toLowerCase(),
         mc_totals: formattedTvl,
         mainnet: stats,
-        avalanche: formattedAvaxSystem,
+        avalanche: '', //formattedAvaxSystem,
     };
     const statsMcFilename = `${statsDir}/gro-stats-mc-${latestBlock.timestamp}.json`;
     fs.writeFileSync(statsMcFilename, JSON.stringify(groStatsMultiChain));
